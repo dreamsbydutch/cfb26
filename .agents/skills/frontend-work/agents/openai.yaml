@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Work"
+  short_description: "Build React routes, pages, and responsive UI"
+  default_prompt: "Use $frontend-work to implement this frontend change in the cfb26 app."

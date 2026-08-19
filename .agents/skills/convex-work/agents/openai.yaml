@@ -1,0 +1,4 @@
+interface:
+  display_name: "Convex Work"
+  short_description: "Build and connect the Convex data backend"
+  default_prompt: "Use $convex-work to implement this Convex backend change safely."

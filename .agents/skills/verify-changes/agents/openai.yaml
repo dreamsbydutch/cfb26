@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Changes"
+  short_description: "Run the repository quality and release gates"
+  default_prompt: "Use $verify-changes to validate the current repository changes."

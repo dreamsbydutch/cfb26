@@ -1,0 +1,4 @@
+interface:
+  display_name: "Maintain Docs"
+  short_description: "Keep agent guidance and the wiki accurate"
+  default_prompt: "Use $maintain-docs to update repository guidance for this change."
