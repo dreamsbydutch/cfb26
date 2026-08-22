@@ -23,6 +23,8 @@ const movementKind = v.union(
   v.literal('dismissed'),
 )
 
+const snapPhase = v.union(v.literal('offense'), v.literal('defense'))
+
 export default defineSchema({
   players: defineTable({
     displayName: v.string(),
@@ -100,6 +102,30 @@ export default defineSchema({
     .index('by_legacyKey', ['legacyKey'])
     .index('by_playerId_and_programId', ['playerId', 'programId']),
 
+  seasonalPlayerStats: defineTable({
+    compositeRating: v.number(),
+    gamesPlayed: v.number(),
+    phase: snapPhase,
+    playerId: v.optional(v.id('players')),
+    pffRating: v.number(),
+    position: v.string(),
+    programId: v.id('programs'),
+    recruitingSeason: v.number(),
+    recruitingType: v.string(),
+    season: v.number(),
+    snaps: v.number(),
+    sourceKey: v.string(),
+    sourceNumber: v.string(),
+    sourcePlayerName: v.string(),
+  })
+    .index('by_playerId_and_season', ['playerId', 'season'])
+    .index('by_programId_and_season_and_snaps', [
+      'programId',
+      'season',
+      'snaps',
+    ])
+    .index('by_sourceKey', ['sourceKey']),
+
   movementEvents: defineTable({
     cohortRank: v.optional(v.number()),
     fromProgramId: v.optional(v.id('programs')),
@@ -120,7 +146,7 @@ export default defineSchema({
     overallPick: v.optional(v.number()),
     playerId: v.id('players'),
     round: v.optional(v.number()),
-    status: v.union(v.literal('drafted'), v.literal('udfa')),
+    status: v.union(v.literal('drafted'), v.literal('undrafted_free_agent')),
     team: v.string(),
     year: v.number(),
   })

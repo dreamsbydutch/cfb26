@@ -5,6 +5,7 @@ node_modules
 .env.local
 .DS_Store
 .cache
+.tmp
 .vercel
 .output
 .nitro

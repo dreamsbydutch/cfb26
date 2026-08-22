@@ -32,8 +32,8 @@ export const getProfile = query({
     const player = await ctx.db.get('players', args.playerId)
     if (!player) return null
 
-    const [recruiting, stints, summaries, movements, draft] = await Promise.all(
-      [
+    const [recruiting, stints, summaries, seasonalStats, movements, draft] =
+      await Promise.all([
         ctx.db
           .query('recruitingProfiles')
           .withIndex('by_playerId', (q) => q.eq('playerId', args.playerId))
@@ -51,6 +51,12 @@ export const getProfile = query({
           )
           .take(20),
         ctx.db
+          .query('seasonalPlayerStats')
+          .withIndex('by_playerId_and_season', (q) =>
+            q.eq('playerId', args.playerId),
+          )
+          .take(20),
+        ctx.db
           .query('movementEvents')
           .withIndex('by_playerId_and_season', (q) =>
             q.eq('playerId', args.playerId),
@@ -60,9 +66,16 @@ export const getProfile = query({
           .query('draftOutcomes')
           .withIndex('by_playerId', (q) => q.eq('playerId', args.playerId))
           .unique(),
-      ],
-    )
+      ])
 
-    return { player, recruiting, stints, summaries, movements, draft }
+    return {
+      player,
+      recruiting,
+      stints,
+      summaries,
+      seasonalStats,
+      movements,
+      draft,
+    }
   },
 })

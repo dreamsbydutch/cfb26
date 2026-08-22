@@ -10,6 +10,7 @@
 
 import type * as players from "../players.js";
 import type * as rosters from "../rosters.js";
+import type * as seasonalStats from "../seasonalStats.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   players: typeof players;
   rosters: typeof rosters;
+  seasonalStats: typeof seasonalStats;
 }>;
 
 /**
