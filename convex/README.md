@@ -2,19 +2,20 @@
 
 This directory is the checked-in server-side boundary for `cfb26`.
 
-> **Deployment blocker:** the football schema and public read functions are now represented here, but the hosted development deployment also contains unrecovered internal legacy-import functions and the checked-in contract has not been push-validated. Do not run Convex push/deploy commands against the recorded environments until parity is reviewed and a development push is explicitly authorized. See [Deployment](../docs/wiki/guides/deployment.md).
+The checked-in contract was push-validated in development and deployed to production on 2026-08-22. Confirm the intended target before any later synchronization. See [Deployment](../docs/wiki/guides/deployment.md).
 
 ## Current contract
 
-| Source       | Export          | Purpose                                                            |
-| ------------ | --------------- | ------------------------------------------------------------------ |
-| `schema.ts`  | eight tables    | Declares the hosted player lifecycle, roster, program, and NFL model. |
-| `players.ts` | `search`        | Searches player display names with optional home-state filtering.  |
-| `players.ts` | `getProfile`    | Returns one player with recruiting, stints, career, movements, and draft outcome. |
-| `rosters.ts` | `list`          | Returns a bounded program roster, optionally by status and position. |
-| `rosters.ts` | `listMovements` | Returns a bounded season movement list, optionally by event kind.  |
+| Source             | Export          | Purpose                                                                                 |
+| ------------------ | --------------- | --------------------------------------------------------------------------------------- |
+| `schema.ts`        | nine tables     | Declares the lifecycle model plus per-season Michigan snap counts and PFF grades.       |
+| `players.ts`       | `search`        | Searches player display names with optional home-state filtering.                       |
+| `players.ts`       | `getProfile`    | Returns one player with recruiting, stints, career, seasonal stats, movement, and draft. |
+| `rosters.ts`       | `list`          | Returns a bounded program roster, optionally by status and position.                    |
+| `rosters.ts`       | `listMovements` | Returns a bounded season movement list, optionally by event kind.                       |
+| `seasonalStats.ts` | `listBySeason`  | Returns one season's participants plus rostered players with no source participation.   |
 
-All four public functions are unauthenticated reads. Internal legacy-import functions present in development are intentionally not reconstructed here.
+All five public functions are unauthenticated reads and are deployed in development and production. The obsolete internal legacy-import functions were deliberately retired during source alignment.
 
 ## Rules
 

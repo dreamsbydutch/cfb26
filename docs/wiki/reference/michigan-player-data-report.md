@@ -4,7 +4,9 @@
 
 ## Bottom line
 
-**Current hosted data (verified 2026-08-22):** the Michigan data is best read as a person-centered roster lifecycle ledger, not as a season-by-season statistics database. Its 3,084 documents describe 428 distinct players who entered, left, remain with, or are committed to Michigan across start seasons 2015–2027.
+**Current hosted data (verified 2026-08-22):** the Michigan data is a person-centered roster lifecycle ledger plus season participation history. Its 4,005 documents describe 428 canonical players across start seasons 2015–2027 and 921 Michigan player-season records from 2015–2025.
+
+`SnapCounts.json` is the tracked source for the hosted `seasonalPlayerStats` table. The import preserves every row, links 708 rows to canonical player IDs, and retains 213 rows under 113 source-only names where the lifecycle database has no safe canonical match.
 
 For each player, the model records an original recruiting profile, one Michigan stint, one Michigan career-to-date summary, one arrival event, an optional departure event, and an optional NFL entry outcome. It can support roster-construction, recruiting, retention, transfer, participation, and draft-path analysis. It cannot by itself explain causation, performance by season, injuries, awards, NIL, game context, or production before or after Michigan.
 
@@ -32,6 +34,7 @@ The normalized player documents were created in 22 migration batches over 12.75 
 | `recruitingProfiles`     |       428 | One original recruiting profile and Michigan acquisition classification per player |
 | `rosterStints`           |       428 | One Michigan stint and snapshot roster state per player                            |
 | `programCareerSummaries` |       428 | One Michigan cumulative participation/rating summary per player                    |
+| `seasonalPlayerStats`    |       921 | One participating Michigan player in one covered season                            |
 | `movementEvents`         |       720 | One arrival for every player plus one departure for each departed player           |
 | `draftOutcomes`          |       109 | One concrete drafted or UDFA outcome for a subset of players                       |
 | `programs`               |       115 | Michigan plus every represented transfer origin/destination label                  |
@@ -72,6 +75,7 @@ players (428)
 |-- 1 recruitingProfiles       original prospect data + Michigan entry type
 |-- 1 rosterStints             Michigan tenure + snapshot status
 |-- 1 programCareerSummaries   Michigan cumulative games/snaps/rating
+|-- 0..11 seasonalPlayerStats  Michigan season snaps + PFF grade when linked
 |-- 1..2 movementEvents        exactly one arrival; optional departure
 `-- 0..1 draftOutcomes         only a drafted or UDFA result
 
@@ -154,6 +158,27 @@ Games and snaps are internally coherent: the same 128 players have zero for both
 
 No committed player had the PFF field updated, and many active/recent cohorts are right-censored. Comparing raw career totals across entry cohorts without tenure adjustment will favor older, completed careers.
 
+### Seasonal participation and PFF grades
+
+The checked-in `SnapCounts.json` source has one row for every Michigan player who participated in a covered season. It contains 921 unique `(Year, Player)` rows across 415 source names, with no duplicate player-season keys:
+
+| Season | Rows | Season | Rows |
+| -----: | ---: | -----: | ---: |
+|   2015 |   67 |   2021 |  101 |
+|   2016 |   86 |   2022 |  102 |
+|   2017 |   71 |   2023 |   94 |
+|   2018 |   79 |   2024 |   81 |
+|   2019 |   76 |   2025 |   97 |
+|   2020 |   67 |        |      |
+
+`seasonalPlayerStats` stores typed season, games played, snaps, PFF grade, offense/defense phase, season position, source number label, recruiting year/type, and composite rating. `sourceKey` is the stable `pff:<season>:<normalized-source-name>` import identity. Every imported row points to Michigan; `playerId` is optional so an incomplete lifecycle archive cannot force the loss of valid participation history.
+
+Exact-name matching plus two reviewed aliases links 708 rows across 302 source names to canonical players: `James Hudson III` maps to `James Hudson`, and `Randy Keumogne` maps to the existing misspelled canonical `Randy Keumonge`. The remaining 213 rows across 113 names are primarily older players, walk-ons, and transfers missing from the 428-player lifecycle table. They remain visible in the season view as source-only profiles; do not fabricate high-school, hometown, stint, or recruiting records to force a join.
+
+The source includes only participants: observed snaps range from 1 to 928 and observed PFF grades range from 25.7 to 96.2. For a canonical roster player whose stint covers a source season but has no row, the application presents zero snaps and a zero grade as the owner-defined absence value. That synthetic zero must be distinguished from the cumulative `recentRating` field, where zero historically meant “not updated.” Seasons after 2025 are outside the source coverage and must not be synthesized as zero-performance seasons.
+
+`Number` is preserved as `sourceNumber`, not parsed as a jersey number. Forty-nine values are PFF-style labels such as `# D07`, and one is `E42`; coercing them would either fail or invent jersey semantics.
+
 ### NFL entry outcome
 
 `draftOutcomes` records only concrete positive entry paths:
@@ -232,17 +257,17 @@ The direct columns are the Michigan-success view. The final column is the comple
 
 ## Analysis recipes and traps
 
-| Question                           | Recommended interpretation                                                                                  | Main trap                                                 |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Who is on the snapshot roster?     | Filter `rosterStints.status == active`; ignore depth values on commitments                                  | Combining 2027 commitments with active players            |
-| Who entered in a Michigan class?   | Group `startSeason` plus recruiting `source`                                                                | Grouping transfers by original `recruitingSeason`         |
-| How strong was a recruiting class? | Use ratings/top-end counts only among rated high-school recruits; report coverage                           | Treating `classRank` as talent or missing ratings as zero |
-| Who stayed or left?                | Follow arrival → stint → departure; compare only sufficiently mature cohorts                                | Calling active/right-censored players retained outcomes   |
-| Which season had exits?            | Use `endSeason` for final Michigan season or label event season as the following exit cycle                 | Treating a 2026 exit event as 2026 Michigan participation |
-| Who produced at Michigan?          | Use games/snaps; use only nonzero `recentRating` as a manually entered PFF value with an unspecified season | Treating zero as a rating or comparing unequal tenure     |
-| Did recruiting position change?    | Preserve exact labels and join through a separate, reviewed position-category map                           | Treating taxonomy drift as a true position conversion     |
-| Where did transfers come from/go?  | Follow `fromProgramId`/`toProgramId` after approved alias and spelling cleanup                              | Counting CMU/Central Michigan and misspellings separately |
-| Who reached the NFL from Michigan? | Require a next-year outcome and no transfer-out; retain later outcomes only as eventual history             | Crediting an outcome reached after another school         |
+| Question                           | Recommended interpretation                                                                                          | Main trap                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Who is on the snapshot roster?     | Filter `rosterStints.status == active`; ignore depth values on commitments                                          | Combining 2027 commitments with active players                     |
+| Who entered in a Michigan class?   | Group `startSeason` plus recruiting `source`                                                                        | Grouping transfers by original `recruitingSeason`                  |
+| How strong was a recruiting class? | Use ratings/top-end counts only among rated high-school recruits; report coverage                                   | Treating `classRank` as talent or missing ratings as zero          |
+| Who stayed or left?                | Follow arrival → stint → departure; compare only sufficiently mature cohorts                                        | Calling active/right-censored players retained outcomes            |
+| Which season had exits?            | Use `endSeason` for final Michigan season or label event season as the following exit cycle                         | Treating a 2026 exit event as 2026 Michigan participation          |
+| Who produced at Michigan?          | Prefer seasonal snaps/grades for 2015–2025; use cumulative summaries only for career totals outside that comparison | Mixing synthetic season zeroes with the cumulative rating sentinel |
+| Did recruiting position change?    | Preserve exact labels and join through a separate, reviewed position-category map                                   | Treating taxonomy drift as a true position conversion              |
+| Where did transfers come from/go?  | Follow `fromProgramId`/`toProgramId` after approved alias and spelling cleanup                                      | Counting CMU/Central Michigan and misspellings separately          |
+| Who reached the NFL from Michigan? | Require a next-year outcome and no transfer-out; retain later outcomes only as eventual history                     | Crediting an outcome reached after another school                  |
 
 Correlations between recruiting measures and later production should be stratified by entry source, position family, start cohort, and available tenure. Transfers carry development from prior programs, walk-ons have systematically missing recruiting ratings, and active/future players have incomplete Michigan careers. An unadjusted all-player correlation would combine incompatible populations.
 
@@ -256,6 +281,7 @@ Correlations between recruiting measures and later production should be stratifi
 - `CMU` and `Central Michigan` are separate programs; `Costal Carolina` and `Lousiana` are misspelled. The owner permits merging/correcting those minor errors in place. `N/A` and `JUCO` are categories rather than spelling mistakes and need explicit category treatment.
 - Current height/weight are complete for active and committed players but present for only 156 of 292 departed players. Historical body-size comparisons have status/era-biased missingness.
 - Jersey number is present for 264 players, including 110 active players, and absent for every committed player.
+- The hosted seasonal source links 302 of 415 source names to canonical players; 113 source-only names remain intentionally unlinked until reliable identity/lifecycle records are available.
 - Bryce Underwood's `redshirtSeasons` value was corrected from 1 to 0, and Owen Wafle's 2024 recruit rank was corrected from R26 to R25 in both normalized and legacy data.
 - Blank and dash are equivalent missing-data sentinels; no semantic distinction needs to be preserved during normalization.
 - All pro-career fields are empty remnants of an abandoned feature idea, so the dataset currently stops at NFL entry.

@@ -9,7 +9,7 @@
 - Access to the intended Convex deployment for live data/backend work.
 - Git for change review and collaboration.
 
-The recorded `dreamsbydutch:michigan` deployments currently have a [source-alignment blocker](deployment.md#source-alignment-blocker). Use the web-only development command below; do not run Convex synchronization against those environments yet.
+The recorded `dreamsbydutch:michigan` deployments match the checked-in Convex contract. Confirm the intended target before synchronizing backend source or data.
 
 ## First setup
 
@@ -33,11 +33,11 @@ npm run dev:web
 
 The script runs `vite dev` on port 3000. `/` reads the Michigan development deployment without pushing backend code.
 
-After the source-alignment blocker is resolved, `npm run dev` can restore the combined workflow. It runs `convex dev --start 'vite dev'`, which may synchronize backend functions, generate typed files, and then start Vite.
+For backend work, `npm run dev` runs `convex dev --start 'vite dev'`, synchronizes the configured development functions, regenerates typed files, and starts Vite.
 
 ## Working with an existing deployment
 
-A compatible deployment URL is enough for the web client to connect. Backend edits also require the Convex CLI to be authenticated and linked to that deployment. For the recorded football deployments, do not run a push until the remaining source-parity blocker is resolved and the operation is authorized.
+A compatible deployment URL is enough for the web client to connect. Backend edits also require the Convex CLI to be authenticated and linked to that deployment. Always verify the configured target before a push.
 
 Convex commonly writes local deployment metadata such as `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL` to `.env.local`. That file is ignored and must stay untracked.
 
@@ -51,7 +51,7 @@ Convex commonly writes local deployment metadata such as `CONVEX_DEPLOYMENT` and
 6. Update docs when contracts, behavior, commands, or structure changed.
 7. Run `npm run check` before handoff.
 
-After source alignment, a backend change with a linked deployment also requires:
+A backend change with a linked deployment also requires:
 
 ```powershell
 npx convex dev --once
@@ -69,7 +69,7 @@ Do not hand-edit generated files. Inspect their diffs when they are tracked, and
 
 ### Missing Convex URL
 
-If the roster fails to load, confirm the development deployment is reachable. If overriding it, confirm `.env.local` contains a compatible `VITE_CONVEX_URL` and restart the process; production currently has no public functions.
+If the roster fails to load, confirm the selected deployment is reachable. If overriding it, confirm `.env.local` contains a compatible `VITE_CONVEX_URL` and restart the process. Both recorded deployments expose the public functions.
 
 ### Convex prompts to create a project
 
@@ -85,4 +85,4 @@ Run `npm install` from the repository root. The Windows x64 Rolldown binding is 
 
 ### Types disagree after backend edits
 
-Do not patch `_generated`. While the recorded deployment blocker remains, stop and reconcile the source instead of pushing. After alignment, run `npx convex dev --once` against the intended deployment, then rerun `npm run typecheck`.
+Do not patch `_generated`. Run `npx convex dev --once` against the intended development deployment, then rerun `npm run typecheck`.

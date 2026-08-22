@@ -11,6 +11,7 @@
 | `docs/wiki/`        | Detailed source of product, architecture, guide, operations, reference, and ADR knowledge. | Update with behavior/contracts; maintain section indexes.                     |
 | `public/`           | Root-served icons and web manifest.                                                        | Use stable filenames referenced by root metadata.                             |
 | `scripts/`          | Dependency-free deterministic repository helpers.                                          | Keep scripts cross-platform where practical and document package entrypoints. |
+| `SnapCounts.json`   | Raw 2015–2025 Michigan season participation and PFF-grade source.                          | Preserve source values; transform through the checked-in preparation script.  |
 | `src/`              | React application, routes, providers, and styles.                                          | Keep browser/server boundaries compatible with TanStack Start.                |
 | `.env.example`      | Public environment-variable template.                                                      | Place names/placeholders only; never secrets.                                 |
 | `.gitignore`        | Local/build/secret exclusions.                                                             | Keep local environment and generated build output untracked.                  |
@@ -33,20 +34,21 @@
 | `src/router.tsx`        | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
 | `src/routes/__root.tsx` | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
 | `src/routes/index.tsx`  | `/` route definition, client-rendering policy, and route-level states.                                     |
-| `src/features/roster/`  | Michigan data hydration, view switching, search, roster lists, and player details.                         |
+| `src/features/roster/`  | Michigan data hydration, view switching, search, roster/season lists, and player details.                  |
 | `src/routeTree.gen.ts`  | Generated file-route registry; do not edit.                                                                |
 | `src/styles/app.css`    | Tailwind import and global base CSS.                                                                       |
 
 ## `convex/`
 
-| Path                   | Role                                                          |
-| ---------------------- | ------------------------------------------------------------- |
-| `convex/schema.ts`     | Declares the eight-table Michigan football model and indexes. |
-| `convex/players.ts`    | Player search and full-profile queries.                       |
-| `convex/rosters.ts`    | Roster and movement-list queries.                             |
-| `convex/tsconfig.json` | Convex runtime TypeScript settings.                           |
-| `convex/README.md`     | Local backend contract and maintenance rules.                 |
-| `convex/_generated/`   | Generated API/data-model/server types and Convex agent files. |
+| Path                      | Role                                                                  |
+| ------------------------- | --------------------------------------------------------------------- |
+| `convex/schema.ts`        | Declares the nine-table Michigan football model and indexes.          |
+| `convex/players.ts`       | Player search and full-profile queries.                               |
+| `convex/rosters.ts`       | Roster and movement-list queries.                                     |
+| `convex/seasonalStats.ts` | Season snap-count/PFF list query with zero-participation roster rows. |
+| `convex/tsconfig.json`    | Convex runtime TypeScript settings.                                   |
+| `convex/README.md`        | Local backend contract and maintenance rules.                         |
+| `convex/_generated/`      | Generated API/data-model/server types and Convex agent files.         |
 
 ## `public/`
 

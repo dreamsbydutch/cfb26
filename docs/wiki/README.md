@@ -23,9 +23,9 @@ This wiki is the durable source of truth for the application. It describes what 
 
 ## Current snapshot
 
-**Current:** `cfb26` is a one-route TanStack Start application. `/` is a responsive Michigan football personnel explorer backed by the hosted development deployment. It exposes all 428 players through current depth-chart, recruiting-class, draft-class, exact-position, search, and detailed profile views. Development and production contain the same eight-table schema and 3,084 documents as verified on 2026-08-22; production still has no deployed functions. The app has no authentication provider, automated tests, CI workflow, or attached Vercel project recorded in the repository.
+**Current:** `cfb26` is a one-route TanStack Start application. `/` is a responsive Michigan football personnel explorer with current depth-chart, recruiting-class, draft-class, exact-position, 2015–2025 season-stat, search, and detailed profile views. Development and production share the checked-in nine-table schema, 4,005 documents, and five public reads as verified on 2026-08-22. The app has no authentication provider, automated tests, CI workflow, or attached Vercel project recorded in the repository.
 
-**Planned:** review the recovered schema/public-read source against the hosted contract, recover or deliberately retire the internal legacy-import functions, validate a development push when explicitly authorized, then connect the deployment pipeline. Define the product audience, longer-term problem statement, and production data-access policy.
+**Planned:** connect and verify the Vercel deployment pipeline. Define the product audience, longer-term problem statement, and production data-access policy.
 
 **Undecided:** product audience, edit workflows, authentication policy, authorization model, final branding, analytics, and production service-level expectations.
 

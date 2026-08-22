@@ -13,18 +13,18 @@ The implemented core workflow is browsing Michigan player history by depth chart
 **Current**
 
 - `/` presents the 2026 depth chart immediately, then progressively loads recruiting, career, movement, and NFL details for all 428 players.
-- Users can browse by original recruiting class, NFL entry class, exact Michigan position, or the full searchable player index and open a detailed player drawer.
-- Checked-in Convex source represents the eight hosted football tables and four public read functions. It is not yet push-validated against development, and production has no functions.
+- Users can browse by original recruiting class, NFL entry class, exact Michigan position, 2015–2025 snap-count/PFF season, or the full searchable player index and open a detailed player drawer.
+- Checked-in Convex source matches the nine hosted football tables and five public read functions in development and production.
 - The app can be type-checked and production-built locally.
 - Repository guidance, task skills, and this wiki define the maintenance workflow.
 
-The current route is the first product vertical. It is read-only and uses the public development deployment while the release path remains blocked.
+The current route is the first product vertical. It is read-only and defaults to the public development deployment; the Vercel web release path is not connected yet.
 
 ## Foundation success criteria
 
 The foundation is ready for product work when:
 
-1. The recovered hosted football schema/public reads are reviewed and push-validated in development without losing the remaining internal functions.
+1. The hosted football schema/public reads remain synchronized through development-first Convex validation.
 2. A one-page product brief defines the primary user, problem, and explicit non-goals around the implemented browsing workflow.
 3. Authentication, authorization, and public-data policy are decided before writes or private data are introduced.
 4. Quality checks and deployment configuration run consistently in the target environment.
@@ -35,7 +35,7 @@ The foundation is ready for product work when:
 | ------------------------ | ------------- | ---------------------------------------------------------------------------------------- |
 | 0. Technical foundation  | **Complete**  | App builds; docs and agent workflows match the repository.                               |
 | 1. First vertical slice  | **Current**   | Michigan player browsing works end to end against development data.                      |
-| 2. Deployment connection | **Planned**   | Backend source parity is reviewed, validated in development, and deployed safely.        |
+| 2. Deployment connection | **Planned**   | Vercel is attached and the production web deployment is smoke-tested.                    |
 | 3. Product definition    | **Undecided** | Audience, broader problem, non-goals, and write workflows are approved.                  |
 | 4. Production hardening  | **Undecided** | Auth, tests, observability, accessibility, and release policy meet defined requirements. |
 

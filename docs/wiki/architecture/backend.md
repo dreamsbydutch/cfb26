@@ -8,13 +8,13 @@ Convex is the application's database, server-function runtime, real-time transpo
 
 ## Checked-in data model
 
-`convex/schema.ts` now declares the same eight football tables and 19 custom indexes (18 database indexes plus one search index) recorded in the hosted deployments. The model covers canonical players, original recruiting profiles, Michigan roster stints, cumulative Michigan career summaries, arrival/departure events, NFL entry outcomes, represented programs, and retained legacy migration rows.
+`convex/schema.ts` declares nine football tables and 22 custom indexes (21 database indexes plus one search index). The model covers canonical players, original recruiting profiles, Michigan roster stints, cumulative Michigan career summaries, season-level snap counts and PFF grades, arrival/departure events, NFL entry outcomes, represented programs, and retained legacy migration rows.
 
 The detailed table grains, field meanings, coverage, and caveats live in [Michigan player data interpretation](../reference/michigan-player-data-report.md). The schema has no user ownership fields because the current product is read-only and unauthenticated.
 
 ## Hosted deployment data model
 
-**Current external state (verified 2026-08-22):** the `dreamsbydutch:michigan` development and production deployments share the following declared schema and data. Production was seeded from a development snapshot, preserving document IDs and creation times. The same seven-document Beasley removal and five Underwood/Wafle field corrections were later applied to both deployments.
+**Current external state (verified 2026-08-22):** the `dreamsbydutch:michigan` development and production deployments share the following declared schema and data. Production was seeded from a development snapshot, preserving document IDs and creation times. The same seven-document Beasley removal, five Underwood/Wafle field corrections, and 921-row seasonal-stat import were applied to both deployments.
 
 | Table                    | Documents | Declared indexes                                                                                                      |
 | ------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -26,21 +26,21 @@ The detailed table grains, field meanings, coverage, and caveats live in [Michig
 | `programs`               | 115       | `by_key`                                                                                                              |
 | `recruitingProfiles`     | 428       | `by_playerId`, `by_recruitingSeason_and_source`                                                                       |
 | `rosterStints`           | 428       | `by_legacyKey`, `by_playerId_and_startSeason`, `by_programId_and_startSeason`, `by_programId_and_status_and_position` |
+| `seasonalPlayerStats`    | 921       | `by_playerId_and_season`, `by_programId_and_season_and_snaps`, `by_sourceKey`                                         |
 
-The development deployment also exposes football query and legacy-import functions. The production migration copied only schema, indexes, and data, so production has no deployed application functions yet. See the [production seed record](../operations/convex-production-seed-2026-08-18.md).
-
-This hosted model is represented by the current `convex/schema.ts`. Do not push this repository to either deployment yet: source parity has not been reviewed through a development push and the internal legacy-import function source remains unrecovered.
+Both deployments expose the five checked-in football queries. The development push deliberately retired the unrecovered internal legacy-import functions after the owner authorized alignment. See the [production seed record](../operations/convex-production-seed-2026-08-18.md).
 
 ## Current functions
 
-| Function                | Kind  | Arguments                                     | Result                                                                                  |
-| ----------------------- | ----- | --------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `players.search`        | Query | `{ searchText, homeState?, limit? }`          | Bounded display-name search with optional home-state filter.                            |
-| `players.getProfile`    | Query | `{ playerId }`                                | Player plus recruiting profile, stints, career summaries, movements, and draft outcome. |
-| `rosters.list`          | Query | `{ programKey?, status?, position?, limit? }` | Bounded roster entries joined to canonical player identity.                             |
-| `rosters.listMovements` | Query | `{ programKey?, season, kind?, limit? }`      | Bounded movement events joined to player identity.                                      |
+| Function                     | Kind  | Arguments                                     | Result                                                                                                   |
+| ---------------------------- | ----- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `players.search`             | Query | `{ searchText, homeState?, limit? }`          | Bounded display-name search with optional home-state filter.                                             |
+| `players.getProfile`         | Query | `{ playerId }`                                | Player plus recruiting, stints, career summaries, seasonal stats, movements, and draft outcome.          |
+| `rosters.list`               | Query | `{ programKey?, status?, position?, limit? }` | Bounded roster entries joined to canonical player identity.                                              |
+| `rosters.listMovements`      | Query | `{ programKey?, season, kind?, limit? }`      | Bounded movement events joined to player identity.                                                       |
+| `seasonalStats.listBySeason` | Query | `{ programKey?, season }`                     | Bounded season stats merged with canonical roster players who have no participation record for the year. |
 
-All four checked-in functions are public, read-only, and argument-validated. They do not authenticate or authorize callers. The development deployment exposes equivalent public identifiers plus internal legacy-import functions; production still has no deployed functions.
+All five functions are public, read-only, argument-validated, and deployed in both environments. They do not authenticate or authorize callers.
 
 ## Generated contract
 
@@ -63,8 +63,6 @@ Never patch these outputs. Change schema/functions and run the Convex CLI.
 - Establish authentication and ownership rules before storing private or per-user data.
 
 ## Development loop
-
-Use this loop only after the hosted source-alignment blocker above is resolved.
 
 1. Attach the intended deployment through the Convex CLI.
 2. Edit `schema.ts` and function modules.

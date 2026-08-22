@@ -34,8 +34,9 @@ TanStack Start renders the React application and owns file-based routing. `getRo
 1. A browser requests `/`.
 2. The client-rendered index route makes one bounded `rosters.list` read for active players and paints the current depth chart.
 3. A commitment read plus position-specific departed reads hydrate in the background to work around the hosted function's 200-row cap, then the client deduplicates all 428 roster entries by player ID.
-4. Up to 12 concurrent `players.getProfile` reads progressively add recruiting, career, movement, and draft details as players are discovered.
-5. Search and the five views derive from the loaded typed records without a separate REST layer or client data copy.
+4. Up to 12 concurrent `players.getProfile` reads progressively add recruiting, career, seasonal, movement, and draft details as players are discovered.
+5. `seasonalStats.listBySeason` reads one bounded 2015–2025 season and merges participants with zero-snap roster players.
+6. Search and the six views derive from the typed records without a separate REST layer or client data copy.
 
 ## Build and deployment path
 
@@ -50,7 +51,7 @@ flowchart LR
 
 `vercel.json` defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. No Vercel project identifier or production URL is stored in the repository today.
 
-Do not attach the current Vercel command to the recorded Convex project until the [source-alignment blocker](../guides/deployment.md#source-alignment-blocker) is resolved; it could remove the remaining internal legacy-import functions or otherwise change the unvalidated hosted contract.
+The Convex source is aligned in development and production. Vercel project ownership, credentials, and the production web URL still need to be configured and verified before the hosted web pipeline is considered connected.
 
 ## Deliberate boundaries
 

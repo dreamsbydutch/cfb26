@@ -33,9 +33,9 @@ Global providers belong in `src/router.tsx`; document-level metadata and markup 
 
 ## Current route
 
-| URL | File                   | Role                                                                                     | Convex dependency                     |
-| --- | ---------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------- |
-| `/` | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`. |
+| URL | File                   | Role                                                                                     | Convex dependency                                                   |
+| --- | ---------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `/` | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
 
 `src/routeTree.gen.ts` is generated from route filenames. Do not edit it. Running development or build tooling regenerates it when route files change.
 
@@ -44,6 +44,7 @@ Global providers belong in `src/router.tsx`; document-level metadata and markup 
 - One bounded active-roster read uses `useSuspenseQuery(convexQuery(api.rosters.list, args))` so the current depth chart paints first.
 - Commitments and the historical archive hydrate in the background. The hosted list function caps one result at 200, so departed players use bounded position-specific reads and are deduplicated by player ID.
 - Full profiles hydrate with a 12-request client concurrency limit through `players.getProfile`; the UI exposes progress and retry state while continuing to show roster data.
+- The season-stat view reads one indexed 2015–2025 season at a time through React Query. It merges source participants with canonical roster players, treating a missing participation row as zero snaps and a zero grade.
 - Mutations use `useMutation(api.module.function)` from `convex/react`.
 - Actions use `useAction(api.module.function)` from `convex/react`.
 - Generated references come from `convex/_generated/api`.

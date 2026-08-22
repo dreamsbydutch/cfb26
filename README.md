@@ -1,6 +1,6 @@
 # cfb26
 
-`cfb26` is a Michigan football personnel explorer built with TanStack Start and Convex. It presents all 428 hosted players through the current depth chart, recruiting and draft classes, exact position groups, search, and detailed player profiles.
+`cfb26` is a Michigan football personnel explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, exact position groups, 2015–2025 snap counts and PFF grades, search, and detailed player profiles.
 
 ## Quick start
 
@@ -11,7 +11,7 @@ npm install
 npm run dev:web
 ```
 
-The browser defaults to the public Michigan development deployment. Set `VITE_CONVEX_URL` in an ignored `.env.local` only to use another compatible deployment. Use the web-only command for now: pushing or deploying the recovered backend remains blocked pending parity review and explicit authorization. See [Deployment](docs/wiki/guides/deployment.md).
+The browser defaults to the public Michigan development deployment. Set `VITE_CONVEX_URL` in an ignored `.env.local` only to use another compatible deployment. Use `npm run dev` when authenticated Convex source synchronization is intended. See [Deployment](docs/wiki/guides/deployment.md).
 
 ## Common commands
 

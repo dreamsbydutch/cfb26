@@ -24,22 +24,23 @@
 
 No local environment file is required for the current read-only explorer. An override belongs in `.env.local` or provider-managed environment settings.
 
-The known deployment URLs are recorded in [Deployment](../guides/deployment.md). Do not configure the current source to push to them until the documented source-alignment blocker is resolved.
+The known deployment URLs are recorded in [Deployment](../guides/deployment.md). Confirm the intended environment before running any command that synchronizes schema, functions, or data.
 
 ## Package scripts
 
-| Script                                       | Expansion                       | Notes                                                                 |
-| -------------------------------------------- | ------------------------------- | --------------------------------------------------------------------- |
-| `npm run dev`                                | `convex dev --start 'vite dev'` | Requires/establishes Convex CLI configuration, then serves Vite.      |
-| `npm run dev:web`                            | `vite dev`                      | Starts the browser app without pushing Convex code.                   |
-| `npm run typecheck`                          | `tsc --noEmit`                  | Checks root includes: `src`, `convex`, and Vite config.               |
-| `npm run lint`                               | typecheck, then ESLint          | Uses TanStack and Convex recommended rules.                           |
-| `npm run build`                              | typecheck, then `vite build`    | Produces client and SSR/server bundles.                               |
-| `npm run start`                              | `vite preview`                  | Previews a prebuilt app locally; runtime environment must be present. |
-| `npm run docs:check`                         | local Node link checker         | Scans maintained Markdown and ignores generated/vendor/build trees.   |
-| `npm run preview:find -- <owner/repo> <sha>` | GitHub deployment lookup        | Resolves the direct Vercel preview URL for an exact commit SHA.       |
-| `npm run check`                              | lint, docs links, Vite build    | Standard full local gate.                                             |
-| `npm run format`                             | `prettier --write .`            | Mutates files; inspect the resulting diff.                            |
+| Script                                                         | Expansion                        | Notes                                                                                            |
+| -------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `npm run dev`                                                  | `convex dev --start 'vite dev'`  | Requires/establishes Convex CLI configuration, then serves Vite.                                 |
+| `npm run dev:web`                                              | `vite dev`                       | Starts the browser app without pushing Convex code.                                              |
+| `npm run typecheck`                                            | `tsc --noEmit`                   | Checks root includes: `src`, `convex`, and Vite config.                                          |
+| `npm run lint`                                                 | typecheck, then ESLint           | Uses TanStack and Convex recommended rules.                                                      |
+| `npm run build`                                                | typecheck, then `vite build`     | Produces client and SSR/server bundles.                                                          |
+| `npm run start`                                                | `vite preview`                   | Previews a prebuilt app locally; runtime environment must be present.                            |
+| `npm run docs:check`                                           | local Node link checker          | Scans maintained Markdown and ignores generated/vendor/build trees.                              |
+| `npm run data:prepare-snaps -- <players.json> <programs.json>` | seasonal-stat import preparation | Validates `SnapCounts.json`, links known players, and writes an ignored Convex JSON import file. |
+| `npm run preview:find -- <owner/repo> <sha>`                   | GitHub deployment lookup         | Resolves the direct Vercel preview URL for an exact commit SHA.                                  |
+| `npm run check`                                                | lint, docs links, Vite build     | Standard full local gate.                                                                        |
+| `npm run format`                                               | `prettier --write .`             | Mutates files; inspect the resulting diff.                                                       |
 
 ## Core dependencies
 

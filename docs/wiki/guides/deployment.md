@@ -14,19 +14,30 @@ npx convex deploy --cmd 'npm run build'
 
 This sequence deploys the backend associated with the supplied Convex credentials and then builds the TanStack Start app against that deployment.
 
-### Source-alignment blocker
+### Source alignment
 
-The checked-in backend now represents the hosted eight-table football schema and reimplements the four public development read functions. Production was intentionally seeded from development schema/data on 2026-08-18 but still has no functions. Development also contains internal legacy-import functions that have not been recovered.
+**Resolved 2026-08-22:** the checked-in nine-table schema and five public reads were push-validated in development and deployed to production. The owner authorized retiring the unrecovered internal legacy-import functions. Both environments were then populated with the same 921 seasonal rows and verified at 4,005 documents.
 
-Do not run `npm run dev`, `npx convex dev`, `npx convex deploy`, or a Vercel build against these deployments until schema/public-function parity is reviewed, the internal-function difference is resolved, and a development push is explicitly authorized. A URL alone is not permission to overwrite backend configuration.
+Later backend changes still follow development-first validation. A URL alone is not permission to overwrite backend configuration; confirm the exact environment and operation before synchronization.
+
+### Seasonal-data refresh
+
+`SnapCounts.json` is the tracked source for the hosted `seasonalPlayerStats` table. To refresh it, roll out one environment at a time:
+
+1. Export all target `players` and `programs` documents as JSON arrays into ignored `.tmp/players.json` and `.tmp/programs.json` files.
+2. Run `npm run data:prepare-snaps -- .tmp/players.json .tmp/programs.json`.
+3. Confirm the preparation report says 921 rows and review its linked/source-only counts for that target.
+4. Push the schema and functions to development with `npx convex dev --once`; deploy production only after development verification.
+5. Import `.tmp/seasonal-player-stats.json` into `seasonalPlayerStats` with `npx convex import --table seasonalPlayerStats --replace .tmp/seasonal-player-stats.json` against the same explicit deployment.
+6. Verify 921 table rows, all 11 season counts, `seasonalStats.listBySeason`, linked player profiles, and source-only names before considering another environment.
+
+`--replace` is intentional because the preparation output is a complete deterministic table snapshot. Never reuse a generated file across deployments unless their player/program IDs were verified identical immediately before import.
 
 ## Attach local development to Convex
 
-This workflow is blocked for the recorded deployments until the source-alignment blocker above is resolved.
-
 1. Obtain the exact Convex deployment URL and confirm which project/deployment it represents.
 2. Put the URL in untracked `.env.local` as `VITE_CONVEX_URL` when overriding the development fallback.
-3. Run `npm run dev:web` so no backend push occurs.
+3. Run `npm run dev:web` for web-only work or `npm run dev` when authenticated development synchronization is intended.
 4. Visit `/`, confirm 428 players and 109 recorded NFL entries load, exercise every view, search, and a player profile.
 
 A URL connects the browser. CLI authentication/deployment selection is additionally required to push schema and function changes.
@@ -52,7 +63,7 @@ Preview publishing does not authorize or trigger a production promotion. If the 
 5. Commit and push only when authorized.
 6. Trigger or observe the Vercel build.
 7. Verify the Convex deploy step and both client/server build bundles.
-8. Smoke-test `/`, all five roster views, search, and a player profile against production.
+8. Smoke-test `/`, all six roster views, search, a linked player profile, a zero-snap season row, and a source-only season row against production.
 9. Record the production URL and ownership here once a project is attached.
 
 ## Failure and rollback
@@ -71,7 +82,8 @@ Preview publishing does not authorize or trigger a production promotion. If the 
 | Convex project           | `dreamsbydutch:michigan`                                                                        |
 | Development deployment   | `https://adjoining-opossum-710.convex.cloud`                                                    |
 | Production deployment    | `https://doting-chipmunk-7.convex.cloud`                                                        |
-| Production data mirror   | 2026-08-22; 8 tables and 3,084 documents, live-verified identical to development                |
-| Backend source alignment | **Blocked:** schema/public reads are represented; internal functions and push validation remain |
+| Production data mirror   | 2026-08-22; 9 tables and 4,005 documents, live-verified identical to development                |
+| Seasonal data extension  | 921 rows: 708 linked to canonical players and 213 preserved as source-only records              |
+| Backend source alignment | **Current:** five public reads deployed in both environments; obsolete internal imports retired |
 | Vercel project           | **Undecided / not stored in repo**                                                              |
 | Production URL           | **Undecided**                                                                                   |

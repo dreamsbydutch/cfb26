@@ -30,9 +30,11 @@ Convex snapshots were taken for source development, pre-migration production, po
 
 ## Scope boundary
 
+This section describes the 2026-08-18 seed operation. On 2026-08-22, the owner authorized source alignment: development was push-validated, the obsolete internal legacy-import functions were retired, all five public reads were deployed to production, and both environments received the identical 921-row seasonal table.
+
 The migration copied schema, indexes, database documents, and file storage (empty). It did **not** copy deployment environment variables or the development deployment's functions. Production therefore has the data model but no public/internal application functions.
 
-The checked-in `convex/` directory now represents the hosted schema and public football reads, but the development deployment's internal legacy-import function source remains unrecovered and no push-validation has occurred. Running development/deployment commands could remove those functions or change hosted configuration. Review parity and authorize a development push before attaching local development or Vercel.
+The checked-in `convex/` directory now matches the nine-table, five-query contract deployed to both environments. The Vercel web project remains unconfigured.
 
 ## Recovery
 
