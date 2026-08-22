@@ -21,7 +21,12 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'A new beginning — T3 / Convex',
+        title: 'Michigan Football Personnel Archive',
+      },
+      {
+        name: 'description',
+        content:
+          'Explore Michigan football players by depth chart, recruiting class, draft class, and position.',
       },
     ],
     links: [
@@ -43,7 +48,7 @@ export const Route = createRootRouteWithContext<{
         sizes: '16x16',
         href: '/favicon-16x16.png',
       },
-      { rel: 'manifest', href: '/site.webmanifest', color: '#fffff' },
+      { rel: 'manifest', href: '/site.webmanifest', color: '#00274c' },
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),

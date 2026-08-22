@@ -8,7 +8,8 @@
  * @module
  */
 
-import type * as myFunctions from "../myFunctions.js";
+import type * as players from "../players.js";
+import type * as rosters from "../rosters.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +18,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  myFunctions: typeof myFunctions;
+  players: typeof players;
+  rosters: typeof rosters;
 }>;
 
 /**
