@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { SeasonStats } from './SeasonStats'
 import { useMichiganRoster } from './useMichiganRoster'
 import type { EnrichedPlayer, PlayerProfile } from './useMichiganRoster'
 import type { ReactNode } from 'react'
 
-type View = 'depth' | 'recruiting' | 'draft' | 'positions' | 'players'
+type View = 'depth' | 'recruiting' | 'draft' | 'positions' | 'snaps' | 'players'
 
 const views: Array<{ id: View; label: string }> = [
   { id: 'depth', label: 'Depth chart' },
   { id: 'recruiting', label: 'Recruit classes' },
   { id: 'draft', label: 'Draft classes' },
   { id: 'positions', label: 'Positions' },
+  { id: 'snaps', label: 'Season stats' },
   { id: 'players', label: 'All players' },
 ]
 
@@ -212,7 +214,7 @@ export function RosterApp() {
             retry={retryProfiles}
           />
 
-          {visiblePlayers.length === 0 ? (
+          {view !== 'snaps' && visiblePlayers.length === 0 ? (
             <EmptySearch clear={() => setSearch('')} />
           ) : (
             <>
@@ -227,6 +229,13 @@ export function RosterApp() {
               )}
               {view === 'positions' && (
                 <PositionLists players={visiblePlayers} select={setSelected} />
+              )}
+              {view === 'snaps' && (
+                <SeasonStats
+                  players={players}
+                  search={normalizedSearch}
+                  select={setSelected}
+                />
               )}
               {view === 'players' && (
                 <AllPlayers players={visiblePlayers} select={setSelected} />
@@ -536,7 +545,8 @@ function DraftClasses({
                   drafted ·{' '}
                   {
                     entries.filter(
-                      (entry) => entry.profile.draft?.status === 'udfa',
+                      (entry) =>
+                        entry.profile.draft?.status === 'undrafted_free_agent',
                     ).length
                   }{' '}
                   UDFA
@@ -1007,6 +1017,10 @@ function PlayerDrawer({
                 ) : null}
               </DetailSection>
 
+              <DetailSection title="Season-by-season production">
+                <SeasonHistory entry={entry} profile={profile} />
+              </DetailSection>
+
               <DetailSection title="Movement timeline">
                 <ol className="space-y-3">
                   {profile.movements.map((movement) => (
@@ -1049,6 +1063,73 @@ function PlayerDrawer({
         </div>
       </aside>
     </div>
+  )
+}
+
+function SeasonHistory({
+  entry,
+  profile,
+}: {
+  entry: EnrichedPlayer
+  profile: PlayerProfile
+}) {
+  const firstSeason = Math.max(2015, entry.stint.startSeason)
+  const finalSeason = Math.min(2025, entry.stint.endSeason ?? 2025)
+
+  if (firstSeason > finalSeason) {
+    return (
+      <p className="text-sm leading-6 text-[#111820]/50">
+        Seasonal PFF data is available for 2015–2025; this player’s Michigan
+        tenure falls outside that range.
+      </p>
+    )
+  }
+
+  const statsBySeason = new Map(
+    profile.seasonalStats.map((stat) => [stat.season, stat]),
+  )
+  const rows = Array.from(
+    { length: finalSeason - firstSeason + 1 },
+    (_, index) => finalSeason - index,
+  )
+
+  return (
+    <>
+      <div className="overflow-hidden rounded-xl border border-[#00274c]/10">
+        <div className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr] gap-2 bg-[#00274c] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white/60">
+          <span>Season</span>
+          <span>Position</span>
+          <span>Snaps</span>
+          <span>Grade</span>
+        </div>
+        <div className="divide-y divide-[#00274c]/8">
+          {rows.map((season) => {
+            const stat = statsBySeason.get(season)
+            return (
+              <div
+                key={season}
+                className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr] items-center gap-2 px-3 py-2.5 text-sm"
+              >
+                <span className="font-black text-[#9a6700]">{season}</span>
+                <span className="font-bold text-[#00274c]">
+                  {stat?.position ?? entry.stint.position}
+                </span>
+                <span className="font-semibold text-[#111820]/65">
+                  {(stat?.snaps ?? 0).toLocaleString()}
+                </span>
+                <span className="font-black text-[#00274c]">
+                  {(stat?.pffRating ?? 0).toFixed(1)}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      <p className="mt-3 text-xs leading-5 text-[#111820]/45">
+        A zero indicates that the player has no participation row in the source
+        for that roster season.
+      </p>
+    </>
   )
 }
 

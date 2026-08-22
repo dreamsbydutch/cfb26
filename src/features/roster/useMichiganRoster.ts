@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
 import { useConvex } from 'convex/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -9,6 +9,9 @@ export type RosterEntry = FunctionReturnType<typeof api.rosters.list>[number]
 export type PlayerProfile = NonNullable<
   FunctionReturnType<typeof api.players.getProfile>
 >
+export type SeasonStatEntry = FunctionReturnType<
+  typeof api.seasonalStats.listBySeason
+>[number]
 
 export type EnrichedPlayer = RosterEntry & {
   profile: PlayerProfile | undefined
@@ -179,4 +182,13 @@ export function useMichiganRoster() {
     retryRoster: () => setRosterRetryKey((value) => value + 1),
     retryProfiles: () => setRetryKey((value) => value + 1),
   }
+}
+
+export function useSeasonalStats(season: number) {
+  return useQuery(
+    convexQuery(api.seasonalStats.listBySeason, {
+      programKey: 'michigan',
+      season,
+    }),
+  )
 }
