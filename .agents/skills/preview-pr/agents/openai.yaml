@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Publish Preview PR'
+  short_description: 'Turn completed changes into a Vercel preview PR'
+  default_prompt: 'Use $preview-pr to publish the completed goal as a reviewed preview pull request.'
