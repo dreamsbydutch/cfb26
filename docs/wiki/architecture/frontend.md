@@ -44,7 +44,8 @@ Global providers belong in `src/router.tsx`; document-level metadata and markup 
 - One bounded active-roster read uses `useSuspenseQuery(convexQuery(api.rosters.list, args))` so the current depth chart paints first.
 - Commitments and the historical archive hydrate in the background. The hosted list function caps one result at 200, so departed players use bounded position-specific reads and are deduplicated by player ID.
 - Full profiles hydrate with a 12-request client concurrency limit through `players.getProfile`; the UI exposes progress and retry state while continuing to show roster data.
-- The season-stat view reads one indexed 2015–2025 season at a time through React Query. It merges source participants with canonical roster players, treating a missing participation row as zero snaps and a zero grade.
+- The season-stat view reads one indexed 2015–2025 season at a time through React Query. It merges source participants with canonical roster players, treats a missing row as zero games, snaps, and grade, and names the season leaders.
+- Player profiles derive career totals and peak seasons from the same seasonal records, then show every Michigan season in a compact production table.
 - Mutations use `useMutation(api.module.function)` from `convex/react`.
 - Actions use `useAction(api.module.function)` from `convex/react`.
 - Generated references come from `convex/_generated/api`.
@@ -55,7 +56,9 @@ React Query manages suspense/cache behavior for the roster reads while the Conve
 
 Tailwind CSS 4 is imported in `src/styles/app.css` through the Vite Tailwind plugin. The global layer sets the system sans-serif stack, rendering preferences, body margin/minimum width, and light/dark text/background defaults.
 
-The explorer uses Michigan navy and maize with warm-neutral surfaces, compact roster tables, serif display headings, and responsive horizontal filter navigation. It is an implemented product direction, not final approved branding.
+The explorer uses Michigan navy and maize with warm-neutral surfaces, compact roster tables, serif display headings, and responsive horizontal filter navigation. Solid headings and restrained backgrounds take priority over gradients. Flat sections and dividers take priority over nested cards.
+
+Keep the vertical rhythm tight. Let the outer container own page padding; inner sections should add only the space needed to separate their content. Do not repeat padding or margins at every level of the component tree. It is an implemented product direction, not final approved branding.
 
 ## Adding or changing a route
 

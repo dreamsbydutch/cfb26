@@ -819,7 +819,6 @@ function PlayerDrawer({
   }, [close])
 
   const recruiting = profile?.recruiting
-  const summary = profile?.summaries[0]
   const draft = profile?.draft
 
   return (
@@ -852,7 +851,7 @@ function PlayerDrawer({
           </button>
         </div>
 
-        <div className="bg-[#00274c] px-5 pb-8 pt-4 text-white sm:px-7">
+        <div className="bg-[#00274c] px-5 pb-5 pt-3 text-white sm:px-7">
           <div className="flex items-start gap-4">
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-[#ffcb05] font-serif text-2xl font-black text-[#00274c]">
               {entry.stint.jerseyNumber ?? entry.stint.position}
@@ -873,7 +872,7 @@ function PlayerDrawer({
           </div>
         </div>
 
-        <div className="space-y-5 p-5 sm:p-7">
+        <div className="space-y-4 p-4 sm:p-5">
           <DetailSection title="Michigan roster">
             <DetailGrid>
               <Detail
@@ -910,6 +909,14 @@ function PlayerDrawer({
               <Detail
                 label="Extra eligibility"
                 value={`${entry.stint.redshirtSeasons} season${entry.stint.redshirtSeasons === 1 ? '' : 's'}`}
+              />
+              <Detail
+                label="Departure group"
+                value={
+                  entry.stint.departureClass && entry.stint.departureRank
+                    ? `${entry.stint.departureClass}${entry.stint.departureRank}`
+                    : undefined
+                }
               />
             </DetailGrid>
           </DetailSection>
@@ -988,41 +995,12 @@ function PlayerDrawer({
                 )}
               </DetailSection>
 
-              <DetailSection title="Michigan career">
-                <DetailGrid>
-                  <Detail label="Games" value={summary?.gamesPlayed} />
-                  <Detail
-                    label="Snaps"
-                    value={summary?.snaps.toLocaleString()}
-                  />
-                  <Detail
-                    label="Recent PFF rating"
-                    value={
-                      summary?.recentRating ? summary.recentRating : undefined
-                    }
-                  />
-                  <Detail
-                    label="Departure group"
-                    value={
-                      entry.stint.departureClass && entry.stint.departureRank
-                        ? `${entry.stint.departureClass}${entry.stint.departureRank}`
-                        : undefined
-                    }
-                  />
-                </DetailGrid>
-                {summary?.recentRating ? (
-                  <p className="mt-3 text-xs leading-5 text-[#111820]/45">
-                    Manually entered PFF rating; the rated season is not stored.
-                  </p>
-                ) : null}
-              </DetailSection>
-
-              <DetailSection title="Season-by-season production">
+              <DetailSection title="Michigan production">
                 <SeasonHistory entry={entry} profile={profile} />
               </DetailSection>
 
               <DetailSection title="Movement timeline">
-                <ol className="space-y-3">
+                <ol className="space-y-2">
                   {profile.movements.map((movement) => (
                     <li
                       key={movement._id}
@@ -1078,9 +1056,8 @@ function SeasonHistory({
 
   if (firstSeason > finalSeason) {
     return (
-      <p className="text-sm leading-6 text-[#111820]/50">
-        Seasonal PFF data is available for 2015–2025; this player’s Michigan
-        tenure falls outside that range.
+      <p className="text-sm leading-5 text-[#111820]/50">
+        Season data covers 2015–2025.
       </p>
     )
   }
@@ -1092,13 +1069,40 @@ function SeasonHistory({
     { length: finalSeason - firstSeason + 1 },
     (_, index) => finalSeason - index,
   )
+  const recordedStats = profile.seasonalStats
+    .filter((stat) => stat.season >= firstSeason && stat.season <= finalSeason)
+    .sort((a, b) => b.season - a.season)
+  const totalGames = recordedStats.reduce(
+    (total, stat) => total + stat.gamesPlayed,
+    0,
+  )
+  const totalSnaps = recordedStats.reduce(
+    (total, stat) => total + stat.snaps,
+    0,
+  )
+  const peakGrade = recordedStats.reduce(
+    (best, stat) => (stat.pffRating > best ? stat.pffRating : best),
+    0,
+  )
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-[#00274c]/10">
-        <div className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr] gap-2 bg-[#00274c] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white/60">
-          <span>Season</span>
-          <span>Position</span>
+      <p className="border-l-2 border-[#ffcb05] pl-3 text-sm font-semibold leading-5 text-[#00274c]">
+        {careerNarrative(recordedStats)}
+      </p>
+
+      <dl className="mt-3 grid grid-cols-4 divide-x divide-[#00274c]/10 border-y border-[#00274c]/10">
+        <ProductionMetric label="Seasons" value={recordedStats.length} />
+        <ProductionMetric label="Games" value={totalGames} />
+        <ProductionMetric label="Snaps" value={totalSnaps.toLocaleString()} />
+        <ProductionMetric label="High grade" value={peakGrade.toFixed(1)} />
+      </dl>
+
+      <div className="mt-3 overflow-hidden border-y border-[#00274c]/10">
+        <div className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] gap-2 bg-[#00274c] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white/65">
+          <span>Year</span>
+          <span>Pos</span>
+          <span>GP</span>
           <span>Snaps</span>
           <span>Grade</span>
         </div>
@@ -1108,16 +1112,19 @@ function SeasonHistory({
             return (
               <div
                 key={season}
-                className="grid grid-cols-[0.8fr_0.8fr_0.8fr_0.8fr] items-center gap-2 px-3 py-2.5 text-sm"
+                className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] items-center gap-2 px-3 py-2 text-sm"
               >
                 <span className="font-black text-[#9a6700]">{season}</span>
                 <span className="font-bold text-[#00274c]">
                   {stat?.position ?? entry.stint.position}
                 </span>
-                <span className="font-semibold text-[#111820]/65">
+                <span className="font-semibold tabular-nums text-[#111820]/65">
+                  {stat?.gamesPlayed ?? 0}
+                </span>
+                <span className="font-semibold tabular-nums text-[#111820]/65">
                   {(stat?.snaps ?? 0).toLocaleString()}
                 </span>
-                <span className="font-black text-[#00274c]">
+                <span className="font-black tabular-nums text-[#00274c]">
                   {(stat?.pffRating ?? 0).toFixed(1)}
                 </span>
               </div>
@@ -1125,12 +1132,47 @@ function SeasonHistory({
           })}
         </div>
       </div>
-      <p className="mt-3 text-xs leading-5 text-[#111820]/45">
-        A zero indicates that the player has no participation row in the source
-        for that roster season.
+      <p className="mt-2 text-xs leading-4 text-[#111820]/45">
+        Missing years count as zero games, snaps and grade.
       </p>
     </>
   )
+}
+
+function ProductionMetric({
+  label,
+  value,
+}: {
+  label: string
+  value: string | number
+}) {
+  return (
+    <div className="flex min-w-0 flex-col px-2 py-2">
+      <dt className="order-2 mt-0.5 truncate text-[8px] font-bold uppercase tracking-[0.1em] text-[#111820]/45">
+        {label}
+      </dt>
+      <dd className="order-1 truncate font-serif text-lg font-black tabular-nums text-[#00274c]">
+        {value}
+      </dd>
+    </div>
+  )
+}
+
+function careerNarrative(stats: PlayerProfile['seasonalStats']) {
+  if (stats.length === 0) return 'No recorded snaps through 2025.'
+
+  const snapPeak = stats.reduce((leader, stat) =>
+    stat.snaps > leader.snaps ? stat : leader,
+  )
+  const gradePeak = stats.reduce((leader, stat) =>
+    stat.pffRating > leader.pffRating ? stat : leader,
+  )
+
+  if (snapPeak._id === gradePeak._id) {
+    return `${snapPeak.season}: ${snapPeak.snaps.toLocaleString()} snaps in ${snapPeak.gamesPlayed} games, ${snapPeak.pffRating.toFixed(1)} grade.`
+  }
+
+  return `Most snaps: ${snapPeak.snaps.toLocaleString()} in ${snapPeak.season}. Top grade: ${gradePeak.pffRating.toFixed(1)} in ${gradePeak.season}.`
 }
 
 function DetailSection({
@@ -1141,8 +1183,8 @@ function DetailSection({
   children: ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-[#00274c]/10 bg-white p-5">
-      <h3 className="mb-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#00274c]">
+    <section className="border-b border-[#00274c]/10 pb-4 last:border-b-0 last:pb-0">
+      <h3 className="mb-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#00274c]">
         {title}
       </h3>
       {children}
@@ -1151,7 +1193,7 @@ function DetailSection({
 }
 
 function DetailGrid({ children }: { children: ReactNode }) {
-  return <dl className="grid grid-cols-2 gap-x-5 gap-y-4">{children}</dl>
+  return <dl className="grid grid-cols-2 gap-x-5 gap-y-3">{children}</dl>
 }
 
 function Detail({ label, value }: { label: string; value: ReactNode }) {
@@ -1160,7 +1202,9 @@ function Detail({ label, value }: { label: string; value: ReactNode }) {
       <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#111820]/40">
         {label}
       </dt>
-      <dd className="mt-1 text-sm font-bold text-[#00274c]">{value ?? '—'}</dd>
+      <dd className="mt-0.5 text-sm font-bold text-[#00274c]">
+        {value ?? '—'}
+      </dd>
     </div>
   )
 }
