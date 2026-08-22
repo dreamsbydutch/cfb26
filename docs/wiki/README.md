@@ -10,23 +10,24 @@ This wiki is the durable source of truth for the application. It describes what 
 
 ## Find an answer
 
-| Question                                        | Start here                             |
-| ----------------------------------------------- | -------------------------------------- |
-| What are we building and how far along is it?   | [Product](product/README.md)           |
-| How does a request travel through the system?   | [Architecture](architecture/README.md) |
-| How do I run, change, or deploy the app?        | [Guides](guides/README.md)             |
-| What must pass before handoff or release?       | [Operations](operations/README.md)     |
-| What does every folder, command, and config do? | [Reference](reference/README.md)       |
-| Why was the current stack chosen?               | [Decisions](decisions/README.md)       |
-| What does a project-specific term mean?         | [Glossary](glossary.md)                |
+| Question                                         | Start here                                              |
+| ------------------------------------------------ | ------------------------------------------------------- |
+| What are we building and how far along is it?    | [Product](product/README.md)                            |
+| How does a request travel through the system?    | [Architecture](architecture/README.md)                  |
+| How do I run, change, or deploy the app?         | [Guides](guides/README.md)                              |
+| How do I publish completed work as a preview PR? | [Preview pull requests](guides/preview-pull-request.md) |
+| What must pass before handoff or release?        | [Operations](operations/README.md)                      |
+| What does every folder, command, and config do?  | [Reference](reference/README.md)                        |
+| Why was the current stack chosen?                | [Decisions](decisions/README.md)                        |
+| What does a project-specific term mean?          | [Glossary](glossary.md)                                 |
 
 ## Current snapshot
 
-**Current:** `cfb26` is a two-route TanStack Start application. `/` is a responsive splash page. `/anotherPage` exercises a sample Convex `numbers` table through a query and action. The app has no product-specific domain model, authentication provider, automated tests, CI workflow, or attached hosting project recorded in the repository.
+**Current:** `cfb26` is a one-route TanStack Start application. `/` is a responsive Michigan football personnel explorer backed by the hosted development deployment. It exposes all 428 players through current depth-chart, recruiting-class, draft-class, exact-position, search, and detailed profile views. Development and production contain the same eight-table schema and 3,084 documents as verified on 2026-08-22; production still has no deployed functions. The app has no authentication provider, automated tests, CI workflow, or attached Vercel project recorded in the repository.
 
-**Planned:** attach the user-selected Convex deployment, confirm the full local data loop, define the product's user/problem/core workflow, and then build the first vertical feature slice.
+**Planned:** review the recovered schema/public-read source against the hosted contract, recover or deliberately retire the internal legacy-import functions, validate a development push when explicitly authorized, then connect the deployment pipeline. Define the product audience, longer-term problem statement, and production data-access policy.
 
-**Undecided:** product audience, feature set, data model, authentication policy, authorization model, branding, analytics, and production service-level expectations.
+**Undecided:** product audience, edit workflows, authentication policy, authorization model, final branding, analytics, and production service-level expectations.
 
 ## Documentation map
 

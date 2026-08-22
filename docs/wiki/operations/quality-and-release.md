@@ -29,7 +29,7 @@ For user-facing changes, inspect at least:
 - Console/server output for new errors.
 - Live Convex behavior when the feature reads or writes data.
 
-The current smoke surface is `/` and `/anotherPage`.
+The current smoke surface is `/`: all five roster views, search, one player drawer, and narrow/wide layouts.
 
 ## Diff hygiene
 
@@ -57,7 +57,9 @@ Confirm:
 - Commit, push, open a pull request, deploy, or mutate an external service only when explicitly requested.
 - Verify the exact branch/remote/target before publishing.
 - After pushing, compare the remote branch commit with local `HEAD`.
+- Do not push Convex code to the recorded Michigan deployments while the checked-in backend differs from their hosted schema/functions; follow the [deployment blocker](../guides/deployment.md#source-alignment-blocker).
+- When explicitly asked to publish completed work for review, use [`$preview-pr`](../../../.agents/skills/preview-pr/SKILL.md) so the branch, commits, Vercel deployment, and PR remain tied to one final SHA.
 
 ## Current gaps and next investments
 
-Before product-critical logic, add tests around real contracts rather than the disposable `numbers` sample. Before public production, add CI for `npm ci` and `npm run check`, an end-to-end smoke test, accessible UI checks, and deployment smoke/rollback ownership.
+Add tests around the football query contracts and player grouping/filtering logic. Before public production, add CI for `npm ci` and `npm run check`, an end-to-end smoke test, accessible UI checks, and deployment smoke/rollback ownership.

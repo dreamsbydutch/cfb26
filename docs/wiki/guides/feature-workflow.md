@@ -61,3 +61,5 @@ Use `$maintain-docs` for documentation structure and truth labels.
 4. Report what passed and any remaining deployment or manual verification gap.
 
 Use `$verify-changes` before a commit, push, pull request, release, or deployment. Those external actions still require explicit user authorization.
+
+When the user explicitly asks to turn the completed goal into a reviewable Vercel preview and GitHub pull request, continue with [`$preview-pr`](preview-pull-request.md).

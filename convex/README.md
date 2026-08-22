@@ -1,17 +1,20 @@
 # Convex backend
 
-This directory is the complete server-side boundary for `cfb26`.
+This directory is the checked-in server-side boundary for `cfb26`.
+
+> **Deployment blocker:** the football schema and public read functions are now represented here, but the hosted development deployment also contains unrecovered internal legacy-import functions and the checked-in contract has not been push-validated. Do not run Convex push/deploy commands against the recorded environments until parity is reviewed and a development push is explicitly authorized. See [Deployment](../docs/wiki/guides/deployment.md).
 
 ## Current contract
 
-| Source | Export | Purpose |
-| --- | --- | --- |
-| `schema.ts` | `numbers` | Sample table containing one numeric `value`. |
-| `myFunctions.ts` | `listNumbers` | Returns the newest bounded set of values plus the optional viewer name. |
-| `myFunctions.ts` | `addNumber` | Inserts one validated number. |
-| `myFunctions.ts` | `myAction` | Sample action that reads recent values and invokes `addNumber`. |
+| Source       | Export          | Purpose                                                            |
+| ------------ | --------------- | ------------------------------------------------------------------ |
+| `schema.ts`  | eight tables    | Declares the hosted player lifecycle, roster, program, and NFL model. |
+| `players.ts` | `search`        | Searches player display names with optional home-state filtering.  |
+| `players.ts` | `getProfile`    | Returns one player with recruiting, stints, career, movements, and draft outcome. |
+| `rosters.ts` | `list`          | Returns a bounded program roster, optionally by status and position. |
+| `rosters.ts` | `listMovements` | Returns a bounded season movement list, optionally by event kind.  |
 
-These functions demonstrate the connection; they are not yet a product data model.
+All four public functions are unauthenticated reads. Internal legacy-import functions present in development are intentionally not reconstructed here.
 
 ## Rules
 

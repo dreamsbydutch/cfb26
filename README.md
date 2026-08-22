@@ -1,18 +1,17 @@
 # cfb26
 
-`cfb26` is a full-stack React foundation built with TanStack Start and Convex. It currently ships a responsive splash page and a small live-data example while the product domain is being defined.
+`cfb26` is a Michigan football personnel explorer built with TanStack Start and Convex. It presents all 428 hosted players through the current depth chart, recruiting and draft classes, exact position groups, search, and detailed player profiles.
 
 ## Quick start
 
-Requirements: Node.js 22.12+ and access to a Convex deployment.
+Requirements: Node.js 22.12+ and npm.
 
 ```bash
 npm install
-Copy-Item .env.example .env.local
-npm run dev
+npm run dev:web
 ```
 
-Set `VITE_CONVEX_URL` in `.env.local` before starting. The Convex CLI may also populate the local deployment values when you connect through `npm run dev`.
+The browser defaults to the public Michigan development deployment. Set `VITE_CONVEX_URL` in an ignored `.env.local` only to use another compatible deployment. Use the web-only command for now: pushing or deploying the recovered backend remains blocked pending parity review and explicit authorization. See [Deployment](docs/wiki/guides/deployment.md).
 
 ## Common commands
 

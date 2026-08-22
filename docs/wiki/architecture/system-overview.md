@@ -29,20 +29,13 @@ TanStack Start renders the React application and owns file-based routing. `getRo
 
 ## Current request paths
 
-### Splash page
+### Michigan personnel explorer
 
 1. A browser requests `/`.
-2. TanStack Start renders the root document and index route.
-3. The route renders static React/Tailwind markup; it does not invoke a Convex function.
-4. The router still constructs a Convex client, so a valid `VITE_CONVEX_URL` remains part of runtime configuration.
-
-### Sample data page
-
-1. A browser requests `/anotherPage`.
-2. The component creates `convexQuery(api.myFunctions.listNumbers, { count: 10 })`.
-3. React Query delegates the request and cache key to `ConvexQueryClient`.
-4. Convex executes `listNumbers`, reads at most ten `numbers` documents, and streams updates back to subscribers.
-5. The button calls `myAction`; that action reads recent numbers and invokes `addNumber` to insert a new value.
+2. The client-rendered index route makes one bounded `rosters.list` read for active players and paints the current depth chart.
+3. A commitment read plus position-specific departed reads hydrate in the background to work around the hosted function's 200-row cap, then the client deduplicates all 428 roster entries by player ID.
+4. Up to 12 concurrent `players.getProfile` reads progressively add recruiting, career, movement, and draft details as players are discovered.
+5. Search and the five views derive from the loaded typed records without a separate REST layer or client data copy.
 
 ## Build and deployment path
 
@@ -56,6 +49,8 @@ flowchart LR
 ```
 
 `vercel.json` defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. No Vercel project identifier or production URL is stored in the repository today.
+
+Do not attach the current Vercel command to the recorded Convex project until the [source-alignment blocker](../guides/deployment.md#source-alignment-blocker) is resolved; it could remove the remaining internal legacy-import functions or otherwise change the unvalidated hosted contract.
 
 ## Deliberate boundaries
 

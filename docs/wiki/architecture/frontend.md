@@ -31,29 +31,30 @@ Router defaults preload links on intent, restore scroll position, let React Quer
 
 Global providers belong in `src/router.tsx`; document-level metadata and markup belong in the root route.
 
-## Current routes
+## Current route
 
-| URL            | File                         | Role                                                | Convex dependency                                               |
-| -------------- | ---------------------------- | --------------------------------------------------- | --------------------------------------------------------------- |
-| `/`            | `src/routes/index.tsx`       | Responsive splash/landing page.                     | No function call, but router configuration still needs the URL. |
-| `/anotherPage` | `src/routes/anotherPage.tsx` | Starter integration demo for query/action behavior. | `listNumbers` and `myAction`.                                   |
+| URL | File                   | Role                                                                                     | Convex dependency                     |
+| --- | ---------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------- |
+| `/` | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`. |
 
 `src/routeTree.gen.ts` is generated from route filenames. Do not edit it. Running development or build tooling regenerates it when route files change.
 
 ## Data access pattern
 
-- Reactive reads use `useSuspenseQuery(convexQuery(api.module.function, args))`.
+- One bounded active-roster read uses `useSuspenseQuery(convexQuery(api.rosters.list, args))` so the current depth chart paints first.
+- Commitments and the historical archive hydrate in the background. The hosted list function caps one result at 200, so departed players use bounded position-specific reads and are deduplicated by player ID.
+- Full profiles hydrate with a 12-request client concurrency limit through `players.getProfile`; the UI exposes progress and retry state while continuing to show roster data.
 - Mutations use `useMutation(api.module.function)` from `convex/react`.
 - Actions use `useAction(api.module.function)` from `convex/react`.
 - Generated references come from `convex/_generated/api`.
 
-React Query manages suspense/cache behavior while Convex supplies live query semantics. New data-bound routes should define appropriate suspense/error boundaries and explicit empty states instead of assuming data is always present.
+React Query manages suspense/cache behavior for the roster reads while the Convex client performs the bounded profile hydration. The route opts out of SSR because its current data source is a browser-public development deployment and local Node TLS interception can make server fetches fail; the route-level loading UI covers that client startup.
 
 ## Styling
 
 Tailwind CSS 4 is imported in `src/styles/app.css` through the Vite Tailwind plugin. The global layer sets the system sans-serif stack, rendering preferences, body margin/minimum width, and light/dark text/background defaults.
 
-The splash page currently uses a warm neutral background, deep green text, terracotta accent, and soft green artwork. This is an implemented visual direction, not an approved long-term brand.
+The explorer uses Michigan navy and maize with warm-neutral surfaces, compact roster tables, serif display headings, and responsive horizontal filter navigation. It is an implemented product direction, not final approved branding.
 
 ## Adding or changing a route
 
@@ -67,6 +68,6 @@ The splash page currently uses a warm neutral background, deep green text, terra
 
 ## Known gaps
 
-- Default router errors expose stack text and should be replaced before a public production launch.
-- `/anotherPage` uses an alert and starter styling; it is a technical demo, not production UX.
+- Default router errors outside `/` expose stack text and should be replaced before a public production launch.
+- Loading hundreds of full profiles through the existing one-player query is functional but request-heavy; add a bounded/paginated aggregate contract after backend deployment is authorized.
 - No reusable component library, route-level test suite, analytics, or accessibility audit exists yet.

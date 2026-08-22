@@ -4,9 +4,9 @@
 
 ## Current trust model
 
-**Current:** no authentication provider or authorization rules are configured. The sample Convex query, mutation, and action are public. Any client that can reach the deployment and function references can invoke the public write path.
+**Current:** no authentication provider or authorization rules are configured. The four checked-in football functions are unauthenticated reads. Development exposes equivalent public reads plus internal migration functions; production currently has schema/data but no deployed application functions.
 
-The sample backend must not store private, regulated, or user-specific data. Add identity and ownership checks before introducing such data.
+Do not assume the hosted football data is safe for unrestricted access merely because no auth exists. Classify its ownership/privacy requirements before deploying public functions, and add identity/ownership checks before introducing private or user-specific data.
 
 ## Environment classes
 
@@ -35,7 +35,7 @@ Before adding accounts or private records:
 
 - Return only client-needed fields from public functions.
 - Do not log secrets, tokens, private records, or full third-party payloads.
-- The current sample logs document IDs and recent numeric data; remove demonstration logging when replacing the sample.
+- The current public functions do not write data or intentionally log player payloads.
 - Validate input shape and impose practical size/count limits at public boundaries.
 - Plan migrations and backups before destructive schema/data changes.
 

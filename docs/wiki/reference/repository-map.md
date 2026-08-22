@@ -28,24 +28,25 @@
 
 ## `src/`
 
-| Path                         | Role                                                                                                       |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `src/router.tsx`             | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
-| `src/routes/__root.tsx`      | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
-| `src/routes/index.tsx`       | `/` splash page.                                                                                           |
-| `src/routes/anotherPage.tsx` | `/anotherPage` Convex query/action demonstration.                                                          |
-| `src/routeTree.gen.ts`       | Generated file-route registry; do not edit.                                                                |
-| `src/styles/app.css`         | Tailwind import and global base CSS.                                                                       |
+| Path                    | Role                                                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `src/router.tsx`        | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
+| `src/routes/__root.tsx` | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
+| `src/routes/index.tsx`  | `/` route definition, client-rendering policy, and route-level states.                                     |
+| `src/features/roster/`  | Michigan data hydration, view switching, search, roster lists, and player details.                         |
+| `src/routeTree.gen.ts`  | Generated file-route registry; do not edit.                                                                |
+| `src/styles/app.css`    | Tailwind import and global base CSS.                                                                       |
 
 ## `convex/`
 
-| Path                    | Role                                                          |
-| ----------------------- | ------------------------------------------------------------- |
-| `convex/schema.ts`      | Declares the sample `numbers` table.                          |
-| `convex/myFunctions.ts` | Declares current sample query, mutation, and action.          |
-| `convex/tsconfig.json`  | Convex runtime TypeScript settings.                           |
-| `convex/README.md`      | Local backend contract and maintenance rules.                 |
-| `convex/_generated/`    | Generated API/data-model/server types and Convex agent files. |
+| Path                   | Role                                                          |
+| ---------------------- | ------------------------------------------------------------- |
+| `convex/schema.ts`     | Declares the eight-table Michigan football model and indexes. |
+| `convex/players.ts`    | Player search and full-profile queries.                       |
+| `convex/rosters.ts`    | Roster and movement-list queries.                             |
+| `convex/tsconfig.json` | Convex runtime TypeScript settings.                           |
+| `convex/README.md`     | Local backend contract and maintenance rules.                 |
+| `convex/_generated/`   | Generated API/data-model/server types and Convex agent files. |
 
 ## `public/`
 
@@ -64,3 +65,13 @@ The folder currently contains favicon ICO/PNG variants, Apple touch icon, Androi
 | `convex/_generated/`   | Convex CLI                | Yes, but never hand-edit |
 
 Use `rg --files -g '!node_modules' -g '!dist' -g '!.git'` for a current inventory.
+
+## Repository skills
+
+| Skill            | Trigger boundary                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `frontend-work`  | React routes, components, Tailwind, browser behavior, and accessibility.                              |
+| `convex-work`    | Convex schema, functions, generated API use, data, and deployment attachment.                         |
+| `maintain-docs`  | Agent guidance, wiki, runbooks, contracts, and ADRs.                                                  |
+| `verify-changes` | Diff review and proportional quality gates; does not itself authorize writes.                         |
+| `preview-pr`     | Explicitly authorized publication of a completed goal as a preview branch, Vercel deployment, and PR. |

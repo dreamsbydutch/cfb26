@@ -4,10 +4,11 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: foundation stage. The shipped experience is a splash page plus a Convex sample route; the final product domain is not defined yet.
+- Product status: first Michigan football vertical slice. `/` is a roster explorer with depth-chart, recruiting-class, draft-class, position, search, and player-detail views backed by the hosted development data.
 - Stack: React 19, TanStack Start/Router, Vite, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
+- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Their hosted schema/data match. The checked-in schema and public reads now represent the football contract, but deployment remains blocked until source parity is reviewed and the development push is explicitly authorized.
 - Canonical branch: `main`; remote: `origin`.
 
 Do not present placeholders, sample data, or proposed roadmap items as finished product behavior. The wiki labels facts as **Current**, **Planned**, or **Undecided**.
@@ -16,20 +17,26 @@ Do not present placeholders, sample data, or proposed roadmap items as finished 
 
 Run commands from the repository root.
 
-| Command                 | Use                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| `npm install`           | Install the locked dependency graph.                                                 |
-| `npm run dev`           | Start Convex development and Vite together; requires a configured Convex deployment. |
-| `npm run typecheck`     | Run strict TypeScript checks across `src/`, `convex/`, and Vite config.              |
-| `npm run lint`          | Run type checking and the TanStack/Convex ESLint rules.                              |
-| `npm run build`         | Type-check and create the production client/server bundles in `dist/`.               |
-| `npm run start`         | Preview an existing production build locally; requires runtime environment values.   |
-| `npm run docs:check`    | Validate local links in maintained Markdown.                                         |
-| `npm run check`         | Run the full local quality gate: lint, docs links, and production build.             |
-| `npm run format`        | Format the repository with Prettier; review the resulting diff.                      |
-| `npx convex dev --once` | Push backend changes once and regenerate Convex types; requires a linked deployment. |
+| Command                                      | Use                                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `npm install`                                | Install the locked dependency graph.                                                 |
+| `npm run dev`                                | Start Convex development and Vite together; requires a configured Convex deployment. |
+| `npm run dev:web`                            | Start only Vite; use while the hosted Convex source-alignment blocker remains.       |
+| `npm run typecheck`                          | Run strict TypeScript checks across `src/`, `convex/`, and Vite config.              |
+| `npm run lint`                               | Run type checking and the TanStack/Convex ESLint rules.                              |
+| `npm run build`                              | Type-check and create the production client/server bundles in `dist/`.               |
+| `npm run start`                              | Preview an existing production build locally; requires runtime environment values.   |
+| `npm run docs:check`                         | Validate local links in maintained Markdown.                                         |
+| `npm run preview:find -- <owner/repo> <sha>` | Resolve a direct Vercel preview URL for one pushed commit.                           |
+| `npm run check`                              | Run the full local quality gate: lint, docs links, and production build.             |
+| `npm run format`                             | Format the repository with Prettier; review the resulting diff.                      |
+| `npx convex dev --once`                      | Push backend changes once and regenerate Convex types; requires a linked deployment. |
 
 Do not run deployment, commit, push, or other external-write commands unless the user requested that action.
+
+Secrets must never be committed under any circumstances—not in code, configuration, documentation, examples, fixtures, logs, generated files, or Git history. This includes API keys, tokens, credentials, private keys, and deployment keys. Use placeholders and approved environment/secret stores only. If a secret appears in a diff or commit, stop before pushing and follow [Security and secrets](docs/wiki/operations/security-and-secrets.md).
+
+Do not run `convex dev`, `convex deploy`, or a Vercel build against the recorded Convex environments until the checked-in schema/functions are reconciled with the hosted football backend. See [Deployment](docs/wiki/guides/deployment.md).
 
 ## Maintained structure
 
@@ -42,6 +49,7 @@ Do not run deployment, commit, push, or other external-write commands unless the
 |-- public/               Static files copied to the site root
 |-- scripts/              Deterministic repository helpers
 |-- src/
+|   |-- features/         Domain UI and client-side data orchestration
 |   |-- routes/           TanStack file routes; route paths follow filenames
 |   |-- styles/           Global styles and Tailwind import
 |   |-- routeTree.gen.ts  Router-generated file; never hand-edit
@@ -94,6 +102,8 @@ git diff
 
 Start at [docs/wiki/README.md](docs/wiki/README.md). Use the repository skill whose description precisely matches the task; do not load every skill by default.
 
+For an explicit request to publish a completed goal as a review branch, use `$preview-pr`. It is the only repository workflow that couples new branch creation, logical commits, GitHub push, Vercel preview verification, and PR composition; it never authorizes merge or production promotion.
+
 ## Definition of done
 
-A change is complete when the requested behavior works, generated boundaries and secrets are clean, relevant wiki pages agree with the code, and the proportional checks pass. For ordinary code changes, run `npm run check`. If a Convex deployment is connected and backend code changed, also run `npx convex dev --once`. Report any check that could not run and why.
+A change is complete when the requested behavior works, generated boundaries and secrets are clean, relevant wiki pages agree with the code, and the proportional checks pass. For ordinary code changes, run `npm run check`. After the hosted source-alignment blocker is resolved, a linked Convex backend change also requires `npx convex dev --once`. Report any check that could not run and why.

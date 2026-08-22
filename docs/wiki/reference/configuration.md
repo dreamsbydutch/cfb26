@@ -16,26 +16,30 @@
 
 ## Environment variables
 
-| Variable            | Required where                   | Secret?       | Purpose                                               |
-| ------------------- | -------------------------------- | ------------- | ----------------------------------------------------- |
-| `VITE_CONVEX_URL`   | Browser build/runtime            | No            | Public URL used to create `ConvexQueryClient`.        |
-| `CONVEX_DEPLOYMENT` | Local Convex CLI when configured | No, but local | Identifies the selected deployment to tooling.        |
-| `CONVEX_DEPLOY_KEY` | Hosted production build/deploy   | Yes           | Authorizes deployment to the selected Convex project. |
+| Variable            | Required where                   | Secret?       | Purpose                                                                                           |
+| ------------------- | -------------------------------- | ------------- | ------------------------------------------------------------------------------------------------- |
+| `VITE_CONVEX_URL`   | Optional browser override        | No            | Compatible public URL used to create `ConvexQueryClient`; development is the checked-in fallback. |
+| `CONVEX_DEPLOYMENT` | Local Convex CLI when configured | No, but local | Identifies the selected deployment to tooling.                                                    |
+| `CONVEX_DEPLOY_KEY` | Hosted production build/deploy   | Yes           | Authorizes deployment to the selected Convex project.                                             |
 
-Only `VITE_CONVEX_URL` is committed as a placeholder in `.env.example`. Actual values belong in `.env.local` or provider-managed environment settings.
+No local environment file is required for the current read-only explorer. An override belongs in `.env.local` or provider-managed environment settings.
+
+The known deployment URLs are recorded in [Deployment](../guides/deployment.md). Do not configure the current source to push to them until the documented source-alignment blocker is resolved.
 
 ## Package scripts
 
-| Script               | Expansion                       | Notes                                                                 |
-| -------------------- | ------------------------------- | --------------------------------------------------------------------- |
-| `npm run dev`        | `convex dev --start 'vite dev'` | Requires/establishes Convex CLI configuration, then serves Vite.      |
-| `npm run typecheck`  | `tsc --noEmit`                  | Checks root includes: `src`, `convex`, and Vite config.               |
-| `npm run lint`       | typecheck, then ESLint          | Uses TanStack and Convex recommended rules.                           |
-| `npm run build`      | typecheck, then `vite build`    | Produces client and SSR/server bundles.                               |
-| `npm run start`      | `vite preview`                  | Previews a prebuilt app locally; runtime environment must be present. |
-| `npm run docs:check` | local Node link checker         | Scans maintained Markdown and ignores generated/vendor/build trees.   |
-| `npm run check`      | lint, docs links, Vite build    | Standard full local gate.                                             |
-| `npm run format`     | `prettier --write .`            | Mutates files; inspect the resulting diff.                            |
+| Script                                       | Expansion                       | Notes                                                                 |
+| -------------------------------------------- | ------------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`                                | `convex dev --start 'vite dev'` | Requires/establishes Convex CLI configuration, then serves Vite.      |
+| `npm run dev:web`                            | `vite dev`                      | Starts the browser app without pushing Convex code.                   |
+| `npm run typecheck`                          | `tsc --noEmit`                  | Checks root includes: `src`, `convex`, and Vite config.               |
+| `npm run lint`                               | typecheck, then ESLint          | Uses TanStack and Convex recommended rules.                           |
+| `npm run build`                              | typecheck, then `vite build`    | Produces client and SSR/server bundles.                               |
+| `npm run start`                              | `vite preview`                  | Previews a prebuilt app locally; runtime environment must be present. |
+| `npm run docs:check`                         | local Node link checker         | Scans maintained Markdown and ignores generated/vendor/build trees.   |
+| `npm run preview:find -- <owner/repo> <sha>` | GitHub deployment lookup        | Resolves the direct Vercel preview URL for an exact commit SHA.       |
+| `npm run check`                              | lint, docs links, Vite build    | Standard full local gate.                                             |
+| `npm run format`                             | `prettier --write .`            | Mutates files; inspect the resulting diff.                            |
 
 ## Core dependencies
 
@@ -61,4 +65,4 @@ No authentication, component-system, testing, analytics, or state-management pac
 
 ## Configuration gaps
 
-There is no checked-in CI workflow, test runner, environment schema validator, error-reporting provider, analytics provider, or hosting project metadata. Add and document these only when a real requirement exists.
+There is no checked-in CI workflow, test runner, environment schema validator, error-reporting provider, analytics provider, or hosting project metadata. Production remains an incompatible browser target until its public functions are deployed. Add and document new configuration only when a real requirement exists.

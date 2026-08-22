@@ -33,7 +33,7 @@ Keep the initial domain disposable: a `numbers` table and sample functions demon
 
 ### Costs and constraints
 
-- Every runtime needs a valid Convex deployment URL, even for the static splash route under the current router construction.
+- The router always constructs a Convex client; the current browser uses the public development URL by default and accepts a compatible `VITE_CONVEX_URL` override.
 - Backend development and hosted builds require Convex deployment credentials/configuration.
 - Generated route and Convex files must be maintained through tooling.
 - React Query plus Convex adds an integration layer that contributors must use consistently.

@@ -6,63 +6,62 @@ This page inventories observable interfaces that another part of the app—or a 
 
 ## Web routes
 
-| Method/URL         | Behavior                                                                                          | Data dependency                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `GET /`            | Renders the responsive “Start with a blank canvas” splash page with external documentation links. | No function call; router still requires `VITE_CONVEX_URL`. |
-| `GET /anotherPage` | Renders recent numbers and a button that adds a random number through an action.                  | `listNumbers`, `myAction`.                                 |
+| Method/URL | Behavior                                                                                                                           | Data dependency                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `GET /`    | Renders the responsive Michigan personnel explorer with five views, global search, loading/error/empty states, and player details. | `rosters.list`, `players.getProfile`. |
 
 Unknown URLs render the root route's `Route not found` fallback. Router-level errors currently render stack text.
 
 ## Convex API
 
-### `api.myFunctions.listNumbers`
+### `api.players.search`
 
 - Kind: query.
-- Input: `{ count: number }`.
-- Output: `{ viewer: string | null, numbers: number[] }`.
-- Ordering: selects newest by creation time, then reverses the selected set for oldest-to-newest display.
-- Bound: reads at most `count`; callers are currently responsible for a sensible positive count.
+- Input: `{ searchText: string, homeState?: string, limit?: number }`.
+- Output: matching player documents.
+- Bound: 1–500, default 25; an empty trimmed search returns no rows.
 - Authorization: none.
 
-### `api.myFunctions.addNumber`
+### `api.players.getProfile`
 
-- Kind: mutation.
-- Input: `{ value: number }`.
-- Output: no explicit value.
-- Effect: inserts one `numbers` document and logs its ID.
+- Kind: query.
+- Input: `{ playerId: Id<'players'> }`.
+- Output: the player plus an optional recruiting profile, bounded stints, career summaries, movement events, and optional draft outcome; `null` when the player does not exist.
+- Bound: related one-to-one records use unique indexes; growing related lists read at most 20.
 - Authorization: none.
 
-### `api.myFunctions.myAction`
+### `api.rosters.list`
 
-- Kind: action.
-- Input: `{ first: number }`.
-- Output: no explicit value.
-- Effect: queries ten recent values, logs the result, and invokes `addNumber({ value: first })`.
+- Kind: query.
+- Input: `{ programKey?: string, status?: 'active' | 'committed' | 'departed', position?: string, limit?: number }`.
+- Output: roster stints joined to canonical player documents.
+- Bound: 1–500, default 200. The current hosted implementation returns at most 200 for one status read, so the client completes departed history with exact-position reads.
+- Authorization: none.
+
+### `api.rosters.listMovements`
+
+- Kind: query.
+- Input: `{ programKey?: string, season: number, kind?: MovementKind, limit?: number }`.
+- Output: movement events joined to canonical player documents.
+- Bound: 1–500, default 200.
 - Authorization: none.
 
 ## Data
 
-```text
-numbers
-|-- _id: generated Convex document ID
-|-- _creationTime: generated timestamp
-`-- value: number
-```
-
-There are no additional product tables, indexes, ownership fields, file storage contracts, scheduled jobs, HTTP endpoints, or migrations.
+The checked-in and hosted data model contains `players`, `recruitingProfiles`, `rosterStints`, `programCareerSummaries`, `movementEvents`, `draftOutcomes`, `programs`, and `legacyPlayerRows`. See [Backend architecture](../architecture/backend.md) for indexes and [Michigan player data interpretation](michigan-player-data-report.md) for the field-level reading contract. There are no ownership fields, file-storage contracts, scheduled jobs, or HTTP endpoints.
 
 ## Document metadata and assets
 
-- Current title: `A new beginning — T3 / Convex`.
+- Current title: `Michigan Football Personnel Archive`.
 - Viewport: responsive device width, initial scale 1.
 - Global stylesheet: `src/styles/app.css`.
 - Public assets: favicon ICO/PNG variants, Apple touch icon, Android Chrome icons, and `site.webmanifest`.
-- The manifest and icons are starter assets, not finalized branding.
+- The manifest and icons remain starter assets; the in-app Michigan wordmark is text/CSS, not a new public asset.
 
 ## Environment contract
 
-The application expects `VITE_CONVEX_URL` to contain a valid public Convex deployment URL. See [Configuration](configuration.md) for local and hosted deployment variables.
+`VITE_CONVEX_URL` may override the browser deployment. When omitted, the app uses the public development URL `https://adjoining-opossum-710.convex.cloud`, whose deployed read identifiers match the UI contract. Production has no functions and is not currently a compatible browser target. See [Configuration](configuration.md) and [Deployment](../guides/deployment.md).
 
 ## Explicitly absent
 
-No authentication/session contract, authorization policy, user profile, REST/GraphQL API, upload flow, payment flow, analytics event, email integration, notification system, or product-domain entity is implemented.
+No authentication/session contract, authorization policy, roster edit/write flow, REST/GraphQL API, upload flow, payment flow, analytics event, email integration, or notification system is integrated into the checked-in web app.
