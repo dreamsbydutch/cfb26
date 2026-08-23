@@ -2,11 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { SeasonStats } from './SeasonStats'
 import { useMichiganRoster } from './useMichiganRoster'
 import type { EnrichedPlayer, PlayerProfile } from './useMichiganRoster'
-import type { ReactNode } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
 
 type View = 'depth' | 'recruiting' | 'draft' | 'positions' | 'snaps' | 'players'
-type DepthView =
-  'offense' | 'defense' | 'specialists' | 'rotation' | 'prospects' | 'walk-ons'
+type DepthView = 'offense' | 'defense' | 'special-teams'
 
 const views: Array<{ id: View; label: string }> = [
   { id: 'depth', label: 'Depth chart' },
@@ -52,117 +51,145 @@ const positionOrder = [
   'LS',
 ]
 
-type DepthGroup =
-  'QB' | 'HB' | 'WR' | 'OL' | 'IDL' | 'EDGE' | 'LB' | 'DB' | 'ST'
+type DepthRoomId =
+  'QB' | 'HB' | 'WR' | 'OL' | 'IDL' | 'EDGE' | 'LB' | 'DB' | 'K' | 'P' | 'LS'
 
 type StarterSlot = {
   id: string
   label: string
   position: string
   order: number
-  room: string
 }
 
 type RotationGroup = {
-  id: Exclude<DepthGroup, 'ST'>
+  id: DepthRoomId
   label: string
   note: string
   allocations: Array<{ positions: Array<string>; count: number }>
 }
 
+type DepthRoom = {
+  id: DepthRoomId
+  unit: DepthView
+  label: string
+  note: string
+}
+
+const depthRooms: Array<DepthRoom> = [
+  { id: 'QB', unit: 'offense', label: 'Quarterbacks', note: 'QB' },
+  { id: 'HB', unit: 'offense', label: 'Backfield', note: 'RB · HB · FB' },
+  {
+    id: 'WR',
+    unit: 'offense',
+    label: 'Receivers and tight ends',
+    note: 'WR · SLOT · TE',
+  },
+  {
+    id: 'OL',
+    unit: 'offense',
+    label: 'Offensive line',
+    note: 'OT · OG · OC',
+  },
+  {
+    id: 'IDL',
+    unit: 'defense',
+    label: 'Interior defensive line',
+    note: 'DL · DT · NT',
+  },
+  { id: 'EDGE', unit: 'defense', label: 'Edge', note: 'EDGE · DE' },
+  { id: 'LB', unit: 'defense', label: 'Linebackers', note: 'LB · ILB · OLB' },
+  {
+    id: 'DB',
+    unit: 'defense',
+    label: 'Defensive backs',
+    note: 'CB · NICKEL · S',
+  },
+  { id: 'K', unit: 'special-teams', label: 'Kickers', note: 'K' },
+  { id: 'P', unit: 'special-teams', label: 'Punters', note: 'P' },
+  {
+    id: 'LS',
+    unit: 'special-teams',
+    label: 'Long snappers',
+    note: 'LS',
+  },
+]
+
 const starterUnits: Array<{
   id: 'offense' | 'defense'
   label: string
   personnel: string
-  rooms: Array<{ id: string; label: string }>
   slots: Array<StarterSlot>
 }> = [
   {
     id: 'offense',
     label: 'Offense',
     personnel: '11 personnel',
-    rooms: [
-      { id: 'backfield', label: 'Backfield' },
-      { id: 'receivers', label: 'Receivers and tight ends' },
-      { id: 'line', label: 'Offensive line' },
-    ],
     slots: [
       {
         id: 'wr-left',
         label: 'WR',
         position: 'WR',
         order: 1,
-        room: 'receivers',
       },
       {
         id: 'slot',
         label: 'SLOT',
         position: 'SLOT',
         order: 1,
-        room: 'receivers',
       },
       {
         id: 'te',
         label: 'TE',
         position: 'TE',
         order: 1,
-        room: 'receivers',
       },
       {
         id: 'wr-right',
         label: 'WR',
         position: 'WR',
         order: 2,
-        room: 'receivers',
       },
       {
         id: 'left-tackle',
         label: 'OT',
         position: 'OT',
         order: 1,
-        room: 'line',
       },
       {
         id: 'left-guard',
         label: 'OG',
         position: 'OG',
         order: 1,
-        room: 'line',
       },
       {
         id: 'center',
         label: 'OC',
         position: 'OC',
         order: 1,
-        room: 'line',
       },
       {
         id: 'right-guard',
         label: 'OG',
         position: 'OG',
         order: 2,
-        room: 'line',
       },
       {
         id: 'right-tackle',
         label: 'OT',
         position: 'OT',
         order: 2,
-        room: 'line',
       },
       {
         id: 'quarterback',
         label: 'QB',
         position: 'QB',
         order: 1,
-        room: 'backfield',
       },
       {
         id: 'halfback',
         label: 'HB',
         position: 'RB',
         order: 1,
-        room: 'backfield',
       },
     ],
   },
@@ -170,102 +197,85 @@ const starterUnits: Array<{
     id: 'defense',
     label: 'Defense',
     personnel: 'Base front',
-    rooms: [
-      { id: 'front', label: 'Defensive front' },
-      { id: 'linebackers', label: 'Linebackers' },
-      { id: 'secondary', label: 'Secondary' },
-    ],
     slots: [
       {
         id: 'edge-left',
         label: 'EDGE',
         position: 'EDGE',
         order: 1,
-        room: 'front',
       },
       {
         id: 'idl-left',
         label: 'IDL',
         position: 'DL',
         order: 1,
-        room: 'front',
       },
       {
         id: 'idl-right',
         label: 'IDL',
         position: 'DL',
         order: 2,
-        room: 'front',
       },
       {
         id: 'edge-right',
         label: 'EDGE',
         position: 'EDGE',
         order: 2,
-        room: 'front',
       },
       {
         id: 'linebacker-left',
         label: 'LB',
         position: 'LB',
         order: 1,
-        room: 'linebackers',
       },
       {
         id: 'linebacker-right',
         label: 'LB',
         position: 'LB',
         order: 2,
-        room: 'linebackers',
       },
       {
         id: 'corner-left',
         label: 'CB',
         position: 'CB',
         order: 1,
-        room: 'secondary',
       },
       {
         id: 'safety-left',
         label: 'S',
         position: 'S',
         order: 1,
-        room: 'secondary',
       },
       {
         id: 'nickel',
         label: 'CB',
         position: 'CB',
         order: 3,
-        room: 'secondary',
       },
       {
         id: 'safety-right',
         label: 'S',
         position: 'S',
         order: 2,
-        room: 'secondary',
       },
       {
         id: 'corner-right',
         label: 'CB',
         position: 'CB',
         order: 2,
-        room: 'secondary',
       },
     ],
   },
 ]
 
 const specialistSlots: Array<StarterSlot> = [
-  { id: 'kicker', label: 'K', position: 'K', order: 1, room: 'specialists' },
-  { id: 'punter', label: 'P', position: 'P', order: 1, room: 'specialists' },
+  { id: 'kicker', label: 'K', position: 'K', order: 1 },
+  { id: 'punter', label: 'P', position: 'P', order: 1 },
   {
     id: 'long-snapper',
     label: 'LS',
     position: 'LS',
     order: 1,
-    room: 'specialists',
   },
 ]
 
@@ -329,6 +339,24 @@ const rotationGroups: Array<RotationGroup> = [
       { positions: ['CB', 'NICKEL'], count: 1 },
       { positions: ['S'], count: 1 },
     ],
+  },
+  {
+    id: 'K',
+    label: 'Kickers',
+    note: 'K',
+    allocations: [{ positions: ['K'], count: 1 }],
+  },
+  {
+    id: 'P',
+    label: 'Punters',
+    note: 'P',
+    allocations: [{ positions: ['P'], count: 1 }],
+  },
+  {
+    id: 'LS',
+    label: 'Long snappers',
+    note: 'LS',
+    allocations: [{ positions: ['LS'], count: 1 }],
   },
 ]
 
@@ -637,17 +665,16 @@ function DepthChart({
   const starterAssignments = starterUnits.flatMap((unit) =>
     unit.slots.flatMap((slot) => {
       const entry = findDepthPlayer(active, slot.position, slot.order)
-      return entry ? [{ entry, slot, unit: unit.id }] : []
+      return entry ? [{ entry, slot }] : []
     }),
   )
   const specialistAssignments = specialistSlots.flatMap((slot) => {
     const entry = findDepthPlayer(active, slot.position, slot.order)
     return entry ? [{ entry, slot }] : []
   })
+  const firstUnitAssignments = [...starterAssignments, ...specialistAssignments]
   const starterIds = new Set(
-    [...starterAssignments, ...specialistAssignments].map(
-      ({ entry }) => entry.player._id,
-    ),
+    firstUnitAssignments.map(({ entry }) => entry.player._id),
   )
   const rotations = buildRotationGroups(active, starterIds)
   const rotationIds = new Set(
@@ -670,15 +697,7 @@ function DepthChart({
   const walkOnReserves = visibleReserves.filter(
     (entry) => entry.profile?.recruiting?.source === 'walk_on',
   )
-  const visibleStarterUnits = starterUnits.map((unit) => ({
-    ...unit,
-    assignments: starterAssignments.filter(
-      (assignment) =>
-        assignment.unit === unit.id &&
-        visibleIds.has(assignment.entry.player._id),
-    ),
-  }))
-  const visibleSpecialists = specialistAssignments.filter(({ entry }) =>
+  const visibleStarters = firstUnitAssignments.filter(({ entry }) =>
     visibleIds.has(entry.player._id),
   )
   const visibleRotations = rotations.map((group) => ({
@@ -686,48 +705,79 @@ function DepthChart({
     entries: group.entries.filter((entry) => visibleIds.has(entry.player._id)),
   }))
   const hasVisibleActive = visibleIds.size > 0
-  const offense = visibleStarterUnits.find((unit) => unit.id === 'offense')!
-  const defense = visibleStarterUnits.find((unit) => unit.id === 'defense')!
-  const rotationCount = visibleRotations.reduce(
-    (count, group) => count + group.entries.length,
-    0,
-  )
+  const rooms = depthRooms.map((room) => ({
+    ...room,
+    starters: visibleStarters
+      .filter(({ entry }) => depthRoom(entry.stint.position) === room.id)
+      .map(({ entry, slot }) => ({ entry, label: slot.label })),
+    rotation: (
+      visibleRotations.find((group) => group.id === room.id)?.entries ?? []
+    ).map((entry) => ({ entry, label: entry.stint.position })),
+    prospects: prospectReserves
+      .filter((entry) => depthRoom(entry.stint.position) === room.id)
+      .map((entry) => ({ entry, label: entry.stint.position })),
+    walkOns: walkOnReserves
+      .filter((entry) => depthRoom(entry.stint.position) === room.id)
+      .map((entry) => ({ entry, label: entry.stint.position })),
+  }))
   const depthTabs: Array<{ id: DepthView; label: string; count: number }> = [
-    { id: 'offense', label: 'Offense', count: offense.assignments.length },
-    { id: 'defense', label: 'Defense', count: defense.assignments.length },
     {
-      id: 'specialists',
-      label: 'Specialists',
-      count: visibleSpecialists.length,
+      id: 'offense',
+      label: 'Offense',
+      count: countDepthPlayers(rooms.filter((room) => room.unit === 'offense')),
     },
-    { id: 'rotation', label: 'Rotation', count: rotationCount },
-    { id: 'prospects', label: 'Prospects', count: prospectReserves.length },
-    { id: 'walk-ons', label: 'Walk-ons', count: walkOnReserves.length },
+    {
+      id: 'defense',
+      label: 'Defense',
+      count: countDepthPlayers(rooms.filter((room) => room.unit === 'defense')),
+    },
+    {
+      id: 'special-teams',
+      label: 'Special Teams',
+      count: countDepthPlayers(
+        rooms.filter((room) => room.unit === 'special-teams'),
+      ),
+    },
   ]
 
   return (
     <>
       <SectionIntro eyebrow="2026 roster" title="Depth chart & rotation">
-        Browse each unit separately. First-listed players fill the base lineup;
-        rotation room sizes follow the 2015–2025 snap-count workload report.
-        These are roster tiers, not official starts or snap projections.
+        Choose a unit, then scan every position room from starters through
+        rotation, prospects, and walk-ons. These are roster tiers, not official
+        starts or snap projections.
       </SectionIntro>
       {!hasVisibleActive ? (
         <HydratingEmpty label="No active players match this search." />
       ) : (
         <div>
           <nav
-            aria-label="Depth chart groups"
+            aria-label="Depth chart units"
             className="scrollbar-none -mx-1 mb-5 overflow-x-auto border-b border-michigan-blue/20"
           >
-            <div className="flex min-w-max gap-1 px-1">
+            <div
+              role="tablist"
+              aria-label="Depth chart units"
+              className="flex min-w-max gap-1 px-1"
+            >
               {depthTabs.map((tab) => (
                 <button
                   key={tab.id}
                   id={`depth-tab-${tab.id}`}
                   type="button"
+                  role="tab"
                   onClick={() => setDepthView(tab.id)}
-                  aria-pressed={depthView === tab.id}
+                  onKeyDown={(event) =>
+                    handleDepthTabKeyDown(
+                      event,
+                      tab.id,
+                      depthTabs,
+                      setDepthView,
+                    )
+                  }
+                  aria-controls={`depth-panel-${tab.id}`}
+                  aria-selected={depthView === tab.id}
+                  tabIndex={depthView === tab.id ? 0 : -1}
                   className={`flex items-center gap-2 border-b-4 px-3 py-2 text-sm font-black transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue ${
                     depthView === tab.id
                       ? 'border-michigan-maize bg-michigan-blue text-white'
@@ -745,244 +795,190 @@ function DepthChart({
             </div>
           </nav>
 
-          <section
-            id={`depth-panel-${depthView}`}
-            aria-labelledby={`depth-tab-${depthView}`}
-          >
-            {depthView === 'offense' && (
-              <StarterUnit unit={offense} select={select} />
-            )}
-            {depthView === 'defense' && (
-              <StarterUnit unit={defense} select={select} />
-            )}
-            {depthView === 'specialists' && (
-              <SpecialistUnit
-                assignments={visibleSpecialists}
+          {depthTabs.map((tab) => (
+            <section
+              key={tab.id}
+              id={`depth-panel-${tab.id}`}
+              role="tabpanel"
+              aria-labelledby={`depth-tab-${tab.id}`}
+              hidden={depthView !== tab.id}
+            >
+              <DepthUnitPanel
+                label={tab.label}
+                rooms={rooms.filter((room) => room.unit === tab.id)}
                 select={select}
               />
-            )}
-            {depthView === 'rotation' && (
-              <RotationPanel groups={visibleRotations} select={select} />
-            )}
-            {depthView === 'prospects' && (
-              <ReserveList
-                title="Prospects"
-                description="Scholarship recruits and transfers beyond the rotation"
-                entries={prospectReserves}
-                select={select}
-              />
-            )}
-            {depthView === 'walk-ons' && (
-              <ReserveList
-                title="Walk-ons"
-                description="Players recorded as walk-on arrivals beyond the rotation"
-                entries={walkOnReserves}
-                select={select}
-              />
-            )}
-          </section>
+            </section>
+          ))}
         </div>
       )}
     </>
   )
 }
 
-function DepthPanelHeading({
-  id,
-  title,
-  detail,
-}: {
-  id: string
-  title: string
-  detail: string
-}) {
-  return (
-    <div className="mb-3 flex items-end justify-between gap-3 border-b-2 border-michigan-blue pb-1.5">
-      <h3 id={id} className="text-lg font-black tracking-[-0.02em]">
-        {title}
-      </h3>
-      <p className="text-right text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-        {detail}
-      </p>
-    </div>
-  )
+function handleDepthTabKeyDown(
+  event: ReactKeyboardEvent<HTMLButtonElement>,
+  current: DepthView,
+  tabs: Array<{ id: DepthView }>,
+  select: (tab: DepthView) => void,
+) {
+  const currentIndex = tabs.findIndex((tab) => tab.id === current)
+  const lastIndex = tabs.length - 1
+  const nextIndex =
+    event.key === 'ArrowRight'
+      ? currentIndex === lastIndex
+        ? 0
+        : currentIndex + 1
+      : event.key === 'ArrowLeft'
+        ? currentIndex === 0
+          ? lastIndex
+          : currentIndex - 1
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? lastIndex
+            : undefined
+
+  if (nextIndex === undefined) return
+
+  event.preventDefault()
+  const next = tabs[nextIndex]
+  select(next.id)
+  event.currentTarget.parentElement
+    ?.querySelector<HTMLButtonElement>(`#depth-tab-${next.id}`)
+    ?.focus()
 }
 
-function StarterUnit({
-  unit,
+type DepthTierEntry = {
+  entry: EnrichedPlayer
+  label: string
+}
+
+type PreparedDepthRoom = DepthRoom & {
+  starters: Array<DepthTierEntry>
+  rotation: Array<DepthTierEntry>
+  prospects: Array<DepthTierEntry>
+  walkOns: Array<DepthTierEntry>
+}
+
+function DepthUnitPanel({
+  label,
+  rooms,
   select,
 }: {
-  unit: (typeof starterUnits)[number] & {
-    assignments: Array<{ entry: EnrichedPlayer; slot: StarterSlot }>
-  }
+  label: string
+  rooms: Array<PreparedDepthRoom>
   select: (player: EnrichedPlayer) => void
 }) {
+  const count = countDepthPlayers(rooms)
+
   return (
     <>
-      <DepthPanelHeading
-        id={`${unit.id}-heading`}
-        title={`${unit.label} first unit`}
-        detail={unit.personnel}
-      />
-      {unit.assignments.length === 0 ? (
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b-2 border-michigan-blue pb-1.5">
+        <h3 className="text-lg font-black tracking-[-0.02em]">
+          {label} depth chart
+        </h3>
+        <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+          {count} {count === 1 ? 'player' : 'players'} · {rooms.length} position
+          rooms
+        </p>
+      </div>
+      {count === 0 ? (
         <HydratingEmpty
-          label={`No ${unit.label.toLowerCase()} players match this search.`}
+          label={`No ${label.toLowerCase()} players match this search.`}
         />
       ) : (
-        <div className="grid gap-px border border-michigan-blue/25 bg-michigan-blue/20 lg:grid-cols-3">
-          {unit.rooms.map((room) => {
-            const assignments = unit.assignments.filter(
-              ({ slot }) => slot.room === room.id,
-            )
-
-            return (
-              <section key={room.id} className="bg-white p-3">
-                <div className="mb-2 flex items-baseline justify-between gap-2 border-b border-michigan-blue/20 pb-2">
-                  <h4 className="font-black">{room.label}</h4>
-                  <span className="text-[10px] font-black tabular-nums text-neutral-400">
-                    {assignments.length}
-                  </span>
-                </div>
-                {assignments.length === 0 ? (
-                  <p className="py-2 text-xs text-neutral-500">
-                    No matching players.
-                  </p>
-                ) : (
-                  <ol className="divide-y divide-neutral-100">
-                    {assignments.map(({ entry, slot }) => (
-                      <li key={slot.id}>
-                        <StarterDepthPlayer
-                          entry={entry}
-                          label={slot.label}
-                          select={select}
-                        />
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </section>
-            )
-          })}
+        <div className="space-y-6">
+          {rooms.map((room) => (
+            <DepthPositionRoom key={room.id} room={room} select={select} />
+          ))}
         </div>
       )}
     </>
   )
 }
 
-function SpecialistUnit({
-  assignments,
+function DepthPositionRoom({
+  room,
   select,
 }: {
-  assignments: Array<{ entry: EnrichedPlayer; slot: StarterSlot }>
+  room: PreparedDepthRoom
+  select: (player: EnrichedPlayer) => void
+}) {
+  const count = countDepthPlayers([room])
+
+  return (
+    <article className="border-t-4 border-michigan-maize bg-white">
+      <header className="flex items-start justify-between gap-3 px-3 py-2.5">
+        <div>
+          <h4 className="font-black">{room.label}</h4>
+          <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+            {room.note}
+          </p>
+        </div>
+        <span className="text-lg font-black tabular-nums">{count}</span>
+      </header>
+      <div className="grid gap-px border-y border-michigan-blue/20 bg-michigan-blue/20 sm:grid-cols-2 xl:grid-cols-4">
+        <DepthTierColumn
+          title="Starters"
+          entries={room.starters}
+          select={select}
+        />
+        <DepthTierColumn
+          title="Rotation"
+          entries={room.rotation}
+          select={select}
+        />
+        <DepthTierColumn
+          title="Prospects"
+          entries={room.prospects}
+          select={select}
+        />
+        <DepthTierColumn
+          title="Walk-ons"
+          entries={room.walkOns}
+          select={select}
+        />
+      </div>
+    </article>
+  )
+}
+
+function DepthTierColumn({
+  title,
+  entries,
+  select,
+}: {
+  title: string
+  entries: Array<DepthTierEntry>
   select: (player: EnrichedPlayer) => void
 }) {
   return (
-    <>
-      <DepthPanelHeading
-        id="specialists-heading"
-        title="Specialists"
-        detail="First-listed kicking unit"
-      />
-      {assignments.length === 0 ? (
-        <HydratingEmpty label="No specialists match this search." />
+    <section className="min-w-0 bg-white p-2.5" aria-label={title}>
+      <div className="mb-1.5 flex items-center justify-between gap-2 border-b border-michigan-blue/20 pb-1.5">
+        <h5 className="text-[10px] font-black uppercase tracking-[0.12em] text-michigan-blue">
+          {title}
+        </h5>
+        <span className="text-[10px] font-black tabular-nums text-neutral-400">
+          {entries.length}
+        </span>
+      </div>
+      {entries.length === 0 ? (
+        <p className="px-1 py-2 text-xs text-neutral-400">No players.</p>
       ) : (
-        <ol className="grid gap-px border border-michigan-blue/25 bg-michigan-blue/20 sm:grid-cols-3">
-          {assignments.map(({ entry, slot }) => (
-            <li key={slot.id} className="bg-white px-3 py-2">
-              <StarterDepthPlayer
-                entry={entry}
-                label={slot.label}
-                select={select}
-              />
+        <ol className="divide-y divide-neutral-100">
+          {entries.map(({ entry, label }) => (
+            <li key={entry.player._id}>
+              <DepthTierPlayer entry={entry} label={label} select={select} />
             </li>
           ))}
         </ol>
       )}
-    </>
-  )
-}
-
-function RotationPanel({
-  groups,
-  select,
-}: {
-  groups: Array<RotationGroup & { entries: Array<EnrichedPlayer> }>
-  select: (player: EnrichedPlayer) => void
-}) {
-  const offense = groups.filter((group) =>
-    ['QB', 'HB', 'WR', 'OL'].includes(group.id),
-  )
-  const defense = groups.filter((group) =>
-    ['IDL', 'EDGE', 'LB', 'DB'].includes(group.id),
-  )
-  const count = groups.reduce((total, group) => total + group.entries.length, 0)
-
-  return (
-    <>
-      <DepthPanelHeading
-        id="rotation-heading"
-        title="Rotation"
-        detail="Workload-sized position rooms"
-      />
-      {count === 0 ? (
-        <HydratingEmpty label="No rotation players match this search." />
-      ) : (
-        <div className="space-y-6">
-          <RotationUnit label="Offense" groups={offense} select={select} />
-          <RotationUnit label="Defense" groups={defense} select={select} />
-        </div>
-      )}
-    </>
-  )
-}
-
-function RotationUnit({
-  label,
-  groups,
-  select,
-}: {
-  label: string
-  groups: Array<RotationGroup & { entries: Array<EnrichedPlayer> }>
-  select: (player: EnrichedPlayer) => void
-}) {
-  return (
-    <section aria-label={`${label} rotation`}>
-      <h4 className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-michigan-blue">
-        {label}
-      </h4>
-      <div className="grid gap-px border border-michigan-blue/20 bg-michigan-blue/20 sm:grid-cols-2 xl:grid-cols-4">
-        {groups.map((group) => (
-          <article key={group.id} className="bg-white p-3">
-            <div className="mb-2 flex items-start justify-between gap-2 border-b border-michigan-blue/20 pb-2">
-              <div>
-                <h5 className="font-black">{group.label}</h5>
-                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-                  {group.note}
-                </p>
-              </div>
-              <span className="grid h-7 min-w-7 place-items-center bg-michigan-maize px-1 text-xs font-black text-michigan-blue">
-                {group.entries.length}
-              </span>
-            </div>
-            {group.entries.length === 0 ? (
-              <p className="py-1 text-xs text-neutral-500">No matches.</p>
-            ) : (
-              <ol className="divide-y divide-neutral-100">
-                {group.entries.map((entry) => (
-                  <li key={entry.player._id}>
-                    <DepthPlayerRow entry={entry} select={select} />
-                  </li>
-                ))}
-              </ol>
-            )}
-          </article>
-        ))}
-      </div>
     </section>
   )
 }
 
-function StarterDepthPlayer({
+function DepthTierPlayer({
   entry,
   label,
   select,
@@ -997,7 +993,7 @@ function StarterDepthPlayer({
       onClick={() => select(entry)}
       className="group grid w-full grid-cols-[2.5rem_1fr_auto] items-center gap-2 border-l-2 border-transparent px-1 py-2 text-left transition hover:border-michigan-maize hover:bg-michigan-blue-soft focus-visible:border-michigan-maize focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
     >
-      <span className="text-[9px] font-black uppercase tracking-[0.08em] text-michigan-blue">
+      <span className="text-[9px] font-black uppercase tracking-[0.08em] text-neutral-500 group-hover:text-michigan-blue">
         {label}
       </span>
       <span className="min-w-0">
@@ -1005,7 +1001,7 @@ function StarterDepthPlayer({
           {entry.player.displayName}
         </span>
         <span className="block text-[10px] text-neutral-500">
-          {entry.stint.position} · {entry.stint.startSeason}
+          {entry.stint.position} · depth {entry.stint.depthChartOrder}
         </span>
       </span>
       <span className="text-[10px] font-bold tabular-nums text-neutral-500">
@@ -1015,85 +1011,15 @@ function StarterDepthPlayer({
   )
 }
 
-function DepthPlayerRow({
-  entry,
-  select,
-}: {
-  entry: EnrichedPlayer
-  select: (player: EnrichedPlayer) => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => select(entry)}
-      className="group grid w-full grid-cols-[2.3rem_1fr_auto] items-center gap-2 border-l-2 border-transparent px-1.5 py-1.5 text-left transition hover:border-michigan-maize hover:bg-michigan-blue-soft focus-visible:border-michigan-maize focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
-    >
-      <span className="text-[9px] font-black uppercase tracking-[0.08em] text-neutral-500 group-hover:text-michigan-blue">
-        {entry.stint.position}
-      </span>
-      <span className="truncate text-sm font-bold">
-        {entry.player.displayName}
-      </span>
-      <span className="text-[10px] font-bold tabular-nums text-neutral-500">
-        {jersey(entry.stint.jerseyNumber)}
-      </span>
-    </button>
-  )
-}
-
-function ReserveList({
-  title,
-  description,
-  entries,
-  select,
-}: {
-  title: string
-  description: string
-  entries: Array<EnrichedPlayer>
-  select: (player: EnrichedPlayer) => void
-}) {
-  return (
-    <article className="border-t-4 border-michigan-maize bg-white">
-      <header className="flex items-start justify-between gap-3 border-b border-michigan-blue/20 px-3 py-2">
-        <div>
-          <h4 className="font-black">{title}</h4>
-          <p className="text-xs text-neutral-500">{description}</p>
-        </div>
-        <span className="text-lg font-black tabular-nums">
-          {entries.length}
-        </span>
-      </header>
-      {entries.length === 0 ? (
-        <p className="px-3 py-4 text-sm text-neutral-500">No players shown.</p>
-      ) : (
-        <ol className="grid px-2 md:grid-cols-2 md:gap-x-4 xl:grid-cols-3">
-          {entries.map((entry) => (
-            <li key={entry.player._id} className="border-b border-neutral-100">
-              <button
-                type="button"
-                onClick={() => select(entry)}
-                className="grid w-full grid-cols-[2.5rem_1fr_auto] items-center gap-2 px-1 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
-              >
-                <span className="text-[9px] font-black uppercase tracking-[0.08em] text-michigan-blue">
-                  {depthGroup(entry.stint.position)}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold">
-                    {entry.player.displayName}
-                  </span>
-                  <span className="block text-[10px] text-neutral-500">
-                    {entry.stint.position} · depth {entry.stint.depthChartOrder}
-                  </span>
-                </span>
-                <span className="text-[10px] font-bold text-neutral-500">
-                  {jersey(entry.stint.jerseyNumber)}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      )}
-    </article>
+function countDepthPlayers(rooms: Array<PreparedDepthRoom>) {
+  return rooms.reduce(
+    (total, room) =>
+      total +
+      room.starters.length +
+      room.rotation.length +
+      room.prospects.length +
+      room.walkOns.length,
+    0,
   )
 }
 
@@ -2069,8 +1995,8 @@ function compareRotationCandidates(a: EnrichedPlayer, b: EnrichedPlayer) {
 
 function compareDepthPlayers(a: EnrichedPlayer, b: EnrichedPlayer) {
   return (
-    depthGroupOrder(depthGroup(a.stint.position)) -
-      depthGroupOrder(depthGroup(b.stint.position)) ||
+    depthRoomOrder(depthRoom(a.stint.position)) -
+      depthRoomOrder(depthRoom(b.stint.position)) ||
     positionOrder.indexOf(a.stint.position) -
       positionOrder.indexOf(b.stint.position) ||
     (a.stint.depthChartOrder ?? 999) - (b.stint.depthChartOrder ?? 999) ||
@@ -2085,7 +2011,7 @@ function starterCount(position: string) {
   ].filter((slot) => slot.position === position).length
 }
 
-function depthGroup(position: string): DepthGroup {
+function depthRoom(position: string): DepthRoomId | 'OTHER' {
   if (position === 'QB') return 'QB'
   if (['RB', 'HB', 'FB'].includes(position)) return 'HB'
   if (['WR', 'SLOT', 'TE'].includes(position)) return 'WR'
@@ -2095,13 +2021,27 @@ function depthGroup(position: string): DepthGroup {
   if (['EDGE', 'DE', 'SDE', 'WDE', 'ED'].includes(position)) return 'EDGE'
   if (['LB', 'ILB', 'OLB'].includes(position)) return 'LB'
   if (['CB', 'NICKEL', 'S', 'DB'].includes(position)) return 'DB'
-  return 'ST'
+  if (position === 'K') return 'K'
+  if (position === 'P') return 'P'
+  if (position === 'LS') return 'LS'
+  return 'OTHER'
 }
 
-function depthGroupOrder(group: DepthGroup) {
-  return ['QB', 'HB', 'WR', 'OL', 'IDL', 'EDGE', 'LB', 'DB', 'ST'].indexOf(
-    group,
-  )
+function depthRoomOrder(room: DepthRoomId | 'OTHER') {
+  return [
+    'QB',
+    'HB',
+    'WR',
+    'OL',
+    'IDL',
+    'EDGE',
+    'LB',
+    'DB',
+    'K',
+    'P',
+    'LS',
+    'OTHER',
+  ].indexOf(room)
 }
 
 function groupByNumber<T>(items: Array<T>, getKey: (item: T) => number) {
