@@ -56,9 +56,9 @@ React Query manages suspense/cache behavior for the roster reads while the Conve
 
 Tailwind CSS 4 is imported in `src/styles/app.css` through the Vite Tailwind plugin. The global layer sets the system sans-serif stack, rendering preferences, body margin/minimum width, and light/dark text/background defaults.
 
-The explorer uses Michigan navy and maize with warm-neutral surfaces, compact roster tables, serif display headings, and responsive horizontal filter navigation. Solid headings and restrained backgrounds take priority over gradients. Flat sections and dividers take priority over nested cards.
+The explorer uses a grayscale palette, white surfaces, compact tables, sans-serif headings, and horizontal filter navigation. Borders and type establish hierarchy. Background fills are limited to active controls, table headers, and interaction states; gradients are not used. Flat sections and dividers take priority over cards.
 
-Keep the vertical rhythm tight. Let the outer container own page padding; inner sections should add only the space needed to separate their content. Do not repeat padding or margins at every level of the component tree. It is an implemented product direction, not final approved branding.
+Keep the vertical rhythm tight. The outer container owns page padding; inner sections add only the separation their content needs. Do not repeat padding or margins at each level of the component tree. It is an implemented product direction, not final approved branding.
 
 ## Adding or changing a route
 
