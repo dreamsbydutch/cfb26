@@ -1,5 +1,14 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-michigan-blue: #00274c;
+  --color-michigan-blue-dark: #001a33;
+  --color-michigan-blue-soft: #e8eef3;
+  --color-michigan-maize: #ffcb05;
+  --color-michigan-maize-soft: #fff0ad;
+  --color-michigan-cream: #fffdf5;
+}
+
 @layer base {
   :root {
     font-family:
@@ -19,7 +28,7 @@
   body {
     margin: 0;
     min-width: 320px;
-    @apply bg-white text-neutral-950;
+    @apply bg-michigan-cream text-michigan-blue;
   }
 
   button,
@@ -34,8 +43,8 @@
   }
 
   ::selection {
-    background: #d4d4d4;
-    color: #0a0a0a;
+    background: #ffcb05;
+    color: #00274c;
   }
 
   .using-mouse * {

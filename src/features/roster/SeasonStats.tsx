@@ -44,12 +44,12 @@ export function SeasonStats({
 
   return (
     <>
-      <div className="mb-3 max-w-3xl border-b border-neutral-200 pb-2">
+      <div className="mb-3 max-w-3xl border-b border-michigan-blue/20 pb-2">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-          <h2 className="text-xl font-black tracking-[-0.02em] sm:text-2xl">
+          <h2 className="text-xl font-black tracking-[-0.02em] text-michigan-blue sm:text-2xl">
             Season production
           </h2>
-          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-neutral-500">
+          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-michigan-blue">
             2015–2025
           </p>
         </div>
@@ -66,10 +66,10 @@ export function SeasonStats({
               type="button"
               onClick={() => setSeason(value)}
               aria-pressed={season === value}
-              className={`border px-3 py-1 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${
+              className={`border px-3 py-1 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue ${
                 season === value
-                  ? 'border-neutral-950 bg-neutral-950 text-white'
-                  : 'border-neutral-300 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'
+                  ? 'border-michigan-blue bg-michigan-blue text-white'
+                  : 'border-michigan-blue/25 text-neutral-600 hover:border-michigan-blue hover:bg-michigan-maize-soft hover:text-michigan-blue'
               }`}
             >
               {value}
@@ -95,7 +95,7 @@ export function SeasonStats({
         </div>
       ) : (
         <>
-          <p className="mb-2 border-l-2 border-neutral-950 pl-2 text-sm font-semibold leading-5">
+          <p className="mb-2 border-l-2 border-michigan-maize pl-2 text-sm font-semibold leading-5">
             {seasonNarrative(participants, season)}
           </p>
 
@@ -117,7 +117,7 @@ export function SeasonStats({
               <select
                 value={sort}
                 onChange={(event) => setSort(event.target.value as Sort)}
-                className="border border-neutral-300 bg-white px-2 py-1 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+                className="border border-michigan-blue/25 bg-white px-2 py-1 outline-none focus:border-michigan-blue focus:ring-2 focus:ring-michigan-maize"
               >
                 <option value="snaps">Most snaps</option>
                 <option value="rating">Highest grade</option>
@@ -132,7 +132,7 @@ export function SeasonStats({
             </div>
           ) : (
             <div className="overflow-hidden border-y border-neutral-300">
-              <div className="hidden grid-cols-[2fr_0.6fr_0.65fr_0.65fr_0.65fr] gap-3 border-b border-neutral-300 bg-neutral-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500 md:grid">
+              <div className="hidden grid-cols-[2fr_0.6fr_0.65fr_0.65fr_0.65fr] gap-3 border-b border-michigan-blue/25 bg-michigan-blue-soft px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-michigan-blue md:grid">
                 <span>Player</span>
                 <span>Position</span>
                 <span>Games</span>
@@ -151,7 +151,7 @@ export function SeasonStats({
                       key={rowKey(entry)}
                       type="button"
                       onClick={() => select(linked)}
-                      className="block w-full text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
+                      className="block w-full text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
                     >
                       {content}
                     </button>
@@ -232,7 +232,7 @@ function MobileValue({
       <span
         className={
           grade
-            ? 'font-black tabular-nums underline decoration-neutral-400 decoration-1 underline-offset-4'
+            ? 'font-black tabular-nums underline decoration-michigan-maize decoration-2 underline-offset-4'
             : strong
               ? 'font-bold'
               : 'font-semibold tabular-nums text-neutral-600'

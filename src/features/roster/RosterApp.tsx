@@ -98,17 +98,17 @@ export function RosterApp() {
   return (
     <>
       <main
-        className="min-h-screen bg-white text-neutral-950"
+        className="min-h-screen bg-michigan-cream text-michigan-blue"
         inert={selected ? true : undefined}
       >
-        <header className="border-b border-neutral-200">
+        <header className="border-b-4 border-michigan-maize bg-michigan-blue text-white">
           <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-2 px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-2">
-              <div className="grid h-8 w-9 shrink-0 place-items-center border-2 border-neutral-950 font-serif text-lg font-black [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)] sm:h-9 sm:w-10 sm:text-xl">
+              <div className="grid h-8 w-9 shrink-0 place-items-center border-2 border-michigan-maize bg-michigan-maize font-serif text-lg font-black text-michigan-blue [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)] sm:h-9 sm:w-10 sm:text-xl">
                 M
               </div>
               <div>
-                <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 sm:block">
+                <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-michigan-maize sm:block">
                   Michigan football
                 </p>
                 <h1 className="truncate text-xs font-black sm:text-base">
@@ -116,7 +116,7 @@ export function RosterApp() {
                 </h1>
               </div>
             </div>
-            <dl className="grid grid-cols-3 divide-x divide-neutral-200">
+            <dl className="grid grid-cols-3 divide-x divide-white/25">
               <Stat value={activeCount} label="Current" />
               <Stat
                 value={rosterIsComplete ? players.length : `${players.length}+`}
@@ -130,7 +130,7 @@ export function RosterApp() {
           </div>
         </header>
 
-        <div className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur">
+        <div className="sticky top-0 z-30 border-b border-michigan-blue/20 bg-michigan-cream/95 backdrop-blur">
           <div className="mx-auto flex max-w-[1500px] flex-col gap-1.5 px-4 py-1.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <nav
               aria-label="Roster views"
@@ -143,10 +143,10 @@ export function RosterApp() {
                     type="button"
                     onClick={() => setView(item.id)}
                     aria-current={view === item.id ? 'page' : undefined}
-                    className={`border-b-2 px-2 py-1 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
+                    className={`border-b-2 px-2 py-1 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue ${
                       view === item.id
-                        ? 'border-neutral-950 text-neutral-950'
-                        : 'border-transparent text-neutral-500 hover:text-neutral-950'
+                        ? 'border-michigan-maize text-michigan-blue'
+                        : 'border-transparent text-neutral-500 hover:border-michigan-maize-soft hover:text-michigan-blue'
                     }`}
                   >
                     {item.label}
@@ -162,7 +162,7 @@ export function RosterApp() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search name, school, class…"
-                className="w-full border border-neutral-300 bg-white py-1 pl-9 pr-3 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
+                className="w-full border border-michigan-blue/25 bg-white py-1 pl-9 pr-3 text-sm outline-none transition placeholder:text-neutral-400 focus:border-michigan-blue focus:ring-2 focus:ring-michigan-maize"
               />
             </label>
           </div>
@@ -242,7 +242,7 @@ export function RosterApp() {
 function Stat({ value, label }: { value: string | number; label: string }) {
   return (
     <div className="flex flex-col px-1 text-center sm:px-4">
-      <dt className="order-2 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
+      <dt className="order-2 text-[9px] font-bold uppercase tracking-[0.1em] text-michigan-maize">
         {label}
       </dt>
       <dd className="order-1 text-xs font-black tabular-nums sm:text-base">
@@ -270,7 +270,7 @@ function ProfileProgress({
   return (
     <div className="mb-4 flex flex-col gap-2 border-y border-neutral-200 py-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
-        <span className="h-2 w-2 animate-pulse rounded-full bg-neutral-500" />
+        <span className="h-2 w-2 animate-pulse rounded-full bg-michigan-maize" />
         <div>
           <p className="text-sm font-bold">
             {!rosterComplete
@@ -293,9 +293,9 @@ function ProfileProgress({
           Retry missing profiles
         </button>
       ) : (
-        <div className="h-1 w-full overflow-hidden bg-neutral-200 sm:w-40">
+        <div className="h-1 w-full overflow-hidden bg-michigan-blue-soft sm:w-40">
           <div
-            className={`h-full bg-neutral-950 transition-[width] ${rosterComplete ? '' : 'animate-pulse'}`}
+            className={`h-full bg-michigan-blue transition-[width] ${rosterComplete ? '' : 'animate-pulse'}`}
             style={{
               width: rosterComplete
                 ? `${total ? (loaded / total) * 100 : 0}%`
@@ -318,12 +318,12 @@ function SectionIntro({
   children: ReactNode
 }) {
   return (
-    <div className="mb-3 max-w-3xl border-b border-neutral-200 pb-2">
+    <div className="mb-3 max-w-3xl border-b border-michigan-blue/20 pb-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-        <h2 className="text-xl font-black tracking-[-0.02em] sm:text-2xl">
+        <h2 className="text-xl font-black tracking-[-0.02em] text-michigan-blue sm:text-2xl">
           {title}
         </h2>
-        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-neutral-500">
+        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-michigan-blue">
           {eyebrow}
         </p>
       </div>
@@ -368,7 +368,7 @@ function DepthChart({
                     <button
                       type="button"
                       onClick={() => select(entry)}
-                      className="group grid w-full grid-cols-[1.75rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
+                      className="group grid w-full grid-cols-[1.75rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
                     >
                       <span className="text-center text-xs font-black tabular-nums text-neutral-500 group-hover:text-neutral-950">
                         {entry.stint.depthChartOrder ?? '—'}
@@ -539,7 +539,7 @@ function DraftClasses({
                         key={entry.player._id}
                         type="button"
                         onClick={() => select(entry)}
-                        className="grid w-full grid-cols-[3.25rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none sm:grid-cols-[4.5rem_1fr_7rem_7rem]"
+                        className="grid w-full grid-cols-[3.25rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none sm:grid-cols-[4.5rem_1fr_7rem_7rem]"
                       >
                         <span className="text-base font-black">
                           {draft.status === 'drafted'
@@ -626,7 +626,7 @@ function PositionLists({
                     key={entry.player._id}
                     type="button"
                     onClick={() => select(entry)}
-                    className="flex w-full items-center justify-between py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
+                    className="flex w-full items-center justify-between py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
                   >
                     <span>
                       <span className="block text-sm font-bold">
@@ -675,8 +675,8 @@ function AllPlayers({
             onClick={() => setStatus(value)}
             className={`border px-3 py-1 text-xs font-bold capitalize transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${
               status === value
-                ? 'border-neutral-950 bg-neutral-950 text-white'
-                : 'border-neutral-300 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'
+                ? 'border-michigan-blue bg-michigan-blue text-white'
+                : 'border-michigan-blue/25 text-neutral-600 hover:border-michigan-blue hover:bg-michigan-maize-soft hover:text-michigan-blue'
             }`}
           >
             {value} ·{' '}
@@ -687,7 +687,7 @@ function AllPlayers({
         ))}
       </div>
       <div className="overflow-hidden border-y border-neutral-300">
-        <div className="hidden grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] gap-3 border-b border-neutral-300 bg-neutral-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500 md:grid">
+        <div className="hidden grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] gap-3 border-b border-michigan-blue/25 bg-michigan-blue-soft px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-michigan-blue md:grid">
           <span>Player</span>
           <span>Position</span>
           <span>Arrived</span>
@@ -700,7 +700,7 @@ function AllPlayers({
               key={entry.player._id}
               type="button"
               onClick={() => select(entry)}
-              className="grid w-full grid-cols-[1fr_auto] items-start gap-x-3 px-2 py-1.5 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none md:grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] md:items-center md:gap-3 md:px-3 md:py-2"
+              className="grid w-full grid-cols-[1fr_auto] items-start gap-x-3 px-2 py-1.5 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none md:grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] md:items-center md:gap-3 md:px-3 md:py-2"
             >
               <span className="min-w-0">
                 <span className="block truncate font-bold leading-5">
@@ -750,7 +750,7 @@ function PlayerCard({
     <button
       type="button"
       onClick={() => select(entry)}
-      className="border-b border-neutral-200 py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
+      className="border-b border-neutral-200 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
     >
       <span className="block font-bold">{entry.player.displayName}</span>
       <span className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
@@ -803,17 +803,17 @@ function PlayerDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="player-title"
-        className="relative h-full w-full max-w-xl overflow-y-auto border-l border-neutral-300 bg-white"
+        className="relative h-full w-full max-w-xl overflow-y-auto border-l-4 border-michigan-maize bg-michigan-cream"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-300 bg-white px-4 py-2 sm:px-5">
-          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-500">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-michigan-maize bg-michigan-blue px-4 py-2 text-white sm:px-5">
+          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-michigan-maize">
             Player profile
           </span>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={close}
-            className="grid h-8 w-8 place-items-center transition hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="grid h-8 w-8 place-items-center transition hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize"
             aria-label="Close player profile"
           >
             <CloseIcon />
@@ -822,7 +822,7 @@ function PlayerDrawer({
 
         <div className="border-b border-neutral-300 px-4 py-3 sm:px-5">
           <div className="flex items-start gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center border border-neutral-300 text-lg font-black">
+            <div className="grid h-12 w-12 shrink-0 place-items-center border border-michigan-blue bg-michigan-maize text-lg font-black text-michigan-blue">
               {entry.stint.jerseyNumber ?? entry.stint.position}
             </div>
             <div>
@@ -1055,7 +1055,7 @@ function SeasonHistory({
 
   return (
     <>
-      <p className="border-l-2 border-neutral-950 pl-2 text-sm font-semibold leading-5">
+      <p className="border-l-2 border-michigan-maize pl-2 text-sm font-semibold leading-5">
         {careerNarrative(recordedStats)}
       </p>
 
@@ -1067,7 +1067,7 @@ function SeasonHistory({
       </dl>
 
       <div className="mt-2 overflow-hidden border-y border-neutral-200">
-        <div className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] gap-2 border-b border-neutral-200 bg-neutral-50 px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
+        <div className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] gap-2 border-b border-michigan-blue/20 bg-michigan-blue-soft px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-michigan-blue">
           <span>Year</span>
           <span>Pos</span>
           <span>GP</span>
@@ -1152,7 +1152,7 @@ function DetailSection({
 }) {
   return (
     <section className="border-b border-neutral-200 py-3 last:border-b-0">
-      <h3 className="mb-2 text-[10px] font-black uppercase tracking-[0.14em]">
+      <h3 className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-michigan-blue">
         {title}
       </h3>
       {children}
@@ -1217,7 +1217,7 @@ function SourceBadge({
   source: 'high_school' | 'transfer' | 'walk_on'
 }) {
   return (
-    <span className="border border-neutral-300 px-1.5 py-0.5 font-bold text-neutral-600">
+    <span className="border border-michigan-blue/25 bg-michigan-blue-soft px-1.5 py-0.5 font-bold text-michigan-blue">
       {sourceLabel(source)}
     </span>
   )
@@ -1232,7 +1232,7 @@ function StatusBadge({
     <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-neutral-500">
       <span
         aria-hidden="true"
-        className={`h-1.5 w-1.5 rounded-full ${status === 'active' ? 'bg-neutral-950' : status === 'committed' ? 'bg-neutral-500' : 'bg-neutral-300'}`}
+        className={`h-1.5 w-1.5 rounded-full ${status === 'active' ? 'bg-michigan-blue' : status === 'committed' ? 'bg-michigan-maize' : 'bg-neutral-300'}`}
       />
       {status}
     </span>
@@ -1267,12 +1267,12 @@ function HydratingEmpty({ label }: { label: string }) {
 
 export function RosterLoading() {
   return (
-    <main className="grid min-h-screen place-items-center bg-white px-6 text-neutral-950">
+    <main className="grid min-h-screen place-items-center bg-michigan-blue px-6 text-white">
       <div className="text-center">
-        <div className="mx-auto grid h-14 w-16 place-items-center border-2 border-neutral-950 font-serif text-3xl font-black [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)]">
+        <div className="mx-auto grid h-14 w-16 place-items-center border-2 border-michigan-maize bg-michigan-maize font-serif text-3xl font-black text-michigan-blue [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)]">
           M
         </div>
-        <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-neutral-500">
+        <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-michigan-maize">
           Loading roster
         </p>
       </div>
@@ -1282,9 +1282,9 @@ export function RosterLoading() {
 
 export function RosterError() {
   return (
-    <main className="grid min-h-screen place-items-center bg-white px-6 text-center">
+    <main className="grid min-h-screen place-items-center bg-michigan-cream px-6 text-center text-michigan-blue">
       <div className="max-w-md">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-neutral-500">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-michigan-blue">
           Connection error
         </p>
         <h1 className="mt-1 text-2xl font-black">Couldn’t load the roster.</h1>
@@ -1388,7 +1388,7 @@ function formatMeasurements(
 }
 
 function chipClass(active: boolean) {
-  return `border px-3 py-1 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${active ? 'border-neutral-950 bg-neutral-950 text-white' : 'border-neutral-300 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'}`
+  return `border px-3 py-1 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue ${active ? 'border-michigan-blue bg-michigan-blue text-white' : 'border-michigan-blue/25 text-neutral-600 hover:border-michigan-blue hover:bg-michigan-maize-soft hover:text-michigan-blue'}`
 }
 
 function SearchIcon() {
