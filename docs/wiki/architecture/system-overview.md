@@ -20,7 +20,7 @@ TanStack Start renders the React application and owns file-based routing. `getRo
 
 | Boundary             | Source                                       | Responsibility                                                                            |
 | -------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Build/runtime        | `vite.config.ts`                             | Composes Tailwind, path aliases, TanStack Start, and React plugins; dev port is 3000.     |
+| Build/runtime        | `vite.config.ts`                             | Composes Tailwind, path aliases, TanStack Start, Nitro, and React; dev port is 3000.      |
 | Router and providers | `src/router.tsx`                             | Creates the router, React Query cache, Convex client, preload policy, and default errors. |
 | Root document        | `src/routes/__root.tsx`                      | Defines HTML shell, global metadata/assets, stylesheet, scripts, and route outlet.        |
 | Route UI             | `src/routes/*.tsx`                           | Defines URL-addressable components and route-specific data use.                           |
@@ -49,9 +49,9 @@ flowchart LR
   W --> A[Web deployment]
 ```
 
-`vercel.json` defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. No Vercel project identifier or production URL is stored in the repository today.
+`vercel.json` selects the `tanstack-start` framework preset and defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. Nitro packages the web application for the Vercel runtime.
 
-The Convex source is aligned in development and production. Vercel project ownership, credentials, and the production web URL still need to be configured and verified before the hosted web pipeline is considered connected.
+The Convex source is aligned in development and production. The owner-confirmed Vercel project is `cfb`, and its production URL is `https://cfb-hazel.vercel.app`. A production redeploy containing the Nitro configuration and a successful smoke test are still required before the hosted web pipeline is considered verified.
 
 ## Deliberate boundaries
 

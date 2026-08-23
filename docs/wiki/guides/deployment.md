@@ -4,9 +4,9 @@
 
 ## Current deployment model
 
-**Current:** the repository records the `dreamsbydutch:michigan` Convex development and production deployments below. It does not record an attached Vercel project or production web URL.
+**Current:** the repository records the `dreamsbydutch:michigan` Convex development and production deployments below. The owner identified the attached Vercel project as `cfb` and its production domain as `https://cfb-hazel.vercel.app`; the domain returned Vercel `NOT_FOUND` before the Nitro deployment configuration was added and still requires a new production deployment and smoke check.
 
-`vercel.json` configures this build command:
+`vite.config.ts` registers Nitro after TanStack Start so a production build emits `.output/public` and `.output/server`. `vercel.json` selects the `tanstack-start` framework preset and configures this build command:
 
 ```text
 npx convex deploy --cmd 'npm run build'
@@ -85,5 +85,5 @@ Preview publishing does not authorize or trigger a production promotion. If the 
 | Production data mirror   | 2026-08-22; 9 tables and 4,005 documents, live-verified identical to development                |
 | Seasonal data extension  | 921 rows: 708 linked to canonical players and 213 preserved as source-only records              |
 | Backend source alignment | **Current:** five public reads deployed in both environments; obsolete internal imports retired |
-| Vercel project           | **Undecided / not stored in repo**                                                              |
-| Production URL           | **Undecided**                                                                                   |
+| Vercel project           | `cfb` (owner-confirmed; Vercel project/team IDs remain untracked)                               |
+| Production URL           | `https://cfb-hazel.vercel.app` (owner-confirmed; Nitro redeploy and smoke check pending)        |

@@ -45,7 +45,7 @@ git diff --cached
 Confirm:
 
 - `.env`, `.env.local`, deployment keys, tokens, and credentials are absent.
-- `node_modules/`, `dist/`, `.tanstack/`, and tool caches are absent.
+- `node_modules/`, `.output/`, `.nitro/`, `dist/`, `.tanstack/`, and tool caches are absent.
 - Generated route/Convex diffs correspond to source changes and were not hand-edited.
 - Lockfile changes have an intentional dependency change.
 - Commands, contracts, and wiki pages match the resulting source.

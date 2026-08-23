@@ -18,7 +18,7 @@ The implemented core workflow is browsing Michigan player history by depth chart
 - The app can be type-checked and production-built locally.
 - Repository guidance, task skills, and this wiki define the maintenance workflow.
 
-The current route is the first product vertical. It is read-only and defaults to the public development deployment; the Vercel web release path is not connected yet.
+The current route is the first product vertical. It is read-only and defaults to the public development deployment. The Vercel project and production domain are known, but the Nitro-backed release path still needs a successful production redeploy and smoke test.
 
 ## Foundation success criteria
 
@@ -35,7 +35,7 @@ The foundation is ready for product work when:
 | ------------------------ | ------------- | ---------------------------------------------------------------------------------------- |
 | 0. Technical foundation  | **Complete**  | App builds; docs and agent workflows match the repository.                               |
 | 1. First vertical slice  | **Current**   | Michigan player browsing works end to end against development data.                      |
-| 2. Deployment connection | **Planned**   | Vercel is attached and the production web deployment is smoke-tested.                    |
+| 2. Deployment connection | **Planned**   | The Nitro-backed production web deployment is redeployed and smoke-tested.               |
 | 3. Product definition    | **Undecided** | Audience, broader problem, non-goals, and write workflows are approved.                  |
 | 4. Production hardening  | **Undecided** | Auth, tests, observability, accessibility, and release policy meet defined requirements. |
 
@@ -48,6 +48,6 @@ The foundation is ready for product work when:
 | Data ownership and privacy | Determines schema, auth, retention, and access rules.         | **Undecided** |
 | Authentication provider    | Determines identity integration and protected-route design.   | **Undecided** |
 | Brand and visual direction | Determines whether the splash palette remains.                | **Undecided** |
-| Production host/project    | Determines environment management and release ownership.      | **Undecided** |
+| Production host/project    | Vercel project `cfb` at `https://cfb-hazel.vercel.app`.       | **Current**   |
 
 When one of these becomes decided, update this page, the affected architecture/operations pages, and add an ADR when the decision has durable technical consequences.

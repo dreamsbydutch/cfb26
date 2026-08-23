@@ -61,7 +61,7 @@ npx convex dev --once
 
 - `src/routeTree.gen.ts` is generated from `src/routes/`.
 - `convex/_generated/` is generated from Convex schema/functions.
-- `dist/` and `.tanstack/` are local build/tool outputs.
+- `.output/`, `.nitro/`, and `.tanstack/` are local build/tool outputs. `dist/` remains ignored as a legacy build path.
 
 Do not hand-edit generated files. Inspect their diffs when they are tracked, and regenerate from source.
 

@@ -59,7 +59,9 @@ The folder currently contains favicon ICO/PNG variants, Apple touch icon, Androi
 | Path                   | Producer                  | Commit?                  |
 | ---------------------- | ------------------------- | ------------------------ |
 | `node_modules/`        | `npm install`             | No                       |
-| `dist/`                | `npm run build`           | No                       |
+| `.output/`             | Nitro production build    | No                       |
+| `.nitro/`              | Nitro tooling cache       | No                       |
+| `dist/`                | Legacy pre-Nitro builds   | No                       |
 | `.tanstack/`           | TanStack tooling          | No                       |
 | `.env`, `.env.local`   | Developer/Convex CLI      | No                       |
 | `.vercel/`             | Vercel CLI                | No                       |

@@ -11,7 +11,7 @@
 | Module mode         | ESM (`"type": "module"`)                |
 | TypeScript target   | ES2022 root; ESNext Convex runtime      |
 | Dev server          | Vite on port 3000                       |
-| Build output        | `dist/client` and `dist/server`         |
+| Build output        | `.output/public` and `.output/server`   |
 | Local build preview | Vite preview server (default port 4173) |
 
 ## Environment variables
@@ -50,7 +50,7 @@ The known deployment URLs are recorded in [Deployment](../guides/deployment.md).
 | Full-stack routing        | `@tanstack/react-start`, `@tanstack/react-router`                                       |
 | Query/cache bridge        | `@tanstack/react-query`, `@tanstack/react-router-with-query`, `@convex-dev/react-query` |
 | Backend/client            | `convex`                                                                                |
-| Styling/build             | `tailwindcss`, `@tailwindcss/vite`, `vite`, `@vitejs/plugin-react`                      |
+| Styling/build             | `tailwindcss`, `@tailwindcss/vite`, `vite`, `nitro`, `@vitejs/plugin-react`             |
 | Type/lint/format          | TypeScript 6/7 aliases, TanStack ESLint config, Convex ESLint plugin, Prettier          |
 | Windows build reliability | `@rolldown/binding-win32-x64-msvc`                                                      |
 
@@ -58,12 +58,12 @@ No authentication, component-system, testing, analytics, or state-management pac
 
 ## Build configuration
 
-- `vite.config.ts` installs Tailwind, TypeScript path resolution, TanStack Start, and React plugins; dev port is 3000.
+- `vite.config.ts` installs Tailwind, TypeScript path resolution, TanStack Start, Nitro, and React plugins; dev port is 3000.
 - `tsconfig.json` enables strict checks, bundler resolution, isolated modules, and the `~/* -> ./src/*` path alias.
-- `eslint.config.mjs` combines TanStack and Convex recommended configurations and ignores `convex/_generated`.
+- `eslint.config.mjs` combines TanStack and Convex recommended configurations and ignores generated Convex and Nitro output.
 - `.prettierrc` disables semicolons, uses single quotes, and keeps trailing commas.
-- `vercel.json` deploys Convex and runs the web build as one hosted build command.
+- `vercel.json` selects the `tanstack-start` framework preset, deploys Convex, and runs the Nitro-backed web build as one hosted build command.
 
 ## Configuration gaps
 
-There is no checked-in CI workflow, test runner, environment schema validator, error-reporting provider, analytics provider, or hosting project metadata. Production remains an incompatible browser target until its public functions are deployed. Add and document new configuration only when a real requirement exists.
+There is no checked-in CI workflow, test runner, environment schema validator, error-reporting provider, analytics provider, or hosting project/team ID metadata. The recorded Vercel production domain still requires a Nitro-backed redeploy and smoke check. Add and document new configuration only when a real requirement exists.

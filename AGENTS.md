@@ -5,7 +5,7 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 ## Repository state
 
 - Product status: first Michigan football vertical slice. `/` is a roster explorer with depth-chart, recruiting-class, draft-class, position, season-stat, search, and player-detail views backed by hosted Michigan data.
-- Stack: React 19, TanStack Start/Router, Vite, Tailwind CSS 4, React Query, and Convex.
+- Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
 - Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Their nine-table schema, 4,005 documents, and five public reads match the checked-in football contract.
@@ -24,8 +24,8 @@ Run commands from the repository root.
 | `npm run dev:web`                                              | Start only Vite without synchronizing Convex source.                                 |
 | `npm run typecheck`                                            | Run strict TypeScript checks across `src/`, `convex/`, and Vite config.              |
 | `npm run lint`                                                 | Run type checking and the TanStack/Convex ESLint rules.                              |
-| `npm run build`                                                | Type-check and create the production client/server bundles in `dist/`.               |
-| `npm run start`                                                | Preview an existing production build locally; requires runtime environment values.   |
+| `npm run build`                                                | Type-check and create the Nitro production output in `.output/`.                     |
+| `npm run start`                                                | Preview an existing Nitro production build; requires runtime environment values.     |
 | `npm run docs:check`                                           | Validate local links in maintained Markdown.                                         |
 | `npm run data:prepare-snaps -- <players.json> <programs.json>` | Prepare the ignored `seasonalPlayerStats` import from `SnapCounts.json`.             |
 | `npm run preview:find -- <owner/repo> <sha>`                   | Resolve a direct Vercel preview URL for one pushed commit.                           |
@@ -70,7 +70,7 @@ Maintenance rules:
 3. Put static, publicly addressable assets in `public/`; do not import application modules from there.
 4. Keep detailed documentation under `docs/wiki/`; link every page from its section index and every section index from the wiki home.
 5. Keep each skill at `.agents/skills/<skill-name>/SKILL.md`; UI metadata belongs in that skill's `agents/openai.yaml`.
-6. Never commit `.env`, `.env.local`, deployment keys, `node_modules/`, `dist/`, or tool caches.
+6. Never commit `.env`, `.env.local`, deployment keys, `node_modules/`, `.output/`, `.nitro/`, `dist/`, or tool caches.
 
 ## Engineering rules
 

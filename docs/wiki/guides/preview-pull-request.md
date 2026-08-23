@@ -19,7 +19,7 @@ The authorization covers one new branch, goal-scoped commits, one push, the resu
 - Required local checks pass.
 - Convex backend changes have been validated against the intended non-production deployment when one is available.
 
-The repository does not currently store an attached Vercel project, so the first real run must verify the integration instead of assuming it exists.
+The repository records the owner-confirmed Vercel project and production domain, but a preview run must still resolve and smoke-test its own commit-specific deployment URL.
 
 ## Lifecycle
 
