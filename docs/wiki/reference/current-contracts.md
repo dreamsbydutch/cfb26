@@ -6,9 +6,9 @@ This page inventories observable interfaces that another part of the app—or a 
 
 ## Web routes
 
-| Method/URL | Behavior                                                                                                                          | Data dependency                                                     |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `GET /`    | Renders the responsive Michigan personnel explorer with six views, global search, loading/error/empty states, and player details. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
+| Method/URL | Behavior                                                                                                                                                                                                                             | Data dependency                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `GET /`    | Renders the responsive Michigan personnel explorer with six views, including a formation-style first unit, workload-sized rotation groups, prospect/walk-on reserves, global search, loading/error/empty states, and player details. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
 
 Unknown URLs render the root route's `Route not found` fallback. Router-level errors currently render stack text.
 

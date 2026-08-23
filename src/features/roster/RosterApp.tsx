@@ -50,6 +50,269 @@ const positionOrder = [
   'LS',
 ]
 
+type DepthGroup =
+  'QB' | 'HB' | 'WR' | 'OL' | 'IDL' | 'EDGE' | 'LB' | 'DB' | 'ST'
+
+type StarterSlot = {
+  id: string
+  label: string
+  position: string
+  order: number
+  layout: string
+}
+
+type RotationGroup = {
+  id: Exclude<DepthGroup, 'ST'>
+  label: string
+  note: string
+  allocations: Array<{ positions: Array<string>; count: number }>
+}
+
+const starterUnits: Array<{
+  id: 'offense' | 'defense'
+  label: string
+  personnel: string
+  slots: Array<StarterSlot>
+}> = [
+  {
+    id: 'offense',
+    label: 'Offense',
+    personnel: '11 personnel',
+    slots: [
+      {
+        id: 'wr-left',
+        label: 'WR',
+        position: 'WR',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-1 lg:row-start-1',
+      },
+      {
+        id: 'slot',
+        label: 'SLOT',
+        position: 'SLOT',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-4 lg:row-start-1',
+      },
+      {
+        id: 'te',
+        label: 'TE',
+        position: 'TE',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-7 lg:row-start-1',
+      },
+      {
+        id: 'wr-right',
+        label: 'WR',
+        position: 'WR',
+        order: 2,
+        layout: 'lg:col-span-3 lg:col-start-10 lg:row-start-1',
+      },
+      {
+        id: 'left-tackle',
+        label: 'OT',
+        position: 'OT',
+        order: 1,
+        layout: 'lg:col-span-2 lg:col-start-1 lg:row-start-2',
+      },
+      {
+        id: 'left-guard',
+        label: 'OG',
+        position: 'OG',
+        order: 1,
+        layout: 'lg:col-span-2 lg:col-start-3 lg:row-start-2',
+      },
+      {
+        id: 'center',
+        label: 'OC',
+        position: 'OC',
+        order: 1,
+        layout: 'lg:col-span-2 lg:col-start-6 lg:row-start-2',
+      },
+      {
+        id: 'right-guard',
+        label: 'OG',
+        position: 'OG',
+        order: 2,
+        layout: 'lg:col-span-2 lg:col-start-9 lg:row-start-2',
+      },
+      {
+        id: 'right-tackle',
+        label: 'OT',
+        position: 'OT',
+        order: 2,
+        layout: 'lg:col-span-2 lg:col-start-11 lg:row-start-2',
+      },
+      {
+        id: 'quarterback',
+        label: 'QB',
+        position: 'QB',
+        order: 1,
+        layout: 'lg:col-span-4 lg:col-start-4 lg:row-start-3',
+      },
+      {
+        id: 'halfback',
+        label: 'HB',
+        position: 'RB',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-8 lg:row-start-3',
+      },
+    ],
+  },
+  {
+    id: 'defense',
+    label: 'Defense',
+    personnel: 'Base front',
+    slots: [
+      {
+        id: 'edge-left',
+        label: 'EDGE',
+        position: 'EDGE',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-1 lg:row-start-1',
+      },
+      {
+        id: 'idl-left',
+        label: 'IDL',
+        position: 'DL',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-4 lg:row-start-1',
+      },
+      {
+        id: 'idl-right',
+        label: 'IDL',
+        position: 'DL',
+        order: 2,
+        layout: 'lg:col-span-3 lg:col-start-7 lg:row-start-1',
+      },
+      {
+        id: 'edge-right',
+        label: 'EDGE',
+        position: 'EDGE',
+        order: 2,
+        layout: 'lg:col-span-3 lg:col-start-10 lg:row-start-1',
+      },
+      {
+        id: 'linebacker-left',
+        label: 'LB',
+        position: 'LB',
+        order: 1,
+        layout: 'lg:col-span-3 lg:col-start-4 lg:row-start-2',
+      },
+      {
+        id: 'linebacker-right',
+        label: 'LB',
+        position: 'LB',
+        order: 2,
+        layout: 'lg:col-span-3 lg:col-start-7 lg:row-start-2',
+      },
+      {
+        id: 'corner-left',
+        label: 'CB',
+        position: 'CB',
+        order: 1,
+        layout: 'lg:col-span-2 lg:col-start-1 lg:row-start-3',
+      },
+      {
+        id: 'safety-left',
+        label: 'S',
+        position: 'S',
+        order: 1,
+        layout: 'lg:col-span-2 lg:col-start-3 lg:row-start-3',
+      },
+      {
+        id: 'nickel',
+        label: 'CB',
+        position: 'CB',
+        order: 3,
+        layout: 'lg:col-span-2 lg:col-start-6 lg:row-start-3',
+      },
+      {
+        id: 'safety-right',
+        label: 'S',
+        position: 'S',
+        order: 2,
+        layout: 'lg:col-span-2 lg:col-start-9 lg:row-start-3',
+      },
+      {
+        id: 'corner-right',
+        label: 'CB',
+        position: 'CB',
+        order: 2,
+        layout: 'lg:col-span-2 lg:col-start-11 lg:row-start-3',
+      },
+    ],
+  },
+]
+
+const specialistSlots: Array<StarterSlot> = [
+  { id: 'kicker', label: 'K', position: 'K', order: 1, layout: '' },
+  { id: 'punter', label: 'P', position: 'P', order: 1, layout: '' },
+  { id: 'long-snapper', label: 'LS', position: 'LS', order: 1, layout: '' },
+]
+
+const rotationGroups: Array<RotationGroup> = [
+  {
+    id: 'QB',
+    label: 'Quarterback',
+    note: 'QB',
+    allocations: [{ positions: ['QB'], count: 1 }],
+  },
+  {
+    id: 'HB',
+    label: 'Backfield',
+    note: 'HB · FB',
+    allocations: [
+      { positions: ['RB', 'HB'], count: 1 },
+      { positions: ['FB'], count: 1 },
+    ],
+  },
+  {
+    id: 'WR',
+    label: 'Receivers',
+    note: 'WR · SLOT · TE',
+    allocations: [
+      { positions: ['WR', 'SLOT'], count: 3 },
+      { positions: ['TE'], count: 2 },
+    ],
+  },
+  {
+    id: 'OL',
+    label: 'Offensive line',
+    note: 'OT · OG · OC',
+    allocations: [
+      { positions: ['OT', 'LT', 'RT'], count: 1 },
+      { positions: ['OG', 'LG', 'RG'], count: 1 },
+    ],
+  },
+  {
+    id: 'IDL',
+    label: 'Interior defensive line',
+    note: 'IDL',
+    allocations: [{ positions: ['DL', 'DT', 'NT', 'IDL'], count: 3 }],
+  },
+  {
+    id: 'EDGE',
+    label: 'Edge',
+    note: 'EDGE',
+    allocations: [{ positions: ['EDGE', 'DE', 'SDE', 'WDE'], count: 2 }],
+  },
+  {
+    id: 'LB',
+    label: 'Linebackers',
+    note: 'LB',
+    allocations: [{ positions: ['LB', 'ILB', 'OLB'], count: 2 }],
+  },
+  {
+    id: 'DB',
+    label: 'Defensive backs',
+    note: 'CB · S',
+    allocations: [
+      { positions: ['CB', 'NICKEL'], count: 1 },
+      { positions: ['S'], count: 1 },
+    ],
+  },
+]
+
 export function RosterApp() {
   const {
     players,
@@ -201,7 +464,11 @@ export function RosterApp() {
           ) : (
             <>
               {view === 'depth' && (
-                <DepthChart players={visiblePlayers} select={setSelected} />
+                <DepthChart
+                  players={players}
+                  visiblePlayers={visiblePlayers}
+                  select={setSelected}
+                />
               )}
               {view === 'recruiting' && (
                 <RecruitClasses players={visiblePlayers} select={setSelected} />
@@ -334,68 +601,394 @@ function SectionIntro({
 
 function DepthChart({
   players,
+  visiblePlayers,
   select,
 }: {
   players: Array<EnrichedPlayer>
+  visiblePlayers: Array<EnrichedPlayer>
   select: (player: EnrichedPlayer) => void
 }) {
   const active = players.filter((entry) => entry.stint.status === 'active')
-  const groups = groupPlayers(active)
+  const visibleIds = new Set(
+    visiblePlayers
+      .filter((entry) => entry.stint.status === 'active')
+      .map((entry) => entry.player._id),
+  )
+  const isFiltered = visiblePlayers.length !== players.length
+  const starterAssignments = starterUnits.flatMap((unit) =>
+    unit.slots.flatMap((slot) => {
+      const entry = findDepthPlayer(active, slot.position, slot.order)
+      return entry ? [{ entry, slot, unit: unit.id }] : []
+    }),
+  )
+  const specialistAssignments = specialistSlots.flatMap((slot) => {
+    const entry = findDepthPlayer(active, slot.position, slot.order)
+    return entry ? [{ entry, slot }] : []
+  })
+  const starterIds = new Set(
+    [...starterAssignments, ...specialistAssignments].map(
+      ({ entry }) => entry.player._id,
+    ),
+  )
+  const rotations = buildRotationGroups(active, starterIds)
+  const rotationIds = new Set(
+    rotations.flatMap((group) =>
+      group.entries.map((entry) => entry.player._id),
+    ),
+  )
+  const reserves = active
+    .filter(
+      (entry) =>
+        !starterIds.has(entry.player._id) && !rotationIds.has(entry.player._id),
+    )
+    .sort(compareDepthPlayers)
+  const visibleReserves = reserves.filter((entry) =>
+    visibleIds.has(entry.player._id),
+  )
+  const prospectReserves = visibleReserves.filter(
+    (entry) => entry.profile?.recruiting?.source !== 'walk_on',
+  )
+  const walkOnReserves = visibleReserves.filter(
+    (entry) => entry.profile?.recruiting?.source === 'walk_on',
+  )
+  const visibleStarterUnits = starterUnits
+    .map((unit) => ({
+      ...unit,
+      assignments: starterAssignments.filter(
+        (assignment) =>
+          assignment.unit === unit.id &&
+          visibleIds.has(assignment.entry.player._id),
+      ),
+    }))
+    .filter((unit) => !isFiltered || unit.assignments.length > 0)
+  const visibleSpecialists = specialistAssignments.filter(({ entry }) =>
+    visibleIds.has(entry.player._id),
+  )
+  const visibleRotations = rotations
+    .map((group) => ({
+      ...group,
+      entries: group.entries.filter((entry) =>
+        visibleIds.has(entry.player._id),
+      ),
+    }))
+    .filter((group) => !isFiltered || group.entries.length > 0)
+  const showFirstUnit =
+    !isFiltered ||
+    visibleStarterUnits.length > 0 ||
+    visibleSpecialists.length > 0
+  const showRotation = !isFiltered || visibleRotations.length > 0
+  const showReserves = !isFiltered || visibleReserves.length > 0
+  const hasVisibleActive = visibleIds.size > 0
 
   return (
     <>
-      <SectionIntro eyebrow="2026 roster" title="Depth chart">
-        Recorded depth order by position. 2027 commitments are excluded.
+      <SectionIntro eyebrow="2026 roster" title="Depth chart & rotation">
+        First-listed players fill the base offense, defense and specialists.
+        Rotation room sizes follow the 2015–2025 snap-count workload report;
+        these are roster tiers, not official starts or snap projections.
       </SectionIntro>
-      <div className="grid border-t border-neutral-300 md:grid-cols-2 md:gap-x-6 xl:grid-cols-3">
-        {groups.map(([position, entries]) => (
-          <article key={position} className="border-b border-neutral-300">
-            <div className="flex items-center justify-between py-2">
-              <h3 className="text-lg font-black">{position}</h3>
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-                {entries.length} players
-              </span>
-            </div>
-            <ol className="divide-y divide-neutral-100 border-t border-neutral-200">
-              {entries
-                .sort(
-                  (a, b) =>
-                    (a.stint.depthChartOrder ?? 999) -
-                    (b.stint.depthChartOrder ?? 999),
-                )
-                .map((entry) => (
-                  <li key={entry.player._id}>
-                    <button
-                      type="button"
-                      onClick={() => select(entry)}
-                      className="group grid w-full grid-cols-[1.75rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
-                    >
-                      <span className="text-center text-xs font-black tabular-nums text-neutral-500 group-hover:text-neutral-950">
-                        {entry.stint.depthChartOrder ?? '—'}
-                      </span>
-                      <span>
-                        <span className="block text-sm font-bold">
-                          {entry.player.displayName}
-                        </span>
-                        <span className="block text-xs text-neutral-500">
-                          {jersey(entry.stint.jerseyNumber)} ·{' '}
-                          {entry.stint.startSeason}
-                        </span>
-                      </span>
-                      <span className="text-right text-xs text-neutral-500">
-                        {formatMeasurements(
-                          entry.stint.heightInches,
-                          entry.stint.weightPounds,
-                        )}
-                      </span>
-                    </button>
-                  </li>
+      {!hasVisibleActive ? (
+        <HydratingEmpty label="No active players match this search." />
+      ) : (
+        <div className="space-y-7">
+          {showFirstUnit && (
+            <section aria-labelledby="starters-heading">
+              <DepthSectionHeading
+                id="starters-heading"
+                number="01"
+                title="First unit"
+                detail="22-player base lineup"
+              />
+              <div className="grid gap-4 xl:grid-cols-2">
+                {visibleStarterUnits.map((unit) => (
+                  <StarterUnit
+                    key={unit.id}
+                    label={unit.label}
+                    personnel={unit.personnel}
+                    assignments={unit.assignments}
+                    select={select}
+                  />
                 ))}
-            </ol>
-          </article>
+              </div>
+              {(!isFiltered || visibleSpecialists.length > 0) && (
+                <div className="mt-3 border-y border-michigan-blue/20 bg-white px-3 py-2 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.14em] text-michigan-blue">
+                      Specialists
+                    </h4>
+                    <p className="text-xs text-neutral-500">
+                      First-listed kicking unit
+                    </p>
+                  </div>
+                  <div className="mt-2 grid gap-2 sm:mt-0 sm:grid-cols-3">
+                    {visibleSpecialists.map(({ entry, slot }) => (
+                      <CompactDepthPlayer
+                        key={entry.player._id}
+                        entry={entry}
+                        label={slot.label}
+                        select={select}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {showRotation && (
+            <section aria-labelledby="rotation-heading">
+              <DepthSectionHeading
+                id="rotation-heading"
+                number="02"
+                title="Rotation"
+                detail="Workload-sized position rooms"
+              />
+              <div className="grid border-t border-michigan-blue/25 sm:grid-cols-2 sm:gap-x-5 xl:grid-cols-4">
+                {visibleRotations.map((group) => (
+                  <article
+                    key={group.id}
+                    className="border-b border-michigan-blue/20 py-3"
+                  >
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-black">{group.label}</h4>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+                          {group.note}
+                        </p>
+                      </div>
+                      <span className="grid h-7 min-w-7 place-items-center bg-michigan-maize px-1 text-xs font-black text-michigan-blue">
+                        {group.entries.length}
+                      </span>
+                    </div>
+                    <ol className="space-y-1">
+                      {group.entries.map((entry) => (
+                        <li key={entry.player._id}>
+                          <DepthPlayerRow entry={entry} select={select} />
+                        </li>
+                      ))}
+                    </ol>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {showReserves && (
+            <section aria-labelledby="reserves-heading">
+              <DepthSectionHeading
+                id="reserves-heading"
+                number="03"
+                title="Reserves"
+                detail={`${visibleReserves.length} ${visibleReserves.length === 1 ? 'player' : 'players'} beyond the rotation`}
+              />
+              <div className="grid gap-5 lg:grid-cols-2">
+                {(!isFiltered || prospectReserves.length > 0) && (
+                  <ReserveList
+                    title="Prospects"
+                    description="Scholarship recruits and transfers"
+                    entries={prospectReserves}
+                    select={select}
+                  />
+                )}
+                {(!isFiltered || walkOnReserves.length > 0) && (
+                  <ReserveList
+                    title="Walk-ons"
+                    description="Players recorded as walk-on arrivals"
+                    entries={walkOnReserves}
+                    select={select}
+                  />
+                )}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
+function DepthSectionHeading({
+  id,
+  number,
+  title,
+  detail,
+}: {
+  id: string
+  number: string
+  title: string
+  detail: string
+}) {
+  return (
+    <div className="mb-3 flex items-end justify-between gap-3 border-b-2 border-michigan-blue pb-1.5">
+      <div className="flex items-baseline gap-2">
+        <span className="text-xs font-black tabular-nums text-michigan-maize [text-shadow:0_1px_0_#00274c]">
+          {number}
+        </span>
+        <h3 id={id} className="text-lg font-black tracking-[-0.02em]">
+          {title}
+        </h3>
+      </div>
+      <p className="text-right text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+        {detail}
+      </p>
+    </div>
+  )
+}
+
+function StarterUnit({
+  label,
+  personnel,
+  assignments,
+  select,
+}: {
+  label: string
+  personnel: string
+  assignments: Array<{
+    entry: EnrichedPlayer
+    slot: StarterSlot
+  }>
+  select: (player: EnrichedPlayer) => void
+}) {
+  return (
+    <article className="overflow-hidden border border-michigan-blue bg-michigan-blue shadow-[4px_4px_0_#ffcb05]">
+      <header className="flex items-center justify-between border-b border-white/20 px-3 py-2 text-white">
+        <h4 className="font-black">{label}</h4>
+        <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-michigan-maize">
+          {personnel}
+        </span>
+      </header>
+      <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-12 lg:grid-rows-3">
+        {assignments.map(({ entry, slot }) => (
+          <button
+            key={slot.id}
+            type="button"
+            onClick={() => select(entry)}
+            title={entry.player.displayName}
+            className={`group min-w-0 border border-white/50 bg-michigan-cream p-2 text-left text-michigan-blue transition hover:-translate-y-0.5 hover:border-michigan-maize hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize ${slot.layout}`}
+          >
+            <span className="flex items-center justify-between gap-1">
+              <span className="bg-michigan-maize px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em]">
+                {slot.label}
+              </span>
+              <span className="text-[10px] font-black tabular-nums text-neutral-500">
+                {jersey(entry.stint.jerseyNumber)}
+              </span>
+            </span>
+            <span className="mt-1 block text-[11px] font-black leading-tight sm:text-xs">
+              {entry.player.displayName}
+            </span>
+            <span className="block truncate text-[10px] text-neutral-500">
+              {entry.stint.position} · {entry.stint.startSeason}
+            </span>
+          </button>
         ))}
       </div>
-    </>
+    </article>
+  )
+}
+
+function CompactDepthPlayer({
+  entry,
+  label,
+  select,
+}: {
+  entry: EnrichedPlayer
+  label: string
+  select: (player: EnrichedPlayer) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => select(entry)}
+      className="flex min-w-0 items-center gap-2 border-l-2 border-michigan-maize px-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
+    >
+      <span className="text-xs font-black">{label}</span>
+      <span className="truncate text-xs font-bold">
+        {entry.player.displayName}
+      </span>
+    </button>
+  )
+}
+
+function DepthPlayerRow({
+  entry,
+  select,
+}: {
+  entry: EnrichedPlayer
+  select: (player: EnrichedPlayer) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => select(entry)}
+      className="group grid w-full grid-cols-[2.3rem_1fr_auto] items-center gap-2 border-l-2 border-transparent px-1.5 py-1.5 text-left transition hover:border-michigan-maize hover:bg-michigan-blue-soft focus-visible:border-michigan-maize focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
+    >
+      <span className="text-[9px] font-black uppercase tracking-[0.08em] text-neutral-500 group-hover:text-michigan-blue">
+        {entry.stint.position}
+      </span>
+      <span className="truncate text-sm font-bold">
+        {entry.player.displayName}
+      </span>
+      <span className="text-[10px] font-bold tabular-nums text-neutral-500">
+        {jersey(entry.stint.jerseyNumber)}
+      </span>
+    </button>
+  )
+}
+
+function ReserveList({
+  title,
+  description,
+  entries,
+  select,
+}: {
+  title: string
+  description: string
+  entries: Array<EnrichedPlayer>
+  select: (player: EnrichedPlayer) => void
+}) {
+  return (
+    <article className="border-t-4 border-michigan-maize bg-white">
+      <header className="flex items-start justify-between gap-3 border-b border-michigan-blue/20 px-3 py-2">
+        <div>
+          <h4 className="font-black">{title}</h4>
+          <p className="text-xs text-neutral-500">{description}</p>
+        </div>
+        <span className="text-lg font-black tabular-nums">
+          {entries.length}
+        </span>
+      </header>
+      {entries.length === 0 ? (
+        <p className="px-3 py-4 text-sm text-neutral-500">No players shown.</p>
+      ) : (
+        <ol className="grid divide-y divide-neutral-100 px-2 sm:grid-cols-2 sm:gap-x-3 sm:[&>li:nth-child(2)]:border-t-0">
+          {entries.map((entry) => (
+            <li key={entry.player._id}>
+              <button
+                type="button"
+                onClick={() => select(entry)}
+                className="grid w-full grid-cols-[2.5rem_1fr_auto] items-center gap-2 px-1 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
+              >
+                <span className="text-[9px] font-black uppercase tracking-[0.08em] text-michigan-blue">
+                  {depthGroup(entry.stint.position)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold">
+                    {entry.player.displayName}
+                  </span>
+                  <span className="block text-[10px] text-neutral-500">
+                    {entry.stint.position} · depth {entry.stint.depthChartOrder}
+                  </span>
+                </span>
+                <span className="text-[10px] font-bold text-neutral-500">
+                  {jersey(entry.stint.jerseyNumber)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </article>
   )
 }
 
@@ -1318,6 +1911,87 @@ function groupPlayers(players: Array<EnrichedPlayer>) {
     if (bIndex === -1) return -1
     return aIndex - bIndex
   })
+}
+
+function findDepthPlayer(
+  players: Array<EnrichedPlayer>,
+  position: string,
+  order: number,
+) {
+  return players.find(
+    (entry) =>
+      entry.stint.position === position &&
+      entry.stint.depthChartOrder === order,
+  )
+}
+
+function buildRotationGroups(
+  active: Array<EnrichedPlayer>,
+  starterIds: Set<string>,
+) {
+  const claimed = new Set(starterIds)
+
+  return rotationGroups.map((group) => {
+    const entries = group.allocations.flatMap((allocation) => {
+      const selected = active
+        .filter(
+          (entry) =>
+            allocation.positions.includes(entry.stint.position) &&
+            !claimed.has(entry.player._id),
+        )
+        .sort(compareRotationCandidates)
+        .slice(0, allocation.count)
+      for (const entry of selected) claimed.add(entry.player._id)
+      return selected
+    })
+
+    return { ...group, entries: entries.sort(compareDepthPlayers) }
+  })
+}
+
+function compareRotationCandidates(a: EnrichedPlayer, b: EnrichedPlayer) {
+  const aRelativeDepth =
+    (a.stint.depthChartOrder ?? 999) - starterCount(a.stint.position)
+  const bRelativeDepth =
+    (b.stint.depthChartOrder ?? 999) - starterCount(b.stint.position)
+  return aRelativeDepth - bRelativeDepth || compareDepthPlayers(a, b)
+}
+
+function compareDepthPlayers(a: EnrichedPlayer, b: EnrichedPlayer) {
+  return (
+    depthGroupOrder(depthGroup(a.stint.position)) -
+      depthGroupOrder(depthGroup(b.stint.position)) ||
+    positionOrder.indexOf(a.stint.position) -
+      positionOrder.indexOf(b.stint.position) ||
+    (a.stint.depthChartOrder ?? 999) - (b.stint.depthChartOrder ?? 999) ||
+    a.player.displayName.localeCompare(b.player.displayName)
+  )
+}
+
+function starterCount(position: string) {
+  return [
+    ...starterUnits.flatMap((unit) => unit.slots),
+    ...specialistSlots,
+  ].filter((slot) => slot.position === position).length
+}
+
+function depthGroup(position: string): DepthGroup {
+  if (position === 'QB') return 'QB'
+  if (['RB', 'HB', 'FB'].includes(position)) return 'HB'
+  if (['WR', 'SLOT', 'TE'].includes(position)) return 'WR'
+  if (['OT', 'LT', 'RT', 'OG', 'LG', 'RG', 'OC', 'C', 'OL'].includes(position))
+    return 'OL'
+  if (['DL', 'DT', 'NT', 'IDL', 'DI'].includes(position)) return 'IDL'
+  if (['EDGE', 'DE', 'SDE', 'WDE', 'ED'].includes(position)) return 'EDGE'
+  if (['LB', 'ILB', 'OLB'].includes(position)) return 'LB'
+  if (['CB', 'NICKEL', 'S', 'DB'].includes(position)) return 'DB'
+  return 'ST'
+}
+
+function depthGroupOrder(group: DepthGroup) {
+  return ['QB', 'HB', 'WR', 'OL', 'IDL', 'EDGE', 'LB', 'DB', 'ST'].indexOf(
+    group,
+  )
 }
 
 function groupByNumber<T>(items: Array<T>, getKey: (item: T) => number) {
