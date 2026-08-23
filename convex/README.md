@@ -2,20 +2,23 @@
 
 This directory is the checked-in server-side boundary for `cfb26`.
 
-The checked-in contract was push-validated in development and deployed to production on 2026-08-22. Confirm the intended target before any later synchronization. See [Deployment](../docs/wiki/guides/deployment.md).
+Deployment parity was last verified on 2026-08-22. Changes made after that date require the normal development-first synchronization before production promotion. Confirm the intended target before synchronization. See [Deployment](../docs/wiki/guides/deployment.md).
 
 ## Current contract
 
 | Source             | Export          | Purpose                                                                                 |
 | ------------------ | --------------- | --------------------------------------------------------------------------------------- |
 | `schema.ts`        | nine tables     | Declares the lifecycle model plus per-season Michigan snap counts and PFF grades.       |
+| `eligibility.ts`   | shared helper   | Normalizes legacy stint data to five standard seasons plus medical extensions.          |
 | `players.ts`       | `search`        | Searches player display names with optional home-state filtering.                       |
 | `players.ts`       | `getProfile`    | Returns one player with recruiting, stints, career, seasonal stats, movement, and draft. |
 | `rosters.ts`       | `list`          | Returns a bounded program roster, optionally by status and position.                    |
 | `rosters.ts`       | `listMovements` | Returns a bounded season movement list, optionally by event kind.                       |
 | `seasonalStats.ts` | `listBySeason`  | Returns one season's participants plus rostered players with no source participation.   |
 
-All five public functions are unauthenticated reads and are deployed in development and production. The obsolete internal legacy-import functions were deliberately retired during source alignment.
+All five public function identifiers are unauthenticated reads in development and production. The obsolete internal legacy-import functions were deliberately retired during source alignment.
+
+Public roster-stint results omit the stored legacy redshirt field. They expose `medicalExtensionSeasons` and derive `eligibilityEndSeason` from a five-season baseline. The schema keeps the old field optional only so existing hosted rows remain valid during the data transition.
 
 ## Rules
 

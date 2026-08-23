@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
+import { publicRosterStint } from './eligibility'
 
 const rosterStatus = v.union(
   v.literal('active'),
@@ -72,7 +73,7 @@ export const list = query({
     const entries = await Promise.all(
       stints.map(async (stint) => ({
         player: await ctx.db.get('players', stint.playerId),
-        stint,
+        stint: publicRosterStint(stint),
       })),
     )
 

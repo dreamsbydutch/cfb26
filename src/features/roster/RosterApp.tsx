@@ -1382,6 +1382,9 @@ function PlayerDrawer({
 
   const recruiting = profile?.recruiting
   const draft = profile?.draft
+  const medicalExtensionSeasons = getMedicalExtensionSeasons(entry.stint)
+  const eligibilityEndSeason =
+    entry.stint.eligibilityStartSeason + 4 + medicalExtensionSeasons
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
@@ -1464,13 +1467,15 @@ function PlayerDrawer({
                 label="NFL eligible"
                 value={entry.stint.eligibilityLeaveSeason}
               />
+              <Detail label="Eligibility ends" value={eligibilityEndSeason} />
+              <Detail label="Standard eligibility" value="5 seasons" />
               <Detail
-                label="Eligibility ends"
-                value={entry.stint.eligibilityEndSeason}
-              />
-              <Detail
-                label="Extra eligibility"
-                value={`${entry.stint.redshirtSeasons} season${entry.stint.redshirtSeasons === 1 ? '' : 's'}`}
+                label="Medical extension"
+                value={
+                  medicalExtensionSeasons === 0
+                    ? 'None'
+                    : `${medicalExtensionSeasons} season${medicalExtensionSeasons === 1 ? '' : 's'}`
+                }
               />
               <Detail
                 label="Departure group"
@@ -2039,6 +2044,22 @@ function movementLabel(kind: PlayerProfile['movements'][number]['kind']) {
     dismissed: 'Dismissed from Michigan',
   }
   return labels[kind]
+}
+
+function getMedicalExtensionSeasons(stint: EnrichedPlayer['stint']) {
+  const transitionStint = stint as Omit<
+    EnrichedPlayer['stint'],
+    'medicalExtensionSeasons'
+  > & {
+    medicalExtensionSeasons?: number
+    redshirtSeasons?: number
+  }
+
+  return Math.max(
+    transitionStint.medicalExtensionSeasons ??
+      (transitionStint.redshirtSeasons ?? 1) - 1,
+    0,
+  )
 }
 
 function jersey(value: number | undefined) {

@@ -44,7 +44,7 @@ The 428 live legacy rows are not additional players. They duplicate the source f
 
 ## Owner-confirmed domain definitions
 
-**Current domain definitions (confirmed 2026-08-22):**
+**Current domain definitions (confirmed 2026-08-23):**
 
 - The 2026 `active` rows are the current roster; the 2027 `committed` rows are a partial future commitment class.
 - `endSeason` is the final Michigan season, and a departure event in the following year represents that exit cycle.
@@ -57,7 +57,8 @@ The 428 live legacy rows are not additional players. They duplicate the source f
 - A UDFA `team` is the player's first signing team.
 - Exact position labels should be preserved; analyses should map them into broader position categories without replacing the source value.
 - `recentRating`, sourced from `RecentMichiganRtg`, was entered manually from the PFF website. A value of zero means the field had not been updated at that point; the rated season is not stored.
-- `redshirtSeasons` counts extra seasons of eligibility granted beyond the standard four. It is not necessarily a literal count of conventional redshirt seasons.
+- Every player receives a standard five-season eligibility window. A conventional redshirt does not change that window.
+- `medicalExtensionSeasons` adds only medical or similarly granted seasons beyond the standard five.
 - Obvious aliases and minor spelling errors may be corrected in place; the corrected model does not need to preserve those erroneous values.
 - Michigan NFL success includes only players who went directly from Michigan to a drafted or UDFA outcome. Later outcomes after another school are eventual player outcomes, not Michigan-to-NFL successes.
 - A dismissal is the Michigan exit. If the player later joins another school, that is a separate post-Michigan move rather than part of the dismissal event.
@@ -118,14 +119,20 @@ The roster position is the player's current or final Michigan label, while recru
 
 `depthChartOrder` is a lower-is-better, position-local order intended only for the current roster. It is present and contiguous from 1 within each active position. The snapshot also populates it on all 16 committed players, where values jump to later slots—usually 11/12 on offense or 14–16 on defense. Those committed values conflict with the intended field scope and should not be interpreted as a current depth chart.
 
-The eligibility fields behave like a modeled eligibility clock rather than actual Michigan tenure:
+The eligibility fields behave like a modeled eligibility clock rather than actual Michigan tenure. The verified 2026-08-22 source snapshot used the former four-season model:
 
 - `eligibilityStartSeason` equals the original recruiting year for 425 of 428 players; two reclassified players start earlier and Andrew Gentry starts two years later.
 - `eligibilityLeaveSeason` equals `recruitingSeason + 2` for all 428 players.
-- `eligibilityEndSeason` equals `eligibilityStartSeason + 3 + redshirtSeasons` for all 428 players.
+- The stored `eligibilityEndSeason` equals `eligibilityStartSeason + 3 + redshirtSeasons` for all 428 players.
 - No actual Michigan `endSeason` exceeds `eligibilityEndSeason`.
 
-`eligibilityLeaveSeason` is confirmed as the first NFL-eligible season: three years removed from high school, represented as `recruitingSeason + 2`. `redshirtSeasons` is the number of extra eligibility seasons granted beyond the standard four, which explains the end-season formula. Bryce Underwood is correctly recorded with zero redshirt seasons and a 2028 eligibility end.
+The checked-in public query contract converts those source values to the five-season model without discarding real extensions:
+
+- `medicalExtensionSeasons = max(redshirtSeasons - 1, 0)` while the legacy source field remains stored for migration compatibility.
+- `eligibilityEndSeason = eligibilityStartSeason + 4 + medicalExtensionSeasons`.
+- Public roster stints expose `medicalExtensionSeasons` and omit `redshirtSeasons`.
+
+This folds the former first extra season into the new universal baseline and preserves only additional seasons as medical extensions. A future write can store `medicalExtensionSeasons` directly; it takes precedence over the compatibility conversion. `eligibilityLeaveSeason` remains the first NFL-eligible season: three years removed from high school, represented as `recruitingSeason + 2`. Under the current model, Bryce Underwood has zero medical extension seasons and a 2029 eligibility end.
 
 ### Departure
 

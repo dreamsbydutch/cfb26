@@ -46,7 +46,7 @@ Global providers belong in `src/router.tsx`; document-level metadata and markup 
 - Commitments and the historical archive hydrate in the background. The hosted list function caps one result at 200, so departed players use bounded position-specific reads and are deduplicated by player ID.
 - Full profiles hydrate with a 12-request client concurrency limit through `players.getProfile`; the UI exposes progress and retry state while continuing to show roster data.
 - The season-stat view reads one indexed 2015–2025 season at a time through React Query. It merges source participants with canonical roster players, treats a missing row as zero games, snaps, and grade, and names the season leaders.
-- Player profiles derive career totals and peak seasons from the same seasonal records, then show every Michigan season in a compact production table.
+- Player profiles derive career totals and peak seasons from the same seasonal records, then show every Michigan season in a compact production table. Eligibility details show the universal five-season window separately from any medical extension.
 - Mutations use `useMutation(api.module.function)` from `convex/react`.
 - Actions use `useAction(api.module.function)` from `convex/react`.
 - Generated references come from `convex/_generated/api`.

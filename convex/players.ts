@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
+import { publicRosterStint } from './eligibility'
 
 const boundedLimit = (limit: number | undefined, fallback: number) =>
   Math.min(Math.max(Math.floor(limit ?? fallback), 1), 500)
@@ -71,7 +72,7 @@ export const getProfile = query({
     return {
       player,
       recruiting,
-      stints,
+      stints: stints.map(publicRosterStint),
       summaries,
       seasonalStats,
       movements,

@@ -10,7 +10,7 @@ Convex is the application's database, server-function runtime, real-time transpo
 
 `convex/schema.ts` declares nine football tables and 22 custom indexes (21 database indexes plus one search index). The model covers canonical players, original recruiting profiles, Michigan roster stints, cumulative Michigan career summaries, season-level snap counts and PFF grades, arrival/departure events, NFL entry outcomes, represented programs, and retained legacy migration rows.
 
-The detailed table grains, field meanings, coverage, and caveats live in [Michigan player data interpretation](../reference/michigan-player-data-report.md). The schema has no user ownership fields because the current product is read-only and unauthenticated.
+The detailed table grains, field meanings, coverage, and caveats live in [Michigan player data interpretation](../reference/michigan-player-data-report.md). Roster-stint reads pass through a shared eligibility normalizer: everyone receives a five-season baseline, `medicalExtensionSeasons` adds only granted time beyond it, and the legacy redshirt field is not returned publicly. The schema temporarily accepts both extension fields so the hosted rows can transition without downtime. The schema has no user ownership fields because the current product is read-only and unauthenticated.
 
 ## Hosted deployment data model
 
@@ -32,13 +32,13 @@ Both deployments expose the five checked-in football queries. The development pu
 
 ## Current functions
 
-| Function                     | Kind  | Arguments                                     | Result                                                                                                   |
-| ---------------------------- | ----- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `players.search`             | Query | `{ searchText, homeState?, limit? }`          | Bounded display-name search with optional home-state filter.                                             |
-| `players.getProfile`         | Query | `{ playerId }`                                | Player plus recruiting, stints, career summaries, seasonal stats, movements, and draft outcome.          |
-| `rosters.list`               | Query | `{ programKey?, status?, position?, limit? }` | Bounded roster entries joined to canonical player identity.                                              |
-| `rosters.listMovements`      | Query | `{ programKey?, season, kind?, limit? }`      | Bounded movement events joined to player identity.                                                       |
-| `seasonalStats.listBySeason` | Query | `{ programKey?, season }`                     | Bounded season stats merged with canonical roster players who have no participation record for the year. |
+| Function                     | Kind  | Arguments                                     | Result                                                                                                                                |
+| ---------------------------- | ----- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `players.search`             | Query | `{ searchText, homeState?, limit? }`          | Bounded display-name search with optional home-state filter.                                                                          |
+| `players.getProfile`         | Query | `{ playerId }`                                | Player plus recruiting, normalized stints, career summaries, seasonal stats, movements, and draft outcome.                            |
+| `rosters.list`               | Query | `{ programKey?, status?, position?, limit? }` | Bounded roster entries joined to canonical player identity, with normalized eligibility.                                              |
+| `rosters.listMovements`      | Query | `{ programKey?, season, kind?, limit? }`      | Bounded movement events joined to player identity.                                                                                    |
+| `seasonalStats.listBySeason` | Query | `{ programKey?, season }`                     | Bounded season stats merged with canonical roster players who have no participation record for the year, with normalized eligibility. |
 
 All five functions are public, read-only, argument-validated, and deployed in both environments. They do not authenticate or authorize callers.
 

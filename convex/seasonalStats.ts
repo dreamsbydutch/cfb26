@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
+import { publicRosterStint } from './eligibility'
 
 export const listBySeason = query({
   args: {
@@ -48,7 +49,7 @@ export const listBySeason = query({
         return {
           player: await ctx.db.get('players', stint.playerId),
           stat,
-          stint,
+          stint: publicRosterStint(stint),
         }
       }),
     )

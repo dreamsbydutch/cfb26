@@ -26,7 +26,7 @@ Unknown URLs render the root route's `Route not found` fallback. Router-level er
 
 - Kind: query.
 - Input: `{ playerId: Id<'players'> }`.
-- Output: the player plus an optional recruiting profile, bounded stints, career summaries, seasonal stats, movement events, and optional draft outcome; `null` when the player does not exist.
+- Output: the player plus an optional recruiting profile, bounded stints, career summaries, seasonal stats, movement events, and optional draft outcome; `null` when the player does not exist. Returned stints use a five-season eligibility baseline plus `medicalExtensionSeasons` and omit the legacy redshirt field.
 - Bound: related one-to-one records use unique indexes; growing related lists read at most 20.
 - Authorization: none.
 
@@ -34,7 +34,7 @@ Unknown URLs render the root route's `Route not found` fallback. Router-level er
 
 - Kind: query.
 - Input: `{ programKey?: string, status?: 'active' | 'committed' | 'departed', position?: string, limit?: number }`.
-- Output: roster stints joined to canonical player documents.
+- Output: roster stints joined to canonical player documents. Returned stints use a five-season eligibility baseline plus `medicalExtensionSeasons` and omit the legacy redshirt field.
 - Bound: 1–500, default 200. The current hosted implementation returns at most 200 for one status read, so the client completes departed history with exact-position reads.
 - Authorization: none.
 
@@ -50,7 +50,7 @@ Unknown URLs render the root route's `Route not found` fallback. Router-level er
 
 - Kind: query.
 - Input: `{ programKey?: string, season: number }`.
-- Output: season-stat rows merged with canonical roster entries whose Michigan stint covers the requested season. A `null` stat means zero snaps and a zero grade; a `null` player identifies a preserved source participant that has not been reconciled to the canonical player table.
+- Output: season-stat rows merged with canonical roster entries whose Michigan stint covers the requested season. Returned stints use a five-season eligibility baseline plus `medicalExtensionSeasons` and omit the legacy redshirt field. A `null` stat means zero snaps and a zero grade; a `null` player identifies a preserved source participant that has not been reconciled to the canonical player table.
 - Bound: at most 200 indexed stat rows and 500 indexed candidate roster stints.
 - Authorization: none.
 
