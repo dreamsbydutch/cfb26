@@ -61,7 +61,7 @@ The 428 live legacy rows are not additional players. They duplicate the source f
 - `medicalExtensionSeasons` adds only medical or similarly granted seasons beyond the standard five.
 - `extraEligibilitySeasons` is a separate owner override from the admin editor and is zero until explicitly set.
 - In the depth-chart display, Prospects are scholarship players in their first or second season after high school; older scholarship players outside the rotation are Depth, and walk-ons remain separate.
-- An explicit admin depth-tier override takes precedence over automatic placement. Green row shading covers roster years one and two, yellow covers year three through the last nonfinal extension year, and red marks the final eligibility year. The original prospect class remains separate and is shown prominently as the recruiting year.
+- An explicit admin depth-tier override takes precedence over automatic placement. Green row shading covers roster years one and two, yellow covers year three through the last nonfinal extension year, and red marks the final eligibility year. The original prospect class remains separate and is shown beside the player as a plain recruiting year.
 - Obvious aliases and minor spelling errors may be corrected in place; the corrected model does not need to preserve those erroneous values.
 - Michigan NFL success includes only players who went directly from Michigan to a drafted or UDFA outcome. Later outcomes after another school are eventual player outcomes, not Michigan-to-NFL successes.
 - A dismissal is the Michigan exit. If the player later joins another school, that is a separate post-Michigan move rather than part of the dismissal event.

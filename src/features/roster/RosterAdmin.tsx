@@ -206,12 +206,19 @@ export function RosterAdmin() {
                   <p className="font-black text-neutral-950">
                     {selected.player.displayName}
                   </p>
-                  <p className="text-xs font-bold text-neutral-500">
+                  <p className="text-xs font-normal text-neutral-500">
                     {selected.stint.position}
                   </p>
                 </div>
-                <span className="bg-neutral-900 px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-white tabular-nums">
-                  Recruit {selectedProfile?.recruiting?.recruitingSeason ?? '—'}
+                <span
+                  className="text-sm font-medium text-neutral-500 tabular-nums"
+                  aria-label={
+                    selectedProfile?.recruiting?.recruitingSeason === undefined
+                      ? 'Recruiting class unavailable'
+                      : `Recruiting class ${selectedProfile.recruiting.recruitingSeason}`
+                  }
+                >
+                  {selectedProfile?.recruiting?.recruitingSeason ?? '—'}
                 </span>
               </div>
 

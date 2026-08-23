@@ -1094,7 +1094,7 @@ function DepthTierRows({
                 <InjuryBadge injury={entry.stint.injury} />
               )}
             </td>
-            <td className="px-2 py-2 text-xs font-black">
+            <td className="px-2 py-2 text-xs font-medium text-neutral-700">
               {entry.stint.position}
             </td>
           </tr>
@@ -2240,8 +2240,15 @@ function eligibilityRowClass(band: EligibilityBand) {
 
 function RecruitingYear({ season }: { season: number | undefined }) {
   return (
-    <span className="inline-flex shrink-0 bg-neutral-900 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-white tabular-nums">
-      Recruit {season ?? '—'}
+    <span
+      className="shrink-0 text-xs font-medium text-neutral-500 tabular-nums"
+      aria-label={
+        season === undefined
+          ? 'Recruiting class unavailable'
+          : `Recruiting class ${season}`
+      }
+    >
+      {season ?? '—'}
     </span>
   )
 }
