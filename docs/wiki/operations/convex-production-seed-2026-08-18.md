@@ -6,6 +6,8 @@
 
 **Historical operation:** production deployment `doting-chipmunk-7` was seeded with the declared schema, indexes, and database snapshot from development deployment `adjoining-opossum-710` in Convex project `dreamsbydutch:michigan`.
 
+**Current status:** this record is preserved as migration history. Production was subsequently promoted to the 17-table, 47,774-document national contract on 2026-08-23; see [Deployment](../guides/deployment.md).
+
 The migration created 3,091 user documents across eight tables. It preserved Convex document IDs and creation times, so cross-table references remain intact. Neither deployment had file-storage objects.
 
 ## Post-seed corrections
@@ -34,7 +36,7 @@ This section describes the 2026-08-18 seed operation. On 2026-08-22, the owner a
 
 The migration copied schema, indexes, database documents, and file storage (empty). It did **not** copy deployment environment variables or the development deployment's functions. Production therefore has the data model but no public/internal application functions.
 
-The checked-in `convex/` directory now matches the nine-table, five-query contract deployed to both environments. The Vercel web project remains unconfigured.
+At the end of this historical operation, the checked-in `convex/` directory matched the nine-table, five-query contract deployed to both environments. The later national promotion superseded that source boundary.
 
 ## Recovery
 

@@ -8,13 +8,17 @@ Convex is the application's database, server-function runtime, real-time transpo
 
 ## Checked-in data model
 
-`convex/schema.ts` declares 17 football tables and 47 custom indexes (46 database indexes plus one search index). The model covers canonical players, original recruiting profiles, Michigan roster stints, cumulative Michigan career summaries, season-level snap counts and PFF grades, arrival/departure events, player-linked NFL entry outcomes, represented programs, retained legacy migration rows, source-specific program aliases, national team recruiting classes, team standings/statistics, national draft selections, compact college games, rolling team-game statistics, season Elo ratings, and synchronization state.
+`convex/schema.ts` declares 19 football tables and 51 custom indexes (50 database indexes plus one search index). The model covers canonical players, original recruiting profiles, Michigan roster stints, cumulative Michigan career summaries, season-level snap counts and PFF grades, arrival/departure events, player-linked NFL entry outcomes, represented programs, retained legacy migration rows, source-specific program aliases, national team recruiting classes, team standings/statistics, national draft selections, compact college games, rolling team-game statistics, season Elo ratings, raw multi-source rating inputs, derived composite ratings, and synchronization state.
 
-The Michigan table details live in [Michigan player data interpretation](../reference/michigan-player-data-report.md); the national tables live in [Team-level historical data](../reference/team-level-data.md). Roster-stint reads pass through a shared eligibility normalizer: everyone receives a five-season baseline, `medicalExtensionSeasons` adds only granted time beyond it, and the legacy redshirt field is not returned publicly. The schema temporarily accepts both extension fields so the hosted rows can transition without downtime. The schema has no user ownership fields because the current product is read-only and unauthenticated.
+The Michigan table details live in [Michigan player data interpretation](../reference/michigan-player-data-report.md); the national tables live in [Team-level historical data](../reference/team-level-data.md). Roster-stint reads pass through a shared eligibility normalizer: everyone receives a five-season baseline, `medicalExtensionSeasons` preserves source-granted time, `extraEligibilitySeasons` stores an owner override, and the legacy redshirt field is not returned publicly. A stint may also carry a depth-tier override, one current public injury state, and up to 20 position changes. The schema has no user ownership fields; the narrow admin write uses a deployment secret rather than accounts.
 
 ## Hosted deployment data model
 
-**Production external state (verified 2026-08-22):** production retains the following Michigan-only schema and data. Production was seeded from a development snapshot, preserving document IDs and creation times. The same seven-document Beasley removal, five Underwood/Wafle field corrections, and 921-row seasonal-stat import were applied to both deployments at that time.
+**Current development state (verified 2026-08-23):** `adjoining-opossum-710` has the 19-table contract, one composite row per Elo-covered FBS team for every 2000–2025 season, a 2026 preseason snapshot, and advanced input rows for 2025–2026. Its three daily jobs refresh OpenSheet at 10:17 UTC, games/Elo at 11:17 UTC, and advanced inputs plus the composite at 11:47 UTC.
+
+**Current production state (verified 2026-08-23):** `doting-chipmunk-7` remains on the prior 17-table, 47,774-document foundation until explicitly promoted. The shared foundation has 492 programs, 1,388 source aliases, 5,025 recruiting rows, 3,122 standings rows, 1,024 draft selections, 22,169 compact 2000–2026 games, 3,340 season Elo ratings, and 7,318 detailed 2022–2025 team-game rows. Do not describe the proprietary model as production behavior before that promotion.
+
+The original Michigan tables remain present in both environments:
 
 | Table                    | Documents | Declared indexes                                                                                                      |
 | ------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -28,21 +32,22 @@ The Michigan table details live in [Michigan player data interpretation](../refe
 | `rosterStints`           | 428       | `by_legacyKey`, `by_playerId_and_startSeason`, `by_programId_and_startSeason`, `by_programId_and_status_and_position` |
 | `seasonalPlayerStats`    | 921       | `by_playerId_and_season`, `by_programId_and_season_and_snaps`, `by_sourceKey`                                         |
 
-Production exposes the five Michigan football queries. See the [production seed record](../operations/convex-production-seed-2026-08-18.md).
-
-**Development external state (verified 2026-08-23):** development contains 47,774 documents across 17 tables. The national expansion has 492 programs, 1,388 source aliases, 5,025 recruiting rows, 3,122 standings rows, 1,024 draft selections, 22,169 compact 2000–2026 games, 3,340 season Elo ratings, 7,318 detailed 2022–2025 team-game rows, and six sync-state rows. Daily jobs refresh the three OpenSheet feeds at 10:17 UTC and the current game season/ratings at 11:17 UTC; the game-stat refresh revisits the latest two completed weeks.
+The initial production seed history is preserved in the [production seed record](../operations/convex-production-seed-2026-08-18.md).
 
 ## Current functions
 
-| Function                     | Kind  | Arguments                                     | Result                                                                                                                                |
-| ---------------------------- | ----- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `players.search`             | Query | `{ searchText, homeState?, limit? }`          | Bounded display-name search with optional home-state filter.                                                                          |
-| `players.getProfile`         | Query | `{ playerId }`                                | Player plus recruiting, normalized stints, career summaries, seasonal stats, movements, and draft outcome.                            |
-| `rosters.list`               | Query | `{ programKey?, status?, position?, limit? }` | Bounded roster entries joined to canonical player identity, with normalized eligibility.                                              |
-| `rosters.listMovements`      | Query | `{ programKey?, season, kind?, limit? }`      | Bounded movement events joined to player identity.                                                                                    |
-| `seasonalStats.listBySeason` | Query | `{ programKey?, season }`                     | Bounded season stats merged with canonical roster players who have no participation record for the year, with normalized eligibility. |
+| Function                     | Kind     | Arguments                                                          | Result                                                                                                                                |
+| ---------------------------- | -------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `players.search`             | Query    | `{ searchText, homeState?, limit? }`                               | Bounded display-name search with optional home-state filter.                                                                          |
+| `players.getProfile`         | Query    | `{ playerId }`                                                     | Player plus recruiting, normalized stints, career summaries, seasonal stats, movements, and draft outcome.                            |
+| `rosters.list`               | Query    | `{ programKey?, status?, position?, limit? }`                      | Bounded roster entries joined to canonical player identity, with normalized eligibility.                                              |
+| `rosters.listMovements`      | Query    | `{ programKey?, season, kind?, limit? }`                           | Bounded movement events joined to player identity.                                                                                    |
+| `seasonalStats.listBySeason` | Query    | `{ programKey?, season }`                                          | Bounded season stats merged with canonical roster players who have no participation record for the year, with normalized eligibility. |
+| `rosterAdmin.updatePlayer`   | Mutation | player, depth, eligibility, injury, position, and admin-key fields | Atomically updates one program stint after server-side single-owner key verification.                                                 |
 
-All five functions are public, read-only, argument-validated, and deployed in both environments. Development additionally exposes the six team-data reads, four game-data reads, and two landscape-rating reads documented under [Current contracts](../reference/current-contracts.md). Public reads do not authenticate or authorize callers. The feed synchronization path is internal.
+All five roster/player read functions remain public and argument-validated. The shared foundation also exposes six team-data reads and four game-data reads. Development adds `ratings.listComposite`, `ratings.getMatchup`, and `rosterAdmin.updatePlayer`; its weekly dashboard prefers the proprietary snapshot over Elo. The roster mutation requires a minimum-24-character `CFB26_ADMIN_KEY` stored in that Convex deployment and rejects before reading data when the key is absent or wrong. Feed synchronization and rating rebuilds are internal.
+
+`ratingInputs.ts` fetches CORE, SP+, FPI, advanced season statistics, team talent, and returning production independently. Successful sources replace only their own signal namespace; failed or unavailable sources leave the last good values intact and appear as sync warnings. `ratingModel.ts` is a pure deterministic builder that normalizes the loaded season, computes the 16 perspectives/confidence/overall rank, and constructs matchup projections. `ratings.ts` owns the bounded database orchestration and public read contract.
 
 ## Generated contract
 
@@ -69,8 +74,9 @@ Never patch these outputs. Change schema/functions and run the Convex CLI.
 1. Attach the intended deployment through the Convex CLI.
 2. Edit `schema.ts` and function modules.
 3. Run `npx convex dev --once` to push and regenerate.
-4. Update frontend calls to generated references.
-5. Run `npm run check`.
-6. Update this page and [Current contracts](../reference/current-contracts.md) if the contract changed.
+4. For model changes, rebuild the intended development seasons and confirm `modelVersion`/coverage before any production promotion.
+5. Update frontend calls to generated references.
+6. Run `npm run check`.
+7. Update this page and [Current contracts](../reference/current-contracts.md) if the contract changed.
 
 If only a deployment URL is available, the browser can connect using `VITE_CONVEX_URL`, but changing/pushing backend functions still requires Convex CLI authentication and deployment selection.

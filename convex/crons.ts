@@ -15,4 +15,10 @@ crons.daily(
   internal.games.syncCurrentSeason,
 )
 
+crons.daily(
+  'refresh proprietary team ratings',
+  { hourUTC: 11, minuteUTC: 47 },
+  internal.ratings.refreshCurrentSeason,
+)
+
 export default crons

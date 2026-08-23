@@ -18,6 +18,10 @@ This sequence deploys the backend associated with the supplied Convex credential
 
 **Resolved 2026-08-22:** the checked-in nine-table schema and five public reads were push-validated in development and deployed to production. The owner authorized retiring the unrecovered internal legacy-import functions. Both environments were then populated with the same 921 seasonal rows and verified at 4,005 documents.
 
+**Resolved 2026-08-23:** the checked-in 17-table national-data contract and its scheduled sync functions were deployed to `doting-chipmunk-7`. The three OpenSheet feeds and restartable 2000–2026 CFBD backfill were run in production, bringing both Convex environments to 47,774 documents with matching aggregate table counts. A live production dashboard read returned 142 games and 136 ratings for 2025 Week 1.
+
+**Current 2026-08-23:** development now has the checked-in 19-table proprietary-rating contract, 2000–2026 composite snapshots, 2025–2026 advanced inputs, the third scheduled refresh, and the deployment-key-gated roster mutation. The development admin key is intentionally not configured yet, so writes fail closed. Production intentionally remains at the resolved 17-table state above. Promotion must deploy the schema/functions first, refresh the intended advanced seasons, rebuild the versioned snapshots, configure a distinct production admin key if roster writes are wanted, and smoke-test rankings, matchup reads, and roster authorization before the web app targets production.
+
 Later backend changes still follow development-first validation. A URL alone is not permission to overwrite backend configuration; confirm the exact environment and operation before synchronization.
 
 ### Seasonal-data refresh
@@ -39,6 +43,8 @@ Later backend changes still follow development-first validation. A URL alone is 
 2. Put the URL in untracked `.env.local` as `VITE_CONVEX_URL` when overriding the development fallback.
 3. Run `npm run dev:web` for web-only work or `npm run dev` when authenticated development synchronization is intended.
 4. Visit `/`, confirm 428 players and 109 recorded NFL entries load, exercise every view, search, and a player profile.
+
+To enable roster edits in the confirmed development deployment, run `npx convex env set CFB26_ADMIN_KEY` without a value so the CLI prompts for a secret of at least 24 characters, then run `npx convex dev --once` so the functions receive the changed typed environment. Visit `/admin/roster`, enter the same key, and make a reviewed edit. Leaving the variable unset disables every save.
 
 A URL connects the browser. CLI authentication/deployment selection is additionally required to push schema and function changes.
 
@@ -63,7 +69,7 @@ Preview publishing does not authorize or trigger a production promotion. If the 
 5. Commit and push only when authorized.
 6. Trigger or observe the Vercel build.
 7. Verify the Convex deploy step and both client/server build bundles.
-8. Smoke-test `/`, all six roster views, search, a linked player profile, a zero-snap season row, and a source-only season row against production.
+8. Smoke-test `/`, all six roster views, search, a linked player profile, a zero-snap season row, and a source-only season row. For rating changes, also smoke-test `/games` weekly importance, one alternate ranking perspective, and a two-team matchup. For roster-admin changes, verify an absent/wrong key is rejected, then use the target environment's key to edit and restore a reviewed player field through `/admin/roster`.
 9. Record the production URL and ownership here once a project is attached.
 
 ## Failure and rollback
@@ -75,15 +81,15 @@ Preview publishing does not authorize or trigger a production promotion. If the 
 
 ## Deployment record
 
-| Item                     | Value                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------------------- |
-| GitHub repository        | `dreamsbydutch/cfb26`                                                                           |
-| Default branch           | `main`                                                                                          |
-| Convex project           | `dreamsbydutch:michigan`                                                                        |
-| Development deployment   | `https://adjoining-opossum-710.convex.cloud`                                                    |
-| Production deployment    | `https://doting-chipmunk-7.convex.cloud`                                                        |
-| Production data mirror   | 2026-08-22; 9 tables and 4,005 documents, live-verified identical to development                |
-| Seasonal data extension  | 921 rows: 708 linked to canonical players and 213 preserved as source-only records              |
-| Backend source alignment | **Current:** five public reads deployed in both environments; obsolete internal imports retired |
-| Vercel project           | `cfb` (owner-confirmed; Vercel project/team IDs remain untracked)                               |
-| Production URL           | `https://cfb-hazel.vercel.app` (owner-confirmed; Nitro redeploy and smoke check pending)        |
+| Item                     | Value                                                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| GitHub repository        | `dreamsbydutch/cfb26`                                                                                    |
+| Default branch           | `main`                                                                                                   |
+| Convex project           | `dreamsbydutch:michigan`                                                                                 |
+| Development deployment   | `https://adjoining-opossum-710.convex.cloud`                                                             |
+| Production deployment    | `https://doting-chipmunk-7.convex.cloud`                                                                 |
+| Production data mirror   | 2026-08-23; 17 tables and 47,774 documents, aggregate counts verified against development                |
+| Seasonal data extension  | 921 rows: 708 linked to canonical players and 213 preserved as source-only records                       |
+| Backend source alignment | **Partial:** development has the 19-table composite model; production remains on the 17-table foundation |
+| Vercel project           | `cfb` (owner-confirmed; Vercel project/team IDs remain untracked)                                        |
+| Production URL           | `https://cfb-hazel.vercel.app` (owner-confirmed; Nitro redeploy and smoke check pending)                 |

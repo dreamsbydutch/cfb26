@@ -29,26 +29,33 @@
 
 ## `src/`
 
-| Path                    | Role                                                                                                       |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `src/router.tsx`        | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
-| `src/routes/__root.tsx` | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
-| `src/routes/index.tsx`  | `/` route definition, client-rendering policy, and route-level states.                                     |
-| `src/features/roster/`  | Michigan data hydration, view switching, search, roster/season lists, and player details.                  |
-| `src/routeTree.gen.ts`  | Generated file-route registry; do not edit.                                                                |
-| `src/styles/app.css`    | Tailwind import and global base CSS.                                                                       |
+| Path                          | Role                                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `src/router.tsx`              | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
+| `src/routes/__root.tsx`       | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
+| `src/routes/index.tsx`        | `/` route definition, client-rendering policy, and route-level states.                                     |
+| `src/routes/games.tsx`        | `/games` route definition, metadata, client-rendering policy, and route-level states.                      |
+| `src/routes/admin.roster.tsx` | `/admin/roster` route definition, no-index metadata, and client-rendering policy.                          |
+| `src/features/landscape/`     | Weekly importance, multi-perspective rankings, and the head-to-head matchup lab.                           |
+| `src/features/roster/`        | Michigan data hydration, view switching, search, roster/season lists, and player details.                  |
+| `src/routeTree.gen.ts`        | Generated file-route registry; do not edit.                                                                |
+| `src/styles/app.css`          | Tailwind import and global base CSS.                                                                       |
 
 ## `convex/`
 
-| Path                      | Role                                                                  |
-| ------------------------- | --------------------------------------------------------------------- |
-| `convex/schema.ts`        | Declares the nine-table Michigan football model and indexes.          |
-| `convex/players.ts`       | Player search and full-profile queries.                               |
-| `convex/rosters.ts`       | Roster and movement-list queries.                                     |
-| `convex/seasonalStats.ts` | Season snap-count/PFF list query with zero-participation roster rows. |
-| `convex/tsconfig.json`    | Convex runtime TypeScript settings.                                   |
-| `convex/README.md`        | Local backend contract and maintenance rules.                         |
-| `convex/_generated/`      | Generated API/data-model/server types and Convex agent files.         |
+| Path                      | Role                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `convex/schema.ts`        | Declares the 19-table Michigan, national-data, rating-input, and composite-rating model and indexes. |
+| `convex/players.ts`       | Player search and full-profile queries.                                                              |
+| `convex/rosters.ts`       | Roster and movement-list queries.                                                                    |
+| `convex/rosterAdmin.ts`   | Server-key-protected mutation for depth, eligibility, injury, and position edits.                    |
+| `convex/seasonalStats.ts` | Season snap-count/PFF list query with zero-participation roster rows.                                |
+| `convex/ratingInputs.ts`  | Independently synchronizes six optional CFBD rating/advanced-data sources.                           |
+| `convex/ratingModel.ts`   | Pure normalization, perspective, confidence, ranking, and matchup formulas.                          |
+| `convex/ratings.ts`       | Elo sync, composite rebuild orchestration, rankings/dashboard reads, and matchup query.              |
+| `convex/tsconfig.json`    | Convex runtime TypeScript settings.                                                                  |
+| `convex/README.md`        | Local backend contract and maintenance rules.                                                        |
+| `convex/_generated/`      | Generated API/data-model/server types and Convex agent files.                                        |
 
 ## `public/`
 

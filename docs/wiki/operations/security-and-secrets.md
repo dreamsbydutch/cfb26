@@ -4,22 +4,36 @@
 
 ## Current trust model
 
-**Current:** no authentication provider or authorization rules are configured. The four checked-in football functions are unauthenticated reads. Development exposes equivalent public reads plus internal migration functions; production currently has schema/data but no deployed application functions.
+**Current:** no identity provider, user accounts, or sessions are configured. Football reads remain public. Development has one roster-edit mutation protected by a server-side `CFB26_ADMIN_KEY`; it fails closed while that variable is absent. Production remains on the prior function set until explicit promotion.
 
 Do not assume the hosted football data is safe for unrestricted access merely because no auth exists. Classify its ownership/privacy requirements before deploying public functions, and add identity/ownership checks before introducing private or user-specific data.
 
 ## Environment classes
 
-| Class                        | Example             | Exposure                          | Rule                                            |
-| ---------------------------- | ------------------- | --------------------------------- | ----------------------------------------------- |
-| Browser-public configuration | `VITE_CONVEX_URL`   | Bundled/readable by clients       | Never store secrets in `VITE_*`.                |
-| Local deployment metadata    | `CONVEX_DEPLOYMENT` | Developer machine/CLI             | Keep in ignored `.env.local`.                   |
-| Deployment credential        | `CONVEX_DEPLOY_KEY` | Hosting build environment         | Store only as a protected secret.               |
-| Server integration secret    | Future API keys     | Convex/hosting server environment | Access only from server functions that need it. |
+| Class                        | Example             | Exposure                      | Rule                                                                         |
+| ---------------------------- | ------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| Browser-public configuration | `VITE_CONVEX_URL`   | Bundled/readable by clients   | Never store secrets in `VITE_*`.                                             |
+| Local deployment metadata    | `CONVEX_DEPLOYMENT` | Developer machine/CLI         | Keep in ignored `.env.local`.                                                |
+| Deployment credential        | `CONVEX_DEPLOY_KEY` | Hosting build environment     | Store only as a protected secret.                                            |
+| Server integration secret    | `CFBD_API_KEY`      | Convex deployment environment | Access only from server functions that need it.                              |
+| Single-owner admin secret    | `CFB26_ADMIN_KEY`   | Convex deployment environment | Minimum 24 characters; never store under `VITE_*` or persist in the browser. |
 
 `.env.example` documents names and non-secret placeholders. `.env` and `.env.local` are ignored. Check staged files before every publish.
 
-## Authentication and authorization requirements
+## Current single-owner roster gate
+
+`rosterAdmin.updatePlayer` compares an unguessable key against `CFB26_ADMIN_KEY` before reading or writing roster data. The admin page holds the entered value only in React state. Configure it interactively so the value is not placed in shell history:
+
+```powershell
+npx convex env set CFB26_ADMIN_KEY
+npx convex dev --once
+```
+
+Run those commands only after confirming the intended deployment; the push activates the changed typed environment for the deployed functions. Use a different key per environment. Removing or leaving the variable unset disables all roster writes. The mutation requires at least 24 characters, validates every editable field, caps position history, and does not intentionally log its argument. See [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md).
+
+This mechanism is deliberately narrower than authentication: it identifies one shared operator credential, not a person. Do not use it for private data, multiple admins, audit attribution, or user-facing permissions.
+
+## Future authentication and authorization requirements
 
 Before adding accounts or private records:
 
@@ -35,7 +49,7 @@ Before adding accounts or private records:
 
 - Return only client-needed fields from public functions.
 - Do not log secrets, tokens, private records, or full third-party payloads.
-- The current public functions do not write data or intentionally log player payloads.
+- Public reads and the roster mutation do not intentionally log player payloads or credentials.
 - Validate input shape and impose practical size/count limits at public boundaries.
 - Plan migrations and backups before destructive schema/data changes.
 

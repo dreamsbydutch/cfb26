@@ -472,6 +472,12 @@ export function RosterApp() {
                 >
                   National games
                 </Link>
+                <Link
+                  to="/admin/roster"
+                  className="border-b-2 border-transparent px-2 py-1 text-sm font-bold text-neutral-500 transition hover:border-michigan-maize hover:text-michigan-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                >
+                  Roster admin
+                </Link>
               </div>
             </nav>
             <label className="relative block w-full lg:w-64">
@@ -692,50 +698,36 @@ function DepthChart({
       group.entries.map((entry) => entry.player._id),
     ),
   )
-  const reserves = active
-    .filter(
-      (entry) =>
-        !starterIds.has(entry.player._id) && !rotationIds.has(entry.player._id),
-    )
+  const tieredPlayers = active
+    .filter((entry) => visibleIds.has(entry.player._id))
     .sort(compareDepthPlayers)
-  const visibleReserves = reserves.filter((entry) =>
-    visibleIds.has(entry.player._id),
-  )
-  const scholarshipReserves = visibleReserves.filter(
-    (entry) => entry.profile?.recruiting?.source !== 'walk_on',
-  )
-  const depthReserves = scholarshipReserves.filter(
-    (entry) => !isEarlyCareerProspect(entry),
-  )
-  const prospectReserves = scholarshipReserves.filter(isEarlyCareerProspect)
-  const walkOnReserves = visibleReserves.filter(
-    (entry) => entry.profile?.recruiting?.source === 'walk_on',
-  )
-  const visibleStarters = firstUnitAssignments.filter(({ entry }) =>
-    visibleIds.has(entry.player._id),
-  )
-  const visibleRotations = rotations.map((group) => ({
-    ...group,
-    entries: group.entries.filter((entry) => visibleIds.has(entry.player._id)),
-  }))
+    .map((entry) => ({
+      entry,
+      tier: effectiveDepthTier(entry, starterIds, rotationIds),
+    }))
   const hasVisibleActive = visibleIds.size > 0
   const rooms = depthRooms.map((room) => ({
     ...room,
-    starters: visibleStarters
-      .filter(({ entry }) => depthRoom(entry.stint.position) === room.id)
-      .map(({ entry }) => ({ entry })),
-    rotation: (
-      visibleRotations.find((group) => group.id === room.id)?.entries ?? []
-    ).map((entry) => ({ entry })),
-    depth: depthReserves
-      .filter((entry) => depthRoom(entry.stint.position) === room.id)
-      .map((entry) => ({ entry })),
-    prospects: prospectReserves
-      .filter((entry) => depthRoom(entry.stint.position) === room.id)
-      .map((entry) => ({ entry })),
-    walkOns: walkOnReserves
-      .filter((entry) => depthRoom(entry.stint.position) === room.id)
-      .map((entry) => ({ entry })),
+    starters: tieredPlayers.filter(
+      ({ entry, tier }) =>
+        tier === 'starters' && depthRoom(entry.stint.position) === room.id,
+    ),
+    rotation: tieredPlayers.filter(
+      ({ entry, tier }) =>
+        tier === 'rotation' && depthRoom(entry.stint.position) === room.id,
+    ),
+    depth: tieredPlayers.filter(
+      ({ entry, tier }) =>
+        tier === 'depth' && depthRoom(entry.stint.position) === room.id,
+    ),
+    prospects: tieredPlayers.filter(
+      ({ entry, tier }) =>
+        tier === 'prospects' && depthRoom(entry.stint.position) === room.id,
+    ),
+    walkOns: tieredPlayers.filter(
+      ({ entry, tier }) =>
+        tier === 'walk-ons' && depthRoom(entry.stint.position) === room.id,
+    ),
   }))
   const depthTabs: Array<{ id: DepthView; label: string; count: number }> = [
     {
@@ -760,10 +752,10 @@ function DepthChart({
   return (
     <>
       <SectionIntro eyebrow="2026 roster" title="Depth chart & rotation">
-        Each unit is one continuous position-room list. Prospects are in their
-        first two seasons after high school; older scholarship players outside
-        the rotation sit in depth. These are roster tiers, not official starts
-        or snap projections.
+        Position rooms sit side by side, with one continuous player list in each
+        room. Prospects are in their first two seasons after high school; older
+        scholarship players outside the rotation sit in depth. These are roster
+        tiers, not official starts or snap projections.
       </SectionIntro>
       {!hasVisibleActive ? (
         <HydratingEmpty label="No active players match this search." />
@@ -871,6 +863,9 @@ type DepthTierEntry = {
   entry: EnrichedPlayer
 }
 
+type DepthTierTone =
+  'starters' | 'rotation' | 'depth' | 'prospects' | 'walk-ons'
+
 type PreparedDepthRoom = DepthRoom & {
   starters: Array<DepthTierEntry>
   rotation: Array<DepthTierEntry>
@@ -908,34 +903,10 @@ function DepthUnitPanel({
       ) : (
         <div>
           <EligibilityLegend />
-          <div className="overflow-x-auto border-y border-michigan-blue/25 bg-white">
-            <table className="w-full min-w-[680px] border-collapse text-left">
-              <caption className="sr-only">
-                {label} players grouped by position room and depth tier
-              </caption>
-              <thead className="bg-michigan-blue text-[9px] uppercase tracking-[0.12em] text-white">
-                <tr>
-                  <th scope="col" className="w-32 px-3 py-2 font-black">
-                    Tier
-                  </th>
-                  <th scope="col" className="px-3 py-2 font-black">
-                    Player
-                  </th>
-                  <th scope="col" className="w-16 px-3 py-2 font-black">
-                    Pos
-                  </th>
-                  <th scope="col" className="w-14 px-3 py-2 font-black">
-                    No.
-                  </th>
-                  <th scope="col" className="w-44 px-3 py-2 font-black">
-                    Eligibility
-                  </th>
-                </tr>
-              </thead>
-              {rooms.map((room) => (
-                <DepthPositionRows key={room.id} room={room} select={select} />
-              ))}
-            </table>
+          <div className="grid items-start gap-x-6 gap-y-8 xl:grid-cols-2">
+            {rooms.map((room) => (
+              <DepthPositionTable key={room.id} room={room} select={select} />
+            ))}
           </div>
         </div>
       )}
@@ -944,28 +915,31 @@ function DepthUnitPanel({
 }
 
 function EligibilityLegend() {
+  const bands = [
+    { label: 'Green · years 1–2', tone: 'border-emerald-200 bg-emerald-50' },
+    { label: 'Yellow · year 3+', tone: 'border-amber-200 bg-amber-50' },
+    { label: 'Red · final year', tone: 'border-red-200 bg-red-50' },
+  ]
+
   return (
     <ul
-      aria-label="Eligibility color key"
-      className="mb-3 flex flex-wrap gap-x-5 gap-y-1 text-[10px] font-bold text-neutral-600"
+      aria-label="Eligibility row color key"
+      className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] font-bold text-neutral-600"
     >
-      <li className="flex items-center gap-1.5">
-        <span className="h-2.5 w-2.5 bg-emerald-500" aria-hidden="true" />
-        Green · years 1–2
+      <li className="uppercase tracking-[0.1em] text-neutral-500">
+        Player rows
       </li>
-      <li className="flex items-center gap-1.5">
-        <span className="h-2.5 w-2.5 bg-amber-400" aria-hidden="true" />
-        Yellow · year 3 until final
-      </li>
-      <li className="flex items-center gap-1.5">
-        <span className="h-2.5 w-2.5 bg-red-500" aria-hidden="true" />
-        Red · final eligibility season
-      </li>
+      {bands.map((band) => (
+        <li key={band.label} className="flex items-center gap-1.5">
+          <span className={`h-3 w-3 border ${band.tone}`} aria-hidden="true" />
+          {band.label}
+        </li>
+      ))}
     </ul>
   )
 }
 
-function DepthPositionRows({
+function DepthPositionTable({
   room,
   select,
 }: {
@@ -973,61 +947,91 @@ function DepthPositionRows({
   select: (player: EnrichedPlayer) => void
 }) {
   const count = countDepthPlayers([room])
-  const tiers = [
-    { title: 'Starters', entries: room.starters },
-    { title: 'Rotation', entries: room.rotation },
-    { title: 'Depth', entries: room.depth },
-    { title: 'Prospects', entries: room.prospects },
-    { title: 'Walk-ons', entries: room.walkOns },
+  const tiers: Array<{
+    title: string
+    tone: DepthTierTone
+    entries: Array<DepthTierEntry>
+  }> = [
+    { title: 'Starters', tone: 'starters', entries: room.starters },
+    { title: 'Rotation', tone: 'rotation', entries: room.rotation },
+    { title: 'Depth', tone: 'depth', entries: room.depth },
+    { title: 'Prospects', tone: 'prospects', entries: room.prospects },
+    { title: 'Walk-ons', tone: 'walk-ons', entries: room.walkOns },
   ]
 
   return (
-    <tbody className="border-b-2 border-michigan-blue/30 last:border-b-0">
-      <tr className="bg-michigan-blue-soft">
-        <th colSpan={5} scope="rowgroup" className="px-3 py-2">
-          <span className="flex items-baseline justify-between gap-3">
-            <span>
-              <span className="font-black">{room.label}</span>
-              <span className="ml-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-                {room.note}
-              </span>
-            </span>
-            <span className="text-xs font-black tabular-nums">{count}</span>
+    <section className="min-w-0" aria-labelledby={`depth-room-${room.id}`}>
+      <div className="flex min-h-10 items-baseline justify-between gap-3 border-b-2 border-neutral-800 bg-neutral-100 px-3 py-2">
+        <h4 id={`depth-room-${room.id}`}>
+          <span className="font-black">{room.label}</span>
+          <span className="ml-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+            {room.note}
           </span>
-        </th>
-      </tr>
-      {tiers.map((tier) => (
-        <DepthTierRows
-          key={tier.title}
-          title={tier.title}
-          entries={tier.entries}
-          select={select}
-        />
-      ))}
-    </tbody>
+        </h4>
+        <span className="text-xs font-black tabular-nums">{count}</span>
+      </div>
+      <div className="overflow-x-auto border-b border-neutral-300 bg-white">
+        <table className="w-full min-w-[340px] border-collapse text-left">
+          <caption className="sr-only">
+            {room.label} players grouped by depth tier
+          </caption>
+          <thead className="bg-neutral-900 text-[9px] uppercase tracking-[0.12em] text-white">
+            <tr>
+              <th scope="col" className="w-28 px-3 py-2 font-black">
+                Tier
+              </th>
+              <th scope="col" className="w-14 px-2 py-2 text-center font-black">
+                No.
+              </th>
+              <th scope="col" className="px-3 py-2 font-black">
+                Player
+              </th>
+              <th scope="col" className="w-12 px-2 py-2 font-black">
+                Pos
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.map((tier) => (
+              <DepthTierRows
+                key={tier.title}
+                title={tier.title}
+                tone={tier.tone}
+                entries={tier.entries}
+                select={select}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
 
 function DepthTierRows({
   title,
+  tone,
   entries,
   select,
 }: {
   title: string
+  tone: DepthTierTone
   entries: Array<DepthTierEntry>
   select: (player: EnrichedPlayer) => void
 }) {
   if (entries.length === 0) {
     return (
-      <tr className="border-t border-neutral-100 bg-white">
+      <tr className={`border-t-4 bg-white ${depthTierSeparatorClass(tone)}`}>
         <th
           scope="row"
-          className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] text-michigan-blue"
+          className={`border-r-4 px-3 py-3 align-top text-[10px] font-black uppercase tracking-[0.1em] ${depthTierLabelClass(tone)}`}
         >
-          {title}
-          <span className="ml-1.5 text-neutral-400">0</span>
+          <span className="block">{title}</span>
+          <span className="mt-1.5 inline-flex border border-current/20 px-1.5 py-0.5 text-[9px] leading-none tabular-nums opacity-70">
+            0 players
+          </span>
         </th>
-        <td colSpan={4} className="px-3 py-2 text-xs text-neutral-400">
+        <td colSpan={3} className="px-3 py-3 text-xs text-neutral-400">
           No players in this group.
         </td>
       </tr>
@@ -1042,37 +1046,56 @@ function DepthTierRows({
         return (
           <tr
             key={entry.player._id}
-            className={`border-t border-neutral-100 ${eligibilityRowClass(eligibility.band)}`}
+            className={`${
+              index === 0
+                ? `border-t-4 ${depthTierSeparatorClass(tone)}`
+                : 'border-t border-neutral-100'
+            } ${eligibilityRowClass(eligibility.band)}`}
           >
             {index === 0 && (
               <th
                 rowSpan={entries.length}
                 scope="rowgroup"
-                className="bg-white px-3 py-2 align-top text-[10px] font-black uppercase tracking-[0.1em] text-michigan-blue"
+                className={`border-r-4 px-3 py-3 align-top text-[10px] font-black uppercase tracking-[0.1em] ${depthTierLabelClass(tone)}`}
               >
-                {title}
-                <span className="ml-1.5 text-neutral-400">
-                  {entries.length}
+                <span className="block">{title}</span>
+                <span className="mt-1.5 inline-flex border border-current/20 px-1.5 py-0.5 text-[9px] leading-none tabular-nums opacity-70">
+                  {entries.length} {entries.length === 1 ? 'player' : 'players'}
                 </span>
               </th>
             )}
-            <td className="px-3 py-1">
-              <button
-                type="button"
-                onClick={() => select(entry)}
-                className="w-full py-1 text-left text-sm font-bold transition hover:text-michigan-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
-              >
-                {entry.player.displayName}
-              </button>
-            </td>
-            <td className="px-3 py-2 text-xs font-black">
-              {entry.stint.position}
-            </td>
-            <td className="px-3 py-2 text-xs font-bold tabular-nums text-neutral-500">
+            <td
+              className="px-2 py-2 text-center text-lg font-black tabular-nums text-neutral-950"
+              aria-label={
+                entry.stint.jerseyNumber === undefined
+                  ? 'No jersey number'
+                  : `Jersey number ${entry.stint.jerseyNumber}`
+              }
+            >
               {jersey(entry.stint.jerseyNumber)}
             </td>
-            <td className="px-3 py-2">
-              <EligibilityStatus eligibility={eligibility} />
+            <td className="px-3 py-1.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <button
+                  type="button"
+                  onClick={() => select(entry)}
+                  className="min-w-0 text-left text-sm font-bold transition hover:text-michigan-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                >
+                  {entry.player.displayName}
+                  <span className="sr-only">
+                    , {eligibility.label}, roster year {eligibility.year}
+                  </span>
+                </button>
+                <RecruitingYear
+                  season={entry.profile?.recruiting?.recruitingSeason}
+                />
+              </div>
+              {entry.stint.injury && (
+                <InjuryBadge injury={entry.stint.injury} />
+              )}
+            </td>
+            <td className="px-2 py-2 text-xs font-black">
+              {entry.stint.position}
             </td>
           </tr>
         )
@@ -1081,25 +1104,54 @@ function DepthTierRows({
   )
 }
 
-function EligibilityStatus({
-  eligibility,
+function depthTierLabelClass(tone: DepthTierTone) {
+  switch (tone) {
+    case 'starters':
+      return 'border-neutral-950 bg-neutral-900 text-white'
+    case 'rotation':
+      return 'border-neutral-700 bg-neutral-200 text-neutral-950'
+    case 'depth':
+      return 'border-neutral-500 bg-neutral-100 text-neutral-900'
+    case 'prospects':
+      return 'border-neutral-400 bg-neutral-50 text-neutral-800'
+    case 'walk-ons':
+      return 'border-neutral-400 bg-neutral-100 text-neutral-700'
+  }
+}
+
+function depthTierSeparatorClass(tone: DepthTierTone) {
+  switch (tone) {
+    case 'starters':
+      return 'border-neutral-950'
+    case 'rotation':
+      return 'border-neutral-700'
+    case 'depth':
+      return 'border-neutral-500'
+    case 'prospects':
+      return 'border-neutral-400'
+    case 'walk-ons':
+      return 'border-neutral-300'
+  }
+}
+
+function InjuryBadge({
+  injury,
 }: {
-  eligibility: ReturnType<typeof getEligibilityDisplay>
+  injury: NonNullable<EnrichedPlayer['stint']['injury']>
 }) {
+  const label =
+    injury.kind === 'short_term'
+      ? 'Short-term injury'
+      : injury.kind === 'long_term'
+        ? 'Long-term injury'
+        : 'Season-ending injury'
+
   return (
-    <span className="block">
-      <span
-        className={`inline-flex items-center gap-1.5 border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] ${eligibilityBadgeClass(eligibility.band)}`}
-      >
-        <span className="h-1.5 w-1.5 bg-current" aria-hidden="true" />
-        {eligibility.label} · yr {eligibility.year}
-      </span>
-      {eligibility.medicalExtensionSeasons > 0 && (
-        <span className="mt-0.5 block text-[9px] font-bold text-neutral-500">
-          +{eligibility.medicalExtensionSeasons} medical season
-          {eligibility.medicalExtensionSeasons === 1 ? '' : 's'}
-        </span>
-      )}
+    <span
+      className={`mb-1 inline-flex items-center border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] ${injuryBadgeClass(injury.kind)}`}
+      title={[injury.note, injury.expectedReturn].filter(Boolean).join(' · ')}
+    >
+      {label}
     </span>
   )
 }
@@ -1508,8 +1560,8 @@ function PlayerDrawer({
   const recruiting = profile?.recruiting
   const draft = profile?.draft
   const medicalExtensionSeasons = getMedicalExtensionSeasons(entry.stint)
-  const eligibilityEndSeason =
-    entry.stint.eligibilityStartSeason + 4 + medicalExtensionSeasons
+  const extraEligibilitySeasons = entry.stint.extraEligibilitySeasons
+  const eligibilityEndSeason = entry.stint.eligibilityEndSeason
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
@@ -1544,10 +1596,13 @@ function PlayerDrawer({
         <div className="border-b border-neutral-300 px-4 py-3 sm:px-5">
           <div className="flex items-start gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center border border-michigan-blue bg-michigan-maize text-lg font-black text-michigan-blue">
-              {entry.stint.jerseyNumber ?? entry.stint.position}
+              {jersey(entry.stint.jerseyNumber)}
             </div>
             <div>
-              <StatusBadge status={entry.stint.status} />
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge status={entry.stint.status} />
+                <RecruitingYear season={recruiting?.recruitingSeason} />
+              </div>
               <h2
                 id="player-title"
                 className="mt-1 text-2xl font-black leading-tight"
@@ -1576,6 +1631,14 @@ function PlayerDrawer({
               <Detail label="Jersey" value={entry.stint.jerseyNumber} />
               <Detail label="Position" value={entry.stint.position} />
               <Detail
+                label="Tier override"
+                value={
+                  entry.stint.depthTierOverride
+                    ? depthTierLabel(entry.stint.depthTierOverride)
+                    : 'Automatic'
+                }
+              />
+              <Detail
                 label="Size"
                 value={formatMeasurements(
                   entry.stint.heightInches,
@@ -1603,6 +1666,14 @@ function PlayerDrawer({
                 }
               />
               <Detail
+                label="Extra eligibility"
+                value={
+                  extraEligibilitySeasons === 0
+                    ? 'None'
+                    : `${extraEligibilitySeasons} season${extraEligibilitySeasons === 1 ? '' : 's'}`
+                }
+              />
+              <Detail
                 label="Departure group"
                 value={
                   entry.stint.departureClass && entry.stint.departureRank
@@ -1612,6 +1683,47 @@ function PlayerDrawer({
               />
             </DetailGrid>
           </DetailSection>
+
+          {entry.stint.injury && (
+            <DetailSection title="Availability">
+              <div className="border-l-4 border-neutral-800 bg-neutral-100 px-3 py-2">
+                <InjuryBadge injury={entry.stint.injury} />
+                {entry.stint.injury.note && (
+                  <p className="mt-1 text-sm text-neutral-700">
+                    {entry.stint.injury.note}
+                  </p>
+                )}
+                {entry.stint.injury.expectedReturn && (
+                  <p className="mt-1 text-xs font-bold text-neutral-500">
+                    Expected return: {entry.stint.injury.expectedReturn}
+                  </p>
+                )}
+              </div>
+            </DetailSection>
+          )}
+
+          {entry.stint.positionChanges &&
+            entry.stint.positionChanges.length > 0 && (
+              <DetailSection title="Position changes">
+                <ol className="divide-y divide-neutral-200 border-y border-neutral-300">
+                  {[...entry.stint.positionChanges].reverse().map((change) => (
+                    <li key={change.recordedAt} className="py-2 text-sm">
+                      <span className="font-black">
+                        {change.fromPosition} → {change.toPosition}
+                      </span>
+                      <span className="ml-2 text-xs text-neutral-500">
+                        {change.effectiveSeason}
+                      </span>
+                      {change.note && (
+                        <p className="mt-0.5 text-xs text-neutral-600">
+                          {change.note}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </DetailSection>
+            )}
 
           <DetailSection title="Origin">
             <DetailGrid>
@@ -2083,16 +2195,26 @@ function isEarlyCareerProspect(entry: EnrichedPlayer) {
   return CURRENT_ROSTER_SEASON < entry.stint.eligibilityLeaveSeason
 }
 
+function effectiveDepthTier(
+  entry: EnrichedPlayer,
+  starterIds: Set<string>,
+  rotationIds: Set<string>,
+): DepthTierTone {
+  if (entry.stint.depthTierOverride) return entry.stint.depthTierOverride
+  if (starterIds.has(entry.player._id)) return 'starters'
+  if (rotationIds.has(entry.player._id)) return 'rotation'
+  if (entry.profile?.recruiting?.source === 'walk_on') return 'walk-ons'
+  return isEarlyCareerProspect(entry) ? 'prospects' : 'depth'
+}
+
 function getEligibilityDisplay(entry: EnrichedPlayer) {
   const year = Math.max(
     1,
     CURRENT_ROSTER_SEASON - (entry.stint.eligibilityLeaveSeason - 2) + 1,
   )
-  const medicalExtensionSeasons = getMedicalExtensionSeasons(entry.stint)
-  const eligibilityEndSeason =
-    entry.stint.eligibilityStartSeason + 4 + medicalExtensionSeasons
+
   const band: EligibilityBand =
-    CURRENT_ROSTER_SEASON >= eligibilityEndSeason
+    CURRENT_ROSTER_SEASON >= entry.stint.eligibilityEndSeason
       ? 'final'
       : year >= 3
         ? 'nfl-eligible'
@@ -2101,13 +2223,12 @@ function getEligibilityDisplay(entry: EnrichedPlayer) {
   return {
     band,
     year,
-    medicalExtensionSeasons,
     label:
       band === 'final'
-        ? 'Final year'
+        ? 'Final eligibility year'
         : band === 'nfl-eligible'
-          ? 'NFL eligible'
-          : 'Must return',
+          ? 'NFL-eligible'
+          : 'Developing',
   }
 }
 
@@ -2117,11 +2238,27 @@ function eligibilityRowClass(band: EligibilityBand) {
   return 'bg-emerald-50/80'
 }
 
-function eligibilityBadgeClass(band: EligibilityBand) {
-  if (band === 'final') return 'border-red-300 bg-red-100 text-red-900'
-  if (band === 'nfl-eligible')
-    return 'border-amber-300 bg-amber-100 text-amber-950'
-  return 'border-emerald-300 bg-emerald-100 text-emerald-900'
+function RecruitingYear({ season }: { season: number | undefined }) {
+  return (
+    <span className="inline-flex shrink-0 bg-neutral-900 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-white tabular-nums">
+      Recruit {season ?? '—'}
+    </span>
+  )
+}
+
+function injuryBadgeClass(
+  kind: NonNullable<EnrichedPlayer['stint']['injury']>['kind'],
+) {
+  if (kind === 'season_ending')
+    return 'border-neutral-950 bg-neutral-950 text-white'
+  if (kind === 'long_term')
+    return 'border-2 border-neutral-700 bg-neutral-100 text-neutral-950'
+  return 'border-dashed border-neutral-500 bg-white text-neutral-700'
+}
+
+function depthTierLabel(tier: DepthTierTone) {
+  if (tier === 'walk-ons') return 'Walk-ons'
+  return tier.charAt(0).toUpperCase() + tier.slice(1)
 }
 
 function compareRotationCandidates(a: EnrichedPlayer, b: EnrichedPlayer) {
@@ -2247,7 +2384,7 @@ function getMedicalExtensionSeasons(stint: EnrichedPlayer['stint']) {
 }
 
 function jersey(value: number | undefined) {
-  return value === undefined ? 'No number' : `#${value}`
+  return value === undefined ? '—' : `#${value}`
 }
 
 function rank(value: number | undefined) {

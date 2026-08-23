@@ -1,6 +1,6 @@
 # cfb26
 
-`cfb26` is a Michigan football personnel explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, exact position groups, 2015–2025 snap counts and PFF grades, search, and detailed player profiles.
+`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, 2015–2025 snap counts and PFF grades, proprietary team ratings, weekly game importance, and custom head-to-head matchups.
 
 ## Quick start
 
@@ -12,6 +12,17 @@ npm run dev:web
 ```
 
 The browser defaults to the public Michigan development deployment. Set `VITE_CONVEX_URL` in an ignored `.env.local` only to use another compatible deployment. Use `npm run dev` when authenticated Convex source synchronization is intended. See [Deployment](docs/wiki/guides/deployment.md).
+
+## Roster administration
+
+`/admin/roster` edits the active roster's depth section, extra eligibility, current injury status, and position. Writes are disabled until the selected Convex deployment has a high-entropy key:
+
+```powershell
+npx convex env set CFB26_ADMIN_KEY
+npx convex dev --once
+```
+
+The first command prompts for the value so it does not enter shell history; the second activates the changed typed environment for the development functions. Enter that same value on the admin page. Keep it out of tracked files and `VITE_*` variables; use a different value for each deployment.
 
 ## Common commands
 

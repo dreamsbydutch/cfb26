@@ -1,7 +1,13 @@
 import type { MutationCtx } from './_generated/server'
 
 export type ProgramSource =
-  'recruiting' | 'standings' | 'draft' | 'games' | 'game_stats' | 'ratings'
+  | 'recruiting'
+  | 'standings'
+  | 'draft'
+  | 'games'
+  | 'game_stats'
+  | 'ratings'
+  | 'rating_inputs'
 
 const PROGRAM_KEY_ALIASES: Readonly<Record<string, string>> = {
   'alabama-birmingham': 'uab',

@@ -3,6 +3,8 @@
 - Status: Accepted
 - Date: 2026-08-23
 
+The Elo-only first ranking described here was replaced by the proprietary composite in [ADR 0004](0004-versioned-multi-perspective-team-rating.md). The decision to keep team strength separate from game importance remains active.
+
 ## Context
 
 A national ranking and a weekly viewing guide answer different questions. Ranking asks how strong every FBS team is; game importance asks which matchups matter nationally or to Michigan. A single opaque score would hide those distinctions and make Michigan-specific prioritization look like an objective national ranking.

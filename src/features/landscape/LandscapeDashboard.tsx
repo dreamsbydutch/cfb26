@@ -5,11 +5,30 @@ import { useMemo, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { FunctionReturnType } from 'convex/server'
 import type { ReactNode } from 'react'
+import type { UseQueryResult } from '@tanstack/react-query'
 
 type Lens = 'national' | 'michigan'
-type View = 'games' | 'rankings'
+type View = 'games' | 'rankings' | 'matchup'
+type Venue = 'neutral' | 'team_a' | 'team_b'
+type Perspective =
+  | 'overall'
+  | 'power'
+  | 'offense'
+  | 'defense'
+  | 'passingOffense'
+  | 'passingDefense'
+  | 'rushingOffense'
+  | 'rushingDefense'
+  | 'situationalOffense'
+  | 'situationalDefense'
+  | 'specialTeams'
+  | 'talent'
+  | 'continuity'
+  | 'resume'
+  | 'form'
 type Dashboard = FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
 type DashboardGame = Dashboard['games'][number]
+type Matchup = FunctionReturnType<typeof api.ratings.getMatchup>
 
 const CURRENT_SEASON = new Date().getFullYear()
 const seasons = Array.from(
@@ -18,11 +37,33 @@ const seasons = Array.from(
 )
 const weeks = Array.from({ length: 21 }, (_, index) => index)
 
+const perspectiveLabels: Readonly<Record<Perspective, string>> = {
+  continuity: 'Continuity',
+  defense: 'Defense',
+  form: 'Recent form',
+  offense: 'Offense',
+  overall: 'Overall',
+  passingDefense: 'Pass defense',
+  passingOffense: 'Pass offense',
+  power: 'Power',
+  resume: 'Résumé',
+  rushingDefense: 'Run defense',
+  rushingOffense: 'Run offense',
+  situationalDefense: 'Situational defense',
+  situationalOffense: 'Situational offense',
+  specialTeams: 'Special teams',
+  talent: 'Talent',
+}
+
 export function LandscapeDashboard() {
   const [season, setSeason] = useState(CURRENT_SEASON)
   const [week, setWeek] = useState<number | undefined>()
   const [lens, setLens] = useState<Lens>('national')
   const [view, setView] = useState<View>('games')
+  const [perspective, setPerspective] = useState<Perspective>('overall')
+  const [teamAKey, setTeamAKey] = useState('michigan')
+  const [teamBKey, setTeamBKey] = useState('ohio-state')
+  const [venue, setVenue] = useState<Venue>('team_a')
   const dashboard = useQuery(
     convexQuery(api.ratings.getWeeklyDashboard, { season, week }),
   )
@@ -36,6 +77,30 @@ export function LandscapeDashboard() {
     )
   }, [dashboard.data?.games, lens])
   const resolvedWeek = week ?? dashboard.data?.week
+  const ratings = dashboard.data?.ratings ?? []
+  const resolvedTeamA = ratings.some((rating) => rating.programKey === teamAKey)
+    ? teamAKey
+    : (ratings[0]?.programKey ?? '')
+  const resolvedTeamB = ratings.some(
+    (rating) =>
+      rating.programKey === teamBKey && rating.programKey !== resolvedTeamA,
+  )
+    ? teamBKey
+    : (ratings.find((rating) => rating.programKey !== resolvedTeamA)
+        ?.programKey ?? '')
+  const matchup = useQuery({
+    ...convexQuery(api.ratings.getMatchup, {
+      programKeyA: resolvedTeamA,
+      programKeyB: resolvedTeamB,
+      season,
+      venue,
+    }),
+    enabled:
+      view === 'matchup' &&
+      resolvedTeamA !== '' &&
+      resolvedTeamB !== '' &&
+      resolvedTeamA !== resolvedTeamB,
+  })
 
   return (
     <main className="min-h-screen bg-michigan-cream text-michigan-blue">
@@ -114,6 +179,12 @@ export function LandscapeDashboard() {
             >
               Rankings
             </ViewButton>
+            <ViewButton
+              active={view === 'matchup'}
+              onClick={() => setView('matchup')}
+            >
+              Matchup lab
+            </ViewButton>
           </div>
         </div>
       </div>
@@ -127,12 +198,18 @@ export function LandscapeDashboard() {
               : `Week ${resolvedWeek ?? 'current'}`}
           </p>
           <h2 className="mt-1 text-2xl font-black tracking-[-0.03em] sm:text-3xl">
-            {view === 'games' ? 'What matters this week' : 'National ratings'}
+            {view === 'games'
+              ? 'What matters this week'
+              : view === 'rankings'
+                ? 'National ratings'
+                : 'Build a head-to-head'}
           </h2>
           <p className="mt-1 text-sm leading-5 text-neutral-600">
             {view === 'games'
-              ? 'National importance combines team strength and matchup competitiveness. The Michigan lens adds direct games, season opponents, and the Big Ten race.'
-              : 'Every available team is ordered by the latest CFBD Elo snapshot for the selected season.'}
+              ? 'National importance combines our team strength model and matchup competitiveness. The Michigan lens adds direct games, season opponents, and the Big Ten race.'
+              : view === 'rankings'
+                ? 'Compare teams through sixteen season-normalized perspectives. Overall blends performance, units, roster strength, résumé, and form while confidence reports the available evidence.'
+                : 'Choose two teams and a venue to compare complementary units, projected score, win probability, volatility, and stored head-to-head history.'}
           </p>
         </div>
 
@@ -141,7 +218,7 @@ export function LandscapeDashboard() {
         ) : dashboard.isError ? (
           <DashboardMessage
             title="The landscape could not load."
-            detail="Check the development Convex connection and try again."
+            detail="Check the Convex connection and try again."
             action={
               <button
                 type="button"
@@ -153,7 +230,27 @@ export function LandscapeDashboard() {
             }
           />
         ) : view === 'rankings' ? (
-          <RankingsTable ratings={dashboard.data.ratings} />
+          <RankingsTable
+            ratings={dashboard.data.ratings}
+            season={season}
+            perspective={perspective}
+            onSelectPerspective={setPerspective}
+            onSelectSeason={(value) => {
+              setSeason(value)
+              setWeek(undefined)
+            }}
+          />
+        ) : view === 'matchup' ? (
+          <MatchupLab
+            matchup={matchup}
+            ratings={dashboard.data.ratings}
+            teamAKey={resolvedTeamA}
+            teamBKey={resolvedTeamB}
+            venue={venue}
+            onSelectTeamA={setTeamAKey}
+            onSelectTeamB={setTeamBKey}
+            onSelectVenue={setVenue}
+          />
         ) : (
           <>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -177,13 +274,13 @@ export function LandscapeDashboard() {
               </div>
               <p className="text-xs font-bold text-neutral-500">
                 {games.length} {games.length === 1 ? 'game' : 'games'} ·{' '}
-                {dashboard.data.ratingCount} rated teams
+                {dashboard.data.ratingCount} modeled teams
               </p>
             </div>
             {games.length === 0 ? (
               <DashboardMessage
-                title="Game data is ready to connect."
-                detail="The dashboard will populate after the CFBD key arrives and the first development backfill completes."
+                title="No games are stored for this week."
+                detail="Choose another week or season to explore the schedule history."
               />
             ) : (
               <ol className="grid gap-x-8 gap-y-0 lg:grid-cols-2">
@@ -306,60 +403,486 @@ function TeamLine({
   )
 }
 
-function RankingsTable({ ratings }: { ratings: Dashboard['ratings'] }) {
+function RankingsTable({
+  onSelectPerspective,
+  onSelectSeason,
+  perspective,
+  ratings,
+  season,
+}: {
+  onSelectPerspective: (perspective: Perspective) => void
+  onSelectSeason: (season: number) => void
+  perspective: Perspective
+  ratings: Dashboard['ratings']
+  season: number
+}) {
+  const sortedRatings = useMemo(
+    () =>
+      [...ratings].sort((left, right) => {
+        const leftScore =
+          perspective === 'overall'
+            ? left.overall
+            : left.dimensions[perspective]
+        const rightScore =
+          perspective === 'overall'
+            ? right.overall
+            : right.dimensions[perspective]
+        return rightScore - leftScore || left.rank - right.rank
+      }),
+    [perspective, ratings],
+  )
   if (ratings.length === 0) {
+    const previousSeason = season - 1
     return (
       <DashboardMessage
-        title="Ratings are ready to connect."
-        detail="The national table will populate after the CFBD key arrives and the ratings backfill completes."
+        title={`No ${season} ratings are available yet.`}
+        detail={`No model snapshot is stored for ${season} yet. Historical rankings are available through ${previousSeason}.`}
+        action={
+          <button
+            type="button"
+            onClick={() => onSelectSeason(previousSeason)}
+            className="border border-michigan-blue bg-michigan-blue px-3 py-1.5 text-xs font-black text-white transition hover:border-michigan-maize hover:text-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+          >
+            View {previousSeason} rankings
+          </button>
+        }
       />
     )
   }
   return (
-    <div className="overflow-x-auto border-t-2 border-michigan-blue">
-      <table className="w-full min-w-[560px] border-collapse text-left">
-        <caption className="sr-only">National team Elo rankings</caption>
-        <thead className="bg-michigan-blue text-[10px] uppercase tracking-[0.12em] text-white">
-          <tr>
-            <th scope="col" className="w-16 px-3 py-2 font-black">
-              Rank
-            </th>
-            <th scope="col" className="px-3 py-2 font-black">
-              Team
-            </th>
-            <th scope="col" className="px-3 py-2 font-black">
-              Conference
-            </th>
-            <th scope="col" className="w-24 px-3 py-2 text-right font-black">
-              Rating
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {ratings.map((row) => (
-            <tr
-              key={row._id}
-              className={`border-b border-michigan-blue/15 ${
-                row.sourceProgramName === 'Michigan'
-                  ? 'bg-michigan-maize-soft font-black'
-                  : 'bg-white'
-              }`}
-            >
-              <td className="px-3 py-2 font-black tabular-nums">{row.rank}</td>
-              <th scope="row" className="px-3 py-2 font-bold">
-                {row.sourceProgramName}
+    <div>
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3 border-y border-michigan-blue/20 bg-white px-3 py-2">
+        <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.12em]">
+          Ranking perspective
+          <select
+            value={perspective}
+            onChange={(event) =>
+              onSelectPerspective(event.target.value as Perspective)
+            }
+            className="min-w-52 border border-michigan-blue/30 bg-white px-2 py-1.5 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+          >
+            {Object.entries(perspectiveLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="max-w-xl text-xs leading-5 text-neutral-500">
+          Scores are within-season percentiles. Confidence measures source
+          coverage, not the certainty that a team will win.
+        </p>
+      </div>
+      <div className="overflow-x-auto border-t-2 border-michigan-blue">
+        <table className="w-full min-w-[800px] border-collapse text-left">
+          <caption className="sr-only">
+            National team rankings by {perspectiveLabels[perspective]}
+          </caption>
+          <thead className="bg-michigan-blue text-[10px] uppercase tracking-[0.12em] text-white">
+            <tr>
+              <th scope="col" className="w-16 px-3 py-2 font-black">
+                Rank
               </th>
-              <td className="px-3 py-2 text-sm text-neutral-500">
-                {row.conference ?? 'Independent'}
-              </td>
-              <td className="px-3 py-2 text-right font-black tabular-nums">
-                {Math.round(row.rating)}
-              </td>
+              <th scope="col" className="px-3 py-2 font-black">
+                Team
+              </th>
+              <th scope="col" className="px-3 py-2 font-black">
+                Conference
+              </th>
+              <th scope="col" className="w-24 px-3 py-2 text-right font-black">
+                {perspective === 'overall'
+                  ? 'Rating'
+                  : perspectiveLabels[perspective]}
+              </th>
+              <th scope="col" className="w-20 px-3 py-2 text-right font-black">
+                {perspective === 'overall' ? 'Power' : 'Overall'}
+              </th>
+              <th scope="col" className="w-20 px-3 py-2 text-right font-black">
+                Off
+              </th>
+              <th scope="col" className="w-20 px-3 py-2 text-right font-black">
+                Def
+              </th>
+              <th scope="col" className="w-24 px-3 py-2 text-right font-black">
+                Confidence
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sortedRatings.map((row, index) => {
+              const perspectiveScore =
+                perspective === 'overall'
+                  ? row.overall
+                  : row.dimensions[perspective]
+              return (
+                <tr
+                  key={row._id}
+                  className={`border-b border-michigan-blue/15 ${
+                    row.sourceProgramName === 'Michigan'
+                      ? 'bg-michigan-maize-soft font-black'
+                      : 'bg-white'
+                  }`}
+                >
+                  <td className="px-3 py-2 font-black tabular-nums">
+                    {index + 1}
+                  </td>
+                  <th scope="row" className="px-3 py-2 font-bold">
+                    {row.sourceProgramName}
+                    <span className="ml-2 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-400">
+                      #{row.rank} overall
+                    </span>
+                  </th>
+                  <td className="px-3 py-2 text-sm text-neutral-500">
+                    {row.conference ?? 'Independent'}
+                  </td>
+                  <td className="px-3 py-2 text-right font-black tabular-nums">
+                    {Math.round(perspectiveScore)}
+                  </td>
+                  <td className="px-3 py-2 text-right font-bold tabular-nums">
+                    {Math.round(
+                      perspective === 'overall'
+                        ? row.dimensions.power
+                        : row.overall,
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums text-neutral-600">
+                    {Math.round(row.dimensions.offense)}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums text-neutral-600">
+                    {Math.round(row.dimensions.defense)}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <span className="inline-flex min-w-14 justify-center bg-michigan-blue-soft px-2 py-1 text-[10px] font-black tabular-nums">
+                      {Math.round(row.confidence)}%
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
+  )
+}
+
+function MatchupLab({
+  matchup,
+  onSelectTeamA,
+  onSelectTeamB,
+  onSelectVenue,
+  ratings,
+  teamAKey,
+  teamBKey,
+  venue,
+}: {
+  matchup: UseQueryResult<Matchup, Error>
+  onSelectTeamA: (programKey: string) => void
+  onSelectTeamB: (programKey: string) => void
+  onSelectVenue: (venue: Venue) => void
+  ratings: Dashboard['ratings']
+  teamAKey: string
+  teamBKey: string
+  venue: Venue
+}) {
+  if (ratings.length < 2) {
+    return (
+      <DashboardMessage
+        title="A matchup needs two modeled teams."
+        detail="Choose a season with a stored proprietary rating snapshot."
+      />
+    )
+  }
+
+  return (
+    <div>
+      <div className="grid gap-3 border-y-2 border-michigan-blue bg-white p-3 sm:grid-cols-3">
+        <TeamSelect
+          label="Team A"
+          ratings={ratings}
+          value={teamAKey}
+          excludedValue={teamBKey}
+          onChange={onSelectTeamA}
+        />
+        <TeamSelect
+          label="Team B"
+          ratings={ratings}
+          value={teamBKey}
+          excludedValue={teamAKey}
+          onChange={onSelectTeamB}
+        />
+        <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.12em]">
+          Venue
+          <select
+            value={venue}
+            onChange={(event) => onSelectVenue(event.target.value as Venue)}
+            className="border border-michigan-blue/30 bg-white px-2 py-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+          >
+            <option value="team_a">Team A home</option>
+            <option value="neutral">Neutral site</option>
+            <option value="team_b">Team B home</option>
+          </select>
+        </label>
+      </div>
+
+      {matchup.isPending ? (
+        <DashboardMessage title="Building the matchup…" />
+      ) : matchup.isError ? (
+        <DashboardMessage
+          title="The matchup could not load."
+          detail="Try another pair or reload the model snapshot."
+          action={
+            <button
+              type="button"
+              onClick={() => void matchup.refetch()}
+              className="border border-michigan-blue px-3 py-1.5 text-xs font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+            >
+              Retry
+            </button>
+          }
+        />
+      ) : matchup.data === null ? (
+        <DashboardMessage
+          title="This season does not have a composite matchup snapshot."
+          detail="Choose a season whose proprietary ratings have been generated."
+        />
+      ) : (
+        <MatchupResult matchup={matchup.data} />
+      )}
+    </div>
+  )
+}
+
+function TeamSelect({
+  excludedValue,
+  label,
+  onChange,
+  ratings,
+  value,
+}: {
+  excludedValue: string
+  label: string
+  onChange: (programKey: string) => void
+  ratings: Dashboard['ratings']
+  value: string
+}) {
+  return (
+    <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.12em]">
+      {label}
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="border border-michigan-blue/30 bg-white px-2 py-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+      >
+        {ratings.map((rating) => (
+          <option
+            key={rating.programKey}
+            value={rating.programKey}
+            disabled={rating.programKey === excludedValue}
+          >
+            #{rating.rank} {rating.sourceProgramName}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function MatchupResult({ matchup }: { matchup: NonNullable<Matchup> }) {
+  const { projection, ratingA, ratingB } = matchup
+  const projectedLeader =
+    projection.projectedMargin >= 0
+      ? ratingA.sourceProgramName
+      : ratingB.sourceProgramName
+  return (
+    <div className="mt-5">
+      <section className="border-b-4 border-michigan-maize bg-michigan-blue px-4 py-6 text-white sm:px-6">
+        <p className="text-center text-[10px] font-black uppercase tracking-[0.16em] text-michigan-maize">
+          CFB26 model · {projection.confidence}% evidence coverage
+        </p>
+        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
+          <div>
+            <p className="text-lg font-black sm:text-2xl">
+              {ratingA.sourceProgramName}
+            </p>
+            <p className="mt-1 text-4xl font-black tabular-nums sm:text-5xl">
+              {projection.projectedScore.teamA}
+            </p>
+            <p className="mt-1 text-xs font-bold text-white/70">
+              {projection.teamAWinProbability}% win probability
+            </p>
+          </div>
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
+            vs
+          </div>
+          <div>
+            <p className="text-lg font-black sm:text-2xl">
+              {ratingB.sourceProgramName}
+            </p>
+            <p className="mt-1 text-4xl font-black tabular-nums sm:text-5xl">
+              {projection.projectedScore.teamB}
+            </p>
+            <p className="mt-1 text-xs font-bold text-white/70">
+              {projection.teamBWinProbability}% win probability
+            </p>
+          </div>
+        </div>
+        <p className="mt-5 text-center text-xs text-white/65">
+          Projected margin: {projectedLeader} by{' '}
+          {Math.abs(projection.projectedMargin).toFixed(1)}. Model estimate, not
+          a betting line.
+        </p>
+      </section>
+
+      <section className="mt-6">
+        <div className="border-b-2 border-michigan-blue pb-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">
+            Complementary unit ratings
+          </p>
+          <h3 className="text-xl font-black">Where the matchup tilts</h3>
+        </div>
+        <div>
+          {projection.unitMatchups.map((unit) => (
+            <UnitComparison
+              key={unit.key}
+              unit={unit}
+              teamAName={ratingA.sourceProgramName}
+              teamBName={ratingB.sourceProgramName}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-5 border-y-2 border-michigan-blue bg-white px-4 py-5 md:grid-cols-2">
+        <RatingBreakdown rating={ratingA} />
+        <RatingBreakdown rating={ratingB} />
+      </section>
+
+      <section className="mt-6 border-t-2 border-michigan-blue pt-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">
+          Stored series history through {matchup.season}
+        </p>
+        <p className="mt-1 text-sm font-bold">
+          {matchup.history.meetings === 0
+            ? 'No completed meetings are stored since 2000.'
+            : `${ratingA.sourceProgramName} ${matchup.history.teamAWins}–${matchup.history.teamBWins}${matchup.history.ties ? `–${matchup.history.ties}` : ''} in ${matchup.history.meetings} stored meetings.`}
+        </p>
+        {matchup.history.lastFive.length > 0 && (
+          <ol className="mt-3 grid gap-x-6 md:grid-cols-2">
+            {matchup.history.lastFive.map((game) => (
+              <li
+                key={game._id}
+                className="flex items-center justify-between gap-3 border-t border-michigan-blue/15 py-2 text-xs"
+              >
+                <span className="font-bold">{game.season}</span>
+                <span className="min-w-0 truncate">
+                  {game.awaySourceName} at {game.homeSourceName}
+                </span>
+                <span className="font-black tabular-nums">
+                  {game.awayPoints}–{game.homePoints}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </div>
+  )
+}
+
+function UnitComparison({
+  teamAName,
+  teamBName,
+  unit,
+}: {
+  teamAName: string
+  teamBName: string
+  unit: NonNullable<Matchup>['projection']['unitMatchups'][number]
+}) {
+  const difference = unit.teamA - unit.teamB
+  const edge =
+    unit.key === 'volatility'
+      ? 'Range of outcomes'
+      : Math.abs(difference) < 2
+        ? 'Even'
+        : `${difference > 0 ? teamAName : teamBName} edge`
+  return (
+    <div className="grid gap-2 border-b border-michigan-blue/15 py-3 sm:grid-cols-[9rem_1fr_5rem] sm:items-center">
+      <div>
+        <p className="text-sm font-black">{unit.label}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-400">
+          {edge}
+        </p>
+      </div>
+      <div>
+        <div className="flex justify-between text-[10px] font-bold text-neutral-500">
+          <span>{teamAName}</span>
+          <span>{teamBName}</span>
+        </div>
+        <div className="mt-1 grid grid-cols-2 gap-1" aria-hidden="true">
+          <div className="flex h-2 justify-end bg-michigan-blue-soft">
+            <div
+              className="h-full bg-michigan-blue"
+              style={{ width: `${unit.teamA}%` }}
+            />
+          </div>
+          <div className="h-2 bg-michigan-blue-soft">
+            <div
+              className="h-full bg-michigan-maize"
+              style={{ width: `${unit.teamB}%` }}
+            />
+          </div>
+        </div>
+        <p className="mt-1 text-[10px] leading-4 text-neutral-500">
+          {unit.description}
+        </p>
+      </div>
+      <p className="text-right text-sm font-black tabular-nums">
+        {Math.round(unit.teamA)}–{Math.round(unit.teamB)}
+      </p>
+    </div>
+  )
+}
+
+function RatingBreakdown({
+  rating,
+}: {
+  rating: NonNullable<Matchup>['ratingA']
+}) {
+  const dimensions: Array<[string, number]> = [
+    ['Overall', rating.overall],
+    ['Power', rating.dimensions.power],
+    ['Offense', rating.dimensions.offense],
+    ['Defense', rating.dimensions.defense],
+    ['Talent', rating.dimensions.talent],
+    ['Continuity', rating.dimensions.continuity],
+    ['Résumé', rating.dimensions.resume],
+    ['Form', rating.dimensions.form],
+  ]
+  return (
+    <article>
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="text-lg font-black">{rating.sourceProgramName}</h3>
+        <span className="text-xs font-black tabular-nums">
+          #{rating.rank} · {Math.round(rating.overall)}
+        </span>
+      </div>
+      <dl className="mt-2 grid grid-cols-2 gap-x-4 text-xs">
+        {dimensions.map(([label, value]) => (
+          <div
+            key={label}
+            className="flex justify-between border-t border-michigan-blue/15 py-2"
+          >
+            <dt className="text-neutral-500">{label}</dt>
+            <dd className="font-black tabular-nums">{Math.round(value)}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-[10px] leading-4 text-neutral-500">
+        {rating.signalCount} signals · {rating.dataSources.length} sources ·{' '}
+        {Math.round(rating.confidence)}% coverage
+      </p>
+    </article>
   )
 }
 
@@ -393,7 +916,7 @@ export function LandscapeError() {
   return (
     <DashboardMessage
       title="The landscape could not load."
-      detail="Reload the page or check the Convex development connection."
+      detail="Reload the page or check the Convex connection."
     />
   )
 }

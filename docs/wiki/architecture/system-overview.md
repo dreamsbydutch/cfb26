@@ -38,6 +38,14 @@ TanStack Start renders the React application and owns file-based routing. `getRo
 5. `seasonalStats.listBySeason` reads one bounded 2015–2025 season and merges participants with zero-snap roster players.
 6. Search and the six views derive from the typed records without a separate REST layer or client data copy.
 
+### Roster administration
+
+1. A browser requests `/admin/roster` and reads the same bounded active roster.
+2. The owner selects a player and keeps the deployment key only in the page's React state.
+3. `rosterAdmin.updatePlayer` verifies that key against the target Convex environment before reading data.
+4. One mutation atomically updates the stint's tier override, extra eligibility, current injury, current position, and bounded position history.
+5. Reactive public roster reads propagate the updated football facts back to both routes.
+
 ## Build and deployment path
 
 ```mermaid
@@ -51,12 +59,12 @@ flowchart LR
 
 `vercel.json` selects the `tanstack-start` framework preset and defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. Nitro packages the web application for the Vercel runtime.
 
-The Convex source is aligned in development and production. The owner-confirmed Vercel project is `cfb`, and its production URL is `https://cfb-hazel.vercel.app`. A production redeploy containing the Nitro configuration and a successful smoke test are still required before the hosted web pipeline is considered verified.
+Development has the checked-in rating and roster-admin source; production remains on the prior 17-table/function foundation until explicit promotion. The owner-confirmed Vercel project is `cfb`, and its production URL is `https://cfb-hazel.vercel.app`. A production redeploy containing the Nitro configuration and a successful smoke test are still required before the hosted web pipeline is considered verified.
 
 ## Deliberate boundaries
 
 - There is no separate REST or Express server. Convex is the data/backend boundary.
-- There is no authentication provider or authorization layer.
+- There is no identity provider, user session, or roles layer. One roster mutation uses the deployment-secret authorization in [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md).
 - There is no HTTP route module under `convex/http.ts`.
 - There is no separate design-system package, test package, monorepo, or shared library.
 - There is no service worker or offline data layer beyond the generated web manifest.

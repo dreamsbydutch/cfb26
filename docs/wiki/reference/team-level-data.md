@@ -2,9 +2,9 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-## Current development contract
+## Current hosted contract
 
-**Current:** Convex development synchronizes three public OpenSheet feeds into typed, indexed national football tables. Production has not been promoted to this contract. The source workbook remains the upstream authority; synchronization is an idempotent upsert and does not delete records that disappear upstream.
+**Current:** Both Convex environments synchronize three public OpenSheet feeds into typed, indexed national football tables. The source workbook remains the upstream authority; synchronization is an idempotent upsert and does not delete records that disappear upstream.
 
 | Feed                | Accepted rows | Coverage  | Convex table            | Grain                  |
 | ------------------- | ------------: | --------- | ----------------------- | ---------------------- |
@@ -36,17 +36,24 @@ The action is internal so unauthenticated clients cannot trigger thousands of wr
 
 ## Game history and retention
 
-**Current:** development stores 22,169 compact FBS schedules/results from 2000–2026, 7,318 detailed team-game rows from 2022–2025, and 3,340 season Elo snapshots from 2000–2025. `collegeGames` retains teams, date/week, venue, scores, line scores, completion flags, and source-provided Elo values. `teamGameStats` retains the source's category/value totals for only the latest five season years; 2026 has no completed-game stats yet. `teamSeasonRatings` keeps one latest Elo snapshot per program/season. A completed sync deletes older detailed-stat rows in batches while preserving compact games and ratings used for matchup history, rankings, and weekly importance.
+**Current:** development and production each store 22,169 compact FBS schedules/results from 2000–2026, 7,318 detailed team-game rows from 2022–2025, and 3,340 season Elo snapshots from 2000–2025. `collegeGames` retains teams, date/week, venue, scores, line scores, completion flags, and source-provided Elo values. `teamGameStats` retains the source's category/value totals for only the latest five season years; 2026 has no completed-game stats yet. `teamSeasonRatings` keeps one latest Elo snapshot per program/season. A completed sync deletes older detailed-stat rows in batches while preserving compact games and ratings used for matchup history, rankings, and weekly importance.
 
-`internal.games.backfill` imports an explicit 2000-or-later range in restartable chunks of at most five seasons and synchronizes its season Elo snapshots. Historical chunks outside the current rolling window skip the detailed-stat endpoint. Detailed stats are requested only for completed weeks because CFBD requires a week/team/conference filter; the daily 11:17 UTC job revisits the latest two completed weeks instead of the full season. Both operations require `CFBD_API_KEY` in the target Convex environment. With no key, the daily action exits without writes. Development's initial backfill completed on 2026-08-23.
+`internal.games.backfill` imports an explicit 2000-or-later range in restartable chunks of at most five seasons and synchronizes its season Elo snapshots. Historical chunks outside the current rolling window skip the detailed-stat endpoint. Detailed stats are requested only for completed weeks because CFBD requires a week/team/conference filter; the daily 11:17 UTC job revisits the latest two completed weeks instead of the full season. Both operations require `CFBD_API_KEY` in the target Convex environment. With no key, the daily action exits without writes. Both environments' initial backfills completed on 2026-08-23.
+
+## Proprietary rating inputs
+
+**Current in development:** `teamSeasonRatingInputs` keeps sparse, namespaced raw signals from CORE, SP+, FPI, advanced season stats, team talent, and returning production. `teamCompositeRatings` keeps the derived `cfb26-composite-v1` season snapshot. The 11:47 UTC job refreshes the six sources independently, records partial-source warnings, and rebuilds the current season. Development has FBS-baseline composites for 2000–2026 and advanced inputs for 2025–2026; production promotion is pending.
+
+The raw table is deliberately separate from the derived snapshot. A formula change can rebuild every season from stable evidence without refetching the provider, and a provider correction cannot silently change historical scores until the corresponding input is synchronized and the versioned model is rebuilt. Full methodology and coverage rules live in [Proprietary team ratings and game importance](landscape-ranking.md).
 
 The supported source is [CollegeFootballData](https://github.com/CFBD/cfbd-net/blob/main/docs/games.md) rather than an automated Sports Reference scraper. Sports Reference blocks the attempted automated access, and its published [data-use policy](https://www.sports-reference.com/data_use.html) requires permission for products built from scraped data. This keeps the ingestion path on a documented API and leaves room to replace or augment the provider later without changing the public game queries.
 
 ## Known limits
 
-- `/games` is **Current** with live development schedules/ratings plus loading, error, and no-data states.
+- `/games` is **Current** with live development and production schedules/ratings plus loading, error, and no-data states.
 - Syncs do not delete vanished upstream rows. A reviewed reconciliation workflow is required before treating deletion as authoritative.
 - Source corrections that change a recruiting `id`, standings team name, or draft year/pick can create a new semantic record rather than replacing the old one.
 - Team aliases are a practical initial crosswalk, not a complete NCAA identity registry.
-- Production still has the Michigan-only schema and data.
 - CFBD currently returns no 2026 Elo snapshot or completed-game team stats; the daily refresh will add them when available.
+- Advanced provider coverage varies by season and account access. Missing sources lower rating confidence and never become zero-valued performance.
+- The checked-in 19-table model and proprietary snapshots are deployed only to development until an explicit production promotion.

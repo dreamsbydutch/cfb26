@@ -13,7 +13,7 @@ export const Route = createFileRoute('/games')({
       {
         name: 'description',
         content:
-          'Rank college football teams and sort the weekly schedule by national importance or Michigan relevance.',
+          'Explore proprietary college football team ratings, custom head-to-head matchups, and weekly national or Michigan importance.',
       },
     ],
   }),

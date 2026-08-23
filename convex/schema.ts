@@ -7,6 +7,35 @@ const rosterStatus = v.union(
   v.literal('departed'),
 )
 
+const depthTier = v.union(
+  v.literal('starters'),
+  v.literal('rotation'),
+  v.literal('depth'),
+  v.literal('prospects'),
+  v.literal('walk-ons'),
+)
+
+const injuryKind = v.union(
+  v.literal('short_term'),
+  v.literal('long_term'),
+  v.literal('season_ending'),
+)
+
+const injury = v.object({
+  expectedReturn: v.optional(v.string()),
+  kind: injuryKind,
+  note: v.optional(v.string()),
+  updatedAt: v.number(),
+})
+
+const positionChange = v.object({
+  effectiveSeason: v.number(),
+  fromPosition: v.string(),
+  note: v.optional(v.string()),
+  recordedAt: v.number(),
+  toPosition: v.string(),
+})
+
 const recruitingSource = v.union(
   v.literal('high_school'),
   v.literal('transfer'),
@@ -32,11 +61,31 @@ const teamDataSource = v.union(
   v.literal('games'),
   v.literal('game_stats'),
   v.literal('ratings'),
+  v.literal('rating_inputs'),
 )
 
 const seasonType = v.union(v.literal('regular'), v.literal('postseason'))
 
 const homeAway = v.union(v.literal('home'), v.literal('away'))
+
+const ratingDimensions = v.object({
+  continuity: v.number(),
+  defense: v.number(),
+  form: v.number(),
+  offense: v.number(),
+  passingDefense: v.number(),
+  passingOffense: v.number(),
+  power: v.number(),
+  resume: v.number(),
+  rushingDefense: v.number(),
+  rushingOffense: v.number(),
+  situationalDefense: v.number(),
+  situationalOffense: v.number(),
+  specialTeams: v.number(),
+  talent: v.number(),
+  tempo: v.number(),
+  volatility: v.number(),
+})
 
 const perGameUnit = v.object({
   firstDownsByPass: v.number(),
@@ -105,16 +154,20 @@ export default defineSchema({
     departureClass: v.optional(v.string()),
     departureRank: v.optional(v.number()),
     depthChartOrder: v.optional(v.number()),
+    depthTierOverride: v.optional(depthTier),
     eligibilityEndSeason: v.number(),
     eligibilityLeaveSeason: v.number(),
     eligibilityStartSeason: v.number(),
     endSeason: v.optional(v.number()),
+    extraEligibilitySeasons: v.optional(v.number()),
     heightInches: v.optional(v.number()),
+    injury: v.optional(injury),
     jerseyNumber: v.optional(v.number()),
     legacyKey: v.string(),
     medicalExtensionSeasons: v.optional(v.number()),
     playerId: v.id('players'),
     position: v.string(),
+    positionChanges: v.optional(v.array(positionChange)),
     programId: v.id('programs'),
     redshirtSeasons: v.optional(v.number()),
     startSeason: v.number(),
@@ -375,6 +428,36 @@ export default defineSchema({
     .index('by_season_and_rating', ['season', 'rating'])
     .index('by_programId_and_season', ['programId', 'season']),
 
+  teamSeasonRatingInputs: defineTable({
+    conference: v.optional(v.string()),
+    programId: v.id('programs'),
+    season: v.number(),
+    signals: v.array(v.object({ key: v.string(), value: v.number() })),
+    sourceProgramName: v.string(),
+    sourceUpdatedAt: v.number(),
+    sources: v.array(v.string()),
+  })
+    .index('by_programId_and_season', ['programId', 'season'])
+    .index('by_season', ['season']),
+
+  teamCompositeRatings: defineTable({
+    confidence: v.number(),
+    conference: v.optional(v.string()),
+    dataSources: v.array(v.string()),
+    dimensions: ratingDimensions,
+    generatedAt: v.number(),
+    modelVersion: v.string(),
+    overall: v.number(),
+    programId: v.id('programs'),
+    programKey: v.string(),
+    rank: v.number(),
+    season: v.number(),
+    signalCount: v.number(),
+    sourceProgramName: v.string(),
+  })
+    .index('by_programId_and_season', ['programId', 'season'])
+    .index('by_season_and_overall', ['season', 'overall']),
+
   teamDataSyncState: defineTable({
     acceptedRows: v.optional(v.number()),
     completedAt: v.optional(v.number()),
@@ -388,6 +471,7 @@ export default defineSchema({
       v.literal('succeeded'),
       v.literal('failed'),
     ),
+    warnings: v.optional(v.array(v.string())),
   }).index('by_source', ['source']),
 
   legacyPlayerRows: defineTable({

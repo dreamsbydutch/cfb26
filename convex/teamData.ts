@@ -21,6 +21,7 @@ const sourceValidator = v.union(
   v.literal('games'),
   v.literal('game_stats'),
   v.literal('ratings'),
+  v.literal('rating_inputs'),
 )
 
 type Source = keyof typeof FEED_URLS
@@ -339,6 +340,7 @@ export const completeSync = internalMutation({
     fetchedRows: v.number(),
     rejectedRows: v.number(),
     source: sourceValidator,
+    warnings: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -353,6 +355,7 @@ export const completeSync = internalMutation({
       fetchedRows: args.fetchedRows,
       rejectedRows: args.rejectedRows,
       status: 'succeeded',
+      warnings: args.warnings,
     })
   },
 })
@@ -373,6 +376,7 @@ export const failSync = internalMutation({
       completedAt: args.completedAt,
       error: args.error,
       status: 'failed',
+      warnings: undefined,
     })
   },
 })
@@ -641,5 +645,5 @@ export const getProgramHistory = query({
 export const getSyncState = query({
   args: {},
   handler: async (ctx) =>
-    ctx.db.query('teamDataSyncState').withIndex('by_source').take(6),
+    ctx.db.query('teamDataSyncState').withIndex('by_source').take(7),
 })

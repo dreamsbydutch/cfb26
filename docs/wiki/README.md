@@ -23,11 +23,11 @@ This wiki is the durable source of truth for the application. It describes what 
 
 ## Current snapshot
 
-**Current:** `cfb26` is a two-route TanStack Start application. `/` is a responsive Michigan football personnel explorer; `/games` is a populated national weekly-game importance and Elo-ranking dashboard with separate national and Michigan lenses. Development has a 17-table, 47,774-document foundation with 2000–2026 compact schedules, 3,340 season ratings, and 2022–2025 detailed team-game stats. Production remains on the prior nine-table, 4,005-document Michigan contract. The owner-confirmed Vercel project and production domain are recorded, but the Nitro-backed production redeploy has not yet been smoke-tested. The app has no authentication provider, automated tests, or CI workflow.
+**Current:** `cfb26` is a three-route TanStack Start application. `/` is a responsive Michigan football personnel explorer; `/games` combines weekly importance, proprietary multi-perspective rankings, and custom matchup projections; `/admin/roster` is a no-index, deployment-key-gated editor for depth, eligibility, injury, and position facts. Development has the checked-in 19-table model with 2000–2026 composite snapshots and 2025–2026 advanced inputs. Production remains on the prior 17-table, 47,774-document foundation until an explicit promotion. The owner-confirmed Vercel project and production domain are recorded, but the Nitro-backed web deployment still needs a production smoke check. The app has no identity provider, automated tests, or CI workflow.
 
 **Planned:** redeploy and smoke-test the Nitro-backed Vercel production pipeline. Define the product audience, longer-term problem statement, and production data-access policy.
 
-**Undecided:** product audience, edit workflows, authentication policy, authorization model, final branding, analytics, and production service-level expectations.
+**Undecided:** product audience, future multi-user authentication/roles, final branding, analytics, and production service-level expectations. The current single-owner roster workflow is fixed by [ADR 0005](decisions/0005-single-owner-roster-admin-key.md).
 
 ## Documentation map
 

@@ -16,14 +16,22 @@
 
 ## Environment variables
 
-| Variable            | Required where                   | Secret?       | Purpose                                                                                           |
-| ------------------- | -------------------------------- | ------------- | ------------------------------------------------------------------------------------------------- |
-| `VITE_CONVEX_URL`   | Optional browser override        | No            | Compatible public URL used to create `ConvexQueryClient`; development is the checked-in fallback. |
-| `CONVEX_DEPLOYMENT` | Local Convex CLI when configured | No, but local | Identifies the selected deployment to tooling.                                                    |
-| `CONVEX_DEPLOY_KEY` | Hosted production build/deploy   | Yes           | Authorizes deployment to the selected Convex project.                                             |
-| `CFBD_API_KEY`      | Convex game-data synchronization | Yes           | Authorizes CollegeFootballData schedule/result and team-game-stat requests.                       |
+| Variable            | Required where                       | Secret?       | Purpose                                                                                                        |
+| ------------------- | ------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| `VITE_CONVEX_URL`   | Optional browser override            | No            | Compatible public URL used to create `ConvexQueryClient`; development is the checked-in fallback.              |
+| `CONVEX_DEPLOYMENT` | Local Convex CLI when configured     | No, but local | Identifies the selected deployment to tooling.                                                                 |
+| `CONVEX_DEPLOY_KEY` | Hosted production build/deploy       | Yes           | Authorizes deployment to the selected Convex project.                                                          |
+| `CFBD_API_KEY`      | Convex football-data synchronization | Yes           | Authorizes CollegeFootballData games, Elo, ratings, advanced stats, talent, and returning-production requests. |
+| `CFB26_ADMIN_KEY`   | Convex roster administration         | Yes           | Enables the single-owner roster mutation; minimum 24 characters and distinct per deployment.                   |
 
-No local environment file is required for the current read-only explorer. A browser override belongs in `.env.local` or provider-managed environment settings. `CFBD_API_KEY` belongs only in the target Convex deployment environment; never place it in a tracked file or a `VITE_*` variable.
+No local environment file is required for public reads. A browser override belongs in `.env.local` or provider-managed environment settings. `CFBD_API_KEY` and `CFB26_ADMIN_KEY` belong only in the target Convex deployment environment; never place either in a tracked file or a `VITE_*` variable. Configure the admin key without putting it in shell history:
+
+```powershell
+npx convex env set CFB26_ADMIN_KEY
+npx convex dev --once
+```
+
+The first command prompts for the value; the second activates the changed typed environment for the development functions. Confirm the selected deployment first. When the variable is absent or shorter than 24 characters, `/admin/roster` remains visible but every save is denied.
 
 The known deployment URLs are recorded in [Deployment](../guides/deployment.md). Confirm the intended environment before running any command that synchronizes schema, functions, or data.
 
@@ -55,7 +63,7 @@ The known deployment URLs are recorded in [Deployment](../guides/deployment.md).
 | Type/lint/format          | TypeScript 6/7 aliases, TanStack ESLint config, Convex ESLint plugin, Prettier          |
 | Windows build reliability | `@rolldown/binding-win32-x64-msvc`                                                      |
 
-No authentication, component-system, testing, analytics, or state-management package beyond React Query is installed.
+No identity-provider, component-system, testing, analytics, or state-management package beyond React Query is installed. The roster editor uses the deployment-secret decision in [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md), not an authentication package.
 
 ## Build configuration
 

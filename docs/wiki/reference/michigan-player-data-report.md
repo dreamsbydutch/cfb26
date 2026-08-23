@@ -8,7 +8,7 @@
 
 `SnapCounts.json` is the tracked source for the hosted `seasonalPlayerStats` table. The import preserves every row, links 708 rows to canonical player IDs, and retains 213 rows under 113 source-only names where the lifecycle database has no safe canonical match.
 
-For each player, the model records an original recruiting profile, one Michigan stint, one Michigan career-to-date summary, one arrival event, an optional departure event, and an optional NFL entry outcome. It can support roster-construction, recruiting, retention, transfer, participation, and draft-path analysis. It cannot by itself explain causation, performance by season, injuries, awards, NIL, game context, or production before or after Michigan.
+For each player, the model records an original recruiting profile, one Michigan stint, one Michigan career-to-date summary, one arrival event, an optional departure event, and an optional NFL entry outcome. It can support roster-construction, recruiting, retention, transfer, participation, and draft-path analysis. The schema can now accept owner-authored current injuries and position changes, but no such annotations are present in the verified snapshot. It still cannot infer causation, historical injuries, awards, NIL, game context, or production before or after Michigan.
 
 The most important reading rule is to keep five clocks separate:
 
@@ -59,8 +59,9 @@ The 428 live legacy rows are not additional players. They duplicate the source f
 - `recentRating`, sourced from `RecentMichiganRtg`, was entered manually from the PFF website. A value of zero means the field had not been updated at that point; the rated season is not stored.
 - Every player receives a standard five-season eligibility window. A conventional redshirt does not change that window.
 - `medicalExtensionSeasons` adds only medical or similarly granted seasons beyond the standard five.
+- `extraEligibilitySeasons` is a separate owner override from the admin editor and is zero until explicitly set.
 - In the depth-chart display, Prospects are scholarship players in their first or second season after high school; older scholarship players outside the rotation are Depth, and walk-ons remain separate.
-- Eligibility colors begin green for seasons one and two and yellow in season three. Yellow continues through any non-final medical-extension seasons; red appears only when the current season reaches the normalized `eligibilityEndSeason`.
+- An explicit admin depth-tier override takes precedence over automatic placement. Green row shading covers roster years one and two, yellow covers year three through the last nonfinal extension year, and red marks the final eligibility year. The original prospect class remains separate and is shown prominently as the recruiting year.
 - Obvious aliases and minor spelling errors may be corrected in place; the corrected model does not need to preserve those erroneous values.
 - Michigan NFL success includes only players who went directly from Michigan to a drafted or UDFA outcome. Later outcomes after another school are eventual player outcomes, not Michigan-to-NFL successes.
 - A dismissal is the Michigan exit. If the player later joins another school, that is a separate post-Michigan move rather than part of the dismissal event.
@@ -131,10 +132,10 @@ The eligibility fields behave like a modeled eligibility clock rather than actua
 The checked-in public query contract converts those source values to the five-season model without discarding real extensions:
 
 - `medicalExtensionSeasons = max(redshirtSeasons - 1, 0)` while the legacy source field remains stored for migration compatibility.
-- `eligibilityEndSeason = eligibilityStartSeason + 4 + medicalExtensionSeasons`.
+- `eligibilityEndSeason = eligibilityStartSeason + 4 + medicalExtensionSeasons + extraEligibilitySeasons`.
 - Public roster stints expose `medicalExtensionSeasons` and omit `redshirtSeasons`.
 
-This folds the former first extra season into the new universal baseline and preserves only additional seasons as medical extensions. A future write can store `medicalExtensionSeasons` directly; it takes precedence over the compatibility conversion. `eligibilityLeaveSeason` remains the first NFL-eligible season: three years removed from high school, represented as `recruitingSeason + 2`. Under the current model, Bryce Underwood has zero medical extension seasons and a 2029 eligibility end.
+This folds the former first extra season into the new universal baseline and preserves only source-granted time as medical extensions. `extraEligibilitySeasons` is independent owner-authored time, and both values contribute to the public end season. A write can store `medicalExtensionSeasons` directly; it takes precedence over the compatibility conversion. `eligibilityLeaveSeason` remains the first NFL-eligible season: three years removed from high school, represented as `recruitingSeason + 2`. Under the current model, Bryce Underwood has zero medical or owner-added extension seasons and a 2029 eligibility end.
 
 ### Departure
 

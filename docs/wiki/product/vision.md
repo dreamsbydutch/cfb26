@@ -6,7 +6,7 @@
 
 Build a production-capable Michigan football personnel explorer on TanStack Start with Convex as its typed, real-time backend. The repository should remain easy for humans and coding agents to understand, change, verify, and deploy.
 
-The implemented core workflow is browsing Michigan player history by depth chart, recruiting class, draft class, position, and player. The primary audience and the decisions that would turn this read-only explorer into a broader product remain **Undecided**.
+The implemented core workflow is browsing Michigan player history by depth chart, recruiting class, draft class, position, and player, plus national team rankings and matchups. One owner can maintain current roster facts through a narrowly protected editor. The primary audience and decisions for a broader multi-user product remain **Undecided**.
 
 ## Current experience
 
@@ -14,12 +14,12 @@ The implemented core workflow is browsing Michigan player history by depth chart
 
 - `/` presents the 2026 depth chart immediately, then progressively loads recruiting, career, movement, and NFL details for all 428 players.
 - Users can browse by original recruiting class, NFL entry class, exact Michigan position, 2015–2025 snap-count/PFF season, or the full searchable player index and open a detailed player drawer.
-- Development stores synchronized recruiting/standings history, the usable national draft feed, 2000–2026 compact FBS schedules, season Elo snapshots, and detailed 2022–2025 team-game stats. `/games` renders the national weekly-importance and Elo-ranking experience from those hosted records.
-- Production retains the nine-table Michigan contract while the 17-table national-data contract is validated in development.
+- Development stores synchronized recruiting/standings history, the usable national draft feed, 2000–2026 compact FBS schedules, season Elo, detailed 2022–2025 team-game stats, advanced rating inputs, and versioned proprietary snapshots. `/games` renders weekly importance, rankings across 15 strength perspectives, and venue-aware head-to-head projections. Production promotion of the 19-table rating contract remains pending.
+- `/admin/roster` lets the single owner override depth placement, add eligibility, mark short-term/long-term/season-ending injuries, and record position changes after a Convex deployment key is configured.
 - The app can be type-checked and production-built locally.
 - Repository guidance, task skills, and this wiki define the maintenance workflow.
 
-The current route is the first product vertical. It is read-only and defaults to the public development deployment. The Vercel project and production domain are known, but the Nitro-backed release path still needs a successful production redeploy and smoke test.
+Public browsing defaults to the development deployment. The only write is the single-owner roster editor established by [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md); it fails closed without its server key. The Vercel project and production domain are known, but the Nitro-backed release path still needs a successful production redeploy and smoke test.
 
 ## Foundation success criteria
 
@@ -27,7 +27,7 @@ The foundation is ready for product work when:
 
 1. The hosted football schema/public reads remain synchronized through development-first Convex validation.
 2. A one-page product brief defines the primary user, problem, and explicit non-goals around the implemented browsing workflow.
-3. Authentication, authorization, and public-data policy are decided before writes or private data are introduced.
+3. Identity, role authorization, and public-data policy are decided before adding multiple users or private records; the current owner-only write remains narrowly scoped.
 4. Quality checks and deployment configuration run consistently in the target environment.
 
 ## Delivery stages
@@ -37,7 +37,7 @@ The foundation is ready for product work when:
 | 0. Technical foundation  | **Complete**  | App builds; docs and agent workflows match the repository.                               |
 | 1. First vertical slice  | **Current**   | Michigan player browsing works end to end against development data.                      |
 | 2. Deployment connection | **Planned**   | The Nitro-backed production web deployment is redeployed and smoke-tested.               |
-| 3. Product definition    | **Undecided** | Audience, broader problem, non-goals, and write workflows are approved.                  |
+| 3. Product definition    | **Undecided** | Audience, broader problem, non-goals, and multi-user workflows are approved.             |
 | 4. Production hardening  | **Undecided** | Auth, tests, observability, accessibility, and release policy meet defined requirements. |
 
 ## Decisions required before domain work
