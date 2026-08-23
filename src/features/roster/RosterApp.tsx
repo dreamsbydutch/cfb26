@@ -98,61 +98,44 @@ export function RosterApp() {
   return (
     <>
       <main
-        className="min-h-screen bg-[#f4f2ec] text-[#111820]"
+        className="min-h-screen bg-white text-neutral-950"
         inert={selected ? true : undefined}
       >
-        <header className="bg-[#00274c] text-white">
-          <div className="mx-auto max-w-[1500px] px-4 pb-7 pt-5 sm:px-7 lg:px-10">
-            <div className="flex items-center justify-between gap-4 border-b border-white/15 pb-5">
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-12 place-items-center bg-[#ffcb05] font-serif text-2xl font-black text-[#00274c] [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)]">
-                  M
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.23em] text-[#ffcb05]">
-                    Michigan football
-                  </p>
-                  <p className="text-sm font-semibold text-white/80">
-                    Personnel archive
-                  </p>
-                </div>
+        <header className="border-b border-neutral-200">
+          <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-2 px-4 py-3 sm:px-6 lg:px-8">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="grid h-8 w-9 shrink-0 place-items-center border-2 border-neutral-950 font-serif text-lg font-black [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)] sm:h-9 sm:w-10 sm:text-xl">
+                M
               </div>
-              <p className="hidden text-right text-xs leading-5 text-white/55 sm:block">
-                Current snapshot: 2026 roster
-                <br />
-                2015–2027 player history
-              </p>
-            </div>
-
-            <div className="grid gap-8 pb-2 pt-10 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-[#ffcb05]">
-                  Wolverines roster intelligence
+                <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500 sm:block">
+                  Michigan football
                 </p>
-                <h1 className="max-w-3xl font-serif text-4xl font-black leading-[0.95] tracking-[-0.035em] sm:text-6xl">
-                  Every class. Every position. One chart.
+                <h1 className="truncate text-xs font-black sm:text-base">
+                  Personnel archive
                 </h1>
               </div>
-              <div className="grid grid-cols-3 divide-x divide-white/15 border-y border-white/15 py-4 lg:border-y-0 lg:py-0">
-                <Stat value={activeCount} label="Current" />
-                <Stat
-                  value={
-                    rosterIsComplete ? players.length : `${players.length}+`
-                  }
-                  label="Players"
-                />
-                <Stat
-                  value={isHydrating ? `${draftCount}+` : draftCount}
-                  label="NFL entries"
-                />
-              </div>
             </div>
+            <dl className="grid grid-cols-3 divide-x divide-neutral-200">
+              <Stat value={activeCount} label="Current" />
+              <Stat
+                value={rosterIsComplete ? players.length : `${players.length}+`}
+                label="Players"
+              />
+              <Stat
+                value={isHydrating ? `${draftCount}+` : draftCount}
+                label="NFL"
+              />
+            </dl>
           </div>
         </header>
 
-        <div className="sticky top-0 z-30 border-b border-[#00274c]/15 bg-[#f4f2ec]/95 backdrop-blur">
-          <div className="mx-auto flex max-w-[1500px] flex-col gap-3 px-4 py-3 sm:px-7 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-            <nav aria-label="Roster views" className="-mx-1 overflow-x-auto">
+        <div className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur">
+          <div className="mx-auto flex max-w-[1500px] flex-col gap-1.5 px-4 py-1.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <nav
+              aria-label="Roster views"
+              className="scrollbar-none -mx-1 overflow-x-auto"
+            >
               <div className="flex min-w-max gap-1 px-1">
                 {views.map((item) => (
                   <button
@@ -160,10 +143,10 @@ export function RosterApp() {
                     type="button"
                     onClick={() => setView(item.id)}
                     aria-current={view === item.id ? 'page' : undefined}
-                    className={`rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c] ${
+                    className={`border-b-2 px-2 py-1 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                       view === item.id
-                        ? 'bg-[#00274c] text-white'
-                        : 'text-[#00274c]/65 hover:bg-white hover:text-[#00274c]'
+                        ? 'border-neutral-950 text-neutral-950'
+                        : 'border-transparent text-neutral-500 hover:text-neutral-950'
                     }`}
                   >
                     {item.label}
@@ -171,7 +154,7 @@ export function RosterApp() {
                 ))}
               </div>
             </nav>
-            <label className="relative block w-full lg:w-72">
+            <label className="relative block w-full lg:w-64">
               <span className="sr-only">Search players</span>
               <SearchIcon />
               <input
@@ -179,28 +162,27 @@ export function RosterApp() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search name, school, class…"
-                className="w-full rounded-full border border-[#00274c]/15 bg-white py-2.5 pl-10 pr-4 text-sm text-[#111820] outline-none transition placeholder:text-[#111820]/40 focus:border-[#00274c] focus:ring-2 focus:ring-[#ffcb05]"
+                className="w-full border border-neutral-300 bg-white py-1 pl-9 pr-3 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
               />
             </label>
           </div>
         </div>
 
-        <section className="mx-auto max-w-[1500px] px-4 py-8 sm:px-7 lg:px-10 lg:py-12">
+        <section className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
           {rosterLoadFailed && (
-            <div className="mb-7 flex flex-col gap-3 rounded-xl border border-[#9a6700]/25 bg-[#fff7d6] p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4 flex flex-col gap-2 border-y border-neutral-300 py-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-bold text-[#725000]">
-                  Part of the departed-player archive could not be loaded.
+                <p className="text-sm font-bold">
+                  Some departed players could not load.
                 </p>
-                <p className="mt-0.5 text-xs text-[#725000]/65">
-                  Current roster data is available; historical totals may be
-                  incomplete.
+                <p className="text-xs text-neutral-500">
+                  Historical totals may be incomplete.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={retryRoster}
-                className="rounded-full bg-[#725000] px-4 py-2 text-xs font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#725000]"
+                className="border border-neutral-950 px-3 py-1 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
               >
                 Retry archive
               </button>
@@ -259,11 +241,13 @@ export function RosterApp() {
 
 function Stat({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="px-5 text-center first:pl-0 last:pr-0 lg:min-w-28">
-      <p className="font-serif text-3xl font-black text-[#ffcb05]">{value}</p>
-      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/55">
+    <div className="flex flex-col px-1 text-center sm:px-4">
+      <dt className="order-2 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
         {label}
-      </p>
+      </dt>
+      <dd className="order-1 text-xs font-black tabular-nums sm:text-base">
+        {value}
+      </dd>
     </div>
   )
 }
@@ -284,19 +268,19 @@ function ProfileProgress({
   if (rosterComplete && loaded === total && failed === 0) return null
 
   return (
-    <div className="mb-7 flex flex-col gap-3 rounded-xl border border-[#00274c]/10 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-3">
-        <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#ffcb05] ring-4 ring-[#ffcb05]/25" />
+    <div className="mb-4 flex flex-col gap-2 border-y border-neutral-200 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-2">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-neutral-500" />
         <div>
-          <p className="text-sm font-bold text-[#00274c]">
+          <p className="text-sm font-bold">
             {!rosterComplete
-              ? 'Loading commitments and player history'
+              ? 'Loading player history'
               : failed
-                ? `${failed} profiles could not be loaded`
-                : 'Loading recruiting, career, and draft details'}
+                ? `${failed} profiles failed`
+                : 'Loading player details'}
           </p>
-          <p className="text-xs text-[#111820]/55">
-            {loaded} of {total} discovered player profiles ready
+          <p className="text-xs text-neutral-500">
+            {loaded} of {total} profiles
           </p>
         </div>
       </div>
@@ -304,14 +288,14 @@ function ProfileProgress({
         <button
           type="button"
           onClick={retry}
-          className="rounded-full bg-[#00274c] px-4 py-2 text-xs font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c]"
+          className="border border-neutral-950 px-3 py-1 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
         >
           Retry missing profiles
         </button>
       ) : (
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#00274c]/10 sm:w-48">
+        <div className="h-1 w-full overflow-hidden bg-neutral-200 sm:w-40">
           <div
-            className={`h-full rounded-full bg-[#ffcb05] transition-[width] ${rosterComplete ? '' : 'animate-pulse'}`}
+            className={`h-full bg-neutral-950 transition-[width] ${rosterComplete ? '' : 'animate-pulse'}`}
             style={{
               width: rosterComplete
                 ? `${total ? (loaded / total) * 100 : 0}%`
@@ -334,16 +318,16 @@ function SectionIntro({
   children: ReactNode
 }) {
   return (
-    <div className="mb-7 max-w-3xl">
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#9a6700]">
-        {eyebrow}
-      </p>
-      <h2 className="font-serif text-3xl font-black tracking-[-0.02em] text-[#00274c] sm:text-4xl">
-        {title}
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-[#111820]/60 sm:text-base">
-        {children}
-      </p>
+    <div className="mb-3 max-w-3xl border-b border-neutral-200 pb-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+        <h2 className="text-xl font-black tracking-[-0.02em] sm:text-2xl">
+          {title}
+        </h2>
+        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-neutral-500">
+          {eyebrow}
+        </p>
+      </div>
+      <p className="mt-0.5 text-sm leading-5 text-neutral-500">{children}</p>
     </div>
   )
 }
@@ -360,23 +344,19 @@ function DepthChart({
 
   return (
     <>
-      <SectionIntro eyebrow="Current roster · 2026" title="Depth chart">
-        Players are ordered within their exact roster position. Lower depth
-        numbers indicate stronger placement; 2027 commitments are excluded.
+      <SectionIntro eyebrow="2026 roster" title="Depth chart">
+        Recorded depth order by position. 2027 commitments are excluded.
       </SectionIntro>
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid border-t border-neutral-300 md:grid-cols-2 md:gap-x-6 xl:grid-cols-3">
         {groups.map(([position, entries]) => (
-          <article
-            key={position}
-            className="overflow-hidden rounded-2xl border border-[#00274c]/10 bg-white shadow-[0_10px_30px_rgba(0,39,76,0.04)]"
-          >
-            <div className="flex items-center justify-between bg-[#00274c] px-5 py-4 text-white">
-              <h3 className="font-serif text-2xl font-black">{position}</h3>
-              <span className="text-xs font-bold uppercase tracking-[0.15em] text-white/55">
+          <article key={position} className="border-b border-neutral-300">
+            <div className="flex items-center justify-between py-2">
+              <h3 className="text-lg font-black">{position}</h3>
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
                 {entries.length} players
               </span>
             </div>
-            <ol className="divide-y divide-[#00274c]/8">
+            <ol className="divide-y divide-neutral-100 border-t border-neutral-200">
               {entries
                 .sort(
                   (a, b) =>
@@ -388,21 +368,21 @@ function DepthChart({
                     <button
                       type="button"
                       onClick={() => select(entry)}
-                      className="group grid w-full grid-cols-[2.25rem_1fr_auto] items-center gap-3 px-4 py-3.5 text-left transition hover:bg-[#ffcb05]/10 focus-visible:bg-[#ffcb05]/15 focus-visible:outline-none"
+                      className="group grid w-full grid-cols-[1.75rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
                     >
-                      <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f4f2ec] text-xs font-black text-[#00274c] group-hover:bg-[#ffcb05]">
+                      <span className="text-center text-xs font-black tabular-nums text-neutral-500 group-hover:text-neutral-950">
                         {entry.stint.depthChartOrder ?? '—'}
                       </span>
                       <span>
-                        <span className="block text-sm font-bold text-[#00274c]">
+                        <span className="block text-sm font-bold">
                           {entry.player.displayName}
                         </span>
-                        <span className="mt-0.5 block text-xs text-[#111820]/50">
+                        <span className="block text-xs text-neutral-500">
                           {jersey(entry.stint.jerseyNumber)} ·{' '}
                           {entry.stint.startSeason}
                         </span>
                       </span>
-                      <span className="text-right text-xs font-semibold text-[#111820]/45">
+                      <span className="text-right text-xs text-neutral-500">
                         {formatMeasurements(
                           entry.stint.heightInches,
                           entry.stint.weightPounds,
@@ -447,9 +427,8 @@ function RecruitClasses({
 
   return (
     <>
-      <SectionIntro eyebrow="Original prospect cohort" title="Recruit classes">
-        Recruiting class follows the player’s original prospect year, which can
-        differ from the season a transfer or walk-on arrived at Michigan.
+      <SectionIntro eyebrow="Prospect year" title="Recruit classes">
+        Original class year; transfers and walk-ons may arrive later.
       </SectionIntro>
       <FilterChips
         values={seasons}
@@ -457,18 +436,16 @@ function RecruitClasses({
         setSelected={setSeason}
         allLabel="All classes"
       />
-      <div className="space-y-7">
+      <div className="space-y-4">
         {groups.map(([year, entries]) => (
-          <article key={year} className="rounded-2xl bg-white p-5 sm:p-7">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-2 border-b border-[#00274c]/10 pb-4">
-              <h3 className="font-serif text-4xl font-black text-[#00274c]">
-                {year}
-              </h3>
-              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#111820]/45">
+          <article key={year} className="border-t border-neutral-300 pt-2">
+            <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+              <h3 className="text-2xl font-black">{year}</h3>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
                 {entries.length} players · {sourceSummary(entries)}
               </p>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid border-t border-neutral-200 sm:grid-cols-2 sm:gap-x-5 xl:grid-cols-3">
               {entries
                 .sort(
                   (a, b) =>
@@ -521,22 +498,18 @@ function DraftClasses({
 
   return (
     <>
-      <SectionIntro eyebrow="Recorded NFL entry" title="Draft classes">
-        Drafted players and undrafted free-agent signings are grouped by NFL
-        entry year. Missing outcomes are not treated as a negative result.
+      <SectionIntro eyebrow="NFL entry" title="Draft classes">
+        Draft picks and undrafted free agents by year.
       </SectionIntro>
       {groups.length === 0 ? (
         <HydratingEmpty label="Draft outcomes are still loading." />
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {groups.map(([year, entries]) => (
-            <article
-              key={year}
-              className="overflow-hidden rounded-2xl border border-[#00274c]/10 bg-white"
-            >
-              <div className="flex items-center justify-between bg-[#00274c] px-5 py-4 text-white sm:px-7">
-                <h3 className="font-serif text-3xl font-black">{year}</h3>
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#ffcb05]">
+            <article key={year} className="border-t border-neutral-300 pt-2">
+              <div className="flex items-center justify-between pb-2">
+                <h3 className="text-2xl font-black">{year}</h3>
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
                   {
                     entries.filter(
                       (entry) => entry.profile.draft?.status === 'drafted',
@@ -552,7 +525,7 @@ function DraftClasses({
                   UDFA
                 </span>
               </div>
-              <div className="divide-y divide-[#00274c]/8">
+              <div className="divide-y divide-neutral-100 border-t border-neutral-200">
                 {entries
                   .sort(
                     (a, b) =>
@@ -566,29 +539,29 @@ function DraftClasses({
                         key={entry.player._id}
                         type="button"
                         onClick={() => select(entry)}
-                        className="grid w-full grid-cols-[3.5rem_1fr_auto] items-center gap-3 px-5 py-4 text-left transition hover:bg-[#ffcb05]/10 focus-visible:bg-[#ffcb05]/15 focus-visible:outline-none sm:grid-cols-[5rem_1fr_8rem_8rem] sm:px-7"
+                        className="grid w-full grid-cols-[3.25rem_1fr_auto] items-center gap-2 py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none sm:grid-cols-[4.5rem_1fr_7rem_7rem]"
                       >
-                        <span className="font-serif text-xl font-black text-[#00274c]">
+                        <span className="text-base font-black">
                           {draft.status === 'drafted'
                             ? `#${draft.overallPick}`
                             : 'UDFA'}
                         </span>
                         <span>
-                          <span className="block font-bold text-[#00274c]">
+                          <span className="block font-bold">
                             {entry.player.displayName}
                           </span>
-                          <span className="text-xs text-[#111820]/50">
+                          <span className="text-xs text-neutral-500">
                             {entry.stint.position} · Michigan{' '}
                             {entry.stint.startSeason}–
                             {entry.stint.endSeason ?? 'present'}
                           </span>
                         </span>
-                        <span className="hidden text-sm font-semibold text-[#111820]/60 sm:block">
+                        <span className="hidden text-sm text-neutral-500 sm:block">
                           {draft.status === 'drafted'
                             ? `Round ${draft.round}`
                             : 'Free agent'}
                         </span>
-                        <span className="rounded-full bg-[#f4f2ec] px-3 py-1.5 text-center text-xs font-black text-[#00274c]">
+                        <span className="text-right text-xs font-black">
                           {draft.team}
                         </span>
                       </button>
@@ -614,29 +587,26 @@ function PositionLists({
 
   return (
     <>
-      <SectionIntro eyebrow="Exact Michigan labels" title="Players by position">
-        Position names are preserved as recorded, including historical labels
-        such as SDE, WDE, ILB, OLB, LT, and RG.
+      <SectionIntro eyebrow="Recorded labels" title="Players by position">
+        Historical position labels are preserved.
       </SectionIntro>
-      <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid items-start border-t border-neutral-300 md:grid-cols-2 md:gap-x-6 xl:grid-cols-3">
         {groups.map(([position, entries], index) => (
           <details
             key={position}
             open={index < 6}
-            className="group overflow-hidden rounded-2xl border border-[#00274c]/10 bg-white"
+            className="group border-b border-neutral-300"
           >
-            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#ffcb05] [&::-webkit-details-marker]:hidden">
-              <span className="flex items-baseline gap-3">
-                <span className="font-serif text-2xl font-black text-[#00274c]">
-                  {position}
-                </span>
-                <span className="text-xs font-semibold text-[#111820]/45">
+            <summary className="flex cursor-pointer list-none items-center justify-between py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-950 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-baseline gap-2">
+                <span className="text-lg font-black">{position}</span>
+                <span className="text-xs text-neutral-500">
                   {entries.length} players
                 </span>
               </span>
               <ChevronIcon />
             </summary>
-            <div className="border-t border-[#00274c]/8 px-2 pb-2">
+            <div className="divide-y divide-neutral-100 border-t border-neutral-200">
               {entries
                 .sort((a, b) => {
                   if (
@@ -656,13 +626,13 @@ function PositionLists({
                     key={entry.player._id}
                     type="button"
                     onClick={() => select(entry)}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition hover:bg-[#ffcb05]/10 focus-visible:bg-[#ffcb05]/15 focus-visible:outline-none"
+                    className="flex w-full items-center justify-between py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
                   >
                     <span>
-                      <span className="block text-sm font-bold text-[#00274c]">
+                      <span className="block text-sm font-bold">
                         {entry.player.displayName}
                       </span>
-                      <span className="text-xs text-[#111820]/45">
+                      <span className="text-xs text-neutral-500">
                         {entry.stint.startSeason}–
                         {entry.stint.endSeason ?? 'present'}
                       </span>
@@ -694,20 +664,19 @@ function AllPlayers({
 
   return (
     <>
-      <SectionIntro eyebrow="Complete Michigan history" title="All players">
-        Browse every player in the live dataset and open a row for recruiting,
-        eligibility, participation, movement, and NFL details.
+      <SectionIntro eyebrow="Full archive" title="All players">
+        Recruiting, roster, production, movement and NFL history.
       </SectionIntro>
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-3 flex flex-wrap gap-1.5">
         {(['all', 'active', 'committed', 'departed'] as const).map((value) => (
           <button
             key={value}
             type="button"
             onClick={() => setStatus(value)}
-            className={`rounded-full border px-4 py-2 text-xs font-bold capitalize transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c] ${
+            className={`border px-3 py-1 text-xs font-bold capitalize transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${
               status === value
-                ? 'border-[#00274c] bg-[#00274c] text-white'
-                : 'border-[#00274c]/15 bg-white text-[#00274c] hover:border-[#00274c]/40'
+                ? 'border-neutral-950 bg-neutral-950 text-white'
+                : 'border-neutral-300 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'
             }`}
           >
             {value} ·{' '}
@@ -717,38 +686,42 @@ function AllPlayers({
           </button>
         ))}
       </div>
-      <div className="overflow-hidden rounded-2xl border border-[#00274c]/10 bg-white">
-        <div className="hidden grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] gap-4 bg-[#00274c] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white/60 md:grid">
+      <div className="overflow-hidden border-y border-neutral-300">
+        <div className="hidden grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] gap-3 border-b border-neutral-300 bg-neutral-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500 md:grid">
           <span>Player</span>
           <span>Position</span>
           <span>Arrived</span>
           <span>Recruit class</span>
           <span>Status</span>
         </div>
-        <div className="divide-y divide-[#00274c]/8">
+        <div className="divide-y divide-neutral-100">
           {filtered.map((entry) => (
             <button
               key={entry.player._id}
               type="button"
               onClick={() => select(entry)}
-              className="grid w-full gap-2 px-5 py-4 text-left transition hover:bg-[#ffcb05]/10 focus-visible:bg-[#ffcb05]/15 focus-visible:outline-none md:grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] md:items-center md:gap-4 md:px-6"
+              className="grid w-full grid-cols-[1fr_auto] items-start gap-x-3 px-2 py-1.5 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none md:grid-cols-[2fr_0.65fr_0.65fr_0.8fr_0.8fr] md:items-center md:gap-3 md:px-3 md:py-2"
             >
-              <span>
-                <span className="block font-bold text-[#00274c]">
+              <span className="min-w-0">
+                <span className="block truncate font-bold leading-5">
                   {entry.player.displayName}
                 </span>
-                <span className="text-xs text-[#111820]/45">
+                <span className="block truncate text-xs leading-4 text-neutral-500">
                   {entry.player.hometown}, {entry.player.homeState} ·{' '}
                   {entry.player.highSchool}
                 </span>
+                <span className="block truncate text-xs leading-4 text-neutral-500 md:hidden">
+                  {entry.stint.position} · {entry.stint.startSeason} · class{' '}
+                  {entry.profile?.recruiting?.recruitingSeason ?? '…'}
+                </span>
               </span>
-              <span className="text-sm font-bold text-[#00274c]">
+              <span className="hidden text-sm font-bold md:block">
                 {entry.stint.position}
               </span>
-              <span className="text-sm text-[#111820]/60">
+              <span className="hidden text-sm text-neutral-500 md:block">
                 {entry.stint.startSeason}
               </span>
-              <span className="text-sm text-[#111820]/60">
+              <span className="hidden text-sm text-neutral-500 md:block">
                 {entry.profile?.recruiting?.recruitingSeason ?? 'Loading…'}
               </span>
               <span>
@@ -777,17 +750,13 @@ function PlayerCard({
     <button
       type="button"
       onClick={() => select(entry)}
-      className="rounded-xl border border-[#00274c]/8 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#00274c]/25 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c]"
+      className="border-b border-neutral-200 py-2 text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
     >
-      <span className="block font-bold text-[#00274c]">
-        {entry.player.displayName}
-      </span>
-      <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#111820]/55">
+      <span className="block font-bold">{entry.player.displayName}</span>
+      <span className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
         {meta}
       </span>
-      <span className="mt-3 block text-xs font-semibold text-[#111820]/45">
-        {detail}
-      </span>
+      <span className="mt-1 block text-xs text-neutral-500">{detail}</span>
     </button>
   )
 }
@@ -828,43 +797,43 @@ function PlayerDrawer({
         aria-label="Close player details"
         onClick={close}
         tabIndex={-1}
-        className="absolute inset-0 bg-[#001a33]/65 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/45"
       />
       <aside
         role="dialog"
         aria-modal="true"
         aria-labelledby="player-title"
-        className="relative h-full w-full max-w-xl overflow-y-auto bg-[#f4f2ec] shadow-2xl"
+        className="relative h-full w-full max-w-xl overflow-y-auto border-l border-neutral-300 bg-white"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/15 bg-[#00274c] px-5 py-4 text-white sm:px-7">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ffcb05]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-300 bg-white px-4 py-2 sm:px-5">
+          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-500">
             Player profile
           </span>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={close}
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/10 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffcb05]"
+            className="grid h-8 w-8 place-items-center transition hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
             aria-label="Close player profile"
           >
             <CloseIcon />
           </button>
         </div>
 
-        <div className="bg-[#00274c] px-5 pb-5 pt-3 text-white sm:px-7">
-          <div className="flex items-start gap-4">
-            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-[#ffcb05] font-serif text-2xl font-black text-[#00274c]">
+        <div className="border-b border-neutral-300 px-4 py-3 sm:px-5">
+          <div className="flex items-start gap-3">
+            <div className="grid h-12 w-12 shrink-0 place-items-center border border-neutral-300 text-lg font-black">
               {entry.stint.jerseyNumber ?? entry.stint.position}
             </div>
             <div>
-              <StatusBadge status={entry.stint.status} inverse />
+              <StatusBadge status={entry.stint.status} />
               <h2
                 id="player-title"
-                className="mt-2 font-serif text-3xl font-black leading-tight"
+                className="mt-1 text-2xl font-black leading-tight"
               >
                 {entry.player.displayName}
               </h2>
-              <p className="mt-1 text-sm text-white/60">
+              <p className="text-sm text-neutral-500">
                 {entry.stint.position} · Michigan {entry.stint.startSeason}–
                 {entry.stint.endSeason ?? 'present'}
               </p>
@@ -872,7 +841,7 @@ function PlayerDrawer({
           </div>
         </div>
 
-        <div className="space-y-4 p-4 sm:p-5">
+        <div className="px-4 sm:px-5">
           <DetailSection title="Michigan roster">
             <DetailGrid>
               <Detail
@@ -989,7 +958,7 @@ function PlayerDrawer({
                     />
                   </DetailGrid>
                 ) : (
-                  <p className="text-sm text-[#111820]/50">
+                  <p className="text-sm text-neutral-500">
                     No recruiting profile.
                   </p>
                 )}
@@ -1004,12 +973,12 @@ function PlayerDrawer({
                   {profile.movements.map((movement) => (
                     <li
                       key={movement._id}
-                      className="grid grid-cols-[3rem_1fr] gap-3"
+                      className="grid grid-cols-[3rem_1fr] gap-2"
                     >
-                      <span className="text-sm font-black text-[#9a6700]">
+                      <span className="text-sm font-black text-neutral-500">
                         {movement.season}
                       </span>
-                      <span className="text-sm font-semibold text-[#00274c]">
+                      <span className="text-sm font-semibold">
                         {movementLabel(movement.kind)}
                       </span>
                     </li>
@@ -1030,9 +999,8 @@ function PlayerDrawer({
                     <Detail label="Overall pick" value={draft.overallPick} />
                   </DetailGrid>
                 ) : (
-                  <p className="text-sm leading-6 text-[#111820]/50">
-                    No recorded NFL entry outcome. Absence does not imply a
-                    negative outcome.
+                  <p className="text-sm leading-5 text-neutral-500">
+                    No NFL entry recorded.
                   </p>
                 )}
               </DetailSection>
@@ -1056,7 +1024,7 @@ function SeasonHistory({
 
   if (firstSeason > finalSeason) {
     return (
-      <p className="text-sm leading-5 text-[#111820]/50">
+      <p className="text-sm leading-5 text-neutral-500">
         Season data covers 2015–2025.
       </p>
     )
@@ -1087,44 +1055,44 @@ function SeasonHistory({
 
   return (
     <>
-      <p className="border-l-2 border-[#ffcb05] pl-3 text-sm font-semibold leading-5 text-[#00274c]">
+      <p className="border-l-2 border-neutral-950 pl-2 text-sm font-semibold leading-5">
         {careerNarrative(recordedStats)}
       </p>
 
-      <dl className="mt-3 grid grid-cols-4 divide-x divide-[#00274c]/10 border-y border-[#00274c]/10">
+      <dl className="mt-2 grid grid-cols-4 divide-x divide-neutral-200 border-y border-neutral-200">
         <ProductionMetric label="Seasons" value={recordedStats.length} />
         <ProductionMetric label="Games" value={totalGames} />
         <ProductionMetric label="Snaps" value={totalSnaps.toLocaleString()} />
         <ProductionMetric label="High grade" value={peakGrade.toFixed(1)} />
       </dl>
 
-      <div className="mt-3 overflow-hidden border-y border-[#00274c]/10">
-        <div className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] gap-2 bg-[#00274c] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-white/65">
+      <div className="mt-2 overflow-hidden border-y border-neutral-200">
+        <div className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] gap-2 border-b border-neutral-200 bg-neutral-50 px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
           <span>Year</span>
           <span>Pos</span>
           <span>GP</span>
           <span>Snaps</span>
           <span>Grade</span>
         </div>
-        <div className="divide-y divide-[#00274c]/8">
+        <div className="divide-y divide-neutral-100">
           {rows.map((season) => {
             const stat = statsBySeason.get(season)
             return (
               <div
                 key={season}
-                className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] items-center gap-2 px-3 py-2 text-sm"
+                className="grid grid-cols-[0.75fr_0.65fr_0.5fr_0.75fr_0.7fr] items-center gap-2 px-2 py-1.5 text-sm"
               >
-                <span className="font-black text-[#9a6700]">{season}</span>
-                <span className="font-bold text-[#00274c]">
+                <span className="font-black">{season}</span>
+                <span className="font-bold">
                   {stat?.position ?? entry.stint.position}
                 </span>
-                <span className="font-semibold tabular-nums text-[#111820]/65">
+                <span className="font-semibold tabular-nums text-neutral-600">
                   {stat?.gamesPlayed ?? 0}
                 </span>
-                <span className="font-semibold tabular-nums text-[#111820]/65">
+                <span className="font-semibold tabular-nums text-neutral-600">
                   {(stat?.snaps ?? 0).toLocaleString()}
                 </span>
-                <span className="font-black tabular-nums text-[#00274c]">
+                <span className="font-black tabular-nums">
                   {(stat?.pffRating ?? 0).toFixed(1)}
                 </span>
               </div>
@@ -1132,7 +1100,7 @@ function SeasonHistory({
           })}
         </div>
       </div>
-      <p className="mt-2 text-xs leading-4 text-[#111820]/45">
+      <p className="mt-1.5 text-xs leading-4 text-neutral-500">
         Missing years count as zero games, snaps and grade.
       </p>
     </>
@@ -1147,11 +1115,11 @@ function ProductionMetric({
   value: string | number
 }) {
   return (
-    <div className="flex min-w-0 flex-col px-2 py-2">
-      <dt className="order-2 mt-0.5 truncate text-[8px] font-bold uppercase tracking-[0.1em] text-[#111820]/45">
+    <div className="flex min-w-0 flex-col px-2 py-1.5">
+      <dt className="order-2 truncate text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
         {label}
       </dt>
-      <dd className="order-1 truncate font-serif text-lg font-black tabular-nums text-[#00274c]">
+      <dd className="order-1 truncate text-base font-black tabular-nums">
         {value}
       </dd>
     </div>
@@ -1183,8 +1151,8 @@ function DetailSection({
   children: ReactNode
 }) {
   return (
-    <section className="border-b border-[#00274c]/10 pb-4 last:border-b-0 last:pb-0">
-      <h3 className="mb-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#00274c]">
+    <section className="border-b border-neutral-200 py-3 last:border-b-0">
+      <h3 className="mb-2 text-[10px] font-black uppercase tracking-[0.14em]">
         {title}
       </h3>
       {children}
@@ -1193,18 +1161,16 @@ function DetailSection({
 }
 
 function DetailGrid({ children }: { children: ReactNode }) {
-  return <dl className="grid grid-cols-2 gap-x-5 gap-y-3">{children}</dl>
+  return <dl className="grid grid-cols-2 gap-x-4 gap-y-2">{children}</dl>
 }
 
 function Detail({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <dt className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#111820]/40">
+      <dt className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
         {label}
       </dt>
-      <dd className="mt-0.5 text-sm font-bold text-[#00274c]">
-        {value ?? '—'}
-      </dd>
+      <dd className="text-sm font-bold">{value ?? '—'}</dd>
     </div>
   )
 }
@@ -1221,8 +1187,8 @@ function FilterChips({
   allLabel: string
 }) {
   return (
-    <div className="-mx-1 mb-6 overflow-x-auto pb-2">
-      <div className="flex min-w-max gap-2 px-1">
+    <div className="scrollbar-none -mx-1 mb-3 overflow-x-auto pb-1">
+      <div className="flex min-w-max gap-1.5 px-1">
         <button
           type="button"
           onClick={() => setSelected('all')}
@@ -1251,7 +1217,7 @@ function SourceBadge({
   source: 'high_school' | 'transfer' | 'walk_on'
 }) {
   return (
-    <span className="rounded-full bg-[#ffcb05]/25 px-2 py-0.5 font-bold text-[#725000]">
+    <span className="border border-neutral-300 px-1.5 py-0.5 font-bold text-neutral-600">
       {sourceLabel(source)}
     </span>
   )
@@ -1259,22 +1225,15 @@ function SourceBadge({
 
 function StatusBadge({
   status,
-  inverse = false,
 }: {
   status: 'active' | 'committed' | 'departed'
-  inverse?: boolean
 }) {
-  const colors = inverse
-    ? 'bg-white/10 text-white'
-    : status === 'active'
-      ? 'bg-[#dcead9] text-[#265c29]'
-      : status === 'committed'
-        ? 'bg-[#fff0b7] text-[#725000]'
-        : 'bg-[#e8e9eb] text-[#4e5660]'
   return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${colors}`}
-    >
+    <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-neutral-500">
+      <span
+        aria-hidden="true"
+        className={`h-1.5 w-1.5 rounded-full ${status === 'active' ? 'bg-neutral-950' : status === 'committed' ? 'bg-neutral-500' : 'bg-neutral-300'}`}
+      />
       {status}
     </span>
   )
@@ -1282,17 +1241,15 @@ function StatusBadge({
 
 function EmptySearch({ clear }: { clear: () => void }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[#00274c]/25 bg-white px-6 py-16 text-center">
-      <h2 className="font-serif text-2xl font-black text-[#00274c]">
-        No players found
-      </h2>
-      <p className="mt-2 text-sm text-[#111820]/50">
-        Try a different name, position, school, year, or team.
+    <div className="border-y border-neutral-300 py-8 text-center">
+      <h2 className="text-xl font-black">No players found</h2>
+      <p className="mt-1 text-sm text-neutral-500">
+        Try another name, position, school, year or team.
       </p>
       <button
         type="button"
         onClick={clear}
-        className="mt-5 rounded-full bg-[#00274c] px-5 py-2.5 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c]"
+        className="mt-3 border border-neutral-950 px-3 py-1.5 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
       >
         Clear search
       </button>
@@ -1302,7 +1259,7 @@ function EmptySearch({ clear }: { clear: () => void }) {
 
 function HydratingEmpty({ label }: { label: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#00274c]/20 bg-white p-6 text-sm text-[#111820]/50">
+    <div className="border-y border-neutral-200 py-3 text-sm text-neutral-500">
       {label}
     </div>
   )
@@ -1310,13 +1267,13 @@ function HydratingEmpty({ label }: { label: string }) {
 
 export function RosterLoading() {
   return (
-    <main className="grid min-h-screen place-items-center bg-[#00274c] px-6 text-white">
+    <main className="grid min-h-screen place-items-center bg-white px-6 text-neutral-950">
       <div className="text-center">
-        <div className="mx-auto grid h-20 w-24 place-items-center bg-[#ffcb05] font-serif text-5xl font-black text-[#00274c] [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)]">
+        <div className="mx-auto grid h-14 w-16 place-items-center border-2 border-neutral-950 font-serif text-3xl font-black [clip-path:polygon(8%_0,92%_0,100%_100%,0_100%)]">
           M
         </div>
-        <p className="mt-7 text-xs font-bold uppercase tracking-[0.22em] text-white/60">
-          Loading Michigan roster
+        <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-neutral-500">
+          Loading roster
         </p>
       </div>
     </main>
@@ -1325,22 +1282,19 @@ export function RosterLoading() {
 
 export function RosterError() {
   return (
-    <main className="grid min-h-screen place-items-center bg-[#f4f2ec] px-6 text-center">
+    <main className="grid min-h-screen place-items-center bg-white px-6 text-center">
       <div className="max-w-md">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a6700]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-neutral-500">
           Connection error
         </p>
-        <h1 className="mt-3 font-serif text-4xl font-black text-[#00274c]">
-          The roster could not be loaded.
-        </h1>
-        <p className="mt-4 text-sm leading-6 text-[#111820]/55">
-          Check the Convex deployment URL and network connection, then try
-          again.
+        <h1 className="mt-1 text-2xl font-black">Couldn’t load the roster.</h1>
+        <p className="mt-2 text-sm leading-5 text-neutral-500">
+          Check the deployment URL and network connection.
         </p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="mt-6 rounded-full bg-[#00274c] px-5 py-3 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c]"
+          className="mt-4 border border-neutral-950 px-3 py-1.5 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
         >
           Reload roster
         </button>
@@ -1434,7 +1388,7 @@ function formatMeasurements(
 }
 
 function chipClass(active: boolean) {
-  return `rounded-full border px-4 py-2 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c] ${active ? 'border-[#00274c] bg-[#00274c] text-white' : 'border-[#00274c]/15 bg-white text-[#00274c] hover:border-[#00274c]/40'}`
+  return `border px-3 py-1 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${active ? 'border-neutral-950 bg-neutral-950 text-white' : 'border-neutral-300 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'}`
 }
 
 function SearchIcon() {
@@ -1445,7 +1399,7 @@ function SearchIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#00274c]/40"
+      className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
     >
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-4-4" />
@@ -1461,7 +1415,7 @@ function ChevronIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      className="h-5 w-5 text-[#00274c]/40 transition group-open:rotate-180"
+      className="h-4 w-4 text-neutral-400 transition group-open:rotate-180"
     >
       <path d="m6 9 6 6 6-6" />
     </svg>

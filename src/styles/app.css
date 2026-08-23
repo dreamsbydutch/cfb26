@@ -19,7 +19,7 @@
   body {
     margin: 0;
     min-width: 320px;
-    @apply bg-[#f4f2ec] text-[#111820];
+    @apply bg-white text-neutral-950;
   }
 
   button,
@@ -34,11 +34,21 @@
   }
 
   ::selection {
-    background: #ffcb05;
-    color: #00274c;
+    background: #d4d4d4;
+    color: #0a0a0a;
   }
 
   .using-mouse * {
     outline: none !important;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -44,30 +44,32 @@ export function SeasonStats({
 
   return (
     <>
-      <div className="mb-4 max-w-3xl">
-        <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#9a6700]">
-          2015–2025 season archive
-        </p>
-        <h2 className="font-serif text-2xl font-black tracking-[-0.02em] text-[#00274c] sm:text-3xl">
-          Season production
-        </h2>
-        <p className="mt-1.5 text-sm leading-5 text-[#111820]/60">
-          Michigan games, snaps and PFF grades. Missing data counts as zero.
+      <div className="mb-3 max-w-3xl border-b border-neutral-200 pb-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+          <h2 className="text-xl font-black tracking-[-0.02em] sm:text-2xl">
+            Season production
+          </h2>
+          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-neutral-500">
+            2015–2025
+          </p>
+        </div>
+        <p className="mt-0.5 text-sm leading-5 text-neutral-500">
+          Games, snaps and PFF grades. Missing data counts as zero.
         </p>
       </div>
 
-      <div className="-mx-1 mb-3 overflow-x-auto pb-1">
-        <div className="flex min-w-max gap-2 px-1">
+      <div className="scrollbar-none -mx-1 mb-3 overflow-x-auto pb-1">
+        <div className="flex min-w-max gap-1.5 px-1">
           {seasons.map((value) => (
             <button
               key={value}
               type="button"
               onClick={() => setSeason(value)}
               aria-pressed={season === value}
-              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c] ${
+              className={`border px-3 py-1 text-xs font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ${
                 season === value
-                  ? 'border-[#00274c] bg-[#00274c] text-white'
-                  : 'border-[#00274c]/15 bg-white text-[#00274c] hover:border-[#00274c]/40'
+                  ? 'border-neutral-950 bg-neutral-950 text-white'
+                  : 'border-neutral-300 text-neutral-600 hover:border-neutral-950 hover:text-neutral-950'
               }`}
             >
               {value}
@@ -77,29 +79,27 @@ export function SeasonStats({
       </div>
 
       {isError ? (
-        <div className="border-y border-[#9a6700]/25 py-3">
-          <p className="text-sm font-bold text-[#725000]">
-            Couldn’t load season stats.
-          </p>
+        <div className="border-y border-neutral-300 py-2">
+          <p className="text-sm font-bold">Couldn’t load season stats.</p>
           <button
             type="button"
             onClick={() => void refetch()}
-            className="mt-2 rounded-full bg-[#725000] px-3 py-1.5 text-xs font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#725000]"
+            className="mt-2 border border-neutral-950 px-3 py-1 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
           >
             Retry
           </button>
         </div>
       ) : isPending ? (
-        <div className="border-y border-[#00274c]/10 py-3 text-sm font-semibold text-[#00274c]/55">
+        <div className="border-y border-neutral-200 py-2 text-sm font-semibold text-neutral-500">
           Loading {season} snap counts…
         </div>
       ) : (
         <>
-          <p className="mb-3 border-l-2 border-[#ffcb05] pl-3 text-sm font-semibold leading-5 text-[#00274c]">
+          <p className="mb-2 border-l-2 border-neutral-950 pl-2 text-sm font-semibold leading-5">
             {seasonNarrative(participants, season)}
           </p>
 
-          <div className="mb-3 grid grid-cols-3 divide-x divide-[#00274c]/10 border-y border-[#00274c]/10">
+          <div className="mb-2 grid grid-cols-3 divide-x divide-neutral-200 border-y border-neutral-200">
             <SeasonMetric label="Participants" value={participantCount} />
             <SeasonMetric
               label="Total snaps"
@@ -109,15 +109,15 @@ export function SeasonStats({
           </div>
 
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-[#111820]/50">
+            <p className="text-xs font-semibold text-neutral-500">
               {rows.length} {rows.length === 1 ? 'player' : 'players'}
             </p>
-            <label className="flex items-center gap-2 text-xs font-bold text-[#00274c]">
+            <label className="flex items-center gap-2 text-xs font-bold">
               Sort
               <select
                 value={sort}
                 onChange={(event) => setSort(event.target.value as Sort)}
-                className="rounded-full border border-[#00274c]/15 bg-white px-3 py-1.5 outline-none focus:border-[#00274c] focus:ring-2 focus:ring-[#ffcb05]"
+                className="border border-neutral-300 bg-white px-2 py-1 outline-none focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950"
               >
                 <option value="snaps">Most snaps</option>
                 <option value="rating">Highest grade</option>
@@ -127,19 +127,19 @@ export function SeasonStats({
           </div>
 
           {rows.length === 0 ? (
-            <div className="border-y border-[#00274c]/10 py-5 text-center text-sm text-[#111820]/50">
+            <div className="border-y border-neutral-200 py-4 text-center text-sm text-neutral-500">
               No matches in {season}.
             </div>
           ) : (
-            <div className="overflow-hidden border-y border-[#00274c]/10">
-              <div className="hidden grid-cols-[2fr_0.6fr_0.65fr_0.65fr_0.65fr] gap-3 bg-[#00274c] px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/65 md:grid">
+            <div className="overflow-hidden border-y border-neutral-300">
+              <div className="hidden grid-cols-[2fr_0.6fr_0.65fr_0.65fr_0.65fr] gap-3 border-b border-neutral-300 bg-neutral-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500 md:grid">
                 <span>Player</span>
                 <span>Position</span>
                 <span>Games</span>
                 <span>Snaps</span>
                 <span>Grade</span>
               </div>
-              <div className="divide-y divide-[#00274c]/8">
+              <div className="divide-y divide-neutral-100">
                 {rows.map((entry) => {
                   const linked = entry.player
                     ? playersById.get(entry.player._id)
@@ -151,7 +151,7 @@ export function SeasonStats({
                       key={rowKey(entry)}
                       type="button"
                       onClick={() => select(linked)}
-                      className="block w-full text-left transition hover:bg-[#ffcb05]/10 focus-visible:bg-[#ffcb05]/15 focus-visible:outline-none"
+                      className="block w-full text-left transition hover:bg-neutral-50 focus-visible:bg-neutral-100 focus-visible:outline-none"
                     >
                       {content}
                     </button>
@@ -176,11 +176,9 @@ function SeasonMetric({
   value: string | number
 }) {
   return (
-    <div className="px-3 py-2.5">
-      <p className="font-serif text-xl font-black tabular-nums text-[#00274c]">
-        {value}
-      </p>
-      <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#111820]/45">
+    <div className="px-2 py-1.5 sm:px-3">
+      <p className="text-base font-black tabular-nums sm:text-lg">{value}</p>
+      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
         {label}
       </p>
     </div>
@@ -195,10 +193,10 @@ function SeasonRow({ entry }: { entry: SeasonStatEntry }) {
   const rating = entry.stat?.pffRating ?? 0
 
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-3 py-2.5 md:grid-cols-[2fr_0.6fr_0.65fr_0.65fr_0.65fr] md:items-center md:gap-3 md:px-4">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 px-2 py-2 md:grid-cols-[2fr_0.6fr_0.65fr_0.65fr_0.65fr] md:items-center md:gap-3 md:px-3">
       <span className="col-span-2 md:col-span-1">
-        <span className="block font-bold text-[#00274c]">{name}</span>
-        <span className="text-xs text-[#111820]/45">
+        <span className="block font-bold">{name}</span>
+        <span className="text-xs text-neutral-500">
           {entry.stat
             ? entry.stat.phase === 'offense'
               ? 'Offense'
@@ -228,16 +226,16 @@ function MobileValue({
 }) {
   return (
     <span className="flex items-center justify-between gap-3 text-sm md:block">
-      <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#111820]/40 md:hidden">
+      <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500 md:hidden">
         {label}
       </span>
       <span
         className={
           grade
-            ? 'font-black tabular-nums text-[#00274c] underline decoration-[#ffcb05] decoration-2 underline-offset-4'
+            ? 'font-black tabular-nums underline decoration-neutral-400 decoration-1 underline-offset-4'
             : strong
-              ? 'font-bold text-[#00274c]'
-              : 'font-semibold tabular-nums text-[#111820]/65'
+              ? 'font-bold'
+              : 'font-semibold tabular-nums text-neutral-600'
         }
       >
         {value}
