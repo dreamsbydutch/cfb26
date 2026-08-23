@@ -33,16 +33,16 @@ Global providers belong in `src/router.tsx`; document-level metadata and markup 
 
 ## Current route
 
-| URL | File                   | Role                                                                                                                                                                          | Convex dependency                                                   |
-| --- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `/` | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with a formation-style first unit, snap-informed rotation rooms, reserve classifications, loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
+| URL | File                   | Role                                                                                                                                                                             | Convex dependency                                                   |
+| --- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `/` | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with separate offense, defense, specialist, rotation, prospect, and walk-on depth views plus loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
 
 `src/routeTree.gen.ts` is generated from route filenames. Do not edit it. Running development or build tooling regenerates it when route files change.
 
 ## Data access pattern
 
 - One bounded active-roster read uses `useSuspenseQuery(convexQuery(api.rosters.list, args))` so the current depth chart paints first.
-- The depth-chart view assigns the first recorded players to a base 11-personnel offense, base defense, and K/P/LS unit. It then uses the checked-in [2015–2025 position-workload report](../reference/snap-count-position-workload-report.md) to size broad QB, HB, WR, OL, IDL, EDGE, LB, and DB rotation rooms. Remaining active players are split into prospects/transfers and walk-ons from the recruiting profile source; the UI explicitly avoids presenting these tiers as official starts or snap projections.
+- The depth-chart view gives offense, defense, specialists, rotation, prospects, and walk-ons separate full-width panels. The first recorded players fill a base 11-personnel offense, base defense, and K/P/LS unit; offense and defense use consistent position-room lists instead of a compressed formation. The checked-in [2015–2025 position-workload report](../reference/snap-count-position-workload-report.md) sizes broad QB, HB, WR, OL, IDL, EDGE, LB, and DB rotation rooms. Remaining active players are split into prospects/transfers and walk-ons from the recruiting profile source; the UI explicitly avoids presenting these tiers as official starts or snap projections.
 - Commitments and the historical archive hydrate in the background. The hosted list function caps one result at 200, so departed players use bounded position-specific reads and are deduplicated by player ID.
 - Full profiles hydrate with a 12-request client concurrency limit through `players.getProfile`; the UI exposes progress and retry state while continuing to show roster data.
 - The season-stat view reads one indexed 2015–2025 season at a time through React Query. It merges source participants with canonical roster players, treats a missing row as zero games, snaps, and grade, and names the season leaders.
