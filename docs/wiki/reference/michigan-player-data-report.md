@@ -59,6 +59,8 @@ The 428 live legacy rows are not additional players. They duplicate the source f
 - `recentRating`, sourced from `RecentMichiganRtg`, was entered manually from the PFF website. A value of zero means the field had not been updated at that point; the rated season is not stored.
 - Every player receives a standard five-season eligibility window. A conventional redshirt does not change that window.
 - `medicalExtensionSeasons` adds only medical or similarly granted seasons beyond the standard five.
+- In the depth-chart display, Prospects are scholarship players in their first or second season after high school; older scholarship players outside the rotation are Depth, and walk-ons remain separate.
+- Eligibility colors begin green for seasons one and two and yellow in season three. Yellow continues through any non-final medical-extension seasons; red appears only when the current season reaches the normalized `eligibilityEndSeason`.
 - Obvious aliases and minor spelling errors may be corrected in place; the corrected model does not need to preserve those erroneous values.
 - Michigan NFL success includes only players who went directly from Michigan to a drafted or UDFA outcome. Later outcomes after another school are eventual player outcomes, not Michigan-to-NFL successes.
 - A dismissal is the Michigan exit. If the player later joins another school, that is a separate post-Michigan move rather than part of the dismissal event.
