@@ -4,11 +4,11 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: first Michigan football vertical slice. `/` is a roster explorer with depth-chart, recruiting-class, draft-class, position, season-stat, search, and player-detail views backed by hosted Michigan data.
+- Product status: first Michigan football vertical slice plus a development-only national landscape foundation. `/` remains the Michigan roster explorer; `/games` exposes populated 2000–2026 schedules, weekly importance, and season team ratings.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
-- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Their nine-table schema, 4,005 documents, and five public reads match the checked-in football contract.
+- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Development has the checked-in 17-table national-data contract and 47,774 documents, including 22,169 games, 3,340 ratings, and 7,318 recent team-game stats. Production remains on the prior nine-table, 4,005-document Michigan contract until an explicit promotion.
 - Canonical branch: `main`; remote: `origin`.
 
 Do not present placeholders, sample data, or proposed roadmap items as finished product behavior. The wiki labels facts as **Current**, **Planned**, or **Undecided**.

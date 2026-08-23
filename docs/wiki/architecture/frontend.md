@@ -31,18 +31,19 @@ Router defaults preload links on intent, restore scroll position, let React Quer
 
 Global providers belong in `src/router.tsx`; document-level metadata and markup belong in the root route.
 
-## Current route
+## Current routes
 
-| URL | File                   | Role                                                                                                                                                                                                                                                            | Convex dependency                                                   |
-| --- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `/` | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with offense, defense, and special-teams depth tabs whose continuous position tables group starters, rotation, depth, prospects, and walk-ons with eligibility colors, plus loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
+| URL      | File                   | Role                                                                                                                                                                                                                                                                 | Convex dependency                                                   |
+| -------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `/`      | `src/routes/index.tsx` | Client-rendered responsive personnel explorer with offense, defense, and special-teams depth tabs. Responsive position-table grids group starters, rotation, depth, prospects, and walk-ons with eligibility colors, alongside loading, error, empty, and detail UI. | `rosters.list`, `players.getProfile`, `seasonalStats.listBySeason`. |
+| `/games` | `src/routes/games.tsx` | Responsive national landscape dashboard. Users select season/week, switch between weekly games and all-team Elo rankings, and sort games through either a national-importance or Michigan-relevance lens. It includes loading, error, and credential-waiting states. | `ratings.getWeeklyDashboard`.                                       |
 
 `src/routeTree.gen.ts` is generated from route filenames. Do not edit it. Running development or build tooling regenerates it when route files change.
 
 ## Data access pattern
 
 - One bounded active-roster read uses `useSuspenseQuery(convexQuery(api.rosters.list, args))` so the current depth chart paints first.
-- The depth chart uses offense, defense, and special-teams tabs. Each tab renders one continuous table with position-room dividers and Starter, Rotation, Depth, Prospects, and Walk-ons row groups rather than separate cards. The first recorded players fill a base 11-personnel offense, base defense, and K/P/LS unit. The checked-in [2015–2025 position-workload report](../reference/snap-count-position-workload-report.md) sizes broad QB, HB, WR, OL, IDL, EDGE, LB, and DB rotations; K, P, and LS each include the next listed player in rotation. Among remaining scholarship players, first- and second-season players are Prospects and older players are Depth; walk-ons retain their own tier. Row colors communicate the eligibility clock: green in years one and two, yellow from year three through every non-final extension year, and red only in the final eligibility season. The UI explicitly avoids presenting these tiers as official starts or snap projections.
+- The depth chart uses offense, defense, and special-teams tabs. Each tab lays its position rooms out in a responsive two-column grid at wide widths and a single column at narrower widths. Every room remains one continuous table with Starter, Rotation, Depth, Prospects, and Walk-ons row groups rather than separate player cards. The first recorded players fill a base 11-personnel offense, base defense, and K/P/LS unit. The checked-in [2015–2025 position-workload report](../reference/snap-count-position-workload-report.md) sizes broad QB, HB, WR, OL, IDL, EDGE, LB, and DB rotations; K, P, and LS each include the next listed player in rotation. Among remaining scholarship players, first- and second-season players are Prospects and older players are Depth; walk-ons retain their own tier. Row colors communicate the eligibility clock: green in years one and two, yellow from year three through every non-final extension year, and red only in the final eligibility season. The UI explicitly avoids presenting these tiers as official starts or snap projections.
 - Commitments and the historical archive hydrate in the background. The hosted list function caps one result at 200, so departed players use bounded position-specific reads and are deduplicated by player ID.
 - Full profiles hydrate with a 12-request client concurrency limit through `players.getProfile`; the UI exposes progress and retry state while continuing to show roster data.
 - The season-stat view reads one indexed 2015–2025 season at a time through React Query. It merges source participants with canonical roster players, treats a missing row as zero games, snaps, and grade, and names the season leaders.
@@ -52,6 +53,8 @@ Global providers belong in `src/router.tsx`; document-level metadata and markup 
 - Generated references come from `convex/_generated/api`.
 
 React Query manages suspense/cache behavior for the roster reads while the Convex client performs the bounded profile hydration. The route opts out of SSR because its current data source is a browser-public development deployment and local Node TLS interception can make server fetches fail; the route-level loading UI covers that client startup.
+
+The landscape route uses one reactive `ratings.getWeeklyDashboard` read. Its season/week controls update the query key, while game sorting by national or Michigan importance stays client-side over the bounded weekly response. Ranking and scoring methodology lives in [Landscape ranking and game importance](../reference/landscape-ranking.md).
 
 ## Styling
 

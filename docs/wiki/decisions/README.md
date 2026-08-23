@@ -2,9 +2,11 @@
 
 Architectural decision records explain durable choices and their consequences. Operational instructions belong elsewhere in the wiki.
 
-| ADR                                       | Status   | Decision                                                         |
-| ----------------------------------------- | -------- | ---------------------------------------------------------------- |
-| [0001](0001-tanstack-start-and-convex.md) | Accepted | Use TanStack Start for the React app and Convex for the backend. |
+| ADR                                                        | Status   | Decision                                                                    |
+| ---------------------------------------------------------- | -------- | --------------------------------------------------------------------------- |
+| [0001](0001-tanstack-start-and-convex.md)                  | Accepted | Use TanStack Start for the React app and Convex for the backend.            |
+| [0002](0002-tiered-college-game-retention.md)              | Accepted | Keep compact long-range games and only five seasons of detailed team stats. |
+| [0003](0003-separate-team-strength-and-game-importance.md) | Accepted | Keep team strength separate from national and Michigan game importance.     |
 
 ## Adding an ADR
 

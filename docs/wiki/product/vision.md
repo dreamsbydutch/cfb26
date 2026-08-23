@@ -14,7 +14,8 @@ The implemented core workflow is browsing Michigan player history by depth chart
 
 - `/` presents the 2026 depth chart immediately, then progressively loads recruiting, career, movement, and NFL details for all 428 players.
 - Users can browse by original recruiting class, NFL entry class, exact Michigan position, 2015–2025 snap-count/PFF season, or the full searchable player index and open a detailed player drawer.
-- Checked-in Convex source matches the nine hosted football tables and five public read functions in development and production.
+- Development stores synchronized recruiting/standings history, the usable national draft feed, 2000–2026 compact FBS schedules, season Elo snapshots, and detailed 2022–2025 team-game stats. `/games` renders the national weekly-importance and Elo-ranking experience from those hosted records.
+- Production retains the nine-table Michigan contract while the 17-table national-data contract is validated in development.
 - The app can be type-checked and production-built locally.
 - Repository guidance, task skills, and this wiki define the maintenance workflow.
 

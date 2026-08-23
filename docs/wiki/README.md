@@ -23,7 +23,7 @@ This wiki is the durable source of truth for the application. It describes what 
 
 ## Current snapshot
 
-**Current:** `cfb26` is a one-route TanStack Start application. `/` is a responsive Michigan football personnel explorer with current depth-chart, recruiting-class, draft-class, exact-position, 2015–2025 season-stat, search, and detailed profile views. Development and production share the checked-in nine-table schema, 4,005 documents, and five public reads as verified on 2026-08-22. The owner-confirmed Vercel project and production domain are recorded, but the Nitro-backed production redeploy has not yet been smoke-tested. The app has no authentication provider, automated tests, or CI workflow.
+**Current:** `cfb26` is a two-route TanStack Start application. `/` is a responsive Michigan football personnel explorer; `/games` is a populated national weekly-game importance and Elo-ranking dashboard with separate national and Michigan lenses. Development has a 17-table, 47,774-document foundation with 2000–2026 compact schedules, 3,340 season ratings, and 2022–2025 detailed team-game stats. Production remains on the prior nine-table, 4,005-document Michigan contract. The owner-confirmed Vercel project and production domain are recorded, but the Nitro-backed production redeploy has not yet been smoke-tested. The app has no authentication provider, automated tests, or CI workflow.
 
 **Planned:** redeploy and smoke-test the Nitro-backed Vercel production pipeline. Define the product audience, longer-term problem statement, and production data-access policy.
 

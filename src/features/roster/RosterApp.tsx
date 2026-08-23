@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { SeasonStats } from './SeasonStats'
 import { useMichiganRoster } from './useMichiganRoster'
 import type { EnrichedPlayer, PlayerProfile } from './useMichiganRoster'
@@ -465,6 +466,12 @@ export function RosterApp() {
                     {item.label}
                   </button>
                 ))}
+                <Link
+                  to="/games"
+                  className="border-b-2 border-transparent px-2 py-1 text-sm font-bold text-neutral-500 transition hover:border-michigan-maize hover:text-michigan-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                >
+                  National games
+                </Link>
               </div>
             </nav>
             <label className="relative block w-full lg:w-64">

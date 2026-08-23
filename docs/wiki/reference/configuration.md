@@ -21,8 +21,9 @@
 | `VITE_CONVEX_URL`   | Optional browser override        | No            | Compatible public URL used to create `ConvexQueryClient`; development is the checked-in fallback. |
 | `CONVEX_DEPLOYMENT` | Local Convex CLI when configured | No, but local | Identifies the selected deployment to tooling.                                                    |
 | `CONVEX_DEPLOY_KEY` | Hosted production build/deploy   | Yes           | Authorizes deployment to the selected Convex project.                                             |
+| `CFBD_API_KEY`      | Convex game-data synchronization | Yes           | Authorizes CollegeFootballData schedule/result and team-game-stat requests.                       |
 
-No local environment file is required for the current read-only explorer. An override belongs in `.env.local` or provider-managed environment settings.
+No local environment file is required for the current read-only explorer. A browser override belongs in `.env.local` or provider-managed environment settings. `CFBD_API_KEY` belongs only in the target Convex deployment environment; never place it in a tracked file or a `VITE_*` variable.
 
 The known deployment URLs are recorded in [Deployment](../guides/deployment.md). Confirm the intended environment before running any command that synchronizes schema, functions, or data.
 
