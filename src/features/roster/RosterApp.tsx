@@ -1089,10 +1089,10 @@ function DepthTierRows({
                 <RecruitingYear
                   season={entry.profile?.recruiting?.recruitingSeason}
                 />
+                {entry.stint.injury && (
+                  <InjuryIndicator injury={entry.stint.injury} />
+                )}
               </div>
-              {entry.stint.injury && (
-                <InjuryBadge injury={entry.stint.injury} />
-              )}
             </td>
             <td className="px-2 py-2 text-xs font-medium text-neutral-700">
               {entry.stint.position}
@@ -1134,24 +1134,30 @@ function depthTierSeparatorClass(tone: DepthTierTone) {
   }
 }
 
-function InjuryBadge({
+function InjuryIndicator({
   injury,
 }: {
   injury: NonNullable<EnrichedPlayer['stint']['injury']>
 }) {
-  const label =
-    injury.kind === 'short_term'
-      ? 'Short-term injury'
-      : injury.kind === 'long_term'
-        ? 'Long-term injury'
-        : 'Season-ending injury'
+  const indicator = injuryIndicator(injury.kind)
+  const title = [
+    indicator.label,
+    injury.note,
+    injury.expectedReturn && `Expected return: ${injury.expectedReturn}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <span
-      className={`mb-1 inline-flex items-center border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] ${injuryBadgeClass(injury.kind)}`}
-      title={[injury.note, injury.expectedReturn].filter(Boolean).join(' · ')}
+      role="img"
+      aria-label={indicator.label}
+      className={`inline-flex shrink-0 items-center text-sm font-black leading-none ${indicator.className}`}
+      title={title}
     >
-      {label}
+      <span aria-hidden="true" className="tracking-[-0.12em]">
+        {'✚'.repeat(indicator.crosses)}
+      </span>
     </span>
   )
 }
@@ -1687,7 +1693,7 @@ function PlayerDrawer({
           {entry.stint.injury && (
             <DetailSection title="Availability">
               <div className="border-l-4 border-neutral-800 bg-neutral-100 px-3 py-2">
-                <InjuryBadge injury={entry.stint.injury} />
+                <InjuryIndicator injury={entry.stint.injury} />
                 {entry.stint.injury.note && (
                   <p className="mt-1 text-sm text-neutral-700">
                     {entry.stint.injury.note}
@@ -2253,14 +2259,26 @@ function RecruitingYear({ season }: { season: number | undefined }) {
   )
 }
 
-function injuryBadgeClass(
+function injuryIndicator(
   kind: NonNullable<EnrichedPlayer['stint']['injury']>['kind'],
 ) {
   if (kind === 'season_ending')
-    return 'border-neutral-950 bg-neutral-950 text-white'
+    return {
+      className: 'text-red-800',
+      crosses: 3,
+      label: 'Season-ending injury',
+    }
   if (kind === 'long_term')
-    return 'border-2 border-neutral-700 bg-neutral-100 text-neutral-950'
-  return 'border-dashed border-neutral-500 bg-white text-neutral-700'
+    return {
+      className: 'text-red-600',
+      crosses: 2,
+      label: 'Long-term injury',
+    }
+  return {
+    className: 'text-red-500',
+    crosses: 1,
+    label: 'Short-term injury',
+  }
 }
 
 function depthTierLabel(tier: DepthTierTone) {
