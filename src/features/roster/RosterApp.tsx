@@ -1565,9 +1565,6 @@ function PlayerDrawer({
 
   const recruiting = profile?.recruiting
   const draft = profile?.draft
-  const medicalExtensionSeasons = getMedicalExtensionSeasons(entry.stint)
-  const extraEligibilitySeasons = entry.stint.extraEligibilitySeasons
-  const eligibilityEndSeason = entry.stint.eligibilityEndSeason
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
@@ -1607,7 +1604,6 @@ function PlayerDrawer({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={entry.stint.status} />
-                <RecruitingYear season={recruiting?.recruitingSeason} />
               </div>
               <h2
                 id="player-title"
@@ -1624,70 +1620,27 @@ function PlayerDrawer({
         </div>
 
         <div className="px-4 sm:px-5">
-          <DetailSection title="Michigan roster">
-            <DetailGrid>
+          <DetailSection title="Player info">
+            <dl className="grid grid-cols-3 gap-x-3 gap-y-2.5">
+              <Detail label="Pos" value={entry.stint.position} />
               <Detail
-                label="Depth order"
-                value={
-                  entry.stint.status === 'active'
-                    ? entry.stint.depthChartOrder
-                    : undefined
-                }
-              />
-              <Detail label="Jersey" value={entry.stint.jerseyNumber} />
-              <Detail label="Position" value={entry.stint.position} />
-              <Detail
-                label="Tier override"
-                value={
-                  entry.stint.depthTierOverride
-                    ? depthTierLabel(entry.stint.depthTierOverride)
-                    : 'Automatic'
-                }
+                label="Ht"
+                value={formatHeight(entry.stint.heightInches)}
               />
               <Detail
-                label="Size"
-                value={formatMeasurements(
-                  entry.stint.heightInches,
-                  entry.stint.weightPounds,
-                )}
-              />
-              <Detail label="First season" value={entry.stint.startSeason} />
-              <Detail label="Final season" value={entry.stint.endSeason} />
-              <Detail
-                label="Eligibility starts"
-                value={entry.stint.eligibilityStartSeason}
+                label="Wt"
+                value={formatWeight(entry.stint.weightPounds)}
               />
               <Detail
-                label="NFL eligible"
-                value={entry.stint.eligibilityLeaveSeason}
-              />
-              <Detail label="Eligibility ends" value={eligibilityEndSeason} />
-              <Detail label="Standard eligibility" value="5 seasons" />
-              <Detail
-                label="Medical extension"
-                value={
-                  medicalExtensionSeasons === 0
-                    ? 'None'
-                    : `${medicalExtensionSeasons} season${medicalExtensionSeasons === 1 ? '' : 's'}`
-                }
+                className="col-span-2"
+                label="High school"
+                value={entry.player.highSchool}
               />
               <Detail
-                label="Extra eligibility"
-                value={
-                  extraEligibilitySeasons === 0
-                    ? 'None'
-                    : `${extraEligibilitySeasons} season${extraEligibilitySeasons === 1 ? '' : 's'}`
-                }
+                label="Location"
+                value={`${entry.player.hometown}, ${entry.player.homeState}`}
               />
-              <Detail
-                label="Departure group"
-                value={
-                  entry.stint.departureClass && entry.stint.departureRank
-                    ? `${entry.stint.departureClass}${entry.stint.departureRank}`
-                    : undefined
-                }
-              />
-            </DetailGrid>
+            </dl>
           </DetailSection>
 
           {entry.stint.injury && (
@@ -1731,73 +1684,13 @@ function PlayerDrawer({
               </DetailSection>
             )}
 
-          <DetailSection title="Origin">
-            <DetailGrid>
-              <Detail
-                label="Hometown"
-                value={`${entry.player.hometown}, ${entry.player.homeState}`}
-              />
-              <Detail label="High school" value={entry.player.highSchool} />
-            </DetailGrid>
-          </DetailSection>
-
           {!profile ? (
             <HydratingEmpty label="Full player details are loading…" />
           ) : (
             <>
               <DetailSection title="Recruiting">
                 {recruiting ? (
-                  <DetailGrid>
-                    <Detail label="Class" value={recruiting.recruitingSeason} />
-                    <Detail
-                      label="Entry path"
-                      value={sourceLabel(recruiting.source)}
-                    />
-                    <Detail
-                      label="Recruit position"
-                      value={recruiting.position}
-                    />
-                    <Detail label="Class rank" value={recruiting.classRank} />
-                    <Detail
-                      label="Recruit size"
-                      value={formatMeasurements(
-                        recruiting.heightInches,
-                        recruiting.weightPounds,
-                      )}
-                    />
-                    <Detail
-                      label="Composite rating"
-                      value={recruiting.compositeRating?.toFixed(4)}
-                    />
-                    <Detail
-                      label="Composite overall"
-                      value={rank(recruiting.compositeOverallRank)}
-                    />
-                    <Detail
-                      label="Composite position"
-                      value={rank(recruiting.compositePositionRank)}
-                    />
-                    <Detail
-                      label="Composite state"
-                      value={rank(recruiting.compositeStateRank)}
-                    />
-                    <Detail
-                      label="247 rating"
-                      value={recruiting.service247Rating}
-                    />
-                    <Detail
-                      label="247 overall"
-                      value={rank(recruiting.service247OverallRank)}
-                    />
-                    <Detail
-                      label="247 position"
-                      value={rank(recruiting.service247PositionRank)}
-                    />
-                    <Detail
-                      label="247 state"
-                      value={rank(recruiting.service247StateRank)}
-                    />
-                  </DetailGrid>
+                  <RecruitingSummary recruiting={recruiting} />
                 ) : (
                   <p className="text-sm text-neutral-500">
                     No recruiting profile.
@@ -1984,6 +1877,158 @@ function careerNarrative(stats: PlayerProfile['seasonalStats']) {
   return `Most snaps: ${snapPeak.snaps.toLocaleString()} in ${snapPeak.season}. Top grade: ${gradePeak.pffRating.toFixed(1)} in ${gradePeak.season}.`
 }
 
+type RecruitingProfile = NonNullable<PlayerProfile['recruiting']>
+
+function RecruitingSummary({ recruiting }: { recruiting: RecruitingProfile }) {
+  const stars = recruitingStars(recruiting)
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-4 border-l-4 border-michigan-maize bg-michigan-blue-soft px-3 py-2.5">
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-[0.12em] text-neutral-500">
+            Recruiting class
+          </p>
+          <p className="text-2xl font-black tabular-nums leading-none">
+            {recruiting.recruitingSeason}
+          </p>
+          <p className="mt-1 truncate text-xs font-bold text-neutral-600">
+            {sourceLabel(recruiting.source)}
+            {recruiting.position ? ` · ${recruiting.position}` : ''}
+          </p>
+        </div>
+        <StarRating stars={stars} />
+      </div>
+
+      <div className="mt-2 overflow-x-auto border-y border-neutral-300">
+        <table className="w-full table-fixed text-left tabular-nums">
+          <caption className="sr-only">
+            Composite and 247 recruiting ratings and ranks
+          </caption>
+          <thead className="bg-neutral-100 text-[9px] font-black uppercase tracking-[0.1em] text-neutral-500">
+            <tr>
+              <th scope="col" className="w-[28%] px-2 py-1.5">
+                Source
+              </th>
+              <th scope="col" className="w-[24%] px-2 py-1.5 text-right">
+                Rating
+              </th>
+              <th
+                scope="col"
+                aria-label="Overall rank"
+                className="w-[16%] px-2 py-1.5 text-right"
+              >
+                OVR
+              </th>
+              <th
+                scope="col"
+                aria-label="Position rank"
+                className="w-[16%] px-2 py-1.5 text-right"
+              >
+                POS
+              </th>
+              <th
+                scope="col"
+                aria-label="State rank"
+                className="w-[16%] px-2 py-1.5 text-right"
+              >
+                ST
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-200 text-sm">
+            <RecruitingRatingRow
+              source="Composite"
+              rating={recruiting.compositeRating?.toFixed(4)}
+              overallRank={recruiting.compositeOverallRank}
+              positionRank={recruiting.compositePositionRank}
+              stateRank={recruiting.compositeStateRank}
+            />
+            <RecruitingRatingRow
+              source="247"
+              rating={formatServiceRating(recruiting.service247Rating)}
+              overallRank={recruiting.service247OverallRank}
+              positionRank={recruiting.service247PositionRank}
+              stateRank={recruiting.service247StateRank}
+            />
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
+function RecruitingRatingRow({
+  source,
+  rating,
+  overallRank,
+  positionRank,
+  stateRank,
+}: {
+  source: string
+  rating: string | undefined
+  overallRank: number | undefined
+  positionRank: number | undefined
+  stateRank: number | undefined
+}) {
+  return (
+    <tr>
+      <th scope="row" className="px-2 py-2 font-black">
+        {source}
+      </th>
+      <td className="px-2 py-2 text-right font-bold">{rating ?? '—'}</td>
+      <td className="px-2 py-2 text-right font-bold">
+        {rank(overallRank) ?? '—'}
+      </td>
+      <td className="px-2 py-2 text-right font-bold">
+        {rank(positionRank) ?? '—'}
+      </td>
+      <td className="px-2 py-2 text-right font-bold">
+        {rank(stateRank) ?? '—'}
+      </td>
+    </tr>
+  )
+}
+
+function StarRating({ stars }: { stars: number | undefined }) {
+  if (stars === undefined) {
+    return (
+      <span className="shrink-0 text-xs font-black uppercase tracking-[0.1em] text-neutral-500">
+        Unrated
+      </span>
+    )
+  }
+
+  return (
+    <div className="shrink-0 text-right">
+      <div
+        className="flex justify-end gap-0.5"
+        aria-label={`${stars}-star recruit`}
+      >
+        {Array.from({ length: stars }, (_, index) => (
+          <StarIcon key={index} />
+        ))}
+      </div>
+      <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-neutral-500">
+        {stars}-star
+      </p>
+    </div>
+  )
+}
+
+function StarIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-6 w-6 fill-michigan-maize stroke-michigan-blue"
+      strokeWidth="1.25"
+    >
+      <path d="m12 2.6 2.8 5.7 6.3.9-4.6 4.4 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.6Z" />
+    </svg>
+  )
+}
+
 function DetailSection({
   title,
   children,
@@ -2005,9 +2050,17 @@ function DetailGrid({ children }: { children: ReactNode }) {
   return <dl className="grid grid-cols-2 gap-x-4 gap-y-2">{children}</dl>
 }
 
-function Detail({ label, value }: { label: string; value: ReactNode }) {
+function Detail({
+  label,
+  value,
+  className = '',
+}: {
+  label: string
+  value: ReactNode
+  className?: string
+}) {
   return (
-    <div>
+    <div className={className}>
       <dt className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
         {label}
       </dt>
@@ -2281,11 +2334,6 @@ function injuryIndicator(
   }
 }
 
-function depthTierLabel(tier: DepthTierTone) {
-  if (tier === 'walk-ons') return 'Walk-ons'
-  return tier.charAt(0).toUpperCase() + tier.slice(1)
-}
-
 function compareRotationCandidates(a: EnrichedPlayer, b: EnrichedPlayer) {
   const aRelativeDepth =
     (a.stint.depthChartOrder ?? 999) - starterCount(a.stint.position)
@@ -2392,22 +2440,6 @@ function movementLabel(kind: PlayerProfile['movements'][number]['kind']) {
   return labels[kind]
 }
 
-function getMedicalExtensionSeasons(stint: EnrichedPlayer['stint']) {
-  const transitionStint = stint as Omit<
-    EnrichedPlayer['stint'],
-    'medicalExtensionSeasons'
-  > & {
-    medicalExtensionSeasons?: number
-    redshirtSeasons?: number
-  }
-
-  return Math.max(
-    transitionStint.medicalExtensionSeasons ??
-      (transitionStint.redshirtSeasons ?? 1) - 1,
-    0,
-  )
-}
-
 function jersey(value: number | undefined) {
   return value === undefined ? '—' : `#${value}`
 }
@@ -2416,16 +2448,43 @@ function rank(value: number | undefined) {
   return value === undefined ? undefined : `#${value}`
 }
 
-function formatMeasurements(
-  height: number | undefined,
-  weight: number | undefined,
-) {
-  const formattedHeight =
-    height === undefined
-      ? undefined
-      : `${Math.floor(height / 12)}′ ${height % 12}″`
-  if (formattedHeight && weight) return `${formattedHeight} · ${weight} lb`
-  return formattedHeight ?? (weight ? `${weight} lb` : '—')
+function formatHeight(height: number | undefined) {
+  return height === undefined
+    ? undefined
+    : `${Math.floor(height / 12)}′ ${height % 12}″`
+}
+
+function formatWeight(weight: number | undefined) {
+  return weight === undefined ? undefined : `${weight} lb`
+}
+
+function formatServiceRating(rating: number | undefined) {
+  if (rating === undefined) return undefined
+  return Number.isInteger(rating) ? rating.toFixed(0) : rating.toFixed(2)
+}
+
+function recruitingStars(recruiting: RecruitingProfile) {
+  if (
+    recruiting.compositeOverallRank !== undefined &&
+    recruiting.compositeOverallRank <= 32
+  ) {
+    return 5
+  }
+
+  if (recruiting.compositeRating !== undefined) {
+    if (recruiting.compositeRating >= 0.89) return 4
+    if (recruiting.compositeRating >= 0.8) return 3
+    return 2
+  }
+
+  if (recruiting.service247Rating !== undefined) {
+    if (recruiting.service247Rating >= 98) return 5
+    if (recruiting.service247Rating >= 90) return 4
+    if (recruiting.service247Rating >= 80) return 3
+    return 2
+  }
+
+  return undefined
 }
 
 function chipClass(active: boolean) {
