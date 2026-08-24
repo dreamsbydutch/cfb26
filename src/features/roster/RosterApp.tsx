@@ -8,6 +8,11 @@ import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
 type View = 'depth' | 'recruiting' | 'draft' | 'positions' | 'snaps' | 'players'
 type DepthView = 'offense' | 'defense' | 'special-teams'
 type EligibilityBand = 'developing' | 'nfl-eligible' | 'final'
+type RecruitingSort = 'composite' | 'service247'
+type RecruitingProfile = NonNullable<PlayerProfile['recruiting']>
+type RecruitingEntry = EnrichedPlayer & {
+  profile: PlayerProfile & { recruiting: RecruitingProfile }
+}
 
 const CURRENT_ROSTER_SEASON = 2026
 
@@ -1183,22 +1188,23 @@ function RecruitClasses({
   select: (player: EnrichedPlayer) => void
 }) {
   const [season, setSeason] = useState<number | 'all'>('all')
-  const ready = players.filter(
-    (entry): entry is EnrichedPlayer & { profile: PlayerProfile } =>
-      Boolean(entry.profile?.recruiting),
+  const [rankingSource, setRankingSource] =
+    useState<RecruitingSort>('composite')
+  const ready = players.filter((entry): entry is RecruitingEntry =>
+    Boolean(entry.profile?.recruiting),
   )
   const seasons = uniqueNumbers(
-    ready.map((entry) => entry.profile.recruiting!.recruitingSeason),
+    ready.map((entry) => entry.profile.recruiting.recruitingSeason),
   ).sort((a, b) => b - a)
   const filtered =
     season === 'all'
       ? ready
       : ready.filter(
-          (entry) => entry.profile.recruiting?.recruitingSeason === season,
+          (entry) => entry.profile.recruiting.recruitingSeason === season,
         )
   const groups = groupByNumber(
     filtered,
-    (entry) => entry.profile.recruiting!.recruitingSeason,
+    (entry) => entry.profile.recruiting.recruitingSeason,
   )
 
   return (
@@ -1206,56 +1212,306 @@ function RecruitClasses({
       <SectionIntro eyebrow="Prospect year" title="Recruit classes">
         Original class year; transfers and walk-ons may arrive later.
       </SectionIntro>
+      <RecruitingRankingToggle
+        value={rankingSource}
+        setValue={setRankingSource}
+      />
       <FilterChips
         values={seasons}
         selected={season}
         setSelected={setSeason}
         allLabel="All classes"
       />
-      <div className="space-y-4">
-        {groups.map(([year, entries]) => (
-          <article key={year} className="border-t border-neutral-300 pt-2">
-            <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
-              <h3 className="text-2xl font-black">{year}</h3>
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-                {entries.length} players · {sourceSummary(entries)}
-              </p>
-            </div>
-            <div className="grid border-t border-neutral-200 sm:grid-cols-2 sm:gap-x-5 xl:grid-cols-3">
-              {entries
-                .sort(
-                  (a, b) =>
-                    a.profile.recruiting!.classRank -
-                    b.profile.recruiting!.classRank,
-                )
-                .map((entry) => (
-                  <PlayerCard
-                    key={entry.player._id}
-                    entry={entry}
+      {groups.length === 0 ? (
+        <HydratingEmpty label="Recruiting profiles are still loading." />
+      ) : (
+        <div className="space-y-6">
+          {groups.map(([year, entries]) => {
+            const rankedEntries = [...entries].sort((a, b) =>
+              compareRecruitingRatings(a, b, rankingSource),
+            )
+
+            return (
+              <article key={year} className="border-t border-neutral-300 pt-2">
+                <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+                  <h3 className="text-2xl font-black tabular-nums">{year}</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+                    {entries.length} players · {sourceSummary(entries)}
+                  </p>
+                </div>
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(15rem,1fr)] xl:items-start">
+                  <RecruitClassTable
+                    entries={rankedEntries}
+                    rankingSource={rankingSource}
                     select={select}
-                    meta={
-                      <>
-                        <SourceBadge
-                          source={entry.profile.recruiting!.source}
-                        />
-                        <span>
-                          {entry.profile.recruiting?.position ?? '—'} · class #
-                          {entry.profile.recruiting?.classRank}
-                        </span>
-                      </>
-                    }
-                    detail={
-                      entry.profile.recruiting?.compositeRating
-                        ? `${entry.profile.recruiting.compositeRating.toFixed(4)} composite`
-                        : 'No composite rating'
-                    }
+                    year={year}
                   />
-                ))}
-            </div>
-          </article>
+                  <RecruitPositionBreakdown entries={entries} />
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
+}
+
+function RecruitingRankingToggle({
+  value,
+  setValue,
+}: {
+  value: RecruitingSort
+  setValue: (value: RecruitingSort) => void
+}) {
+  const options: Array<{ label: string; value: RecruitingSort }> = [
+    { label: 'Composite', value: 'composite' },
+    { label: '247 rating', value: 'service247' },
+  ]
+
+  return (
+    <div className="mb-3 flex flex-col gap-2 border-y border-michigan-blue/15 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.12em] text-michigan-blue">
+          Rank each class by
+        </p>
+        <p className="text-xs text-neutral-500">
+          Highest selected rating first; unrated players remain listed last.
+        </p>
+      </div>
+      <div
+        role="group"
+        aria-label="Recruit class ranking source"
+        className="inline-flex self-start border border-michigan-blue sm:self-auto"
+      >
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setValue(option.value)}
+            aria-pressed={value === option.value}
+            className={`px-3 py-1.5 text-xs font-black transition focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize ${
+              value === option.value
+                ? 'bg-michigan-blue text-white'
+                : 'bg-white text-michigan-blue hover:bg-michigan-blue-soft'
+            }`}
+          >
+            {option.label}
+          </button>
         ))}
       </div>
-    </>
+    </div>
+  )
+}
+
+function RecruitClassTable({
+  entries,
+  rankingSource,
+  select,
+  year,
+}: {
+  entries: Array<RecruitingEntry>
+  rankingSource: RecruitingSort
+  select: (player: EnrichedPlayer) => void
+  year: number
+}) {
+  return (
+    <div className="overflow-x-auto border-y border-neutral-300 bg-white">
+      <table className="w-full table-fixed text-left sm:min-w-[43rem]">
+        <caption className="sr-only">
+          {year} recruiting class ranked by{' '}
+          {rankingSource === 'composite' ? 'Composite' : '247'} rating
+        </caption>
+        <thead className="border-b border-michigan-blue/25 bg-michigan-blue-soft text-[9px] font-black uppercase tracking-[0.1em] text-michigan-blue">
+          <tr>
+            <th
+              scope="col"
+              className="w-10 px-1 py-2 text-center sm:w-12 sm:px-2"
+            >
+              Rank
+            </th>
+            <th scope="col" className="w-auto px-2 py-2 sm:w-[28%]">
+              Player
+            </th>
+            <th scope="col" className="hidden w-14 px-2 py-2 sm:table-cell">
+              Pos
+            </th>
+            <th scope="col" className="w-24 px-1 py-2 sm:w-28 sm:px-2">
+              Stars
+            </th>
+            <th
+              scope="col"
+              aria-sort={
+                rankingSource === 'composite' ? 'descending' : undefined
+              }
+              className={`w-20 px-2 py-2 text-right sm:w-24 ${
+                rankingSource === 'composite'
+                  ? 'bg-michigan-maize-soft'
+                  : 'hidden sm:table-cell'
+              }`}
+            >
+              Composite
+            </th>
+            <th
+              scope="col"
+              aria-sort={
+                rankingSource === 'service247' ? 'descending' : undefined
+              }
+              className={`w-20 px-2 py-2 text-right ${
+                rankingSource === 'service247'
+                  ? 'bg-michigan-maize-soft'
+                  : 'hidden sm:table-cell'
+              }`}
+            >
+              247
+            </th>
+            <th scope="col" className="hidden w-20 px-2 py-2 sm:table-cell">
+              Type
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-neutral-200 text-sm">
+          {entries.map((entry, index) => {
+            const recruiting = entry.profile.recruiting
+            const selectedRating = recruitingRating(recruiting, rankingSource)
+
+            return (
+              <tr key={entry.player._id} className="group hover:bg-neutral-50">
+                <td className="px-2 py-2 text-center text-base font-black tabular-nums text-michigan-blue">
+                  {selectedRating === undefined ? (
+                    <span
+                      className="text-[10px] uppercase tracking-[0.08em] text-neutral-400"
+                      aria-label="Not rated"
+                    >
+                      NR
+                    </span>
+                  ) : (
+                    index + 1
+                  )}
+                </td>
+                <th scope="row" className="px-2 py-2">
+                  <button
+                    type="button"
+                    onClick={() => select(entry)}
+                    className="block max-w-full text-left font-black text-neutral-950 transition group-hover:text-michigan-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                  >
+                    <span className="block truncate">
+                      {entry.player.displayName}
+                    </span>
+                    <span className="block truncate text-[10px] font-medium text-neutral-500">
+                      {entry.player.highSchool ||
+                        [entry.player.hometown, entry.player.homeState]
+                          .filter(Boolean)
+                          .join(', ') ||
+                        'School unavailable'}
+                    </span>
+                  </button>
+                </th>
+                <td className="hidden px-2 py-2 text-xs font-black text-neutral-700 sm:table-cell">
+                  {recruiting.position ?? '—'}
+                </td>
+                <td className="px-2 py-2">
+                  <CompactStarRating stars={recruitingStars(recruiting)} />
+                </td>
+                <RecruitRatingCell
+                  active={rankingSource === 'composite'}
+                  overallRank={recruiting.compositeOverallRank}
+                  rating={recruiting.compositeRating?.toFixed(4)}
+                />
+                <RecruitRatingCell
+                  active={rankingSource === 'service247'}
+                  overallRank={recruiting.service247OverallRank}
+                  rating={formatServiceRating(recruiting.service247Rating)}
+                />
+                <td className="hidden px-2 py-2 text-[10px] font-bold text-neutral-600 sm:table-cell">
+                  {sourceLabel(recruiting.source)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function RecruitRatingCell({
+  active,
+  overallRank,
+  rating,
+}: {
+  active: boolean
+  overallRank: number | undefined
+  rating: string | undefined
+}) {
+  return (
+    <td
+      className={`px-2 py-2 text-right tabular-nums ${
+        active ? 'bg-michigan-maize-soft/45' : 'hidden sm:table-cell'
+      }`}
+    >
+      <span className="block font-black text-neutral-950">{rating ?? '—'}</span>
+      <span className="block text-[9px] font-bold uppercase tracking-[0.06em] text-neutral-500">
+        {overallRank === undefined ? 'No OVR' : `OVR #${overallRank}`}
+      </span>
+    </td>
+  )
+}
+
+function RecruitPositionBreakdown({
+  entries,
+}: {
+  entries: Array<RecruitingEntry>
+}) {
+  const counts = new Map<string, number>()
+  for (const entry of entries) {
+    const position = entry.profile.recruiting.position ?? 'Unlisted'
+    counts.set(position, (counts.get(position) ?? 0) + 1)
+  }
+  const positions = [...counts.entries()].sort(
+    ([a, aCount], [b, bCount]) =>
+      bCount - aCount ||
+      recruitingPositionOrder(a) - recruitingPositionOrder(b),
+  )
+  const largestRoom = Math.max(...positions.map(([, count]) => count))
+
+  return (
+    <aside className="border-y border-neutral-300 bg-michigan-blue-soft/55 xl:border-t-4 xl:border-t-michigan-blue">
+      <div className="flex items-end justify-between border-b border-michigan-blue/15 px-3 py-2">
+        <div>
+          <h4 className="text-sm font-black text-michigan-blue">
+            Position mix
+          </h4>
+          <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
+            Recruit-time positions
+          </p>
+        </div>
+        <span className="text-2xl font-black tabular-nums">
+          {entries.length}
+        </span>
+      </div>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 px-3 py-3 sm:grid-cols-3 xl:grid-cols-1">
+        {positions.map(([position, count]) => (
+          <div
+            key={position}
+            className="grid grid-cols-[3.5rem_1fr_1.5rem] items-center gap-2"
+          >
+            <dt className="truncate text-[10px] font-black uppercase tracking-[0.08em] text-neutral-700">
+              {position}
+            </dt>
+            <span className="h-1.5 bg-white" aria-hidden="true">
+              <span
+                className="block h-full bg-michigan-blue"
+                style={{ width: `${(count / largestRoom) * 100}%` }}
+              />
+            </span>
+            <dd className="text-right text-xs font-black tabular-nums">
+              {count}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </aside>
   )
 }
 
@@ -1508,32 +1764,6 @@ function AllPlayers({
         </div>
       </div>
     </>
-  )
-}
-
-function PlayerCard({
-  entry,
-  meta,
-  detail,
-  select,
-}: {
-  entry: EnrichedPlayer
-  meta: ReactNode
-  detail: string
-  select: (player: EnrichedPlayer) => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => select(entry)}
-      className="border-b border-neutral-200 py-2 text-left transition hover:bg-michigan-blue-soft focus-visible:bg-michigan-maize-soft focus-visible:outline-none"
-    >
-      <span className="block font-bold">{entry.player.displayName}</span>
-      <span className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
-        {meta}
-      </span>
-      <span className="mt-1 block text-xs text-neutral-500">{detail}</span>
-    </button>
   )
 }
 
@@ -1877,8 +2107,6 @@ function careerNarrative(stats: PlayerProfile['seasonalStats']) {
   return `Most snaps: ${snapPeak.snaps.toLocaleString()} in ${snapPeak.season}. Top grade: ${gradePeak.pffRating.toFixed(1)} in ${gradePeak.season}.`
 }
 
-type RecruitingProfile = NonNullable<PlayerProfile['recruiting']>
-
 function RecruitingSummary({ recruiting }: { recruiting: RecruitingProfile }) {
   const stars = recruitingStars(recruiting)
 
@@ -2029,6 +2257,36 @@ function StarIcon() {
   )
 }
 
+function CompactStarRating({ stars }: { stars: number | undefined }) {
+  if (stars === undefined) {
+    return (
+      <span className="text-[9px] font-black uppercase tracking-[0.08em] text-neutral-400">
+        Unrated
+      </span>
+    )
+  }
+
+  return (
+    <span
+      className="inline-flex gap-px"
+      aria-label={`${stars}-star recruit`}
+      title={`${stars}-star recruit`}
+    >
+      {Array.from({ length: stars }, (_, index) => (
+        <svg
+          key={index}
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="h-4 w-4 fill-michigan-maize stroke-michigan-blue"
+          strokeWidth="1.25"
+        >
+          <path d="m12 2.6 2.8 5.7 6.3.9-4.6 4.4 1.1 6.3-5.6-3-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.6Z" />
+        </svg>
+      ))}
+    </span>
+  )
+}
+
 function DetailSection({
   title,
   children,
@@ -2102,18 +2360,6 @@ function FilterChips({
         ))}
       </div>
     </div>
-  )
-}
-
-function SourceBadge({
-  source,
-}: {
-  source: 'high_school' | 'transfer' | 'walk_on'
-}) {
-  return (
-    <span className="border border-michigan-blue/25 bg-michigan-blue-soft px-1.5 py-0.5 font-bold text-michigan-blue">
-      {sourceLabel(source)}
-    </span>
   )
 }
 
@@ -2406,17 +2652,62 @@ function uniqueNumbers(values: Array<number>) {
   return [...new Set(values)]
 }
 
-function sourceSummary(
-  entries: Array<EnrichedPlayer & { profile: PlayerProfile }>,
+function compareRecruitingRatings(
+  a: RecruitingEntry,
+  b: RecruitingEntry,
+  source: RecruitingSort,
 ) {
+  const aRating = recruitingRating(a.profile.recruiting, source)
+  const bRating = recruitingRating(b.profile.recruiting, source)
+
+  if (aRating === undefined && bRating !== undefined) return 1
+  if (aRating !== undefined && bRating === undefined) return -1
+  if (aRating !== undefined && bRating !== undefined && aRating !== bRating) {
+    return bRating - aRating
+  }
+
+  const aOverallRank = recruitingOverallRank(a.profile.recruiting, source)
+  const bOverallRank = recruitingOverallRank(b.profile.recruiting, source)
+  return (
+    (aOverallRank ?? Number.POSITIVE_INFINITY) -
+      (bOverallRank ?? Number.POSITIVE_INFINITY) ||
+    a.profile.recruiting.classRank - b.profile.recruiting.classRank ||
+    a.player.displayName.localeCompare(b.player.displayName)
+  )
+}
+
+function recruitingRating(
+  recruiting: RecruitingProfile,
+  source: RecruitingSort,
+) {
+  return source === 'composite'
+    ? recruiting.compositeRating
+    : recruiting.service247Rating
+}
+
+function recruitingOverallRank(
+  recruiting: RecruitingProfile,
+  source: RecruitingSort,
+) {
+  return source === 'composite'
+    ? recruiting.compositeOverallRank
+    : recruiting.service247OverallRank
+}
+
+function recruitingPositionOrder(position: string) {
+  const index = positionOrder.indexOf(position)
+  return index === -1 ? Number.POSITIVE_INFINITY : index
+}
+
+function sourceSummary(entries: Array<RecruitingEntry>) {
   const recruits = entries.filter(
-    (entry) => entry.profile.recruiting?.source === 'high_school',
+    (entry) => entry.profile.recruiting.source === 'high_school',
   ).length
   const transfers = entries.filter(
-    (entry) => entry.profile.recruiting?.source === 'transfer',
+    (entry) => entry.profile.recruiting.source === 'transfer',
   ).length
   const walkOns = entries.filter(
-    (entry) => entry.profile.recruiting?.source === 'walk_on',
+    (entry) => entry.profile.recruiting.source === 'walk_on',
   ).length
   return `${recruits} recruits · ${transfers} transfers · ${walkOns} walk-ons`
 }
