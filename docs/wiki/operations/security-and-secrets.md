@@ -4,7 +4,7 @@
 
 ## Current trust model
 
-**Current:** no identity provider, user accounts, or sessions are configured. Football reads remain public. Development has one roster-edit mutation protected by a server-side `CFB26_ADMIN_KEY`; it fails closed while that variable is absent. Production remains on the prior function set until explicit promotion.
+**Current:** no identity provider, user accounts, or sessions are configured. Football reads remain public. Development has the earlier roster-edit mutation protected by a server-side `CFB26_ADMIN_KEY`; checked-in source adds arrival/departure mutations but they have not been pushed. Every roster write fails closed while the key is absent. Production remains on the prior function set until explicit promotion.
 
 Do not assume the hosted football data is safe for unrestricted access merely because no auth exists. Classify its ownership/privacy requirements before deploying public functions, and add identity/ownership checks before introducing private or user-specific data.
 
@@ -22,14 +22,14 @@ Do not assume the hosted football data is safe for unrestricted access merely be
 
 ## Current single-owner roster gate
 
-`rosterAdmin.updatePlayer` compares an unguessable key against `CFB26_ADMIN_KEY` before reading or writing roster data. The admin page holds the entered value only in React state. Configure it interactively so the value is not placed in shell history:
+Every exported mutation in `rosterAdmin.ts` compares an unguessable key against `CFB26_ADMIN_KEY` before reading or writing roster data. The admin page holds the entered value only in React state. Configure it interactively so the value is not placed in shell history:
 
 ```powershell
 npx convex env set CFB26_ADMIN_KEY
 npx convex dev --once
 ```
 
-Run those commands only after confirming the intended deployment; the push activates the changed typed environment for the deployed functions. Use a different key per environment. Removing or leaving the variable unset disables all roster writes. The mutation requires at least 24 characters, validates every editable field, caps position history, and does not intentionally log its argument. See [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md).
+Run those commands only after confirming the intended deployment; the push installs the checked-in functions and activates the changed typed environment. Use a different key per environment. Removing or leaving the variable unset disables all roster writes. The key requires at least 24 characters; each mutation validates and bounds its football fields, and none intentionally logs its arguments. See [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md).
 
 This mechanism is deliberately narrower than authentication: it identifies one shared operator credential, not a person. Do not use it for private data, multiple admins, audit attribution, or user-facing permissions.
 
@@ -49,7 +49,7 @@ Before adding accounts or private records:
 
 - Return only client-needed fields from public functions.
 - Do not log secrets, tokens, private records, or full third-party payloads.
-- Public reads and the roster mutation do not intentionally log player payloads or credentials.
+- Public reads and the roster mutations do not intentionally log player payloads or credentials.
 - Validate input shape and impose practical size/count limits at public boundaries.
 - Plan migrations and backups before destructive schema/data changes.
 

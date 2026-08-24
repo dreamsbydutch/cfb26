@@ -15,14 +15,14 @@ The browser defaults to the public Michigan development deployment. Set `VITE_CO
 
 ## Roster administration
 
-`/admin/roster` edits the active roster's depth section, extra eligibility, current injury status, and position. Writes are disabled until the selected Convex deployment has a high-entropy key:
+`/admin/roster` separates three active-roster tasks: maintain depth/eligibility/availability, add a recruit/transfer/walk-on with a complete arrival record, or close a Michigan stint with a recorded departure. Additions create the canonical player, recruiting profile, roster stint, career summary, and arrival event atomically; removals retain player history. Writes are disabled until the selected Convex deployment has the checked-in functions and a high-entropy key:
 
 ```powershell
 npx convex env set CFB26_ADMIN_KEY
 npx convex dev --once
 ```
 
-The first command prompts for the value so it does not enter shell history; the second activates the changed typed environment for the development functions. Enter that same value on the admin page. Keep it out of tracked files and `VITE_*` variables; use a different value for each deployment.
+The first command prompts for the value so it does not enter shell history; the second pushes the checked-in functions and activates the changed typed environment. Confirm the intended development deployment before running either command. Enter that same value on the admin page. Keep it out of tracked files and `VITE_*` variables; use a different value for each deployment.
 
 ## Common commands
 

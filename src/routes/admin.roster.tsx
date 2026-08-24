@@ -1,10 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { RosterAdmin, RosterAdminLoading } from '~/features/roster/RosterAdmin'
+import {
+  RosterAdmin,
+  RosterAdminError,
+  RosterAdminLoading,
+} from '~/features/roster/RosterAdmin'
 
 export const Route = createFileRoute('/admin/roster')({
   ssr: false,
   component: RosterAdmin,
   pendingComponent: RosterAdminLoading,
+  errorComponent: RosterAdminError,
   head: () => ({
     meta: [
       { title: 'Roster Admin | CFB26' },

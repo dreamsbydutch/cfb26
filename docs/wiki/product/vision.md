@@ -15,11 +15,11 @@ The implemented core workflow is browsing Michigan player history by depth chart
 - `/` presents the 2026 depth chart immediately, then progressively loads recruiting, career, movement, and NFL details for all 428 players.
 - Users can browse by original recruiting class, NFL entry class, exact Michigan position, 2015–2025 snap-count/PFF season, or the full searchable player index and open a detailed player drawer.
 - Development stores synchronized recruiting/standings history, the usable national draft feed, 2000–2026 compact FBS schedules, season Elo, detailed 2022–2025 team-game stats, advanced rating inputs, and versioned proprietary snapshots. `/games` renders weekly importance, rankings across 15 strength perspectives, and venue-aware head-to-head projections. Production promotion of the 19-table rating contract remains pending.
-- `/admin/roster` lets the single owner override depth placement, add eligibility, mark short-term/long-term/season-ending injuries, and record position changes after a Convex deployment key is configured.
+- `/admin/roster` separates current-player maintenance from recruit/transfer/walk-on arrivals and confirmed departures. Additions create the normalized player lifecycle atomically; removals retain history. The checked-in arrival/departure functions still need a development push, and every write remains disabled until that deployment also has a Convex admin key.
 - The app can be type-checked and production-built locally.
 - Repository guidance, task skills, and this wiki define the maintenance workflow.
 
-Public browsing defaults to the development deployment. The only write is the single-owner roster editor established by [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md); it fails closed without its server key. The Vercel project and production domain are known, but the Nitro-backed release path still needs a successful production redeploy and smoke test.
+Public browsing defaults to the development deployment. The only write surface is the single-owner roster editor established by [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md); all of its mutations fail closed without the server key. The Vercel project and production domain are known, but the Nitro-backed release path still needs a successful production redeploy and smoke test.
 
 ## Foundation success criteria
 

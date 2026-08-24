@@ -43,19 +43,19 @@
 
 ## `convex/`
 
-| Path                      | Role                                                                                                 |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `convex/schema.ts`        | Declares the 19-table Michigan, national-data, rating-input, and composite-rating model and indexes. |
-| `convex/players.ts`       | Player search and full-profile queries.                                                              |
-| `convex/rosters.ts`       | Roster and movement-list queries.                                                                    |
-| `convex/rosterAdmin.ts`   | Server-key-protected mutation for depth, eligibility, injury, and position edits.                    |
-| `convex/seasonalStats.ts` | Season snap-count/PFF list query with zero-participation roster rows.                                |
-| `convex/ratingInputs.ts`  | Independently synchronizes six optional CFBD rating/advanced-data sources.                           |
-| `convex/ratingModel.ts`   | Pure normalization, perspective, confidence, ranking, and matchup formulas.                          |
-| `convex/ratings.ts`       | Elo sync, composite rebuild orchestration, rankings/dashboard reads, and matchup query.              |
-| `convex/tsconfig.json`    | Convex runtime TypeScript settings.                                                                  |
-| `convex/README.md`        | Local backend contract and maintenance rules.                                                        |
-| `convex/_generated/`      | Generated API/data-model/server types and Convex agent files.                                        |
+| Path                      | Role                                                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `convex/schema.ts`        | Declares the 19-table Michigan, national-data, rating-input, and composite-rating model and indexes.                       |
+| `convex/players.ts`       | Player search and full-profile queries.                                                                                    |
+| `convex/rosters.ts`       | Roster and movement-list queries.                                                                                          |
+| `convex/rosterAdmin.ts`   | Server-key-protected mutations for player maintenance, complete active-roster arrivals, and history-preserving departures. |
+| `convex/seasonalStats.ts` | Season snap-count/PFF list query with zero-participation roster rows.                                                      |
+| `convex/ratingInputs.ts`  | Independently synchronizes six optional CFBD rating/advanced-data sources.                                                 |
+| `convex/ratingModel.ts`   | Pure normalization, perspective, confidence, ranking, and matchup formulas.                                                |
+| `convex/ratings.ts`       | Elo sync, composite rebuild orchestration, rankings/dashboard reads, and matchup query.                                    |
+| `convex/tsconfig.json`    | Convex runtime TypeScript settings.                                                                                        |
+| `convex/README.md`        | Local backend contract and maintenance rules.                                                                              |
+| `convex/_generated/`      | Generated API/data-model/server types and Convex agent files.                                                              |
 
 ## `public/`
 
