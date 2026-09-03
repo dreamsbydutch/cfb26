@@ -10,24 +10,10 @@ import type { UseQueryResult } from '@tanstack/react-query'
 type Lens = 'national' | 'michigan'
 type View = 'games' | 'rankings' | 'matchup'
 type Venue = 'neutral' | 'team_a' | 'team_b'
-type Perspective =
-  | 'overall'
-  | 'power'
-  | 'offense'
-  | 'defense'
-  | 'passingOffense'
-  | 'passingDefense'
-  | 'rushingOffense'
-  | 'rushingDefense'
-  | 'situationalOffense'
-  | 'situationalDefense'
-  | 'specialTeams'
-  | 'talent'
-  | 'continuity'
-  | 'resume'
-  | 'form'
+type Perspective = 'power' | 'resume'
 type Dashboard = FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
 type DashboardGame = Dashboard['games'][number]
+type DashboardRating = Dashboard['ratings'][number]
 type Matchup = FunctionReturnType<typeof api.ratings.getMatchup>
 
 const CURRENT_SEASON = new Date().getFullYear()
@@ -38,21 +24,38 @@ const seasons = Array.from(
 const weeks = Array.from({ length: 21 }, (_, index) => index)
 
 const perspectiveLabels: Readonly<Record<Perspective, string>> = {
-  continuity: 'Continuity',
-  defense: 'Defense',
-  form: 'Recent form',
-  offense: 'Offense',
-  overall: 'Overall',
-  passingDefense: 'Pass defense',
-  passingOffense: 'Pass offense',
-  power: 'Power',
-  resume: 'Résumé',
-  rushingDefense: 'Run defense',
-  rushingOffense: 'Run offense',
-  situationalDefense: 'Situational defense',
-  situationalOffense: 'Situational offense',
-  specialTeams: 'Special teams',
-  talent: 'Talent',
+  power: 'CFB26 Power Rating',
+  resume: 'CFB26 Résumé Rating',
+}
+
+function normalizeHostedRating(row: DashboardRating): DashboardRating {
+  const legacy: DashboardRating & {
+    confidence?: number
+    dimensions?: { defense: number; offense: number; specialTeams: number }
+    overall?: number
+    rank?: number
+  } = row
+  if (Number.isFinite(row.power)) return row
+  const power = ((legacy.overall ?? 50) - 50) * 0.3
+  return {
+    ...row,
+    calibrationVersion: 'fixed-logistic-v1',
+    classification: 'fbs',
+    defense: ((legacy.dimensions?.defense ?? 50) - 50) * 0.3,
+    disagreementReasons: [],
+    gamesPlayed: 0,
+    homeFieldAdvantage: 2.5,
+    limitedSample: true,
+    offense: ((legacy.dimensions?.offense ?? 50) - 50) * 0.3,
+    power,
+    powerRank: legacy.rank,
+    priorWeight: 0,
+    published: true,
+    rank: legacy.rank,
+    rating: power,
+    specialTeams: ((legacy.dimensions?.specialTeams ?? 50) - 50) * 0.3,
+    specialTeamsAvailable: false,
+  }
 }
 
 export function LandscapeDashboard() {
@@ -60,7 +63,7 @@ export function LandscapeDashboard() {
   const [week, setWeek] = useState<number | undefined>()
   const [lens, setLens] = useState<Lens>('national')
   const [view, setView] = useState<View>('games')
-  const [perspective, setPerspective] = useState<Perspective>('overall')
+  const [perspective, setPerspective] = useState<Perspective>('power')
   const [teamAKey, setTeamAKey] = useState('michigan')
   const [teamBKey, setTeamBKey] = useState('ohio-state')
   const [venue, setVenue] = useState<Venue>('team_a')
@@ -77,7 +80,10 @@ export function LandscapeDashboard() {
     )
   }, [dashboard.data?.games, lens])
   const resolvedWeek = week ?? dashboard.data?.week
-  const ratings = dashboard.data?.ratings ?? []
+  const ratings = useMemo(
+    () => (dashboard.data?.ratings ?? []).map(normalizeHostedRating),
+    [dashboard.data?.ratings],
+  )
   const resolvedTeamA = ratings.some((rating) => rating.programKey === teamAKey)
     ? teamAKey
     : (ratings[0]?.programKey ?? '')
@@ -208,8 +214,8 @@ export function LandscapeDashboard() {
             {view === 'games'
               ? 'National importance combines our team strength model and matchup competitiveness. The Michigan lens adds direct games, season opponents, and the Big Ten race.'
               : view === 'rankings'
-                ? 'Compare teams through sixteen season-normalized perspectives. Overall blends performance, units, roster strength, résumé, and form while confidence reports the available evidence.'
-                : 'Choose two teams and a venue to compare complementary units, projected score, win probability, volatility, and stored head-to-head history.'}
+                ? 'Power estimates neutral-field strength in points. Beginning in Week 7, Résumé measures wins above the expectation of an average top-25 team.'
+                : 'Choose two teams and a venue to compare Power, offense, defense, special teams, team-specific home field, projected score, and win probability.'}
           </p>
         </div>
 
@@ -231,7 +237,9 @@ export function LandscapeDashboard() {
           />
         ) : view === 'rankings' ? (
           <RankingsTable
-            ratings={dashboard.data.ratings}
+            edition={dashboard.data.edition}
+            ratings={ratings}
+            resumeVisible={dashboard.data.resumeVisible}
             season={season}
             perspective={perspective}
             onSelectPerspective={setPerspective}
@@ -243,7 +251,7 @@ export function LandscapeDashboard() {
         ) : view === 'matchup' ? (
           <MatchupLab
             matchup={matchup}
-            ratings={dashboard.data.ratings}
+            ratings={ratings}
             teamAKey={resolvedTeamA}
             teamBKey={resolvedTeamB}
             venue={venue}
@@ -403,33 +411,47 @@ function TeamLine({
   )
 }
 
+function formatPoints(value: number) {
+  const rounded = Math.round(value * 10) / 10
+  return `${rounded > 0 ? '+' : ''}${rounded.toFixed(1)}`
+}
+
+function disagreementLabel(reason: string) {
+  return reason.replaceAll('_', ' ')
+}
+
 function RankingsTable({
+  edition,
   onSelectPerspective,
   onSelectSeason,
   perspective,
   ratings,
+  resumeVisible,
   season,
 }: {
+  edition: Dashboard['edition']
   onSelectPerspective: (perspective: Perspective) => void
   onSelectSeason: (season: number) => void
   perspective: Perspective
-  ratings: Dashboard['ratings']
+  ratings: Array<DashboardRating>
+  resumeVisible: boolean
   season: number
 }) {
+  const selectedPerspective = resumeVisible ? perspective : 'power'
   const sortedRatings = useMemo(
     () =>
       [...ratings].sort((left, right) => {
         const leftScore =
-          perspective === 'overall'
-            ? left.overall
-            : left.dimensions[perspective]
+          selectedPerspective === 'resume'
+            ? (left.resume ?? Number.NEGATIVE_INFINITY)
+            : left.power
         const rightScore =
-          perspective === 'overall'
-            ? right.overall
-            : right.dimensions[perspective]
+          selectedPerspective === 'resume'
+            ? (right.resume ?? Number.NEGATIVE_INFINITY)
+            : right.power
         return rightScore - leftScore || left.rank - right.rank
       }),
-    [perspective, ratings],
+    [ratings, selectedPerspective],
   )
   if (ratings.length === 0) {
     const previousSeason = season - 1
@@ -455,28 +477,33 @@ function RankingsTable({
         <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.12em]">
           Ranking perspective
           <select
-            value={perspective}
+            value={selectedPerspective}
             onChange={(event) =>
               onSelectPerspective(event.target.value as Perspective)
             }
             className="min-w-52 border border-michigan-blue/30 bg-white px-2 py-1.5 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
           >
-            {Object.entries(perspectiveLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
+            <option value="power">CFB26 Power Rating</option>
+            {resumeVisible && (
+              <option value="resume">CFB26 Résumé Rating</option>
+            )}
           </select>
         </label>
         <p className="max-w-xl text-xs leading-5 text-neutral-500">
-          Scores are within-season percentiles. Confidence measures source
-          coverage, not the certainty that a team will win.
+          Power is expected points above or below an average FBS team on a
+          neutral field. Résumé is hidden until Week 7.
+          {edition && (
+            <span className="mt-1 block font-bold text-michigan-blue">
+              {edition.editionType} edition · revision {edition.revision} ·{' '}
+              {new Date(edition.cutoffAt).toLocaleString()}
+            </span>
+          )}
         </p>
       </div>
       <div className="overflow-x-auto border-t-2 border-michigan-blue">
         <table className="w-full min-w-[800px] border-collapse text-left">
           <caption className="sr-only">
-            National team rankings by {perspectiveLabels[perspective]}
+            National team rankings by {perspectiveLabels[selectedPerspective]}
           </caption>
           <thead className="bg-michigan-blue text-[10px] uppercase tracking-[0.12em] text-white">
             <tr>
@@ -490,12 +517,10 @@ function RankingsTable({
                 Conference
               </th>
               <th scope="col" className="w-24 px-3 py-2 text-right font-black">
-                {perspective === 'overall'
-                  ? 'Rating'
-                  : perspectiveLabels[perspective]}
+                Power
               </th>
               <th scope="col" className="w-20 px-3 py-2 text-right font-black">
-                {perspective === 'overall' ? 'Power' : 'Overall'}
+                Power rank
               </th>
               <th scope="col" className="w-20 px-3 py-2 text-right font-black">
                 Off
@@ -504,19 +529,25 @@ function RankingsTable({
                 Def
               </th>
               <th scope="col" className="w-24 px-3 py-2 text-right font-black">
-                Confidence
+                Résumé rank
+              </th>
+              <th scope="col" className="w-24 px-3 py-2 text-right font-black">
+                Résumé
+              </th>
+              <th scope="col" className="w-20 px-3 py-2 text-right font-black">
+                Difference
               </th>
             </tr>
           </thead>
           <tbody>
-            {sortedRatings.map((row, index) => {
-              const perspectiveScore =
-                perspective === 'overall'
-                  ? row.overall
-                  : row.dimensions[perspective]
+            {sortedRatings.map((row) => {
+              const displayedRank =
+                selectedPerspective === 'resume'
+                  ? row.resumeRank
+                  : row.powerRank
               return (
                 <tr
-                  key={row._id}
+                  key={row.programKey}
                   className={`border-b border-michigan-blue/15 ${
                     row.sourceProgramName === 'Michigan'
                       ? 'bg-michigan-maize-soft font-black'
@@ -524,37 +555,49 @@ function RankingsTable({
                   }`}
                 >
                   <td className="px-3 py-2 font-black tabular-nums">
-                    {index + 1}
+                    {displayedRank ?? '—'}
                   </td>
                   <th scope="row" className="px-3 py-2 font-bold">
                     {row.sourceProgramName}
                     <span className="ml-2 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-400">
-                      #{row.rank} overall
+                      {row.limitedSample ? 'limited sample' : row.modelVersion}
                     </span>
+                    {selectedPerspective === 'resume' &&
+                      row.disagreementReasons.length > 0 && (
+                        <span className="mt-0.5 block text-[10px] font-normal text-neutral-500">
+                          {row.disagreementReasons
+                            .map(disagreementLabel)
+                            .join(' · ')}
+                        </span>
+                      )}
                   </th>
                   <td className="px-3 py-2 text-sm text-neutral-500">
                     {row.conference ?? 'Independent'}
                   </td>
                   <td className="px-3 py-2 text-right font-black tabular-nums">
-                    {Math.round(perspectiveScore)}
+                    {formatPoints(row.power)}
                   </td>
                   <td className="px-3 py-2 text-right font-bold tabular-nums">
-                    {Math.round(
-                      perspective === 'overall'
-                        ? row.dimensions.power
-                        : row.overall,
-                    )}
+                    {row.powerRank ?? '—'}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums text-neutral-600">
-                    {Math.round(row.dimensions.offense)}
+                    {formatPoints(row.offense)}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums text-neutral-600">
-                    {Math.round(row.dimensions.defense)}
+                    {formatPoints(row.defense)}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <span className="inline-flex min-w-14 justify-center bg-michigan-blue-soft px-2 py-1 text-[10px] font-black tabular-nums">
-                      {Math.round(row.confidence)}%
-                    </span>
+                    {resumeVisible ? (row.resumeRank ?? '—') : 'Week 7'}
+                  </td>
+                  <td className="px-3 py-2 text-right font-bold tabular-nums">
+                    {resumeVisible && row.resume !== undefined
+                      ? `${row.resume > 0 ? '+' : ''}${row.resume.toFixed(2)}`
+                      : '—'}
+                  </td>
+                  <td className="px-3 py-2 text-right font-bold tabular-nums">
+                    {resumeVisible && row.rankDifference !== undefined
+                      ? `${row.rankDifference > 0 ? '+' : ''}${row.rankDifference}`
+                      : '—'}
                   </td>
                 </tr>
               )
@@ -580,7 +623,7 @@ function MatchupLab({
   onSelectTeamA: (programKey: string) => void
   onSelectTeamB: (programKey: string) => void
   onSelectVenue: (venue: Venue) => void
-  ratings: Dashboard['ratings']
+  ratings: Array<DashboardRating>
   teamAKey: string
   teamBKey: string
   venue: Venue
@@ -643,7 +686,7 @@ function MatchupLab({
         />
       ) : matchup.data === null ? (
         <DashboardMessage
-          title="This season does not have a composite matchup snapshot."
+          title="This season does not have a matchup rating edition."
           detail="Choose a season whose proprietary ratings have been generated."
         />
       ) : (
@@ -663,7 +706,7 @@ function TeamSelect({
   excludedValue: string
   label: string
   onChange: (programKey: string) => void
-  ratings: Dashboard['ratings']
+  ratings: Array<DashboardRating>
   value: string
 }) {
   return (
@@ -800,6 +843,8 @@ function UnitComparison({
   unit: NonNullable<Matchup>['projection']['unitMatchups'][number]
 }) {
   const difference = unit.teamA - unit.teamB
+  const teamAWidth = Math.min(Math.max(50 + difference * 2, 5), 95)
+  const teamBWidth = 100 - teamAWidth
   const edge =
     unit.key === 'volatility'
       ? 'Range of outcomes'
@@ -823,13 +868,13 @@ function UnitComparison({
           <div className="flex h-2 justify-end bg-michigan-blue-soft">
             <div
               className="h-full bg-michigan-blue"
-              style={{ width: `${unit.teamA}%` }}
+              style={{ width: `${teamAWidth}%` }}
             />
           </div>
           <div className="h-2 bg-michigan-blue-soft">
             <div
               className="h-full bg-michigan-maize"
-              style={{ width: `${unit.teamB}%` }}
+              style={{ width: `${teamBWidth}%` }}
             />
           </div>
         </div>
@@ -849,22 +894,36 @@ function RatingBreakdown({
 }: {
   rating: NonNullable<Matchup>['ratingA']
 }) {
-  const dimensions: Array<[string, number]> = [
-    ['Overall', rating.overall],
-    ['Power', rating.dimensions.power],
-    ['Offense', rating.dimensions.offense],
-    ['Defense', rating.dimensions.defense],
-    ['Talent', rating.dimensions.talent],
-    ['Continuity', rating.dimensions.continuity],
-    ['Résumé', rating.dimensions.resume],
-    ['Form', rating.dimensions.form],
-  ]
+  const isPowerRating = 'power' in rating
+  const dimensions: Array<[string, number]> = isPowerRating
+    ? [
+        ['Power', rating.power],
+        ['Offense', rating.offense],
+        ['Defense', rating.defense],
+        ['Special teams', rating.specialTeams],
+        ['Home-field advantage', rating.homeFieldAdvantage],
+        ...(rating.resume === undefined
+          ? []
+          : ([['Résumé', rating.resume]] as Array<[string, number]>)),
+      ]
+    : [
+        ['Overall', rating.overall],
+        ['Power', rating.dimensions.power],
+        ['Offense', rating.dimensions.offense],
+        ['Defense', rating.dimensions.defense],
+        ['Talent', rating.dimensions.talent],
+        ['Continuity', rating.dimensions.continuity],
+        ['Résumé', rating.dimensions.resume],
+        ['Form', rating.dimensions.form],
+      ]
   return (
     <article>
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="text-lg font-black">{rating.sourceProgramName}</h3>
         <span className="text-xs font-black tabular-nums">
-          #{rating.rank} · {Math.round(rating.overall)}
+          {isPowerRating
+            ? `#${rating.powerRank ?? '—'} · ${formatPoints(rating.power)}`
+            : `#${rating.rank} · ${Math.round(rating.overall)}`}
         </span>
       </div>
       <dl className="mt-2 grid grid-cols-2 gap-x-4 text-xs">
@@ -874,13 +933,16 @@ function RatingBreakdown({
             className="flex justify-between border-t border-michigan-blue/15 py-2"
           >
             <dt className="text-neutral-500">{label}</dt>
-            <dd className="font-black tabular-nums">{Math.round(value)}</dd>
+            <dd className="font-black tabular-nums">
+              {isPowerRating ? formatPoints(value) : Math.round(value)}
+            </dd>
           </div>
         ))}
       </dl>
       <p className="mt-2 text-[10px] leading-4 text-neutral-500">
-        {rating.signalCount} signals · {rating.dataSources.length} sources ·{' '}
-        {Math.round(rating.confidence)}% coverage
+        {isPowerRating
+          ? `${rating.gamesPlayed} games · ${Math.round(rating.priorWeight * 100)}% preseason prior · ${rating.dataSources.length} sources`
+          : `${rating.signalCount} signals · ${rating.dataSources.length} sources · ${Math.round(rating.confidence)}% coverage`}
       </p>
     </article>
   )

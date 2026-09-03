@@ -4,6 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
+    "cfbd:probe": "convex run cfbdHealth:probe",
     "dev": "convex dev --start 'vite dev'",
     "dev:web": "vite dev",
     "typecheck": "tsc --noEmit",
@@ -12,9 +13,12 @@
     "docs:check": "node scripts/check-doc-links.mjs",
     "data:prepare-snaps": "node scripts/prepare-snap-count-import.mjs",
     "preview:find": "node .agents/skills/preview-pr/scripts/find-vercel-preview.mjs",
-    "check": "npm run lint && npm run docs:check && vite build",
+    "check": "npm test && npm run lint && npm run docs:check && vite build",
     "format": "prettier --write .",
-    "lint": "npm run typecheck && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "npm run typecheck && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "node --experimental-strip-types --test",
+    "test:cfbd": "node --experimental-strip-types --test tests/cfbd-*.test.mjs",
+    "test:ratings": "node --experimental-strip-types --test tests/rating-*.test.mjs"
   },
   "dependencies": {
     "@convex-dev/react-query": "^0.1.0",

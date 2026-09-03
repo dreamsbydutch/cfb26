@@ -16,9 +16,15 @@ crons.daily(
 )
 
 crons.daily(
-  'refresh proprietary team ratings',
+  'refresh CFB26 Power and Resume ratings',
   { hourUTC: 11, minuteUTC: 47 },
-  internal.ratings.refreshCurrentSeason,
+  internal.ratings.refreshCurrentPowerRatings,
+)
+
+crons.weekly(
+  'publish official weekly CFB26 ratings',
+  { dayOfWeek: 'monday', hourUTC: 12, minuteUTC: 17 },
+  internal.ratings.publishCurrentWeeklyRatings,
 )
 
 export default crons

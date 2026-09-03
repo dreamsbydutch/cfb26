@@ -68,6 +68,19 @@ const seasonType = v.union(v.literal('regular'), v.literal('postseason'))
 
 const homeAway = v.union(v.literal('home'), v.literal('away'))
 
+const ratingClassification = v.union(
+  v.literal('fbs'),
+  v.literal('fcs'),
+  v.literal('transitioning'),
+)
+
+const ratingEditionType = v.union(
+  v.literal('nightly'),
+  v.literal('official'),
+  v.literal('amendment'),
+  v.literal('research'),
+)
+
 const ratingDimensions = v.object({
   continuity: v.number(),
   defense: v.number(),
@@ -457,6 +470,71 @@ export default defineSchema({
   })
     .index('by_programId_and_season', ['programId', 'season'])
     .index('by_season_and_overall', ['season', 'overall']),
+
+  ratingEditions: defineTable({
+    calibrationFitCount: v.optional(v.number()),
+    calibrationIntercept: v.optional(v.number()),
+    calibrationMaximumProbability: v.optional(v.number()),
+    calibrationMinimumProbability: v.optional(v.number()),
+    calibrationSlope: v.optional(v.number()),
+    calibrationTrainingSeasons: v.optional(v.array(v.number())),
+    calibrationVersion: v.string(),
+    cutoffAt: v.number(),
+    editionType: ratingEditionType,
+    generatedAt: v.number(),
+    leagueAveragePoints: v.number(),
+    modelVersion: v.string(),
+    resumeModelVersion: v.string(),
+    resumeReferencePower: v.optional(v.number()),
+    resumeVisible: v.boolean(),
+    revision: v.number(),
+    season: v.number(),
+    sourceDataFingerprint: v.string(),
+    sourceDataUpdatedAt: v.number(),
+    sourceKey: v.string(),
+    supersedesEditionId: v.optional(v.id('ratingEditions')),
+    week: v.number(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_season_and_cutoffAt', ['season', 'cutoffAt'])
+    .index('by_season_week_type_revision', [
+      'season',
+      'week',
+      'editionType',
+      'revision',
+    ]),
+
+  teamRatingSnapshots: defineTable({
+    actualWins: v.optional(v.number()),
+    classification: ratingClassification,
+    conference: v.optional(v.string()),
+    dataSources: v.array(v.string()),
+    defense: v.number(),
+    disagreementReasons: v.array(v.string()),
+    dominanceComponent: v.optional(v.number()),
+    editionId: v.id('ratingEditions'),
+    expectedWins: v.optional(v.number()),
+    gamesPlayed: v.number(),
+    homeFieldAdvantage: v.number(),
+    limitedSample: v.boolean(),
+    offense: v.number(),
+    power: v.number(),
+    powerRank: v.optional(v.number()),
+    priorWeight: v.number(),
+    programId: v.id('programs'),
+    programKey: v.string(),
+    published: v.boolean(),
+    rankDifference: v.optional(v.number()),
+    resume: v.optional(v.number()),
+    resumeRank: v.optional(v.number()),
+    scheduleComponent: v.optional(v.number()),
+    sourceProgramName: v.string(),
+    specialTeams: v.number(),
+    specialTeamsAvailable: v.boolean(),
+  })
+    .index('by_edition_and_power', ['editionId', 'power'])
+    .index('by_edition_and_resume', ['editionId', 'resume'])
+    .index('by_programId_and_edition', ['programId', 'editionId']),
 
   teamDataSyncState: defineTable({
     acceptedRows: v.optional(v.number()),

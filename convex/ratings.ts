@@ -9,6 +9,22 @@ import {
 } from './_generated/server'
 import { resolveProgram, slug } from './programIdentity'
 import { buildMatchupProjection, buildSeasonRatings } from './ratingModel'
+import {
+  POWER_MODEL_VERSION,
+  buildPowerRatingEdition,
+  buildResumeRatingEdition,
+  projectPowerMatchup,
+} from './ratingSystem'
+import type { Doc, Id } from './_generated/dataModel'
+import type { QueryCtx } from './_generated/server'
+import type { LogisticMarginCalibration } from './ratingBacktest'
+import type {
+  PowerRatingEdition,
+  PowerRatingGame,
+  PowerRatingTeam,
+  PowerTeamRating,
+  ResumeTeamRating,
+} from './ratingSystem'
 
 const CFBD_ELO_URL = 'https://api.collegefootballdata.com/ratings/elo'
 const BATCH_SIZE = 50
@@ -18,6 +34,16 @@ const COMPOSITE_BATCH_SIZE = 40
 const MAX_MODEL_ROWS = 250
 
 type SourceRow = Record<string, unknown>
+type PowerModelData = {
+  games: Array<Doc<'collegeGames'>>
+  programs: Array<Doc<'programs'>>
+  seasons: Array<number>
+}
+type StoredEditionResult = {
+  editionId: Id<'ratingEditions'>
+  inserted: boolean
+  rows: number
+}
 
 const ratingRowValidator = v.object({
   conference: v.optional(v.string()),
@@ -60,6 +86,57 @@ const compositeRatingValidator = v.object({
   season: v.number(),
   signalCount: v.number(),
   sourceProgramName: v.string(),
+})
+
+const editionTypeValidator = v.union(
+  v.literal('nightly'),
+  v.literal('official'),
+  v.literal('amendment'),
+  v.literal('research'),
+)
+
+const ratingClassificationValidator = v.union(
+  v.literal('fbs'),
+  v.literal('fcs'),
+  v.literal('transitioning'),
+)
+
+const probabilityCalibrationValidator = v.object({
+  fitCount: v.number(),
+  intercept: v.number(),
+  maximumProbability: v.number(),
+  minimumProbability: v.number(),
+  slope: v.number(),
+  trainingSeasons: v.array(v.number()),
+  version: v.literal('logistic-margin-v1'),
+})
+
+const editionRowValidator = v.object({
+  actualWins: v.optional(v.number()),
+  classification: ratingClassificationValidator,
+  conference: v.optional(v.string()),
+  dataSources: v.array(v.string()),
+  defense: v.number(),
+  disagreementReasons: v.array(v.string()),
+  dominanceComponent: v.optional(v.number()),
+  expectedWins: v.optional(v.number()),
+  gamesPlayed: v.number(),
+  homeFieldAdvantage: v.number(),
+  limitedSample: v.boolean(),
+  offense: v.number(),
+  power: v.number(),
+  powerRank: v.optional(v.number()),
+  priorWeight: v.number(),
+  programId: v.id('programs'),
+  programKey: v.string(),
+  published: v.boolean(),
+  rankDifference: v.optional(v.number()),
+  resume: v.optional(v.number()),
+  resumeRank: v.optional(v.number()),
+  scheduleComponent: v.optional(v.number()),
+  sourceProgramName: v.string(),
+  specialTeams: v.number(),
+  specialTeamsAvailable: v.boolean(),
 })
 
 function sourceRows(value: unknown) {
@@ -218,6 +295,36 @@ export const syncRange = internalAction({
 const boundedLimit = (limit: number | undefined, fallback: number) =>
   Math.min(Math.max(Math.floor(limit ?? fallback), 1), 200)
 
+async function preferredWeeklyEdition(
+  ctx: Pick<QueryCtx, 'db'>,
+  season: number,
+  week: number,
+) {
+  for (const editionType of ['amendment', 'official', 'nightly'] as const) {
+    const edition = await ctx.db
+      .query('ratingEditions')
+      .withIndex('by_season_week_type_revision', (q) =>
+        q.eq('season', season).eq('week', week).eq('editionType', editionType),
+      )
+      .order('desc')
+      .first()
+    if (edition) return edition
+  }
+  return null
+}
+
+async function latestPublishedEdition(
+  ctx: Pick<QueryCtx, 'db'>,
+  season: number,
+) {
+  const editions = await ctx.db
+    .query('ratingEditions')
+    .withIndex('by_season_and_cutoffAt', (q) => q.eq('season', season))
+    .order('desc')
+    .take(30)
+  return editions.find((edition) => edition.editionType !== 'research') ?? null
+}
+
 export const list = query({
   args: { limit: v.optional(v.number()), season: v.number() },
   handler: async (ctx, args) => {
@@ -236,17 +343,13 @@ export const loadSeasonModelData = internalQuery({
   args: { season: v.number() },
   handler: async (ctx, args) => {
     const season = Math.floor(args.season)
-    const recruitingSeasons = Array.from(
-      { length: 4 },
-      (_, index) => season - index,
-    )
-    const draftYears = Array.from({ length: 4 }, (_, index) => season - index)
+    const modelSeasons = Array.from({ length: 5 }, (_, index) => season - index)
     const [
       programs,
       elo,
       inputs,
-      standings,
-      games,
+      standingsBySeason,
+      gamesBySeason,
       stats,
       recruitingBySeason,
       draftByYear,
@@ -260,20 +363,30 @@ export const loadSeasonModelData = internalQuery({
         .query('teamSeasonRatingInputs')
         .withIndex('by_season', (q) => q.eq('season', season))
         .take(MAX_MODEL_ROWS),
-      ctx.db
-        .query('teamSeasonStandings')
-        .withIndex('by_season_and_wins', (q) => q.eq('season', season))
-        .take(MAX_MODEL_ROWS),
-      ctx.db
-        .query('collegeGames')
-        .withIndex('by_season_and_startTime', (q) => q.eq('season', season))
-        .take(2_000),
+      Promise.all(
+        modelSeasons.map((modelSeason) =>
+          ctx.db
+            .query('teamSeasonStandings')
+            .withIndex('by_season_and_wins', (q) => q.eq('season', modelSeason))
+            .take(MAX_MODEL_ROWS),
+        ),
+      ),
+      Promise.all(
+        modelSeasons.map((modelSeason) =>
+          ctx.db
+            .query('collegeGames')
+            .withIndex('by_season_and_startTime', (q) =>
+              q.eq('season', modelSeason),
+            )
+            .take(2_000),
+        ),
+      ),
       ctx.db
         .query('teamGameStats')
         .withIndex('by_season', (q) => q.eq('season', season))
         .take(3_000),
       Promise.all(
-        recruitingSeasons.map((recruitingSeason) =>
+        modelSeasons.map((recruitingSeason) =>
           ctx.db
             .query('teamRecruitingClasses')
             .withIndex('by_season_and_rank', (q) =>
@@ -283,7 +396,7 @@ export const loadSeasonModelData = internalQuery({
         ),
       ),
       Promise.all(
-        draftYears.map((year) =>
+        modelSeasons.map((year) =>
           ctx.db
             .query('teamDraftSelections')
             .withIndex('by_year_and_pick', (q) => q.eq('year', year))
@@ -294,11 +407,11 @@ export const loadSeasonModelData = internalQuery({
     return {
       draft: draftByYear.flat(),
       elo,
-      games,
+      games: gamesBySeason.flat(),
       inputs,
       programs,
       recruiting: recruitingBySeason.flat(),
-      standings,
+      standings: standingsBySeason.flat(),
       stats,
     }
   },
@@ -424,6 +537,550 @@ export const refreshCurrentSeason = internalAction({
   },
 })
 
+export const loadPowerModelData = internalQuery({
+  args: { season: v.number() },
+  handler: async (ctx, args) => {
+    const season = Math.floor(args.season)
+    const seasons = Array.from({ length: 5 }, (_, index) => season - 4 + index)
+    const [programs, gamesBySeason] = await Promise.all([
+      ctx.db.query('programs').withIndex('by_key').take(500),
+      Promise.all(
+        seasons.map((modelSeason) =>
+          ctx.db
+            .query('collegeGames')
+            .withIndex('by_season_and_startTime', (q) =>
+              q.eq('season', modelSeason),
+            )
+            .take(2_000),
+        ),
+      ),
+    ])
+    return { games: gamesBySeason.flat(), programs, seasons }
+  },
+})
+
+export const nextEditionRevision = internalQuery({
+  args: {
+    editionType: editionTypeValidator,
+    season: v.number(),
+    week: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const latest = await ctx.db
+      .query('ratingEditions')
+      .withIndex('by_season_week_type_revision', (q) =>
+        q
+          .eq('season', Math.floor(args.season))
+          .eq('week', Math.floor(args.week))
+          .eq('editionType', args.editionType),
+      )
+      .order('desc')
+      .first()
+    return (latest?.revision ?? 0) + 1
+  },
+})
+
+export const storeRatingEdition = internalMutation({
+  args: {
+    edition: v.object({
+      calibrationFitCount: v.optional(v.number()),
+      calibrationIntercept: v.optional(v.number()),
+      calibrationMaximumProbability: v.optional(v.number()),
+      calibrationMinimumProbability: v.optional(v.number()),
+      calibrationSlope: v.optional(v.number()),
+      calibrationTrainingSeasons: v.optional(v.array(v.number())),
+      calibrationVersion: v.string(),
+      cutoffAt: v.number(),
+      editionType: editionTypeValidator,
+      generatedAt: v.number(),
+      leagueAveragePoints: v.number(),
+      modelVersion: v.string(),
+      resumeModelVersion: v.string(),
+      resumeReferencePower: v.optional(v.number()),
+      resumeVisible: v.boolean(),
+      revision: v.number(),
+      season: v.number(),
+      sourceDataFingerprint: v.string(),
+      sourceDataUpdatedAt: v.number(),
+      sourceKey: v.string(),
+      supersedesEditionId: v.optional(v.id('ratingEditions')),
+      week: v.number(),
+    }),
+    rows: v.array(editionRowValidator),
+  },
+  handler: async (ctx, args) => {
+    if (args.rows.length > 600) {
+      throw new Error('A rating edition cannot contain more than 600 teams.')
+    }
+    if (
+      args.edition.editionType === 'amendment' &&
+      args.edition.supersedesEditionId === undefined
+    ) {
+      throw new Error('An amendment must identify the edition it supersedes.')
+    }
+    if (args.edition.editionType === 'official') {
+      const official = await ctx.db
+        .query('ratingEditions')
+        .withIndex('by_season_week_type_revision', (q) =>
+          q
+            .eq('season', args.edition.season)
+            .eq('week', args.edition.week)
+            .eq('editionType', 'official'),
+        )
+        .first()
+      if (official) {
+        return { editionId: official._id, inserted: false, rows: 0 }
+      }
+    }
+    if (args.edition.supersedesEditionId !== undefined) {
+      const superseded = await ctx.db.get(
+        'ratingEditions',
+        args.edition.supersedesEditionId,
+      )
+      if (
+        !superseded ||
+        superseded.season !== args.edition.season ||
+        superseded.week !== args.edition.week
+      ) {
+        throw new Error('An amendment must supersede the same season and week.')
+      }
+    }
+    const existing = await ctx.db
+      .query('ratingEditions')
+      .withIndex('by_sourceKey', (q) =>
+        q.eq('sourceKey', args.edition.sourceKey),
+      )
+      .unique()
+    if (existing) {
+      return { editionId: existing._id, inserted: false, rows: 0 }
+    }
+    const editionId = await ctx.db.insert('ratingEditions', args.edition)
+    for (const row of args.rows) {
+      await ctx.db.insert('teamRatingSnapshots', { ...row, editionId })
+    }
+    return { editionId, inserted: true, rows: args.rows.length }
+  },
+})
+
+function normalizedClassification(value: string | undefined) {
+  const classification = value?.toLowerCase()
+  if (classification === 'fcs') return 'fcs' as const
+  if (classification === 'transitioning') return 'transitioning' as const
+  return 'fbs' as const
+}
+
+function overtimePeriods(
+  homeLineScores: Array<number> | undefined,
+  awayLineScores: Array<number> | undefined,
+) {
+  return Math.max(
+    (homeLineScores?.length ?? 4) - 4,
+    (awayLineScores?.length ?? 4) - 4,
+    0,
+  )
+}
+
+function gameDataFingerprint(
+  games: ReadonlyArray<
+    Pick<
+      Doc<'collegeGames'>,
+      | 'awayPoints'
+      | 'awayProgramId'
+      | 'completed'
+      | 'homePoints'
+      | 'homeProgramId'
+      | 'sourceGameId'
+      | 'startTime'
+    >
+  >,
+  cutoffAt: number,
+) {
+  const value = games
+    .map((game) => {
+      const available = game.startTime < cutoffAt
+      return `${game.sourceGameId}:${game.homeProgramId}:${game.awayProgramId}:${Number(available && game.completed)}:${available ? (game.homePoints ?? '') : ''}:${available ? (game.awayPoints ?? '') : ''}`
+    })
+    .sort()
+    .join('|')
+  let hash = 2_166_136_261
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16_777_619)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
+}
+
+export const buildRatingEdition = internalAction({
+  args: {
+    calibration: v.optional(probabilityCalibrationValidator),
+    cutoffAt: v.number(),
+    editionType: editionTypeValidator,
+    revision: v.optional(v.number()),
+    season: v.number(),
+    supersedesEditionId: v.optional(v.id('ratingEditions')),
+    week: v.number(),
+  },
+  handler: async (ctx, args): Promise<StoredEditionResult> => {
+    const season = Math.floor(args.season)
+    const week = Math.floor(args.week)
+    if (week < 0 || week > 30) throw new Error('Week must be between 0 and 30.')
+    const data: PowerModelData = await ctx.runQuery(
+      internal.ratings.loadPowerModelData,
+      { season },
+    )
+    const programById = new Map(
+      data.programs.map((program) => [String(program._id), program]),
+    )
+    let priorByTeam = new Map<string, PowerTeamRating>()
+    let powerEdition: PowerRatingEdition | undefined
+
+    for (const modelSeason of data.seasons) {
+      const modelCutoff =
+        modelSeason === season ? args.cutoffAt : Date.UTC(modelSeason + 1, 2, 1)
+      const seasonGames = data.games.filter(
+        (game) => game.season === modelSeason && game.startTime < modelCutoff,
+      )
+      const seasonSchedule = data.games.filter(
+        (game) => game.season === modelSeason,
+      )
+      const details = new Map<
+        string,
+        {
+          classification: PowerRatingTeam['classification']
+          conference?: string
+        }
+      >(
+        [...priorByTeam].map(([teamId, prior]) => [
+          teamId,
+          {
+            classification: prior.classification,
+            conference: prior.conference,
+          },
+        ]),
+      )
+      for (const game of seasonSchedule) {
+        details.set(String(game.homeProgramId), {
+          classification: normalizedClassification(game.homeClassification),
+          conference: game.homeConference,
+        })
+        details.set(String(game.awayProgramId), {
+          classification: normalizedClassification(game.awayClassification),
+          conference: game.awayConference,
+        })
+      }
+      const teams: Array<PowerRatingTeam> = [...details].flatMap(
+        ([teamId, detail]) => {
+          const program = programById.get(teamId)
+          if (!program) return []
+          const prior = priorByTeam.get(teamId)
+          return [
+            {
+              ...detail,
+              id: teamId,
+              name: program.name,
+              prior:
+                prior === undefined
+                  ? undefined
+                  : {
+                      defense: prior.defense,
+                      effectiveGames: Math.min(prior.gamesPlayed, 8),
+                      offense: prior.offense,
+                      power: prior.power,
+                      sources: ['multi_season_performance'],
+                      specialTeams: prior.specialTeams,
+                    },
+            },
+          ]
+        },
+      )
+      const modelGames: Array<PowerRatingGame> = seasonGames.flatMap((game) => {
+        if (
+          !game.completed ||
+          game.homePoints === undefined ||
+          game.awayPoints === undefined
+        ) {
+          return []
+        }
+        return [
+          {
+            awayPoints: game.awayPoints,
+            awayTeamId: String(game.awayProgramId),
+            completed: true,
+            homePoints: game.homePoints,
+            homeTeamId: String(game.homeProgramId),
+            id: String(game.sourceGameId),
+            kickoffAt: game.startTime,
+            neutralSite: game.neutralSite,
+            overtimePeriods: overtimePeriods(
+              game.homeLineScores,
+              game.awayLineScores,
+            ),
+            season: modelSeason,
+            week: game.week,
+          },
+        ]
+      })
+      powerEdition = buildPowerRatingEdition({
+        calibration: modelSeason === season ? args.calibration : undefined,
+        cutoffAt: modelCutoff,
+        games: modelGames,
+        season: modelSeason,
+        teams,
+        week: modelSeason === season ? week : 30,
+      })
+      priorByTeam = new Map(
+        powerEdition.ratings.map((rating) => [rating.teamId, rating]),
+      )
+    }
+    if (!powerEdition || powerEdition.season !== season) {
+      throw new Error('Unable to build the requested Power Rating edition.')
+    }
+    const currentGames: Array<PowerRatingGame> = data.games.flatMap((game) => {
+      if (
+        game.season !== season ||
+        game.startTime >= args.cutoffAt ||
+        !game.completed ||
+        game.homePoints === undefined ||
+        game.awayPoints === undefined
+      ) {
+        return []
+      }
+      return [
+        {
+          awayPoints: game.awayPoints,
+          awayTeamId: String(game.awayProgramId),
+          completed: true,
+          homePoints: game.homePoints,
+          homeTeamId: String(game.homeProgramId),
+          id: String(game.sourceGameId),
+          kickoffAt: game.startTime,
+          neutralSite: game.neutralSite,
+          overtimePeriods: overtimePeriods(
+            game.homeLineScores,
+            game.awayLineScores,
+          ),
+          season,
+          week: game.week,
+        },
+      ]
+    })
+    const resumeEdition = buildResumeRatingEdition({
+      games: currentGames,
+      powerEdition,
+      week,
+    })
+    const resumeByTeam = new Map(
+      resumeEdition.ratings.map((rating) => [rating.teamId, rating]),
+    )
+    const revision =
+      args.revision ??
+      (await ctx.runQuery(internal.ratings.nextEditionRevision, {
+        editionType: args.editionType,
+        season,
+        week,
+      }))
+    const generatedAt = Date.now()
+    const sourceKey = [
+      POWER_MODEL_VERSION,
+      season,
+      week,
+      args.editionType,
+      revision,
+      args.cutoffAt,
+    ].join(':')
+    const sourceDataUpdatedAt = Math.max(
+      0,
+      ...data.games
+        .filter(
+          (game) => game.season === season && game.startTime < args.cutoffAt,
+        )
+        .map((game) => game.sourceUpdatedAt),
+    )
+    const sourceDataFingerprint = gameDataFingerprint(
+      data.games.filter(
+        (game) => game.season === season && game.startTime < args.cutoffAt,
+      ),
+      args.cutoffAt,
+    )
+    const rows = powerEdition.ratings.flatMap((power) => {
+      const program = programById.get(power.teamId)
+      if (!program) return []
+      const resume: ResumeTeamRating | undefined = resumeByTeam.get(
+        power.teamId,
+      )
+      return [
+        {
+          actualWins: resume?.actualWins,
+          classification: power.classification,
+          conference: power.conference,
+          dataSources: power.dataSources,
+          defense: power.defense,
+          disagreementReasons: resume?.disagreementReasons ?? [],
+          dominanceComponent: resume?.dominanceComponent,
+          expectedWins: resume?.expectedWins,
+          gamesPlayed: power.gamesPlayed,
+          homeFieldAdvantage: power.homeFieldAdvantage,
+          limitedSample: power.limitedSample,
+          offense: power.offense,
+          power: power.power,
+          powerRank: power.rank,
+          priorWeight: power.priorWeight,
+          programId: program._id,
+          programKey: program.key,
+          published: power.published,
+          rankDifference: resume?.rankDifference,
+          resume: resume?.resume,
+          resumeRank: resume?.resumeRank,
+          scheduleComponent: resume?.scheduleComponent,
+          sourceProgramName: power.name,
+          specialTeams: power.specialTeams,
+          specialTeamsAvailable: power.specialTeamsAvailable,
+        },
+      ]
+    })
+    return ctx.runMutation(internal.ratings.storeRatingEdition, {
+      edition: {
+        calibrationFitCount: args.calibration?.fitCount,
+        calibrationIntercept: args.calibration?.intercept,
+        calibrationMaximumProbability: args.calibration?.maximumProbability,
+        calibrationMinimumProbability: args.calibration?.minimumProbability,
+        calibrationSlope: args.calibration?.slope,
+        calibrationTrainingSeasons: args.calibration?.trainingSeasons,
+        calibrationVersion: args.calibration?.version ?? 'fixed-logistic-v1',
+        cutoffAt: args.cutoffAt,
+        editionType: args.editionType,
+        generatedAt,
+        leagueAveragePoints: powerEdition.leagueAveragePoints,
+        modelVersion: powerEdition.modelVersion,
+        resumeModelVersion: resumeEdition.modelVersion,
+        resumeReferencePower: resumeEdition.referencePower,
+        resumeVisible: resumeEdition.visible,
+        revision,
+        season,
+        sourceDataFingerprint,
+        sourceDataUpdatedAt,
+        sourceKey,
+        supersedesEditionId: args.supersedesEditionId,
+        week,
+      },
+      rows,
+    })
+  },
+})
+
+export const resolveRatingWeek = internalQuery({
+  args: { asOf: v.number(), season: v.number() },
+  handler: async (ctx, args) => {
+    const [previous, next, games] = await Promise.all([
+      ctx.db
+        .query('collegeGames')
+        .withIndex('by_season_and_startTime', (q) =>
+          q.eq('season', args.season).lte('startTime', args.asOf),
+        )
+        .order('desc')
+        .first(),
+      ctx.db
+        .query('collegeGames')
+        .withIndex('by_season_and_startTime', (q) =>
+          q.eq('season', args.season).gt('startTime', args.asOf),
+        )
+        .first(),
+      ctx.db
+        .query('collegeGames')
+        .withIndex('by_season_and_startTime', (q) =>
+          q.eq('season', args.season),
+        )
+        .take(2_000),
+    ])
+    return {
+      sourceDataFingerprint: gameDataFingerprint(
+        games.filter((game) => game.startTime < args.asOf),
+        args.asOf,
+      ),
+      sourceDataUpdatedAt: Math.max(
+        0,
+        ...games
+          .filter((game) => game.startTime < args.asOf)
+          .map((game) => game.sourceUpdatedAt),
+      ),
+      week: next?.week ?? Math.min((previous?.week ?? 0) + 1, 30),
+    }
+  },
+})
+
+export const latestNightlyEdition = internalQuery({
+  args: { season: v.number(), week: v.number() },
+  handler: async (ctx, args) =>
+    ctx.db
+      .query('ratingEditions')
+      .withIndex('by_season_week_type_revision', (q) =>
+        q
+          .eq('season', args.season)
+          .eq('week', args.week)
+          .eq('editionType', 'nightly'),
+      )
+      .order('desc')
+      .first(),
+})
+
+function footballSeason(asOf: number) {
+  const date = new Date(asOf)
+  return date.getUTCMonth() < 2
+    ? date.getUTCFullYear() - 1
+    : date.getUTCFullYear()
+}
+
+export const refreshCurrentPowerRatings = internalAction({
+  args: {},
+  handler: async (ctx): Promise<StoredEditionResult> => {
+    const cutoffAt = Date.now()
+    const season = footballSeason(cutoffAt)
+    const state: {
+      sourceDataFingerprint: string
+      sourceDataUpdatedAt: number
+      week: number
+    } = await ctx.runQuery(internal.ratings.resolveRatingWeek, {
+      asOf: cutoffAt,
+      season,
+    })
+    const latest = await ctx.runQuery(internal.ratings.latestNightlyEdition, {
+      season,
+      week: state.week,
+    })
+    if (latest?.sourceDataFingerprint === state.sourceDataFingerprint) {
+      return { editionId: latest._id, inserted: false, rows: 0 }
+    }
+    return ctx.runAction(internal.ratings.buildRatingEdition, {
+      cutoffAt,
+      editionType: 'nightly',
+      season,
+      week: state.week,
+    })
+  },
+})
+
+export const publishCurrentWeeklyRatings = internalAction({
+  args: {},
+  handler: async (ctx): Promise<StoredEditionResult> => {
+    const cutoffAt = Date.now()
+    const season = footballSeason(cutoffAt)
+    const state: {
+      sourceDataFingerprint: string
+      sourceDataUpdatedAt: number
+      week: number
+    } = await ctx.runQuery(internal.ratings.resolveRatingWeek, {
+      asOf: cutoffAt,
+      season,
+    })
+    return ctx.runAction(internal.ratings.buildRatingEdition, {
+      cutoffAt,
+      editionType: 'official',
+      season,
+      week: state.week,
+    })
+  },
+})
+
 export const listComposite = query({
   args: { limit: v.optional(v.number()), season: v.number() },
   handler: async (ctx, args) =>
@@ -438,31 +1095,6 @@ export const listComposite = query({
 
 function clampScore(value: number) {
   return Math.min(Math.max(Math.round(value), 0), 100)
-}
-
-function teamStrength(rating: number) {
-  return Math.min(Math.max((rating - 1300) / 6, 0), 100)
-}
-
-function fallbackDimensions(strength: number) {
-  return {
-    continuity: 50,
-    defense: strength,
-    form: strength,
-    offense: strength,
-    passingDefense: strength,
-    passingOffense: strength,
-    power: strength,
-    resume: strength,
-    rushingDefense: strength,
-    rushingOffense: strength,
-    situationalDefense: strength,
-    situationalOffense: strength,
-    specialTeams: 50,
-    talent: 50,
-    tempo: 50,
-    volatility: 50,
-  }
 }
 
 function isBigTen(conference: string | undefined) {
@@ -504,47 +1136,120 @@ export const getWeeklyDashboard = query({
           : (previous?.week ?? next?.week ?? 1)
     }
 
-    const [games, compositeRows, ratingRows, michigan] = await Promise.all([
-      ctx.db
-        .query('collegeGames')
-        .withIndex('by_season_and_week_and_startTime', (q) =>
-          q.eq('season', season).eq('week', week),
-        )
-        .take(200),
-      ctx.db
-        .query('teamCompositeRatings')
-        .withIndex('by_season_and_overall', (q) => q.eq('season', season))
-        .order('desc')
-        .take(200),
-      ctx.db
-        .query('teamSeasonRatings')
-        .withIndex('by_season_and_rating', (q) => q.eq('season', season))
-        .order('desc')
-        .take(200),
-      ctx.db
-        .query('programs')
-        .withIndex('by_key', (q) => q.eq('key', 'michigan'))
-        .unique(),
-    ])
+    const edition = await preferredWeeklyEdition(ctx, season, week)
+    const [games, snapshotRows, compositeRows, ratingRows, michigan] =
+      await Promise.all([
+        ctx.db
+          .query('collegeGames')
+          .withIndex('by_season_and_week_and_startTime', (q) =>
+            q.eq('season', season).eq('week', week),
+          )
+          .take(200),
+        edition
+          ? ctx.db
+              .query('teamRatingSnapshots')
+              .withIndex('by_edition_and_power', (q) =>
+                q.eq('editionId', edition._id),
+              )
+              .order('desc')
+              .take(600)
+          : Promise.resolve([]),
+        ctx.db
+          .query('teamCompositeRatings')
+          .withIndex('by_season_and_overall', (q) => q.eq('season', season))
+          .order('desc')
+          .take(200),
+        ctx.db
+          .query('teamSeasonRatings')
+          .withIndex('by_season_and_rating', (q) => q.eq('season', season))
+          .order('desc')
+          .take(200),
+        ctx.db
+          .query('programs')
+          .withIndex('by_key', (q) => q.eq('key', 'michigan'))
+          .unique(),
+      ])
 
     const ratings =
-      compositeRows.length > 0
-        ? compositeRows.map((row) => ({ ...row, rating: row.overall }))
-        : ratingRows.map((row, index) => {
-            const overall = teamStrength(row.rating)
-            return {
+      snapshotRows.length > 0 && edition
+        ? snapshotRows
+            .filter((row) => row.published)
+            .map((row) => ({
               ...row,
-              confidence: 10,
-              dataSources: ['elo'],
-              dimensions: fallbackDimensions(overall),
-              generatedAt: row.sourceUpdatedAt,
-              modelVersion: 'elo-fallback',
-              overall,
-              programKey: slug(row.sourceProgramName),
-              rank: index + 1,
-              signalCount: 1,
-            }
-          })
+              calibrationVersion: edition.calibrationVersion,
+              generatedAt: edition.generatedAt,
+              modelVersion: edition.modelVersion,
+              rank: row.powerRank ?? 999,
+              rating: row.power,
+            }))
+        : compositeRows.length > 0
+          ? compositeRows.map((row) => ({
+              actualWins: undefined,
+              calibrationVersion: 'fixed-logistic-v1',
+              classification: 'fbs' as const,
+              conference: row.conference,
+              dataSources: row.dataSources,
+              defense: (row.dimensions.defense - 50) * 0.3,
+              disagreementReasons: [] as Array<string>,
+              dominanceComponent: undefined,
+              expectedWins: undefined,
+              gamesPlayed: 0,
+              generatedAt: row.generatedAt,
+              homeFieldAdvantage: 2.5,
+              limitedSample: true,
+              modelVersion: row.modelVersion,
+              offense: (row.dimensions.offense - 50) * 0.3,
+              power: (row.overall - 50) * 0.3,
+              powerRank: row.rank,
+              priorWeight: 0,
+              programId: row.programId,
+              programKey: row.programKey,
+              published: true,
+              rank: row.rank,
+              rankDifference: undefined,
+              rating: (row.overall - 50) * 0.3,
+              resume: undefined,
+              resumeRank: undefined,
+              scheduleComponent: undefined,
+              sourceProgramName: row.sourceProgramName,
+              specialTeams: (row.dimensions.specialTeams - 50) * 0.3,
+              specialTeamsAvailable: row.dataSources.includes('game_stats'),
+            }))
+          : ratingRows.map((row, index) => {
+              const power = (row.rating - 1500) / 25
+              return {
+                actualWins: undefined,
+                calibrationVersion: 'elo-logistic-fallback-v1',
+                classification: 'fbs' as const,
+                conference: row.conference,
+                dataSources: ['elo'],
+                defense: power / 2,
+                disagreementReasons: [] as Array<string>,
+                dominanceComponent: undefined,
+                expectedWins: undefined,
+                gamesPlayed: 0,
+                generatedAt: row.sourceUpdatedAt,
+                homeFieldAdvantage: 2.5,
+                limitedSample: true,
+                modelVersion: 'elo-fallback',
+                offense: power / 2,
+                power,
+                powerRank: index + 1,
+                priorWeight: 0,
+                programId: row.programId,
+                programKey: slug(row.sourceProgramName),
+                published: true,
+                rank: index + 1,
+                rankDifference: undefined,
+                rating: power,
+                resume: undefined,
+                resumeRank: undefined,
+                scheduleComponent: undefined,
+                sourceProgramName: row.sourceProgramName,
+                specialTeams: 0,
+                specialTeamsAvailable: false,
+              }
+            })
     const ratingByProgram = new Map(
       ratings.map((row) => [String(row.programId), row]),
     )
@@ -586,13 +1291,18 @@ export const getWeeklyDashboard = query({
         game.awayPregameElo ??
         game.awayPostgameElo ??
         1500
-      const homeRating = homeRatingRow?.overall ?? teamStrength(homeElo)
-      const awayRating = awayRatingRow?.overall ?? teamStrength(awayElo)
-      const bestStrength = Math.max(homeRating, awayRating)
-      const otherStrength = Math.min(homeRating, awayRating)
+      const homeRating = homeRatingRow?.power ?? (homeElo - 1500) / 25
+      const awayRating = awayRatingRow?.power ?? (awayElo - 1500) / 25
+      const homeStrength = clampScore(50 + homeRating * 2)
+      const awayStrength = clampScore(50 + awayRating * 2)
+      const bestStrength = Math.max(homeStrength, awayStrength)
+      const otherStrength = Math.min(homeStrength, awayStrength)
       const quality = bestStrength * 0.65 + otherStrength * 0.35
       const adjustedHomeRating =
-        homeRating + (game.neutralSite ? 0 : HOME_FIELD_ADVANTAGE / 6)
+        homeRating +
+        (game.neutralSite
+          ? 0
+          : (homeRatingRow?.homeFieldAdvantage ?? HOME_FIELD_ADVANTAGE / 22))
       const closeness =
         100 - Math.min(Math.abs(adjustedHomeRating - awayRating) * 2.5, 100)
       const nationalImportance = clampScore(quality * 0.7 + closeness * 0.3)
@@ -625,9 +1335,9 @@ export const getWeeklyDashboard = query({
 
       return {
         ...game,
-        awayRank: awayRatingRow?.rank,
+        awayRank: awayRatingRow?.powerRank,
         awayRating,
-        homeRank: homeRatingRow?.rank,
+        homeRank: homeRatingRow?.powerRank,
         homeRating,
         michiganImportance: clampScore(michiganImportance),
         michiganRelation,
@@ -638,8 +1348,10 @@ export const getWeeklyDashboard = query({
     return {
       games: scoredGames,
       generatedAt: Date.now(),
+      edition,
       ratingCount: ratings.length,
       ratings,
+      resumeVisible: edition?.resumeVisible ?? false,
       season,
       week,
     }
@@ -673,7 +1385,24 @@ export const getMatchup = query({
         .unique(),
     ])
     if (!programA || !programB) return null
-    const [ratingA, ratingB] = await Promise.all([
+    const edition = await latestPublishedEdition(ctx, season)
+    const [snapshotA, snapshotB] = edition
+      ? await Promise.all([
+          ctx.db
+            .query('teamRatingSnapshots')
+            .withIndex('by_programId_and_edition', (q) =>
+              q.eq('programId', programA._id).eq('editionId', edition._id),
+            )
+            .unique(),
+          ctx.db
+            .query('teamRatingSnapshots')
+            .withIndex('by_programId_and_edition', (q) =>
+              q.eq('programId', programB._id).eq('editionId', edition._id),
+            )
+            .unique(),
+        ])
+      : [null, null]
+    const [legacyRatingA, legacyRatingB] = await Promise.all([
       ctx.db
         .query('teamCompositeRatings')
         .withIndex('by_programId_and_season', (q) =>
@@ -687,7 +1416,9 @@ export const getMatchup = query({
         )
         .unique(),
     ])
-    if (!ratingA || !ratingB) return null
+    if ((!snapshotA || !snapshotB) && (!legacyRatingA || !legacyRatingB)) {
+      return null
+    }
 
     const matchupKey = [programA._id, programB._id].sort().join(':')
     const history = (
@@ -719,6 +1450,131 @@ export const getMatchup = query({
       else teamBWins += 1
     }
 
+    if (edition && snapshotA && snapshotB) {
+      const calibration: LogisticMarginCalibration | undefined =
+        edition.calibrationVersion === 'logistic-margin-v1' &&
+        edition.calibrationFitCount !== undefined &&
+        edition.calibrationIntercept !== undefined &&
+        edition.calibrationMaximumProbability !== undefined &&
+        edition.calibrationMinimumProbability !== undefined &&
+        edition.calibrationSlope !== undefined &&
+        edition.calibrationTrainingSeasons !== undefined
+          ? {
+              fitCount: edition.calibrationFitCount,
+              intercept: edition.calibrationIntercept,
+              maximumProbability: edition.calibrationMaximumProbability,
+              minimumProbability: edition.calibrationMinimumProbability,
+              slope: edition.calibrationSlope,
+              trainingSeasons: edition.calibrationTrainingSeasons,
+              version: 'logistic-margin-v1',
+            }
+          : undefined
+      const toPowerRating = (rating: typeof snapshotA): PowerTeamRating => ({
+        classification: rating.classification,
+        conference: rating.conference,
+        dataSources: rating.dataSources,
+        defense: rating.defense,
+        gamesPlayed: rating.gamesPlayed,
+        homeFieldAdvantage: rating.homeFieldAdvantage,
+        limitedSample: rating.limitedSample,
+        name: rating.sourceProgramName,
+        offense: rating.offense,
+        power: rating.power,
+        priorWeight: rating.priorWeight,
+        published: rating.published,
+        rank: rating.powerRank,
+        specialTeams: rating.specialTeams,
+        specialTeamsAvailable: rating.specialTeamsAvailable,
+        teamId: String(rating.programId),
+      })
+      const powerRatingA = toPowerRating(snapshotA)
+      const powerRatingB = toPowerRating(snapshotB)
+      const powerProjection = projectPowerMatchup(
+        {
+          calibration,
+          cutoffAt: edition.cutoffAt,
+          leagueAveragePoints: edition.leagueAveragePoints,
+          modelVersion: POWER_MODEL_VERSION,
+          ratings: [powerRatingA, powerRatingB],
+          season,
+          week: edition.week,
+        },
+        String(programA._id),
+        String(programB._id),
+        args.venue,
+      )
+      return {
+        edition,
+        history: {
+          lastFive: history.slice(0, 5),
+          meetings: history.length,
+          teamAWins,
+          teamBWins,
+          ties,
+        },
+        programA,
+        programB,
+        projection: {
+          confidence: Math.round(
+            100 * (1 - Math.max(snapshotA.priorWeight, snapshotB.priorWeight)),
+          ),
+          probabilityCalibrationVersion:
+            powerProjection.probabilityCalibrationVersion,
+          projectedMargin: powerProjection.projectedMargin,
+          projectedScore: powerProjection.projectedScore,
+          teamAWinProbability: Math.round(
+            powerProjection.teamAWinProbability * 100,
+          ),
+          teamBWinProbability: Math.round(
+            powerProjection.teamBWinProbability * 100,
+          ),
+          unitMatchups: [
+            {
+              description: 'Expected points above an average FBS team',
+              key: 'power',
+              label: 'Power Rating',
+              teamA: snapshotA.power,
+              teamB: snapshotB.power,
+            },
+            {
+              description: 'Opponent-adjusted scoring contribution',
+              key: 'offense',
+              label: 'Offense',
+              teamA: snapshotA.offense,
+              teamB: snapshotB.offense,
+            },
+            {
+              description: 'Opponent-adjusted points prevented',
+              key: 'defense',
+              label: 'Defense',
+              teamA: snapshotA.defense,
+              teamB: snapshotB.defense,
+            },
+            {
+              description: 'Strongly regularized special-teams contribution',
+              key: 'specialTeams',
+              label: 'Special teams',
+              teamA: snapshotA.specialTeams,
+              teamB: snapshotB.specialTeams,
+            },
+            {
+              description: 'Team-specific value applied only at home',
+              key: 'homeField',
+              label: 'Home-field advantage',
+              teamA: snapshotA.homeFieldAdvantage,
+              teamB: snapshotB.homeFieldAdvantage,
+            },
+          ],
+        },
+        ratingA: snapshotA,
+        ratingB: snapshotB,
+        season,
+        venue: args.venue,
+      }
+    }
+
+    const ratingA = legacyRatingA!
+    const ratingB = legacyRatingB!
     return {
       history: {
         lastFive: history.slice(0, 5),
