@@ -6,6 +6,8 @@
 
 **Current in checked-in source:** `cfb26-power-v1` and `cfb26-resume-v1` replace the manually weighted percentile composite. The new 21-table contract has not been pushed: development still hosts the previous 19-table composite contract and production remains on the earlier Elo foundation.
 
+The public rankings page has one predictive ordering: CFB26 Power Rank. Offense, defense, special teams, team-specific home field, sample size, prior influence, and source coverage explain that position in the same team row. Résumé is supporting record evidence beginning in Week 7, not another predictive perspective. The 16 perspectives documented below exist only in the legacy migration fallback and are not public ranking choices.
+
 ### CFB26 Power Rating
 
 Power answers “How strong is this team right now?” in expected points above or below an average FBS team on a neutral field. The pure model:
@@ -139,22 +141,25 @@ Regularized logistic calibration learns the probability curve from projected mar
 
 ## Weekly importance
 
-Team strength and weekly importance remain separate. For each game, the scorer uses proprietary overall ratings when available and falls back to converted Elo only when no composite snapshot exists.
+Team strength and weekly importance remain separate. Each game receives three sortable scores rather than one overloaded score. Power ratings are used when available and converted Elo remains the migration fallback.
 
-1. Combine the stronger and weaker team as `65% stronger + 35% weaker`.
-2. Add `55 / 6` rating points to a non-neutral home team for the competitiveness calculation.
-3. Set closeness to `100 - min(abs(adjusted gap) × 2.5, 100)`.
-4. Set national importance to `70% game quality + 30% closeness`, rounded and clamped to 0–100.
+1. Project the home margin from both Power Ratings plus the home team's regularized home-field value; neutral games receive no venue adjustment.
+2. Competitiveness is `100 - 4 × abs(projected margin)`, bounded to 0–100.
+3. Paired strength weights the weaker team 60% and stronger team 40%, preventing one elite team from making a mismatch look like a premium matchup. Matchup quality is `70% paired strength + 30% competitiveness`.
+4. Playoff leverage uses the best available Power or visible Résumé rank for each team, weighting the stronger contender 60%, the other team 30%, and adding 10 points for a conference game.
+5. Playoff importance is `55% matchup quality + 45% playoff leverage`. This is a transparent chase heuristic, not a simulated playoff probability.
 
 The Michigan lens then applies the strongest relationship:
 
-| Relationship                          | Score                             |
-| ------------------------------------- | --------------------------------- |
-| Michigan is playing                   | `100`                             |
-| Both teams appear on Michigan's slate | `75 + 20% of national importance` |
-| One team appears on Michigan's slate  | `48 + 35% of national importance` |
-| At least one team is in the Big Ten   | `25 + 30% of national importance` |
-| Other national game                   | `15% of national importance`      |
+| Relationship                          | Score                            |
+| ------------------------------------- | -------------------------------- |
+| Michigan is playing                   | `100`                            |
+| Both teams appear on Michigan's slate | `75 + 20% of playoff importance` |
+| One team appears on Michigan's slate  | `48 + 35% of playoff importance` |
+| At least one team is in the Big Ten   | `25 + 30% of playoff importance` |
+| Other national game                   | `15% of playoff importance`      |
+
+The schedule sync separately requests CFBD's `/games/media` television rows. Available outlets appear with the game; missing or inaccessible media never blocks schedule ingestion.
 
 ## Known limits
 

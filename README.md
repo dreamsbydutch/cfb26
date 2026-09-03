@@ -1,6 +1,6 @@
 # cfb26
 
-`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, 2015–2025 snap counts and PFF grades, points-scale CFB26 Power Ratings, Week 7 Résumé Ratings, weekly game importance, and custom head-to-head matchups.
+`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, 2015–2025 snap counts and PFF grades, one points-scale CFB26 Power ranking with supporting evidence, weekly game orders for matchup quality, the playoff chase, and Michigan relevance, optional TV outlets, and custom head-to-head matchups.
 
 ## Quick start
 

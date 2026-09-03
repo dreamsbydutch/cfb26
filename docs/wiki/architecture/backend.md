@@ -55,6 +55,8 @@ All five roster/player read functions remain public and argument-validated. The 
 
 `cfbdClient.ts` is the tested outbound contract for the rating system's approved CFBD inputs. It validates response shape, classifies authentication/rate-limit/server/contract failures, and bounds retries without exposing the key. `cfbdAudit.ts` reconciles one as-of-week game/stat/team dataset. `cfbdHealth.probe` is an internal, read-only canary across four required core endpoints and six optional preseason endpoints; it reports endpoint status without writing football rows. The canary becomes runnable in an environment only after that environment receives the checked-in function.
 
+The game sync also performs a best-effort `/games/media` request for television outlets. Media failure does not fail the required schedule sync, and a transient failure preserves outlets already stored on a game.
+
 ## Generated contract
 
 Convex code generation produces:
