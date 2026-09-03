@@ -72,6 +72,7 @@ No identity-provider, component-system, third-party test framework, analytics, o
 
 - `vite.config.ts` installs Tailwind, TypeScript path resolution, TanStack Start, Nitro, and React plugins; dev port is 3000.
 - `tsconfig.json` enables strict checks, bundler resolution, isolated modules, and the `~/* -> ./src/*` path alias.
+- `convex/tsconfig.json` enables the same explicit `.ts` imports required by the native Node test runner so Convex deployment typechecking and offline tests validate one source form.
 - `eslint.config.mjs` combines TanStack and Convex recommended configurations and ignores generated Convex and Nitro output.
 - `.prettierrc` disables semicolons, uses single quotes, and keeps trailing commas.
 - `vercel.json` selects the `tanstack-start` framework preset, deploys Convex, and runs the Nitro-backed web build as one hosted build command.
