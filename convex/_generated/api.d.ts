@@ -8,6 +8,10 @@
  * @module
  */
 
+import type * as cfbdAudit from "../cfbdAudit.js";
+import type * as cfbdClient from "../cfbdClient.js";
+import type * as cfbdHealth from "../cfbdHealth.js";
+import type * as cfbdHealthProbe from "../cfbdHealthProbe.js";
 import type * as crons from "../crons.js";
 import type * as eligibility from "../eligibility.js";
 import type * as games from "../games.js";
@@ -28,6 +32,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cfbdAudit: typeof cfbdAudit;
+  cfbdClient: typeof cfbdClient;
+  cfbdHealth: typeof cfbdHealth;
+  cfbdHealthProbe: typeof cfbdHealthProbe;
   crons: typeof crons;
   eligibility: typeof eligibility;
   games: typeof games;

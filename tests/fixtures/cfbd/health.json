@@ -1,0 +1,87 @@
+{
+  "/coaches/tenures": [
+    {
+      "active": true,
+      "coach": { "firstName": "Sherrone", "id": 1, "lastName": "Moore" },
+      "id": 1,
+      "startYear": 2024,
+      "team": { "id": 1, "school": "Michigan" }
+    }
+  ],
+  "/games": [
+    {
+      "awayClassification": "fbs",
+      "awayId": 2,
+      "awayPoints": 13,
+      "awayTeam": "Fresno State",
+      "completed": true,
+      "homeClassification": "fbs",
+      "homeId": 1,
+      "homePoints": 30,
+      "homeTeam": "Michigan",
+      "id": 401628455,
+      "neutralSite": false,
+      "season": 2024,
+      "seasonType": "regular",
+      "startDate": "2024-08-31T23:30:00.000Z",
+      "week": 1
+    }
+  ],
+  "/games/teams": [
+    {
+      "id": 401628455,
+      "teams": [
+        {
+          "homeAway": "home",
+          "points": 30,
+          "stats": [{ "category": "totalYards", "stat": "269" }],
+          "team": "Michigan",
+          "teamId": 1
+        },
+        {
+          "homeAway": "away",
+          "points": 13,
+          "stats": [{ "category": "totalYards", "stat": "244" }],
+          "team": "Fresno State",
+          "teamId": 2
+        }
+      ]
+    }
+  ],
+  "/player/portal": [
+    {
+      "destination": "Michigan",
+      "firstName": "Test",
+      "lastName": "Player",
+      "origin": "Example State",
+      "position": "WR",
+      "season": 2024
+    }
+  ],
+  "/player/returning": [
+    { "percentPPA": 0.7, "season": 2024, "team": "Michigan", "usage": 0.6 }
+  ],
+  "/recruiting/teams": [
+    { "points": 300, "rank": 1, "team": "Michigan", "year": 2024 }
+  ],
+  "/stats/season": [
+    {
+      "conference": "Big Ten",
+      "season": 2024,
+      "statName": "totalYards",
+      "statValue": "269",
+      "team": "Michigan"
+    }
+  ],
+  "/stats/season/advanced": [
+    {
+      "conference": "Big Ten",
+      "defense": {},
+      "offense": {},
+      "season": 2024,
+      "team": "Michigan"
+    }
+  ],
+  "/talent": [{ "talent": 900, "team": "Michigan", "year": 2024 }],
+  "/teams/fbs": [{ "id": 1, "school": "Michigan" }]
+}
