@@ -1,6 +1,8 @@
+import { calibrateMargin } from './ratingBacktest.ts'
 import type { Doc, Id } from './_generated/dataModel'
+import type { LogisticMarginCalibration } from './ratingBacktest.ts'
 
-export const MODEL_VERSION = 'cfb26-composite-v1'
+export const MODEL_VERSION = 'cfb26-composite-v2'
 
 export type RatingDimensions = {
   continuity: number
@@ -66,20 +68,20 @@ type SignalDefinition = {
 type ScoredDimension = { coverage: number; score: number }
 
 const DIMENSION_WEIGHTS: Readonly<Record<keyof RatingDimensions, number>> = {
-  continuity: 5,
-  defense: 14,
+  continuity: 6,
+  defense: 13,
   form: 4,
-  offense: 14,
+  offense: 13,
   passingDefense: 2.5,
   passingOffense: 2.5,
-  power: 28,
+  power: 26,
   resume: 8,
   rushingDefense: 2.5,
   rushingOffense: 2.5,
   situationalDefense: 2.5,
   situationalOffense: 2.5,
-  specialTeams: 4,
-  talent: 8,
+  specialTeams: 3,
+  talent: 12,
   tempo: 0,
   volatility: 0,
 }
@@ -103,15 +105,21 @@ const DIMENSIONS: Readonly<
   Record<keyof RatingDimensions, Array<SignalDefinition>>
 > = {
   power: [
-    { key: 'elo', weight: 24 },
-    { key: 'standings.srs', weight: 10 },
-    { key: 'sp.overall', weight: 15 },
-    { key: 'fpi.overall', weight: 11 },
-    { key: 'core.overall', weight: 15 },
-    { key: 'games.adjustedMargin', weight: 13 },
-    { key: 'standings.winPercentage', weight: 5 },
-    { key: 'sp.secondOrderWins', weight: 4 },
-    { key: 'games.seasonForm', weight: 3 },
+    { key: 'elo', weight: 19 },
+    { key: 'standings.srs', weight: 7 },
+    { key: 'sp.overall', weight: 12 },
+    { key: 'fpi.overall', weight: 9 },
+    { key: 'core.overall', weight: 12 },
+    { key: 'games.adjustedMargin', weight: 12 },
+    { key: 'standings.winPercentage', weight: 4 },
+    { key: 'sp.secondOrderWins', weight: 3 },
+    { key: 'games.seasonForm', weight: 2 },
+    { key: 'history.standingsSrs', weight: 5 },
+    { key: 'history.standingsWinPercentage', weight: 3 },
+    { key: 'history.gamesAdjustedMargin', weight: 6 },
+    { key: 'history.gamesWinPercentage', weight: 3 },
+    { key: 'history.standingsTrend', weight: 1.5 },
+    { key: 'history.gamesTrend', weight: 1.5 },
   ],
   offense: [
     { key: 'core.offense', weight: 15 },
@@ -248,12 +256,15 @@ const DIMENSIONS: Readonly<
     { key: 'gameStats.specialTeams.returnAverage', weight: 7 },
   ],
   talent: [
-    { key: 'talent.composite', weight: 50 },
-    { key: 'recruiting.points', weight: 20 },
-    { key: 'recruiting.averageRating', weight: 12 },
-    { key: 'recruiting.blueChipRatio', weight: 10 },
-    { key: 'draft.pickValue', weight: 5 },
+    { key: 'talent.composite', weight: 40 },
+    { key: 'recruiting.developedPoints', weight: 18 },
+    { key: 'recruiting.developedRating', weight: 10 },
+    { key: 'recruiting.blueChipPipeline', weight: 10 },
+    { key: 'recruiting.freshmanStudImpact', weight: 5 },
+    { key: 'recruiting.coreTalent', weight: 5 },
+    { key: 'draft.pickValue', weight: 7 },
     { key: 'draft.picks', weight: 3 },
+    { key: 'draft.earlyRoundPicks', weight: 2 },
   ],
   continuity: [
     { key: 'returning.percentPpa', weight: 30 },
@@ -315,6 +326,33 @@ function standardDeviation(values: Array<number>) {
   return Math.sqrt(
     values.reduce((total, value) => total + (value - mean) ** 2, 0) /
       values.length,
+  )
+}
+
+function weightedAverage(values: Array<{ value: number; weight: number }>) {
+  const totalWeight = values.reduce((total, entry) => total + entry.weight, 0)
+  return totalWeight > 0
+    ? values.reduce((total, entry) => total + entry.value * entry.weight, 0) /
+        totalWeight
+    : undefined
+}
+
+function linearTrend(values: Array<{ season: number; value: number }>) {
+  if (values.length < 2) return undefined
+  const meanSeason = average(values.map((entry) => entry.season))
+  const meanValue = average(values.map((entry) => entry.value))
+  if (meanSeason === undefined || meanValue === undefined) return undefined
+  const denominator = values.reduce(
+    (total, entry) => total + (entry.season - meanSeason) ** 2,
+    0,
+  )
+  if (denominator === 0) return undefined
+  return (
+    values.reduce(
+      (total, entry) =>
+        total + (entry.season - meanSeason) * (entry.value - meanValue),
+      0,
+    ) / denominator
   )
 }
 
@@ -532,6 +570,162 @@ function addStandingsSignals(team: RawTeam, row: Doc<'teamSeasonStandings'>) {
   }
 }
 
+const HISTORY_WEIGHTS = [1, 0.65, 0.4, 0.25] as const
+
+function addHistoricalStandingsSignals(
+  teams: Map<string, RawTeam>,
+  rows: SeasonModelData['standings'],
+  season: number,
+) {
+  const byProgram = new Map<string, Array<Doc<'teamSeasonStandings'>>>()
+  for (const row of rows) {
+    const offset = season - row.season
+    if (offset < 1 || offset > HISTORY_WEIGHTS.length) continue
+    const key = String(row.programId)
+    byProgram.set(key, [...(byProgram.get(key) ?? []), row])
+  }
+
+  for (const [programId, history] of byProgram) {
+    const team = teams.get(programId)
+    const values = history.map((row) => ({
+      row,
+      weight: HISTORY_WEIGHTS[season - row.season - 1],
+    }))
+    const weighted = (select: (row: Doc<'teamSeasonStandings'>) => number) =>
+      weightedAverage(
+        values.map(({ row, weight }) => ({ value: select(row), weight })),
+      )
+    addSignal(
+      team,
+      'history.standingsSrs',
+      weighted((row) => row.simpleRatingSystem),
+      'standings',
+    )
+    addSignal(
+      team,
+      'history.standingsWinPercentage',
+      weighted((row) => row.winPercentage),
+      'standings',
+    )
+    addSignal(
+      team,
+      'history.standingsTrend',
+      linearTrend(
+        history.map((row) => ({
+          season: row.season,
+          value: row.simpleRatingSystem,
+        })),
+      ),
+      'standings',
+    )
+  }
+}
+
+function addHistoricalGameSignals(
+  teams: Map<string, RawTeam>,
+  games: SeasonModelData['games'],
+  season: number,
+) {
+  const samples = new Map<
+    string,
+    Array<{ adjustedMargin: number; season: number; win: boolean }>
+  >()
+  for (const game of games) {
+    const offset = season - game.season
+    if (
+      offset < 1 ||
+      offset > HISTORY_WEIGHTS.length ||
+      !game.completed ||
+      game.homePoints === undefined ||
+      game.awayPoints === undefined
+    )
+      continue
+    for (const side of ['home', 'away'] as const) {
+      const isHome = side === 'home'
+      const programId = isHome ? game.homeProgramId : game.awayProgramId
+      const margin = isHome
+        ? game.homePoints - game.awayPoints
+        : game.awayPoints - game.homePoints
+      const opponentElo = isHome
+        ? (game.awayPregameElo ?? game.awayPostgameElo ?? 1500)
+        : (game.homePregameElo ?? game.homePostgameElo ?? 1500)
+      const venueAdjustment = game.neutralSite ? 0 : isHome ? -2.5 : 2.5
+      const rows = samples.get(String(programId)) ?? []
+      rows.push({
+        adjustedMargin: margin + venueAdjustment + (opponentElo - 1500) / 20,
+        season: game.season,
+        win: margin > 0,
+      })
+      samples.set(String(programId), rows)
+    }
+  }
+
+  for (const [programId, programSamples] of samples) {
+    const team = teams.get(programId)
+    const seasons = new Map<
+      number,
+      { adjustedMargin: Array<number>; wins: number }
+    >()
+    for (const sample of programSamples) {
+      const summary = seasons.get(sample.season) ?? {
+        adjustedMargin: [],
+        wins: 0,
+      }
+      summary.adjustedMargin.push(sample.adjustedMargin)
+      summary.wins += Number(sample.win)
+      seasons.set(sample.season, summary)
+    }
+    const summaries = [...seasons].flatMap(([historySeason, summary]) => {
+      const adjustedMargin = average(summary.adjustedMargin)
+      return adjustedMargin === undefined
+        ? []
+        : [
+            {
+              adjustedMargin,
+              season: historySeason,
+              weight: HISTORY_WEIGHTS[season - historySeason - 1],
+              winPercentage: summary.wins / summary.adjustedMargin.length,
+            },
+          ]
+    })
+    addSignal(
+      team,
+      'history.gamesAdjustedMargin',
+      weightedAverage(
+        summaries.map((summary) => ({
+          value: summary.adjustedMargin,
+          weight: summary.weight,
+        })),
+      ),
+      'games',
+    )
+    addSignal(
+      team,
+      'history.gamesWinPercentage',
+      weightedAverage(
+        summaries.map((summary) => ({
+          value: summary.winPercentage,
+          weight: summary.weight,
+        })),
+      ),
+      'games',
+    )
+    addSignal(
+      team,
+      'history.gamesTrend',
+      linearTrend(
+        summaries.map((summary) => ({
+          season: summary.season,
+          value: summary.adjustedMargin,
+        })),
+      ),
+      'games',
+    )
+  }
+}
+
+const RECRUITING_DEVELOPMENT_WEIGHTS = [0.2, 0.55, 1, 0.85, 0.45] as const
+
 function addRecruitingSignals(
   teams: Map<string, RawTeam>,
   rows: SeasonModelData['recruiting'],
@@ -544,33 +738,76 @@ function addRecruitingSignals(
     if (!previous || row.points > previous.points) byProgramSeason.set(key, row)
   }
   for (const team of teams.values()) {
-    let totalWeight = 0
-    let points = 0
-    let averageRating = 0
-    let blueChipRatio = 0
-    for (let offset = 0; offset < 4; offset += 1) {
+    const classes: Array<{
+      blueChipRatio: number
+      offset: number
+      row: Doc<'teamRecruitingClasses'>
+      weight: number
+    }> = []
+    for (
+      let offset = 0;
+      offset < RECRUITING_DEVELOPMENT_WEIGHTS.length;
+      offset += 1
+    ) {
       const row = byProgramSeason.get(`${team.programId}:${season - offset}`)
       if (!row) continue
-      const weight = 1 - offset * 0.2
-      totalWeight += weight
-      points += row.points * weight
-      averageRating += row.averageRating * weight
-      blueChipRatio +=
-        (row.commits > 0 ? (row.fiveStars + row.fourStars) / row.commits : 0) *
-        weight
+      classes.push({
+        blueChipRatio:
+          row.commits > 0 ? (row.fiveStars + row.fourStars) / row.commits : 0,
+        offset,
+        row,
+        weight: RECRUITING_DEVELOPMENT_WEIGHTS[offset],
+      })
     }
-    if (totalWeight === 0) continue
-    addSignal(team, 'recruiting.points', points / totalWeight, 'recruiting')
+    if (classes.length === 0) continue
     addSignal(
       team,
-      'recruiting.averageRating',
-      averageRating / totalWeight,
+      'recruiting.developedPoints',
+      weightedAverage(
+        classes.map(({ row, weight }) => ({ value: row.points, weight })),
+      ),
       'recruiting',
     )
     addSignal(
       team,
-      'recruiting.blueChipRatio',
-      blueChipRatio / totalWeight,
+      'recruiting.developedRating',
+      weightedAverage(
+        classes.map(({ row, weight }) => ({
+          value: row.averageRating,
+          weight,
+        })),
+      ),
+      'recruiting',
+    )
+    addSignal(
+      team,
+      'recruiting.blueChipPipeline',
+      weightedAverage(
+        classes.map(({ blueChipRatio, weight }) => ({
+          value: blueChipRatio,
+          weight,
+        })),
+      ),
+      'recruiting',
+    )
+    const freshmanClass = classes.find(({ offset }) => offset === 0)?.row
+    addSignal(
+      team,
+      'recruiting.freshmanStudImpact',
+      freshmanClass === undefined
+        ? undefined
+        : freshmanClass.fiveStars + freshmanClass.fourStars * 0.35,
+      'recruiting',
+    )
+    const coreClasses = classes.filter(
+      ({ offset }) => offset === 2 || offset === 3,
+    )
+    addSignal(
+      team,
+      'recruiting.coreTalent',
+      weightedAverage(
+        coreClasses.map(({ row, weight }) => ({ value: row.points, weight })),
+      ),
       'recruiting',
     )
   }
@@ -579,20 +816,38 @@ function addRecruitingSignals(
 function addDraftSignals(
   teams: Map<string, RawTeam>,
   rows: SeasonModelData['draft'],
+  season: number,
 ) {
-  if (rows.length < 64) return
-  const summaries = new Map<string, { picks: number; value: number }>()
-  for (const row of rows) {
+  const eligibleRows = rows.filter(
+    (row) => row.year <= season && season - row.year < 5,
+  )
+  const coveredYears = new Set(eligibleRows.map((row) => row.year))
+  if (coveredYears.size === 0 || eligibleRows.length / coveredYears.size < 64)
+    return
+  const summaries = new Map<
+    string,
+    { earlyRoundPicks: number; picks: number; value: number }
+  >(
+    [...teams].map(([programId]) => [
+      programId,
+      { earlyRoundPicks: 0, picks: 0, value: 0 },
+    ]),
+  )
+  for (const row of eligibleRows) {
     const key = String(row.programId)
-    const summary = summaries.get(key) ?? { picks: 0, value: 0 }
-    summary.picks += 1
-    summary.value += row.pickValue
+    const summary = summaries.get(key)
+    if (!summary) continue
+    const recencyWeight = 1 / (season - row.year + 1)
+    summary.picks += recencyWeight
+    summary.value += row.pickValue * recencyWeight
+    if (row.round <= 3) summary.earlyRoundPicks += recencyWeight
     summaries.set(key, summary)
   }
   for (const [programId, summary] of summaries) {
     const team = teams.get(programId)
     addSignal(team, 'draft.picks', summary.picks, 'draft')
     addSignal(team, 'draft.pickValue', summary.value, 'draft')
+    addSignal(team, 'draft.earlyRoundPicks', summary.earlyRoundPicks, 'draft')
   }
 }
 
@@ -607,6 +862,7 @@ function addGameSignals(
       adjusted: number
       margin: number
       road: boolean
+      startTime: number
       win: boolean
       quality: boolean
     }>
@@ -628,7 +884,12 @@ function addGameSignals(
       const opponentPoints = isHome ? game.awayPoints : game.homePoints
       const margin = points - opponentPoints
       const venueAdjustment = game.neutralSite ? 0 : isHome ? -2.5 : 2.5
-      const opponentElo = eloByProgram.get(String(opponentId)) ?? 1500
+      const opponentElo =
+        eloByProgram.get(String(opponentId)) ??
+        (isHome
+          ? (game.awayPregameElo ?? game.awayPostgameElo)
+          : (game.homePregameElo ?? game.homePostgameElo)) ??
+        1500
       const adjusted = margin + venueAdjustment + (opponentElo - 1500) / 20
       const rows = samples.get(String(programId)) ?? []
       rows.push({
@@ -636,6 +897,7 @@ function addGameSignals(
         margin,
         quality: opponentElo >= qualityThreshold,
         road: !game.neutralSite && !isHome,
+        startTime: game.startTime,
         win: margin > 0,
       })
       samples.set(String(programId), rows)
@@ -643,7 +905,9 @@ function addGameSignals(
   }
   for (const [programId, rows] of samples) {
     const team = teams.get(programId)
-    const recent = rows.slice(-5)
+    const recent = [...rows]
+      .sort((left, right) => left.startTime - right.startTime)
+      .slice(-5)
     const qualityGames = rows.filter((row) => row.quality)
     const road = rows.filter((row) => row.road)
     addSignal(
@@ -773,15 +1037,22 @@ export function buildSeasonRatings(
       addSignal(team, signal.key, signal.value, signal.key.split('.')[0])
   }
   for (const row of data.standings) {
+    if (row.season !== season) continue
     const team = teams.get(String(row.programId))
     if (!team) continue
     team.name = row.sourceProgramName
     team.conference = row.conference
     addStandingsSignals(team, row)
   }
+  addHistoricalStandingsSignals(teams, data.standings, season)
+  addHistoricalGameSignals(teams, data.games, season)
   addRecruitingSignals(teams, data.recruiting, season)
-  addDraftSignals(teams, data.draft)
-  addGameSignals(teams, data.games, eloByProgram)
+  addDraftSignals(teams, data.draft, season)
+  addGameSignals(
+    teams,
+    data.games.filter((game) => game.season === season),
+    eloByProgram,
+  )
   aggregateGameStats(teams, data.stats)
 
   const teamList = [...teams.values()]
@@ -884,6 +1155,7 @@ export function buildMatchupProjection(
   teamA: MatchupTeam,
   teamB: MatchupTeam,
   venue: 'neutral' | 'team_a' | 'team_b',
+  probabilityCalibration?: LogisticMarginCalibration,
 ) {
   const a = teamA.dimensions
   const b = teamB.dimensions
@@ -915,11 +1187,9 @@ export function buildMatchupProjection(
     -35,
     35,
   )
-  const teamAWinProbability = clamp(
-    100 / (1 + Math.exp(-projectedMargin / 6.5)),
-    3,
-    97,
-  )
+  const teamAWinProbability = probabilityCalibration
+    ? calibrateMargin(projectedMargin, probabilityCalibration) * 100
+    : clamp(100 / (1 + Math.exp(-projectedMargin / 6.5)), 3, 97)
   const total = clamp(
     52 +
       ((a.offense + b.offense - a.defense - b.defense) / 4) * 0.18 +
@@ -932,6 +1202,8 @@ export function buildMatchupProjection(
 
   return {
     confidence: round(confidence, 0),
+    probabilityCalibrationVersion:
+      probabilityCalibration?.version ?? 'fixed-logistic-v1',
     projectedMargin: round(projectedMargin),
     projectedScore: {
       teamA: round(teamAScore, 0),
