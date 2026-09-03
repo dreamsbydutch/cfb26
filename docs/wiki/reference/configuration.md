@@ -46,9 +46,12 @@ The known deployment URLs are recorded in [Deployment](../guides/deployment.md).
 | `npm run build`                                                | typecheck, then `vite build`     | Produces client and SSR/server bundles.                                                          |
 | `npm run start`                                                | `vite preview`                   | Previews a prebuilt app locally; runtime environment must be present.                            |
 | `npm run docs:check`                                           | local Node link checker          | Scans maintained Markdown and ignores generated/vendor/build trees.                              |
+| `npm test`                                                     | Node test runner                 | Runs all offline behavior tests; network access and secrets are not required.                    |
+| `npm run test:cfbd`                                            | Node test runner                 | Runs the CFBD client, season-audit, and health-probe tests only.                                 |
+| `npm run cfbd:probe -- '<json>'`                               | `convex run cfbdHealth:probe`    | Calls the deployed internal canary; requires a selected deployment and CFBD key.                 |
 | `npm run data:prepare-snaps -- <players.json> <programs.json>` | seasonal-stat import preparation | Validates `SnapCounts.json`, links known players, and writes an ignored Convex JSON import file. |
 | `npm run preview:find -- <owner/repo> <sha>`                   | GitHub deployment lookup         | Resolves the direct Vercel preview URL for an exact commit SHA.                                  |
-| `npm run check`                                                | lint, docs links, Vite build     | Standard full local gate.                                                                        |
+| `npm run check`                                                | tests, lint, docs, Vite build    | Standard full local gate.                                                                        |
 | `npm run format`                                               | `prettier --write .`             | Mutates files; inspect the resulting diff.                                                       |
 
 ## Core dependencies
@@ -63,7 +66,7 @@ The known deployment URLs are recorded in [Deployment](../guides/deployment.md).
 | Type/lint/format          | TypeScript 6/7 aliases, TanStack ESLint config, Convex ESLint plugin, Prettier          |
 | Windows build reliability | `@rolldown/binding-win32-x64-msvc`                                                      |
 
-No identity-provider, component-system, testing, analytics, or state-management package beyond React Query is installed. The roster editor uses the deployment-secret decision in [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md), not an authentication package.
+No identity-provider, component-system, third-party test framework, analytics, or state-management package beyond React Query is installed. Offline tests use Node's built-in test runner. The roster editor uses the deployment-secret decision in [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md), not an authentication package.
 
 ## Build configuration
 
@@ -75,4 +78,4 @@ No identity-provider, component-system, testing, analytics, or state-management 
 
 ## Configuration gaps
 
-There is no checked-in CI workflow, test runner, environment schema validator, error-reporting provider, analytics provider, or hosting project/team ID metadata. The recorded Vercel production domain still requires a Nitro-backed redeploy and smoke check. Add and document new configuration only when a real requirement exists.
+There is no checked-in CI workflow, browser test runner, environment schema validator, error-reporting provider, analytics provider, or hosting project/team ID metadata. The recorded Vercel production domain still requires a Nitro-backed redeploy and smoke check. Add and document new configuration only when a real requirement exists.

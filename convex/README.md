@@ -2,14 +2,14 @@
 
 This directory is the checked-in server-side boundary for `cfb26`.
 
-Development has the checked-in 19-table national-data and proprietary-rating contract. Production remains on the prior 17-table foundation until explicitly promoted. Confirm the intended target before synchronization. See [Deployment](../docs/wiki/guides/deployment.md).
+Checked-in source defines the 21-table national-data and immutable Power/Résumé edition contract. It has not been pushed: development still hosts the prior 19-table percentile-composite contract and production remains on the earlier 17-table foundation. Confirm the intended target before synchronization. See [Deployment](../docs/wiki/guides/deployment.md).
 
 ## Current contract
 
 | Source             | Export          | Purpose                                                                                 |
 | ------------------ | --------------- | --------------------------------------------------------------------------------------- |
-| `schema.ts`        | 19 tables       | Declares Michigan player data, national facts, raw rating inputs, derived composite ratings, aliases, and sync state. |
-| `crons.ts`         | three daily jobs | Runs OpenSheet at 10:17 UTC, games/Elo at 11:17 UTC, and the advanced-input/composite refresh at 11:47 UTC. |
+| `schema.ts`        | 21 tables       | Declares Michigan player data, national facts, legacy composites, immutable rating editions/team snapshots, aliases, and sync state. |
+| `crons.ts`         | four jobs | Runs OpenSheet and game refreshes daily, builds changed Power/Résumé data nightly, and freezes an official edition each Monday. |
 | `eligibility.ts`   | shared helper   | Normalizes legacy stint data to five standard seasons plus source and owner extensions. |
 | `players.ts`       | `search`        | Searches player display names with optional home-state filtering.                       |
 | `players.ts`       | `getProfile`    | Returns one player with recruiting, stints, career, seasonal stats, movement, and draft. |
@@ -23,10 +23,14 @@ Development has the checked-in 19-table national-data and proprietary-rating con
 | `teamData.ts`      | internal sync   | Fetches, validates, and idempotently upserts the three OpenSheet feeds in bounded batches. |
 | `games.ts`         | four public reads | Lists bounded season/week schedules, program schedules, matchup history, and one game's retained team stats. |
 | `games.ts`         | internal sync   | Backfills compact CFBD schedules/results and maintains a rolling five-season team-stat window. |
+| `cfbdClient.ts`    | shared adapter  | Authenticates CFBD requests, validates endpoint contracts, and classifies safe retry behavior. |
+| `cfbdAudit.ts`     | pure audit      | Reconciles games, box scores, and FBS membership for one as-of-week dataset. |
+| `cfbdHealth.ts`    | internal action | Runs the read-only multi-endpoint CFBD canary without writing football data. |
 | `ratingInputs.ts`  | internal sync   | Independently refreshes six credential-gated CFBD rating, advanced-stat, talent, and continuity sources. |
-| `ratingModel.ts`   | pure model      | Normalizes season evidence into 16 perspectives, confidence, overall rank, and matchup projections. |
-| `ratings.ts`       | four public reads | Keeps legacy Elo, lists composite ratings, scores the weekly dashboard, and builds head-to-head matchups. |
-| `ratings.ts`       | internal orchestration | Fetches Elo and rebuilds versioned composite snapshots in bounded batches. |
+| `ratingBacktest.ts` | pure evaluation | Builds leakage-safe rolling folds, scores forecasts, fits logistic margin calibration, and gates model promotion. |
+| `ratingModel.ts`   | legacy pure model | Preserves `cfb26-composite-v2` only as a migration fallback. |
+| `ratingSystem.ts`  | pure model      | Fits hierarchical Power Ratings, builds Week 7 Résumé Ratings, and produces points/probability matchup projections. |
+| `ratings.ts`       | public and internal orchestration | Selects immutable editions for dashboard/matchup reads, retains legacy fallbacks, and builds nightly/official/amendment/research editions. |
 
 The five Michigan reads and the shared national team/game/Elo reads are available in both environments. Composite reads and the earlier `updatePlayer` roster mutation are development-only until production promotion; the checked-in `addPlayer` and `removePlayer` functions still need an authorized development push. Each environment has its own `CFBD_API_KEY`; every roster write additionally requires a distinct `CFB26_ADMIN_KEY`. Both initial 2000–2026 game backfills are complete. Public reads remain unauthenticated; synchronization and model rebuilds are internal and cron-driven.
 
@@ -46,6 +50,7 @@ Public roster-stint results omit the stored legacy redshirt field. They expose s
 ```bash
 npm run dev
 npx convex dev --once
+npm run test:cfbd
 npm run typecheck
 ```
 

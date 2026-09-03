@@ -1,6 +1,6 @@
 # ADR 0004: Build a versioned multi-perspective team rating
 
-- Status: Accepted
+- Status: Superseded by [ADR 0008](0008-separate-power-and-resume-ratings.md)
 - Date: 2026-08-23
 
 ## Context

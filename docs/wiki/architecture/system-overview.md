@@ -59,7 +59,7 @@ flowchart LR
 
 `vercel.json` selects the `tanstack-start` framework preset and defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. Nitro packages the web application for the Vercel runtime.
 
-Development has the 19-table rating model and the earlier roster-update function. Checked-in source adds the roster arrival/departure functions, but they remain pending an authorized development push; production remains on the prior 17-table/function foundation until explicit promotion. The owner-confirmed Vercel project is `cfb`, and its production URL is `https://cfb-hazel.vercel.app`. A production redeploy containing the Nitro configuration and a successful smoke test are still required before the hosted web pipeline is considered verified.
+Development has the prior 19-table percentile-composite model and the earlier roster-update function. Checked-in source adds the roster arrival/departure functions plus the 21-table immutable Power/Résumé edition contract, but both remain pending an authorized development push; production remains on the prior 17-table/function foundation until explicit promotion. The owner-confirmed Vercel project is `cfb`, and its production URL is `https://cfb-hazel.vercel.app`. A production redeploy containing the Nitro configuration and a successful smoke test are still required before the hosted web pipeline is considered verified.
 
 ## Deliberate boundaries
 

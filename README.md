@@ -1,6 +1,6 @@
 # cfb26
 
-`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, 2015–2025 snap counts and PFF grades, proprietary team ratings, weekly game importance, and custom head-to-head matchups.
+`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, 2015–2025 snap counts and PFF grades, points-scale CFB26 Power Ratings, Week 7 Résumé Ratings, weekly game importance, and custom head-to-head matchups.
 
 ## Quick start
 
@@ -27,6 +27,9 @@ The first command prompts for the value so it does not enter shell history; the 
 ## Common commands
 
 ```bash
+npm test            # Offline automated tests
+npm run test:cfbd   # CFBD contracts and data integrity
+npm run test:ratings # Rating backtest and calibration contracts
 npm run typecheck   # TypeScript
 npm run lint        # TypeScript + ESLint
 npm run build       # Production bundles

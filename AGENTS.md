@@ -4,11 +4,11 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: first Michigan football vertical slice plus a national landscape foundation. `/` remains the Michigan roster explorer; `/games` exposes populated 2000–2026 schedules, weekly importance, proprietary multi-perspective rankings, and custom head-to-head matchups; `/admin/roster` provides deployment-key-gated player maintenance plus recruit, transfer, walk-on, and departure workflows.
+- Product status: first Michigan football vertical slice plus a national landscape foundation. `/` remains the Michigan roster explorer; `/games` exposes populated 2000–2026 schedules, weekly importance, points-scale CFB26 Power Ratings, Week 7 Résumé Ratings, and custom head-to-head matchups; `/admin/roster` provides deployment-key-gated player maintenance plus recruit, transfer, walk-on, and departure workflows.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
-- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Development has the 19-table contract, 2000–2026 proprietary snapshots, and the earlier roster-update mutation, which fails closed until `CFB26_ADMIN_KEY` is configured. The checked-in source adds roster arrival/departure mutations but still needs an authorized development push. Production remains on the prior 17-table, 47,774-document foundation until explicitly promoted.
+- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Checked-in source now has the 21-table Power/Résumé edition contract, but it has not been pushed. Development still hosts the prior 19-table percentile-composite contract; production remains on the earlier 17-table, 47,774-document foundation until explicitly promoted.
 - Canonical branch: `main`; remote: `origin`.
 
 Do not present placeholders, sample data, or proposed roadmap items as finished product behavior. The wiki labels facts as **Current**, **Planned**, or **Undecided**.
@@ -27,9 +27,13 @@ Run commands from the repository root.
 | `npm run build`                                                | Type-check and create the Nitro production output in `.output/`.                     |
 | `npm run start`                                                | Preview an existing Nitro production build; requires runtime environment values.     |
 | `npm run docs:check`                                           | Validate local links in maintained Markdown.                                         |
+| `npm run test:ratings`                                         | Run leakage, forecast-scoring, calibration, and model-selection tests.               |
+| `npm test`                                                     | Run the offline automated test suite.                                                |
+| `npm run test:cfbd`                                            | Run only CFBD client, audit, and health-probe tests.                                 |
+| `npm run cfbd:probe -- '<json>'`                               | Run the deployed read-only CFBD health canary with season/week arguments.            |
 | `npm run data:prepare-snaps -- <players.json> <programs.json>` | Prepare the ignored `seasonalPlayerStats` import from `SnapCounts.json`.             |
 | `npm run preview:find -- <owner/repo> <sha>`                   | Resolve a direct Vercel preview URL for one pushed commit.                           |
-| `npm run check`                                                | Run the full local quality gate: lint, docs links, and production build.             |
+| `npm run check`                                                | Run tests, lint, docs links, and the production build.                               |
 | `npm run format`                                               | Format the repository with Prettier; review the resulting diff.                      |
 | `npx convex dev --once`                                        | Push backend changes once and regenerate Convex types; requires a linked deployment. |
 

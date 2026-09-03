@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-08-23
 
-The Elo-only first ranking described here was replaced by the proprietary composite in [ADR 0004](0004-versioned-multi-perspective-team-rating.md). The decision to keep team strength separate from game importance remains active.
+The Elo-only first ranking described here was replaced by the percentile composite in [ADR 0004](0004-versioned-multi-perspective-team-rating.md), then by the separate Power/Résumé system in [ADR 0008](0008-separate-power-and-resume-ratings.md). The decision to keep team strength separate from game importance remains active.
 
 ## Context
 

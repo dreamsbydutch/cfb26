@@ -42,9 +42,9 @@ The action is internal so unauthenticated clients cannot trigger thousands of wr
 
 ## Proprietary rating inputs
 
-**Current in development:** `teamSeasonRatingInputs` keeps sparse, namespaced raw signals from CORE, SP+, FPI, advanced season stats, team talent, and returning production. `teamCompositeRatings` keeps the derived `cfb26-composite-v1` season snapshot. The 11:47 UTC job refreshes the six sources independently, records partial-source warnings, and rebuilds the current season. Development has FBS-baseline composites for 2000–2026 and advanced inputs for 2025–2026; production promotion is pending.
+**Current in hosted development:** `teamSeasonRatingInputs` keeps sparse, namespaced raw signals from CORE, SP+, FPI, advanced season stats, team talent, and returning production. `teamCompositeRatings` keeps derived `cfb26-composite-v1` season snapshots. **Current in checked-in source:** those datasets remain migration/benchmark inputs, while the active builder consumes cutoff-safe stored games and recursively faded performance priors to create immutable Power/Résumé editions. An authorized development push and first edition build remain pending.
 
-The raw table is deliberately separate from the derived snapshot. A formula change can rebuild every season from stable evidence without refetching the provider, and a provider correction cannot silently change historical scores until the corresponding input is synchronized and the versioned model is rebuilt. Full methodology and coverage rules live in [Proprietary team ratings and game importance](landscape-ranking.md).
+The raw table is deliberately separate from derived output. The active Power/Résumé system does not consume SP+, FPI, CORE, Elo, or market ratings as features; those rows remain available for migration and held-out benchmarking. Immutable `ratingEditions` and `teamRatingSnapshots` preserve every cutoff and correction lineage. Full methodology and coverage rules live in [Proprietary team ratings and game importance](landscape-ranking.md).
 
 The supported source is [CollegeFootballData](https://github.com/CFBD/cfbd-net/blob/main/docs/games.md) rather than an automated Sports Reference scraper. Sports Reference blocks the attempted automated access, and its published [data-use policy](https://www.sports-reference.com/data_use.html) requires permission for products built from scraped data. This keeps the ingestion path on a documented API and leaves room to replace or augment the provider later without changing the public game queries.
 
@@ -56,4 +56,4 @@ The supported source is [CollegeFootballData](https://github.com/CFBD/cfbd-net/b
 - Team aliases are a practical initial crosswalk, not a complete NCAA identity registry.
 - CFBD currently returns no 2026 Elo snapshot or completed-game team stats; the daily refresh will add them when available.
 - Advanced provider coverage varies by season and account access. Missing sources lower rating confidence and never become zero-valued performance.
-- The checked-in 19-table model and proprietary snapshots are deployed only to development until an explicit production promotion.
+- The checked-in 21-table edition model is not deployed. Development still hosts the prior 19-table composite contract; production remains on the 17-table foundation.
