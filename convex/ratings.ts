@@ -14,6 +14,7 @@ import {
   buildPowerRatingEdition,
   buildResumeRatingEdition,
   projectPowerMatchup,
+  scoreWeeklyMatchup,
 } from './ratingSystem'
 import type { Doc, Id } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
@@ -1293,19 +1294,22 @@ export const getWeeklyDashboard = query({
         1500
       const homeRating = homeRatingRow?.power ?? (homeElo - 1500) / 25
       const awayRating = awayRatingRow?.power ?? (awayElo - 1500) / 25
-      const homeStrength = clampScore(50 + homeRating * 2)
-      const awayStrength = clampScore(50 + awayRating * 2)
-      const bestStrength = Math.max(homeStrength, awayStrength)
-      const otherStrength = Math.min(homeStrength, awayStrength)
-      const quality = bestStrength * 0.65 + otherStrength * 0.35
-      const adjustedHomeRating =
-        homeRating +
-        (game.neutralSite
-          ? 0
-          : (homeRatingRow?.homeFieldAdvantage ?? HOME_FIELD_ADVANTAGE / 22))
-      const closeness =
-        100 - Math.min(Math.abs(adjustedHomeRating - awayRating) * 2.5, 100)
-      const nationalImportance = clampScore(quality * 0.7 + closeness * 0.3)
+      const matchup = scoreWeeklyMatchup({
+        awayPower: awayRating,
+        awayPowerRank: awayRatingRow?.powerRank,
+        awayResumeRank: edition?.resumeVisible
+          ? awayRatingRow?.resumeRank
+          : undefined,
+        conferenceGame: game.conferenceGame,
+        homeFieldAdvantage:
+          homeRatingRow?.homeFieldAdvantage ?? HOME_FIELD_ADVANTAGE / 22,
+        homePower: homeRating,
+        homePowerRank: homeRatingRow?.powerRank,
+        homeResumeRank: edition?.resumeVisible
+          ? homeRatingRow?.resumeRank
+          : undefined,
+        neutralSite: game.neutralSite,
+      })
 
       const isMichiganGame =
         michigan !== null &&
@@ -1315,33 +1319,38 @@ export const getWeeklyDashboard = query({
       const awayIsOpponent = michiganOpponents.has(String(game.awayProgramId))
       const opponentCount = Number(homeIsOpponent) + Number(awayIsOpponent)
       let michiganRelation = 'National landscape'
-      let michiganImportance = nationalImportance * 0.15
+      let michiganImportance = matchup.playoffImportance * 0.15
       if (isMichiganGame) {
         michiganRelation = 'Michigan game'
         michiganImportance = 100
       } else if (opponentCount === 2) {
         michiganRelation = 'Two Michigan opponents'
-        michiganImportance = 75 + nationalImportance * 0.2
+        michiganImportance = 75 + matchup.playoffImportance * 0.2
       } else if (opponentCount === 1) {
         michiganRelation = 'Michigan opponent'
-        michiganImportance = 48 + nationalImportance * 0.35
+        michiganImportance = 48 + matchup.playoffImportance * 0.35
       } else if (
         isBigTen(game.homeConference) ||
         isBigTen(game.awayConference)
       ) {
         michiganRelation = 'Big Ten race'
-        michiganImportance = 25 + nationalImportance * 0.3
+        michiganImportance = 25 + matchup.playoffImportance * 0.3
       }
 
       return {
         ...game,
         awayRank: awayRatingRow?.powerRank,
         awayRating,
+        competitiveness: matchup.competitiveness,
         homeRank: homeRatingRow?.powerRank,
         homeRating,
+        matchupQuality: clampScore(matchup.matchupQuality),
         michiganImportance: clampScore(michiganImportance),
         michiganRelation,
-        nationalImportance,
+        nationalImportance: clampScore(matchup.playoffImportance),
+        playoffImportance: clampScore(matchup.playoffImportance),
+        playoffLeverage: clampScore(matchup.playoffLeverage),
+        projectedMargin: matchup.projectedMargin,
       }
     })
 

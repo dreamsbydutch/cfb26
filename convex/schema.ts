@@ -397,6 +397,7 @@ export default defineSchema({
     sourceUpdatedAt: v.number(),
     startTime: v.number(),
     startTimeTbd: v.boolean(),
+    tvOutlets: v.optional(v.array(v.string())),
     venue: v.optional(v.string()),
     venueId: v.optional(v.number()),
     week: v.number(),

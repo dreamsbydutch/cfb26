@@ -511,6 +511,76 @@ export function projectPowerMatchup(
   }
 }
 
+export type WeeklyMatchupScore = {
+  competitiveness: number
+  matchupQuality: number
+  playoffImportance: number
+  playoffLeverage: number
+  projectedMargin: number
+}
+
+function rankingLeverage(rank: number | undefined) {
+  if (rank === undefined) return 0
+  return clamp(103.5 - rank * 3.5, 0, 100)
+}
+
+export function scoreWeeklyMatchup(input: {
+  awayPower: number
+  awayPowerRank?: number
+  awayResumeRank?: number
+  conferenceGame: boolean
+  homeFieldAdvantage: number
+  homePower: number
+  homePowerRank?: number
+  homeResumeRank?: number
+  neutralSite: boolean
+}): WeeklyMatchupScore {
+  const projectedMargin =
+    input.homePower -
+    input.awayPower +
+    (input.neutralSite ? 0 : input.homeFieldAdvantage)
+  const competitiveness = clamp(100 - Math.abs(projectedMargin) * 4, 0, 100)
+  const homeStrength = clamp(50 + input.homePower * 2, 0, 100)
+  const awayStrength = clamp(50 + input.awayPower * 2, 0, 100)
+  const pairedStrength =
+    Math.max(homeStrength, awayStrength) * 0.4 +
+    Math.min(homeStrength, awayStrength) * 0.6
+  const matchupQuality = clamp(
+    pairedStrength * 0.7 + competitiveness * 0.3,
+    0,
+    100,
+  )
+  const homeRank = Math.min(
+    input.homePowerRank ?? Number.POSITIVE_INFINITY,
+    input.homeResumeRank ?? Number.POSITIVE_INFINITY,
+  )
+  const awayRank = Math.min(
+    input.awayPowerRank ?? Number.POSITIVE_INFINITY,
+    input.awayResumeRank ?? Number.POSITIVE_INFINITY,
+  )
+  const rankScores = [
+    rankingLeverage(Number.isFinite(homeRank) ? homeRank : undefined),
+    rankingLeverage(Number.isFinite(awayRank) ? awayRank : undefined),
+  ].sort((left, right) => right - left)
+  const playoffLeverage = clamp(
+    rankScores[0] * 0.6 + rankScores[1] * 0.3 + (input.conferenceGame ? 10 : 0),
+    0,
+    100,
+  )
+  const playoffImportance = clamp(
+    matchupQuality * 0.55 + playoffLeverage * 0.45,
+    0,
+    100,
+  )
+  return {
+    competitiveness: round(competitiveness),
+    matchupQuality: round(matchupQuality),
+    playoffImportance: round(playoffImportance),
+    playoffLeverage: round(playoffLeverage),
+    projectedMargin: round(projectedMargin, 1),
+  }
+}
+
 function marginProbability(
   margin: number,
   calibration: LogisticMarginCalibration | undefined,

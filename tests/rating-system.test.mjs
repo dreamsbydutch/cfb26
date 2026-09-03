@@ -5,6 +5,7 @@ import {
   buildPowerRatingEdition,
   buildResumeRatingEdition,
   projectPowerMatchup,
+  scoreWeeklyMatchup,
 } from '../convex/ratingSystem.ts'
 
 const cutoffAt = Date.UTC(2025, 9, 1)
@@ -65,6 +66,34 @@ test('Power Rating measures neutral strength in points and keeps FCS opponents h
   assert.ok(neutral.projectedMargin > 0)
   assert.ok(atAlpha.projectedMargin > neutral.projectedMargin)
   assert.ok(neutral.teamAWinProbability > 0.5)
+})
+
+test('weekly matchups separate quality from playoff leverage', () => {
+  const eliteMatchup = scoreWeeklyMatchup({
+    awayPower: 17,
+    awayPowerRank: 4,
+    conferenceGame: true,
+    homeFieldAdvantage: 3,
+    homePower: 18,
+    homePowerRank: 2,
+    neutralSite: false,
+  })
+  const evenAverageMatchup = scoreWeeklyMatchup({
+    awayPower: 0,
+    awayPowerRank: 65,
+    conferenceGame: false,
+    homeFieldAdvantage: 0,
+    homePower: 0,
+    homePowerRank: 64,
+    neutralSite: true,
+  })
+
+  assert.equal(evenAverageMatchup.competitiveness, 100)
+  assert.ok(eliteMatchup.matchupQuality > evenAverageMatchup.matchupQuality)
+  assert.ok(
+    eliteMatchup.playoffImportance > evenAverageMatchup.playoffImportance,
+  )
+  assert.ok(eliteMatchup.playoffLeverage > eliteMatchup.competitiveness / 2)
 })
 
 test('Power Rating fades priors and gives current-season games equal weight', () => {

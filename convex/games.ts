@@ -72,6 +72,7 @@ const gameRowValidator = v.object({
   sourceKey: v.string(),
   startTime: v.number(),
   startTimeTbd: v.boolean(),
+  tvOutlets: v.optional(v.array(v.string())),
   venue: v.optional(v.string()),
   venueId: v.optional(v.number()),
   week: v.number(),
@@ -163,7 +164,23 @@ function parseSeasonType(row: SourceRow): 'regular' | 'postseason' {
   throw new Error(`Invalid seasonType: ${value}.`)
 }
 
-function parseGames(rows: Array<SourceRow>) {
+function parseMedia(rows: Array<SourceRow>) {
+  const outlets = new Map<number, Array<string>>()
+  for (const row of rows) {
+    if (requiredString(row, 'mediaType') !== 'tv') continue
+    const gameId = requiredNumber(row, 'id')
+    const outlet = requiredString(row, 'outlet')
+    const existing = outlets.get(gameId) ?? []
+    if (!existing.includes(outlet)) existing.push(outlet)
+    outlets.set(gameId, existing)
+  }
+  return outlets
+}
+
+function parseGames(
+  rows: Array<SourceRow>,
+  mediaByGame?: ReadonlyMap<number, Array<string>>,
+) {
   return rows.map((row) => {
     const sourceGameId = requiredNumber(row, 'id')
     const startDate = requiredString(row, 'startDate')
@@ -200,6 +217,9 @@ function parseGames(rows: Array<SourceRow>) {
       sourceKey: `cfbd:game:${sourceGameId}`,
       startTime,
       startTimeTbd: requiredBoolean(row, 'startTimeTBD'),
+      tvOutlets: mediaByGame
+        ? (mediaByGame.get(sourceGameId) ?? [])
+        : undefined,
       venue: optionalString(row, 'venue'),
       venueId: optionalNumber(row, 'venueId'),
       week: requiredNumber(row, 'week'),
@@ -279,11 +299,28 @@ async function syncGamesForYears(
   const seasonWeeks: Array<SeasonWeeks> = []
   try {
     for (let season = startSeason; season <= endSeason; season += 1) {
+      let mediaByGame: Map<number, Array<string>> | undefined
+      try {
+        mediaByGame = parseMedia(
+          sourceRows(
+            await fetchCfbd(
+              key,
+              `/games/media?year=${season}&seasonType=both&mediaType=tv&classification=fbs`,
+            ),
+            '/games/media',
+          ),
+        )
+      } catch (error) {
+        console.warn(
+          `CFBD television metadata was unavailable for ${season}: ${error instanceof Error ? error.message : String(error)}`,
+        )
+      }
       const rows = parseGames(
         sourceRows(
           await fetchCfbd(key, `/games?year=${season}&classification=fbs`),
           '/games',
         ),
+        mediaByGame,
       )
       for (let offset = 0; offset < rows.length; offset += BATCH_SIZE) {
         await ctx.runMutation(internal.games.upsertGamesBatch, {
@@ -404,6 +441,7 @@ export const upsertGamesBatch = internalMutation({
         homeSourceName: homeName,
         matchupKey,
         sourceUpdatedAt: args.sourceUpdatedAt,
+        tvOutlets: fields.tvOutlets ?? existing?.tvOutlets,
       }
       if (existing) await ctx.db.replace('collegeGames', existing._id, document)
       else await ctx.db.insert('collegeGames', document)
