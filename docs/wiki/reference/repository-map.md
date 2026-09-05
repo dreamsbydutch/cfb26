@@ -37,6 +37,7 @@
 | `src/routes/index.tsx`        | `/` route definition, client-rendering policy, and route-level states.                                     |
 | `src/routes/games.tsx`        | `/games` route definition, metadata, client-rendering policy, and route-level states.                      |
 | `src/routes/admin.roster.tsx` | `/admin/roster` route definition, no-index metadata, and client-rendering policy.                          |
+| `src/components/`             | Shared presentation and interaction primitives, including the responsive detail sheet.                     |
 | `src/features/landscape/`     | Weekly importance, Power/Résumé ranking comparison, and the head-to-head matchup lab.                      |
 | `src/features/roster/`        | Michigan data hydration, view switching, search, roster/season lists, and player details.                  |
 | `src/routeTree.gen.ts`        | Generated file-route registry; do not edit.                                                                |

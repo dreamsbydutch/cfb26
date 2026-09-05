@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { SeasonStats } from './SeasonStats'
 import { useMichiganRoster } from './useMichiganRoster'
 import type { EnrichedPlayer, PlayerProfile } from './useMichiganRoster'
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
+import { DetailSheet } from '~/components/DetailSheet'
 
 type View = 'depth' | 'recruiting' | 'draft' | 'positions' | 'snaps' | 'players'
 type DepthView = 'offense' | 'defense' | 'special-teams'
@@ -451,9 +452,37 @@ export function RosterApp() {
 
         <div className="sticky top-0 z-30 border-b border-michigan-blue/20 bg-michigan-cream/95 backdrop-blur">
           <div className="mx-auto flex max-w-[1500px] flex-col gap-1.5 px-4 py-1.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1 sm:hidden">
+              <label>
+                <span className="sr-only">Roster view</span>
+                <select
+                  value={view}
+                  onChange={(event) => setView(event.target.value as View)}
+                  className="min-h-11 w-full border border-michigan-blue/25 bg-white px-2 text-sm font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                >
+                  {views.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Link
+                to="/games"
+                className="grid min-h-11 place-items-center border border-michigan-blue/25 bg-white px-3 text-xs font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+              >
+                Games
+              </Link>
+              <Link
+                to="/admin/roster"
+                className="grid min-h-11 place-items-center border border-michigan-blue/25 bg-white px-3 text-xs font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+              >
+                Admin
+              </Link>
+            </div>
             <nav
               aria-label="Roster views"
-              className="scrollbar-none -mx-1 overflow-x-auto"
+              className="scrollbar-none -mx-1 hidden overflow-x-auto sm:block"
             >
               <div className="flex min-w-max gap-1 px-1">
                 {views.map((item) => (
@@ -499,7 +528,7 @@ export function RosterApp() {
           </div>
         </div>
 
-        <section className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+        <section className="mx-auto max-w-[1500px] px-3 py-3 sm:px-6 sm:py-4 lg:px-8 lg:py-6">
           {rosterLoadFailed && (
             <div className="mb-4 flex flex-col gap-2 border-y border-neutral-300 py-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -662,7 +691,16 @@ function SectionIntro({
           {eyebrow}
         </p>
       </div>
-      <p className="mt-0.5 text-sm leading-5 text-neutral-500">{children}</p>
+      <p className="mt-0.5 hidden text-sm leading-5 text-neutral-500 sm:block">
+        {children}
+      </p>
+      <details className="group sm:hidden">
+        <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1 text-xs font-bold text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+          About this view
+          <ChevronIcon />
+        </summary>
+        <p className="pb-1 text-xs leading-5 text-neutral-500">{children}</p>
+      </details>
     </div>
   )
 }
@@ -768,7 +806,7 @@ function DepthChart({
         <div>
           <nav
             aria-label="Depth chart units"
-            className="scrollbar-none -mx-1 mb-5 overflow-x-auto border-b border-michigan-blue/20"
+            className="scrollbar-none -mx-1 mb-5 hidden overflow-x-auto border-b border-michigan-blue/20 sm:block"
           >
             <div
               role="tablist"
@@ -809,6 +847,23 @@ function DepthChart({
               ))}
             </div>
           </nav>
+
+          <label className="mb-3 grid gap-1 text-[10px] font-black uppercase tracking-[0.1em] sm:hidden">
+            Depth chart unit
+            <select
+              value={depthView}
+              onChange={(event) =>
+                setDepthView(event.target.value as DepthView)
+              }
+              className="min-h-11 border border-michigan-blue/25 bg-white px-2 text-sm font-black normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+            >
+              {depthTabs.map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.label} · {tab.count}
+                </option>
+              ))}
+            </select>
+          </label>
 
           {depthTabs.map((tab) => (
             <section
@@ -908,7 +963,7 @@ function DepthUnitPanel({
       ) : (
         <div>
           <EligibilityLegend />
-          <div className="grid items-start gap-x-6 gap-y-8 xl:grid-cols-2">
+          <div className="grid items-start gap-x-6 gap-y-2 xl:grid-cols-2">
             {rooms.map((room) => (
               <DepthPositionTable key={room.id} room={room} select={select} />
             ))}
@@ -965,17 +1020,20 @@ function DepthPositionTable({
   ]
 
   return (
-    <section className="min-w-0" aria-labelledby={`depth-room-${room.id}`}>
-      <div className="flex min-h-10 items-baseline justify-between gap-3 border-b-2 border-neutral-800 bg-neutral-100 px-3 py-2">
-        <h4 id={`depth-room-${room.id}`}>
-          <span className="font-black">{room.label}</span>
-          <span className="ml-2 text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-            {room.note}
+    <details
+      className="group min-w-0 border-b border-neutral-300"
+      aria-labelledby={`depth-room-${room.id}`}
+    >
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 border-t-2 border-neutral-800 bg-neutral-100 px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-950 [&::-webkit-details-marker]:hidden">
+        <span id={`depth-room-${room.id}`}>
+          <span className="block font-black">{room.label}</span>
+          <span className="block text-[9px] font-bold uppercase tracking-[0.12em] text-neutral-500">
+            {room.note} · {count} players
           </span>
-        </h4>
-        <span className="text-xs font-black tabular-nums">{count}</span>
-      </div>
-      <div className="overflow-x-auto border-b border-neutral-300 bg-white">
+        </span>
+        <ChevronIcon />
+      </summary>
+      <div className="overflow-x-auto border-t border-neutral-300 bg-white">
         <table className="w-full min-w-[340px] border-collapse text-left">
           <caption className="sr-only">
             {room.label} players grouped by depth tier
@@ -1009,7 +1067,7 @@ function DepthPositionTable({
           </tbody>
         </table>
       </div>
-    </section>
+    </details>
   )
 }
 
@@ -1232,14 +1290,19 @@ function RecruitClasses({
             )
 
             return (
-              <article key={year} className="border-t border-neutral-300 pt-2">
-                <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
-                  <h3 className="text-2xl font-black tabular-nums">{year}</h3>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-                    {entries.length} players · {sourceSummary(entries)}
-                  </p>
-                </div>
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(15rem,1fr)] xl:items-start">
+              <details key={year} className="group border-b border-neutral-300">
+                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+                  <span>
+                    <span className="block text-xl font-black tabular-nums">
+                      {year}
+                    </span>
+                    <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
+                      {entries.length} players · {sourceSummary(entries)}
+                    </span>
+                  </span>
+                  <ChevronIcon />
+                </summary>
+                <div className="grid gap-4 pb-4 xl:grid-cols-[minmax(0,3fr)_minmax(15rem,1fr)] xl:items-start">
                   <RecruitClassTable
                     entries={rankedEntries}
                     rankingSource={rankingSource}
@@ -1248,7 +1311,7 @@ function RecruitClasses({
                   />
                   <RecruitPositionBreakdown entries={entries} />
                 </div>
-              </article>
+              </details>
             )
           })}
         </div>
@@ -1538,26 +1601,30 @@ function DraftClasses({
       ) : (
         <div className="space-y-4">
           {groups.map(([year, entries]) => (
-            <article key={year} className="border-t border-neutral-300 pt-2">
-              <div className="flex items-center justify-between pb-2">
-                <h3 className="text-2xl font-black">{year}</h3>
-                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-500">
-                  {
-                    entries.filter(
-                      (entry) => entry.profile.draft?.status === 'drafted',
-                    ).length
-                  }{' '}
-                  drafted ·{' '}
-                  {
-                    entries.filter(
-                      (entry) =>
-                        entry.profile.draft?.status === 'undrafted_free_agent',
-                    ).length
-                  }{' '}
-                  UDFA
+            <details key={year} className="group border-b border-neutral-300">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+                <span>
+                  <span className="block text-xl font-black">{year}</span>
+                  <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-500">
+                    {
+                      entries.filter(
+                        (entry) => entry.profile.draft?.status === 'drafted',
+                      ).length
+                    }{' '}
+                    drafted ·{' '}
+                    {
+                      entries.filter(
+                        (entry) =>
+                          entry.profile.draft?.status ===
+                          'undrafted_free_agent',
+                      ).length
+                    }{' '}
+                    UDFA
+                  </span>
                 </span>
-              </div>
-              <div className="divide-y divide-neutral-100 border-t border-neutral-200">
+                <ChevronIcon />
+              </summary>
+              <div className="divide-y divide-neutral-100 border-t border-neutral-200 pb-3">
                 {entries
                   .sort(
                     (a, b) =>
@@ -1600,7 +1667,7 @@ function DraftClasses({
                     )
                   })}
               </div>
-            </article>
+            </details>
           ))}
         </div>
       )}
@@ -1699,7 +1766,31 @@ function AllPlayers({
       <SectionIntro eyebrow="Full archive" title="All players">
         Recruiting, roster, production, movement and NFL history.
       </SectionIntro>
-      <div className="mb-3 flex flex-wrap gap-1.5">
+      <label className="mb-3 grid gap-1 text-[10px] font-black uppercase tracking-[0.1em] sm:hidden">
+        Player status
+        <select
+          value={status}
+          onChange={(event) =>
+            setStatus(
+              event.target.value as 'all' | 'active' | 'committed' | 'departed',
+            )
+          }
+          className="min-h-11 border border-michigan-blue/25 bg-white px-2 text-sm font-black capitalize normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+        >
+          {(['all', 'active', 'committed', 'departed'] as const).map(
+            (value) => (
+              <option key={value} value={value}>
+                {value} ·{' '}
+                {value === 'all'
+                  ? players.length
+                  : players.filter((entry) => entry.stint.status === value)
+                      .length}
+              </option>
+            ),
+          )}
+        </select>
+      </label>
+      <div className="mb-3 hidden flex-wrap gap-1.5 sm:flex">
         {(['all', 'active', 'committed', 'departed'] as const).map((value) => (
           <button
             key={value}
@@ -1775,204 +1866,149 @@ function PlayerDrawer({
   close: () => void
 }) {
   const profile = entry.profile
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    const previouslyFocused = document.activeElement
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    closeButtonRef.current?.focus()
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = previousOverflow
-      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus()
-    }
-  }, [close])
-
   const recruiting = profile?.recruiting
   const draft = profile?.draft
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
-      <button
-        type="button"
-        aria-label="Close player details"
-        onClick={close}
-        tabIndex={-1}
-        className="absolute inset-0 bg-black/45"
-      />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="player-title"
-        className="relative h-full w-full max-w-xl overflow-y-auto border-l-4 border-michigan-maize bg-michigan-cream"
-      >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-michigan-maize bg-michigan-blue px-4 py-2 text-white sm:px-5">
-          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-michigan-maize">
-            Player profile
-          </span>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={close}
-            className="grid h-8 w-8 place-items-center transition hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize"
-            aria-label="Close player profile"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        <div className="border-b border-neutral-300 px-4 py-3 sm:px-5">
-          <div className="flex items-start gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center border border-michigan-blue bg-michigan-maize text-lg font-black text-michigan-blue">
-              {jersey(entry.stint.jerseyNumber)}
+    <DetailSheet
+      close={close}
+      eyebrow="Player profile"
+      title={entry.player.displayName}
+    >
+      <div className="border-b border-neutral-300 px-4 py-3 sm:px-5">
+        <div className="flex items-start gap-3">
+          <div className="grid h-12 w-12 shrink-0 place-items-center border border-michigan-blue bg-michigan-maize text-lg font-black text-michigan-blue">
+            {jersey(entry.stint.jerseyNumber)}
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge status={entry.stint.status} />
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge status={entry.stint.status} />
-              </div>
-              <h2
-                id="player-title"
-                className="mt-1 text-2xl font-black leading-tight"
-              >
-                {entry.player.displayName}
-              </h2>
-              <p className="text-sm text-neutral-500">
-                {entry.stint.position} · Michigan {entry.stint.startSeason}–
-                {entry.stint.endSeason ?? 'present'}
-              </p>
-            </div>
+            <p className="mt-1 text-sm font-bold text-neutral-700">
+              {entry.stint.position} · Michigan {entry.stint.startSeason}–
+              {entry.stint.endSeason ?? 'present'}
+            </p>
           </div>
         </div>
+      </div>
 
-        <div className="px-4 sm:px-5">
-          <DetailSection title="Player info">
-            <dl className="grid grid-cols-3 gap-x-3 gap-y-2.5">
-              <Detail label="Pos" value={entry.stint.position} />
-              <Detail
-                label="Ht"
-                value={formatHeight(entry.stint.heightInches)}
-              />
-              <Detail
-                label="Wt"
-                value={formatWeight(entry.stint.weightPounds)}
-              />
-              <Detail
-                className="col-span-2"
-                label="High school"
-                value={entry.player.highSchool}
-              />
-              <Detail
-                label="Location"
-                value={`${entry.player.hometown}, ${entry.player.homeState}`}
-              />
-            </dl>
+      <div className="px-4 sm:px-5">
+        <DetailSection title="Player info">
+          <dl className="grid grid-cols-3 gap-x-3 gap-y-2.5">
+            <Detail label="Pos" value={entry.stint.position} />
+            <Detail label="Ht" value={formatHeight(entry.stint.heightInches)} />
+            <Detail label="Wt" value={formatWeight(entry.stint.weightPounds)} />
+            <Detail
+              className="col-span-2"
+              label="High school"
+              value={entry.player.highSchool}
+            />
+            <Detail
+              label="Location"
+              value={`${entry.player.hometown}, ${entry.player.homeState}`}
+            />
+          </dl>
+        </DetailSection>
+
+        {entry.stint.injury && (
+          <DetailSection title="Availability">
+            <div className="border-l-4 border-neutral-800 bg-neutral-100 px-3 py-2">
+              <InjuryIndicator injury={entry.stint.injury} />
+              {entry.stint.injury.note && (
+                <p className="mt-1 text-sm text-neutral-700">
+                  {entry.stint.injury.note}
+                </p>
+              )}
+              {entry.stint.injury.expectedReturn && (
+                <p className="mt-1 text-xs font-bold text-neutral-500">
+                  Expected return: {entry.stint.injury.expectedReturn}
+                </p>
+              )}
+            </div>
           </DetailSection>
+        )}
 
-          {entry.stint.injury && (
-            <DetailSection title="Availability">
-              <div className="border-l-4 border-neutral-800 bg-neutral-100 px-3 py-2">
-                <InjuryIndicator injury={entry.stint.injury} />
-                {entry.stint.injury.note && (
-                  <p className="mt-1 text-sm text-neutral-700">
-                    {entry.stint.injury.note}
-                  </p>
-                )}
-                {entry.stint.injury.expectedReturn && (
-                  <p className="mt-1 text-xs font-bold text-neutral-500">
-                    Expected return: {entry.stint.injury.expectedReturn}
-                  </p>
-                )}
-              </div>
+        {entry.stint.positionChanges &&
+          entry.stint.positionChanges.length > 0 && (
+            <DetailSection title="Position changes">
+              <ol className="divide-y divide-neutral-200 border-y border-neutral-300">
+                {[...entry.stint.positionChanges].reverse().map((change) => (
+                  <li key={change.recordedAt} className="py-2 text-sm">
+                    <span className="font-black">
+                      {change.fromPosition} → {change.toPosition}
+                    </span>
+                    <span className="ml-2 text-xs text-neutral-500">
+                      {change.effectiveSeason}
+                    </span>
+                    {change.note && (
+                      <p className="mt-0.5 text-xs text-neutral-600">
+                        {change.note}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ol>
             </DetailSection>
           )}
 
-          {entry.stint.positionChanges &&
-            entry.stint.positionChanges.length > 0 && (
-              <DetailSection title="Position changes">
-                <ol className="divide-y divide-neutral-200 border-y border-neutral-300">
-                  {[...entry.stint.positionChanges].reverse().map((change) => (
-                    <li key={change.recordedAt} className="py-2 text-sm">
-                      <span className="font-black">
-                        {change.fromPosition} → {change.toPosition}
-                      </span>
-                      <span className="ml-2 text-xs text-neutral-500">
-                        {change.effectiveSeason}
-                      </span>
-                      {change.note && (
-                        <p className="mt-0.5 text-xs text-neutral-600">
-                          {change.note}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </DetailSection>
-            )}
+        {!profile ? (
+          <HydratingEmpty label="Full player details are loading…" />
+        ) : (
+          <>
+            <DetailSection title="Recruiting">
+              {recruiting ? (
+                <RecruitingSummary recruiting={recruiting} />
+              ) : (
+                <p className="text-sm text-neutral-500">
+                  No recruiting profile.
+                </p>
+              )}
+            </DetailSection>
 
-          {!profile ? (
-            <HydratingEmpty label="Full player details are loading…" />
-          ) : (
-            <>
-              <DetailSection title="Recruiting">
-                {recruiting ? (
-                  <RecruitingSummary recruiting={recruiting} />
-                ) : (
-                  <p className="text-sm text-neutral-500">
-                    No recruiting profile.
-                  </p>
-                )}
-              </DetailSection>
+            <DetailSection title="Michigan production">
+              <SeasonHistory entry={entry} profile={profile} />
+            </DetailSection>
 
-              <DetailSection title="Michigan production">
-                <SeasonHistory entry={entry} profile={profile} />
-              </DetailSection>
+            <DetailSection title="Movement timeline">
+              <ol className="space-y-2">
+                {profile.movements.map((movement) => (
+                  <li
+                    key={movement._id}
+                    className="grid grid-cols-[3rem_1fr] gap-2"
+                  >
+                    <span className="text-sm font-black text-neutral-500">
+                      {movement.season}
+                    </span>
+                    <span className="text-sm font-semibold">
+                      {movementLabel(movement.kind)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </DetailSection>
 
-              <DetailSection title="Movement timeline">
-                <ol className="space-y-2">
-                  {profile.movements.map((movement) => (
-                    <li
-                      key={movement._id}
-                      className="grid grid-cols-[3rem_1fr] gap-2"
-                    >
-                      <span className="text-sm font-black text-neutral-500">
-                        {movement.season}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {movementLabel(movement.kind)}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </DetailSection>
-
-              <DetailSection title="NFL entry">
-                {draft ? (
-                  <DetailGrid>
-                    <Detail label="Year" value={draft.year} />
-                    <Detail
-                      label="Outcome"
-                      value={draft.status === 'drafted' ? 'Drafted' : 'UDFA'}
-                    />
-                    <Detail label="Team" value={draft.team} />
-                    <Detail label="Round" value={draft.round} />
-                    <Detail label="Overall pick" value={draft.overallPick} />
-                  </DetailGrid>
-                ) : (
-                  <p className="text-sm leading-5 text-neutral-500">
-                    No NFL entry recorded.
-                  </p>
-                )}
-              </DetailSection>
-            </>
-          )}
-        </div>
-      </aside>
-    </div>
+            <DetailSection title="NFL entry">
+              {draft ? (
+                <DetailGrid>
+                  <Detail label="Year" value={draft.year} />
+                  <Detail
+                    label="Outcome"
+                    value={draft.status === 'drafted' ? 'Drafted' : 'UDFA'}
+                  />
+                  <Detail label="Team" value={draft.team} />
+                  <Detail label="Round" value={draft.round} />
+                  <Detail label="Overall pick" value={draft.overallPick} />
+                </DetailGrid>
+              ) : (
+                <p className="text-sm leading-5 text-neutral-500">
+                  No NFL entry recorded.
+                </p>
+              )}
+            </DetailSection>
+          </>
+        )}
+      </div>
+    </DetailSheet>
   )
 }
 
@@ -2339,27 +2375,48 @@ function FilterChips({
   allLabel: string
 }) {
   return (
-    <div className="scrollbar-none -mx-1 mb-3 overflow-x-auto pb-1">
-      <div className="flex min-w-max gap-1.5 px-1">
-        <button
-          type="button"
-          onClick={() => setSelected('all')}
-          className={chipClass(selected === 'all')}
+    <>
+      <label className="mb-3 grid gap-1 text-[10px] font-black uppercase tracking-[0.1em] sm:hidden">
+        {allLabel}
+        <select
+          value={selected}
+          onChange={(event) =>
+            setSelected(
+              event.target.value === 'all' ? 'all' : Number(event.target.value),
+            )
+          }
+          className="min-h-11 border border-michigan-blue/25 bg-white px-2 text-sm font-black normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
         >
-          {allLabel}
-        </button>
-        {values.map((value) => (
+          <option value="all">{allLabel}</option>
+          {values.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="scrollbar-none -mx-1 mb-3 hidden overflow-x-auto pb-1 sm:block">
+        <div className="flex min-w-max gap-1.5 px-1">
           <button
-            key={value}
             type="button"
-            onClick={() => setSelected(value)}
-            className={chipClass(selected === value)}
+            onClick={() => setSelected('all')}
+            className={chipClass(selected === 'all')}
           >
-            {value}
+            {allLabel}
           </button>
-        ))}
+          {values.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setSelected(value)}
+              className={chipClass(selected === value)}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -2809,21 +2866,6 @@ function ChevronIcon() {
       className="h-4 w-4 text-neutral-400 transition group-open:rotate-180"
     >
       <path d="m6 9 6 6 6-6" />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="h-5 w-5"
-    >
-      <path d="M6 6l12 12M18 6 6 18" />
     </svg>
   )
 }

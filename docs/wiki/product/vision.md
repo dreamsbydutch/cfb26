@@ -13,7 +13,7 @@ The implemented core workflow is browsing Michigan player history by depth chart
 **Current**
 
 - `/` presents the 2026 depth chart immediately, then progressively loads recruiting, career, movement, and NFL details for all 428 players.
-- Users can browse by original recruiting class, NFL entry class, exact Michigan position, 2015–2025 snap-count/PFF season, or the full searchable player index and open a detailed player drawer.
+- Users can browse by original recruiting class, NFL entry class, exact Michigan position, 2015–2025 snap-count/PFF season, or the full searchable player index and open a detailed bottom/side sheet. Public routes use compact rows and progressive disclosure as the mobile-first interaction model.
 - Checked-in source uses stored 2000–2026 games to build points-scale Power Ratings, Week 7 Résumé Ratings, immutable historical editions, and venue-aware matchup projections. The 21-table contract has not been pushed: development still hosts the prior 19-table percentile composite and production remains on the earlier foundation.
 - `/admin/roster` separates current-player maintenance from recruit/transfer/walk-on arrivals and confirmed departures. Additions create the normalized player lifecycle atomically; removals retain history. The checked-in arrival/departure functions still need a development push, and every write remains disabled until that deployment also has a Convex admin key.
 - The app can be type-checked and production-built locally.

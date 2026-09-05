@@ -140,12 +140,14 @@ export function RosterAdmin() {
   return (
     <main className="min-h-screen bg-michigan-cream text-michigan-blue">
       <header className="border-b-4 border-michigan-maize bg-michigan-blue text-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-michigan-maize">
               Restricted roster tools
             </p>
-            <h1 className="text-2xl font-black">Roster movement desk</h1>
+            <h1 className="text-lg font-black sm:text-2xl">
+              Roster movement desk
+            </h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden border-r border-white/25 pr-3 text-right sm:block">
@@ -158,7 +160,7 @@ export function RosterAdmin() {
             </span>
             <Link
               to="/"
-              className="border border-white/40 px-3 py-1.5 text-sm font-bold transition hover:border-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize"
+              className="grid min-h-11 place-items-center border border-white/40 px-3 text-xs font-bold transition hover:border-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize sm:text-sm"
             >
               Back to roster
             </Link>
@@ -166,9 +168,39 @@ export function RosterAdmin() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
-        <aside className="space-y-5 lg:sticky lg:top-4 lg:self-start">
-          <section className="border-t-4 border-neutral-900 bg-white px-4 py-4">
+      <div className="mx-auto grid max-w-6xl gap-3 px-3 py-3 sm:px-6 sm:py-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
+        <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start lg:space-y-5">
+          <details className="group border-y border-neutral-300 bg-white lg:hidden">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+              <span>
+                <span className="block text-sm font-black">
+                  Admin access key
+                </span>
+                <span className="block text-[10px] text-neutral-500">
+                  {adminKey
+                    ? 'Key entered for this session'
+                    : 'Required before saving'}
+                </span>
+              </span>
+              <AdminChevron />
+            </summary>
+            <div className="border-t border-neutral-200 px-3 pb-3">
+              <Field
+                label="Admin access key"
+                hint="Kept only in this page's memory and checked on every move."
+              >
+                <input
+                  type="password"
+                  value={adminKey}
+                  onChange={(event) => setAdminKey(event.target.value)}
+                  autoComplete="current-password"
+                  className={inputClass}
+                />
+              </Field>
+            </div>
+          </details>
+
+          <section className="hidden border-t-4 border-neutral-900 bg-white px-4 py-4 lg:block">
             <p className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">
               Single-owner access
             </p>
@@ -186,9 +218,26 @@ export function RosterAdmin() {
             </Field>
           </section>
 
+          <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.1em] lg:hidden">
+            Admin task
+            <select
+              value={workspace}
+              onChange={(event) =>
+                setWorkspace(event.target.value as Workspace)
+              }
+              className="min-h-11 border border-neutral-400 bg-white px-2 text-sm font-black normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+            >
+              {workspaceOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <nav
             aria-label="Roster admin tasks"
-            className="grid gap-px bg-neutral-300"
+            className="hidden gap-px bg-neutral-300 lg:grid"
           >
             {workspaceOptions.map((option) => {
               const selected = workspace === option.value
@@ -217,7 +266,7 @@ export function RosterAdmin() {
             })}
           </nav>
 
-          <p className="border-l-2 border-neutral-400 pl-3 text-xs leading-5 text-neutral-600">
+          <p className="hidden border-l-2 border-neutral-400 pl-3 text-xs leading-5 text-neutral-600 lg:block">
             Additions and departures write the player’s lifecycle atomically, so
             profiles, roster status, and movement history stay together.
           </p>
@@ -1521,6 +1570,19 @@ function adminErrorMessage(error: unknown) {
   if (!(error instanceof Error)) return 'The roster change failed.'
   const serverMessage = error.message.match(/Uncaught Error: ([^\n]+)/)?.[1]
   return serverMessage ?? 'The roster change failed.'
+}
+
+function AdminChevron() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      className="h-4 w-4 shrink-0 fill-none stroke-current text-neutral-500 transition-transform group-open:rotate-180"
+      strokeWidth="2"
+    >
+      <path d="m4 7 6 6 6-6" />
+    </svg>
+  )
 }
 
 export function RosterAdminLoading() {

@@ -6,6 +6,7 @@ import { api } from '../../../convex/_generated/api'
 import type { FunctionReturnType } from 'convex/server'
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
+import { DetailSheet } from '~/components/DetailSheet'
 
 type Lens = 'quality' | 'playoff' | 'michigan'
 type View = 'games' | 'rankings' | 'matchup'
@@ -137,6 +138,18 @@ export function LandscapeDashboard() {
       resolvedTeamB !== '' &&
       resolvedTeamA !== resolvedTeamB,
   })
+  const viewTitle =
+    view === 'games'
+      ? 'What matters this week'
+      : view === 'rankings'
+        ? 'National ratings'
+        : 'Build a head-to-head'
+  const viewDescription =
+    view === 'games'
+      ? 'Order every game by matchup quality, national playoff importance, or Michigan-specific importance.'
+      : view === 'rankings'
+        ? 'One predictive ranking, expressed in neutral-field points, with the evidence behind every team available on demand.'
+        : 'Choose two teams and a venue to compare Power, offense, defense, special teams, team-specific home field, projected score, and win probability.'
 
   return (
     <main className="min-h-screen bg-michigan-cream text-michigan-blue">
@@ -157,15 +170,16 @@ export function LandscapeDashboard() {
           </div>
           <Link
             to="/"
-            className="shrink-0 border border-white/40 px-3 py-1.5 text-xs font-black transition hover:border-michigan-maize hover:text-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize"
+            className="flex min-h-11 shrink-0 items-center border border-white/40 px-3 text-xs font-black transition hover:border-michigan-maize hover:text-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize"
           >
-            Personnel archive
+            <span className="sm:hidden">Roster</span>
+            <span className="hidden sm:inline">Personnel archive</span>
           </Link>
         </div>
       </header>
 
       <div className="sticky top-0 z-20 border-b border-michigan-blue/20 bg-michigan-cream/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-end gap-3 px-4 py-2 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-[1500px] grid-cols-2 items-end gap-2 px-3 py-2 sm:flex sm:flex-wrap sm:gap-3 sm:px-6 lg:px-8">
           <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.12em]">
             Season
             <select
@@ -174,7 +188,7 @@ export function LandscapeDashboard() {
                 setSeason(Number(event.target.value))
                 setWeek(undefined)
               }}
-              className="border border-michigan-blue/30 bg-white px-2 py-1.5 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+              className="min-h-11 w-full border border-michigan-blue/30 bg-white px-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
             >
               {seasons.map((value) => (
                 <option key={value} value={value}>
@@ -188,7 +202,7 @@ export function LandscapeDashboard() {
             <select
               value={resolvedWeek ?? ''}
               onChange={(event) => setWeek(Number(event.target.value))}
-              className="border border-michigan-blue/30 bg-white px-2 py-1.5 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+              className="min-h-11 w-full border border-michigan-blue/30 bg-white px-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
             >
               {resolvedWeek === undefined && <option value="">Current</option>}
               {weeks.map((value) => (
@@ -198,8 +212,20 @@ export function LandscapeDashboard() {
               ))}
             </select>
           </label>
+          <label className="col-span-2 grid gap-1 text-[10px] font-black uppercase tracking-[0.12em] sm:hidden">
+            View
+            <select
+              value={view}
+              onChange={(event) => setView(event.target.value as View)}
+              className="min-h-11 w-full border border-michigan-blue/30 bg-white px-2 text-sm font-black normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+            >
+              <option value="games">Games</option>
+              <option value="rankings">Rankings</option>
+              <option value="matchup">Matchup lab</option>
+            </select>
+          </label>
           <div
-            className="ml-auto flex gap-1"
+            className="ml-auto hidden gap-1 sm:flex"
             role="group"
             aria-label="Dashboard view"
           >
@@ -225,8 +251,8 @@ export function LandscapeDashboard() {
         </div>
       </div>
 
-      <section className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mb-5 max-w-3xl border-b border-michigan-blue/20 pb-3">
+      <section className="mx-auto max-w-[1500px] px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+        <div className="mb-3 max-w-3xl border-b border-michigan-blue/20 pb-3 sm:mb-5">
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-neutral-500">
             {season} ·{' '}
             {resolvedWeek === 0
@@ -234,18 +260,19 @@ export function LandscapeDashboard() {
               : `Week ${resolvedWeek ?? 'current'}`}
           </p>
           <h2 className="mt-1 text-2xl font-black tracking-[-0.03em] sm:text-3xl">
-            {view === 'games'
-              ? 'What matters this week'
-              : view === 'rankings'
-                ? 'National ratings'
-                : 'Build a head-to-head'}
+            {viewTitle}
           </h2>
-          <p className="mt-1 text-sm leading-5 text-neutral-600">
-            {view === 'games'
-              ? 'Order every game by matchup quality, national playoff importance, or Michigan-specific importance.'
-              : view === 'rankings'
-                ? 'One predictive ranking, expressed in neutral-field points, with the evidence behind every team shown in the same row.'
-                : 'Choose two teams and a venue to compare Power, offense, defense, special teams, team-specific home field, projected score, and win probability.'}
+          <details className="group mt-1 sm:hidden">
+            <summary className="flex min-h-8 cursor-pointer list-none items-center gap-1 text-xs font-bold text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+              About this view
+              <DisclosureChevron />
+            </summary>
+            <p className="pb-1 text-sm leading-5 text-neutral-600">
+              {viewDescription}
+            </p>
+          </details>
+          <p className="mt-1 hidden text-sm leading-5 text-neutral-600 sm:block">
+            {viewDescription}
           </p>
         </div>
 
@@ -290,8 +317,20 @@ export function LandscapeDashboard() {
         ) : (
           <>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <label className="grid flex-1 gap-1 text-[10px] font-black uppercase tracking-[0.12em] sm:hidden">
+                Sort games by
+                <select
+                  value={lens}
+                  onChange={(event) => setLens(event.target.value as Lens)}
+                  className="min-h-11 border border-michigan-blue/30 bg-white px-2 text-sm font-black normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                >
+                  <option value="quality">Matchup quality</option>
+                  <option value="playoff">Playoff chase</option>
+                  <option value="michigan">Michigan lens</option>
+                </select>
+              </label>
               <div
-                className="flex gap-1"
+                className="hidden gap-1 sm:flex"
                 role="group"
                 aria-label="Importance lens"
               >
@@ -390,47 +429,59 @@ function GameRow({
     timeStyle: 'short',
   }).format(new Date(game.startTime))
   return (
-    <li className="grid grid-cols-[2rem_1fr_auto] gap-3 border-t border-michigan-blue/20 py-4 first:border-t-2 first:border-michigan-blue lg:[&:nth-child(2)]:border-t-2 lg:[&:nth-child(2)]:border-michigan-blue">
-      <span className="pt-0.5 text-lg font-black tabular-nums text-neutral-300">
-        {position}
-      </span>
-      <div className="min-w-0">
-        <p className="text-[10px] font-black uppercase tracking-[0.12em] text-neutral-500">
-          {game.completed ? 'Final' : date} · {game.michiganRelation}
-        </p>
-        <TeamLine
-          name={game.awaySourceName}
-          points={game.awayPoints}
-          rank={game.awayRank}
-        />
-        <TeamLine
-          name={game.homeSourceName}
-          points={game.homePoints}
-          rank={game.homeRank}
-        />
-        <p className="mt-1 text-xs text-neutral-500">
-          {game.neutralSite ? 'Neutral site' : game.venue || 'Venue TBD'}
-          {game.conferenceGame ? ' · Conference game' : ''}
-          {game.tvOutlets?.length ? ` · ${game.tvOutlets.join(' / ')}` : ''}
-        </p>
-        <p className="mt-1 text-[10px] text-neutral-500">
-          Quality {game.matchupQuality} · Playoff {game.playoffImportance} ·
-          projected margin {game.projectedMargin > 0 ? '+' : ''}
-          {game.projectedMargin.toFixed(1)} home
-        </p>
-      </div>
-      <div className="w-16 text-right">
-        <p className="text-2xl font-black tabular-nums">{score}</p>
-        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-neutral-500">
-          {scoreLabel}
-        </p>
-        <div className="mt-2 h-1.5 bg-michigan-blue-soft" aria-hidden="true">
-          <div
-            className="h-full bg-michigan-maize"
-            style={{ width: `${score}%` }}
-          />
+    <li>
+      <details className="group border-t border-michigan-blue/20 first:border-t-2 first:border-michigan-blue lg:[li:nth-child(2)_&]:border-t-2 lg:[li:nth-child(2)_&]:border-michigan-blue">
+        <summary className="grid min-h-16 cursor-pointer list-none grid-cols-[1.75rem_1fr_3.5rem_1.25rem] items-center gap-2 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+          <span className="text-base font-black tabular-nums text-neutral-300">
+            {position}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[9px] font-black uppercase tracking-[0.1em] text-neutral-500">
+              {game.completed ? 'Final' : date}
+            </p>
+            <TeamLine
+              name={game.awaySourceName}
+              points={game.awayPoints}
+              rank={game.awayRank}
+            />
+            <TeamLine
+              name={game.homeSourceName}
+              points={game.homePoints}
+              rank={game.homeRank}
+            />
+          </div>
+          <div className="text-right">
+            <p className="text-xl font-black leading-none tabular-nums">
+              {score}
+            </p>
+            <p className="mt-1 text-[8px] font-black uppercase tracking-[0.08em] text-neutral-500">
+              {scoreLabel}
+            </p>
+          </div>
+          <DisclosureChevron />
+        </summary>
+        <div className="ml-7 border-t border-michigan-blue/10 pb-3 pt-2 text-xs text-neutral-600">
+          <p>
+            {game.neutralSite ? 'Neutral site' : game.venue || 'Venue TBD'}
+            {game.conferenceGame ? ' · Conference game' : ''}
+            {game.tvOutlets?.length ? ` · ${game.tvOutlets.join(' / ')}` : ''}
+          </p>
+          <p className="mt-1">
+            {game.michiganRelation} · Quality {game.matchupQuality} · Playoff{' '}
+            {game.playoffImportance} · Michigan {game.michiganImportance}
+          </p>
+          <p className="mt-1">
+            Projected margin {game.projectedMargin > 0 ? '+' : ''}
+            {game.projectedMargin.toFixed(1)} home
+          </p>
+          <div className="mt-2 h-1.5 bg-michigan-blue-soft" aria-hidden="true">
+            <div
+              className="h-full bg-michigan-maize"
+              style={{ width: `${score}%` }}
+            />
+          </div>
         </div>
-      </div>
+      </details>
     </li>
   )
 }
@@ -445,8 +496,8 @@ function TeamLine({
   rank: number | undefined
 }) {
   return (
-    <p className="mt-1 flex items-baseline gap-2 text-base font-black">
-      <span className="w-6 shrink-0 text-right text-xs tabular-nums text-neutral-400">
+    <p className="flex items-baseline gap-1 text-sm font-black leading-4">
+      <span className="w-5 shrink-0 text-right text-[10px] tabular-nums text-neutral-400">
         {rank ? rank : '—'}
       </span>
       <span className="truncate">{name}</span>
@@ -479,6 +530,9 @@ function RankingsTable({
   resumeVisible: boolean
   season: number
 }) {
+  const [selectedProgramKey, setSelectedProgramKey] = useState<string | null>(
+    null,
+  )
   const sortedRatings = useMemo(
     () =>
       [...ratings].sort(
@@ -487,6 +541,9 @@ function RankingsTable({
           right.power - left.power,
       ),
     [ratings],
+  )
+  const selectedRating = ratings.find(
+    (rating) => rating.programKey === selectedProgramKey,
   )
   if (ratings.length === 0) {
     const previousSeason = season - 1
@@ -527,7 +584,49 @@ function RankingsTable({
           )}
         </p>
       </div>
-      <div className="overflow-x-auto border-t-2 border-michigan-blue">
+      <ol className="border-t-2 border-michigan-blue lg:hidden">
+        {sortedRatings.map((row) => (
+          <li key={row.programKey}>
+            <button
+              type="button"
+              onClick={() => setSelectedProgramKey(row.programKey)}
+              aria-label={`Open ${row.sourceProgramName} rating details`}
+              className={`grid min-h-14 w-full grid-cols-[2.5rem_1fr_auto_1.25rem] items-center gap-2 border-b border-michigan-blue/15 px-2 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue ${
+                row.sourceProgramName === 'Michigan'
+                  ? 'bg-michigan-maize-soft'
+                  : 'bg-white'
+              }`}
+            >
+              <span className="font-black tabular-nums">
+                #{row.powerRank ?? '—'}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-black">
+                  {row.sourceProgramName}
+                </span>
+                <span className="block truncate text-[9px] text-neutral-500">
+                  {row.conference ?? 'Independent'} · {row.gamesPlayed} games
+                  {resumeVisible && row.resumeRank
+                    ? ` · Résumé #${row.resumeRank}`
+                    : ''}
+                </span>
+              </span>
+              <span className="text-right">
+                <span className="block text-lg font-black tabular-nums">
+                  {formatPoints(row.power)}
+                </span>
+                <span className="block text-[8px] font-black uppercase tracking-[0.08em] text-neutral-400">
+                  Power
+                </span>
+              </span>
+              <span aria-hidden="true" className="text-xl font-black">
+                ›
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <div className="hidden overflow-x-auto border-t-2 border-michigan-blue lg:block">
         <table className="w-full min-w-[1050px] border-collapse text-left">
           <caption className="sr-only">
             National teams ranked by CFB26 Power Rating with supporting evidence
@@ -584,7 +683,13 @@ function RankingsTable({
                     {row.powerRank ?? '—'}
                   </td>
                   <th scope="row" className="px-3 py-2 font-bold">
-                    {row.sourceProgramName}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedProgramKey(row.programKey)}
+                      className="text-left font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+                    >
+                      {row.sourceProgramName}
+                    </button>
                     <span className="ml-2 text-[9px] font-bold uppercase tracking-[0.1em] text-neutral-400">
                       {row.limitedSample ? 'limited sample' : row.modelVersion}
                     </span>
@@ -639,6 +744,132 @@ function RankingsTable({
           </tbody>
         </table>
       </div>
+      {selectedRating && (
+        <TeamRatingSheet
+          rating={selectedRating}
+          resumeVisible={resumeVisible}
+          close={() => setSelectedProgramKey(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+function TeamRatingSheet({
+  close,
+  rating,
+  resumeVisible,
+}: {
+  close: () => void
+  rating: DashboardRating
+  resumeVisible: boolean
+}) {
+  const ratingDetails: Array<[string, string]> = [
+    ['Power', formatPoints(rating.power)],
+    ['Offense', formatPoints(rating.offense)],
+    ['Defense', formatPoints(rating.defense)],
+    [
+      'Special teams',
+      rating.specialTeamsAvailable
+        ? formatPoints(rating.specialTeams)
+        : 'Not available',
+    ],
+    ['Home-field advantage', formatPoints(rating.homeFieldAdvantage)],
+    ['Preseason prior', `${Math.round(rating.priorWeight * 100)}%`],
+  ]
+  return (
+    <DetailSheet
+      close={close}
+      eyebrow={`${rating.classification.toUpperCase()} · ${rating.modelVersion}`}
+      title={rating.sourceProgramName}
+    >
+      <div className="grid grid-cols-3 border-b border-neutral-300 bg-white">
+        <RatingStat
+          label="Power"
+          value={`#${rating.powerRank ?? '—'}`}
+          caption={formatPoints(rating.power)}
+        />
+        <RatingStat
+          label="Résumé"
+          value={
+            resumeVisible && rating.resumeRank
+              ? `#${rating.resumeRank}`
+              : 'Week 7'
+          }
+          caption={
+            resumeVisible && rating.resume !== undefined
+              ? formatPoints(rating.resume)
+              : 'not published'
+          }
+        />
+        <RatingStat
+          label="Sample"
+          value={String(rating.gamesPlayed)}
+          caption={rating.gamesPlayed === 1 ? 'game' : 'games'}
+        />
+      </div>
+      <div className="px-4 py-4 sm:px-5">
+        <div className="flex items-end justify-between gap-3 border-b-2 border-michigan-blue pb-2">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-neutral-500">
+              Neutral-field points
+            </p>
+            <h3 className="text-lg font-black">Rating profile</h3>
+          </div>
+          {rating.limitedSample && (
+            <span className="text-[9px] font-black uppercase tracking-[0.1em] text-neutral-500">
+              Limited sample
+            </span>
+          )}
+        </div>
+        <dl className="grid grid-cols-2 gap-x-4">
+          {ratingDetails.map(([label, value]) => (
+            <div
+              key={label}
+              className="flex min-h-10 items-center justify-between gap-2 border-b border-neutral-200 text-xs"
+            >
+              <dt className="text-neutral-500">{label}</dt>
+              <dd className="font-black tabular-nums">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <section className="mt-4 border-y border-neutral-300 bg-neutral-100 px-3 py-3">
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-neutral-500">
+            Evidence sources
+          </p>
+          <p className="mt-1 text-xs leading-5 text-neutral-600">
+            {rating.dataSources.length > 0
+              ? rating.dataSources.join(' · ')
+              : 'No source detail is available.'}
+          </p>
+          {resumeVisible && rating.disagreementReasons.length > 0 && (
+            <p className="mt-2 text-xs leading-5 text-neutral-600">
+              Résumé context:{' '}
+              {rating.disagreementReasons.map(disagreementLabel).join(' · ')}
+            </p>
+          )}
+        </section>
+      </div>
+    </DetailSheet>
+  )
+}
+
+function RatingStat({
+  caption,
+  label,
+  value,
+}: {
+  caption: string
+  label: string
+  value: string
+}) {
+  return (
+    <div className="border-r border-neutral-300 px-2 py-3 text-center last:border-r-0">
+      <p className="text-[9px] font-black uppercase tracking-[0.1em] text-neutral-500">
+        {label}
+      </p>
+      <p className="mt-1 text-xl font-black tabular-nums">{value}</p>
+      <p className="text-[9px] text-neutral-500">{caption}</p>
     </div>
   )
 }
@@ -693,7 +924,7 @@ function MatchupLab({
           <select
             value={venue}
             onChange={(event) => onSelectVenue(event.target.value as Venue)}
-            className="border border-michigan-blue/30 bg-white px-2 py-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+            className="min-h-11 border border-michigan-blue/30 bg-white px-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
           >
             <option value="team_a">Team A home</option>
             <option value="neutral">Neutral site</option>
@@ -749,7 +980,7 @@ function TeamSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="border border-michigan-blue/30 bg-white px-2 py-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
+        className="min-h-11 border border-michigan-blue/30 bg-white px-2 text-sm font-bold normal-case tracking-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
       >
         {ratings.map((rating) => (
           <option
@@ -835,17 +1066,22 @@ function MatchupResult({ matchup }: { matchup: NonNullable<Matchup> }) {
         <RatingBreakdown rating={ratingB} />
       </section>
 
-      <section className="mt-6 border-t-2 border-michigan-blue pt-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">
-          Stored series history through {matchup.season}
-        </p>
-        <p className="mt-1 text-sm font-bold">
-          {matchup.history.meetings === 0
-            ? 'No completed meetings are stored since 2000.'
-            : `${ratingA.sourceProgramName} ${matchup.history.teamAWins}–${matchup.history.teamBWins}${matchup.history.ties ? `–${matchup.history.ties}` : ''} in ${matchup.history.meetings} stored meetings.`}
-        </p>
+      <details className="group mt-6 border-t-2 border-michigan-blue">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+          <span>
+            <span className="block text-[10px] font-black uppercase tracking-[0.14em] text-neutral-500">
+              Stored series history through {matchup.season}
+            </span>
+            <span className="mt-1 block text-sm font-bold">
+              {matchup.history.meetings === 0
+                ? 'No completed meetings are stored since 2000.'
+                : `${ratingA.sourceProgramName} ${matchup.history.teamAWins}–${matchup.history.teamBWins}${matchup.history.ties ? `–${matchup.history.ties}` : ''} in ${matchup.history.meetings} stored meetings.`}
+            </span>
+          </span>
+          <DisclosureChevron />
+        </summary>
         {matchup.history.lastFive.length > 0 && (
-          <ol className="mt-3 grid gap-x-6 md:grid-cols-2">
+          <ol className="grid gap-x-6 pb-3 md:grid-cols-2">
             {matchup.history.lastFive.map((game) => (
               <li
                 key={game._id}
@@ -862,7 +1098,7 @@ function MatchupResult({ matchup }: { matchup: NonNullable<Matchup> }) {
             ))}
           </ol>
         )}
-      </section>
+      </details>
     </div>
   )
 }
@@ -886,14 +1122,20 @@ function UnitComparison({
         ? 'Even'
         : `${difference > 0 ? teamAName : teamBName} edge`
   return (
-    <div className="grid gap-2 border-b border-michigan-blue/15 py-3 sm:grid-cols-[9rem_1fr_5rem] sm:items-center">
-      <div>
-        <p className="text-sm font-black">{unit.label}</p>
-        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-400">
-          {edge}
-        </p>
-      </div>
-      <div>
+    <details className="group border-b border-michigan-blue/15">
+      <summary className="grid min-h-12 cursor-pointer list-none grid-cols-[1fr_auto_1.25rem] items-center gap-2 py-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+        <span>
+          <span className="block text-sm font-black">{unit.label}</span>
+          <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-400">
+            {edge}
+          </span>
+        </span>
+        <span className="text-sm font-black tabular-nums">
+          {Math.round(unit.teamA)}–{Math.round(unit.teamB)}
+        </span>
+        <DisclosureChevron />
+      </summary>
+      <div className="pb-3">
         <div className="flex justify-between text-[10px] font-bold text-neutral-500">
           <span>{teamAName}</span>
           <span>{teamBName}</span>
@@ -916,10 +1158,7 @@ function UnitComparison({
           {unit.description}
         </p>
       </div>
-      <p className="text-right text-sm font-black tabular-nums">
-        {Math.round(unit.teamA)}–{Math.round(unit.teamB)}
-      </p>
-    </div>
+    </details>
   )
 }
 
@@ -951,15 +1190,16 @@ function RatingBreakdown({
         ['Form', rating.dimensions.form],
       ]
   return (
-    <article>
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-lg font-black">{rating.sourceProgramName}</h3>
-        <span className="text-xs font-black tabular-nums">
+    <details className="group border-b border-michigan-blue/15">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-michigan-blue [&::-webkit-details-marker]:hidden">
+        <span className="text-base font-black">{rating.sourceProgramName}</span>
+        <span className="ml-auto text-xs font-black tabular-nums">
           {isPowerRating
             ? `#${rating.powerRank ?? '—'} · ${formatPoints(rating.power)}`
             : `#${rating.rank} · ${Math.round(rating.overall)}`}
         </span>
-      </div>
+        <DisclosureChevron />
+      </summary>
       <dl className="mt-2 grid grid-cols-2 gap-x-4 text-xs">
         {dimensions.map(([label, value]) => (
           <div
@@ -978,7 +1218,20 @@ function RatingBreakdown({
           ? `${rating.gamesPlayed} games · ${Math.round(rating.priorWeight * 100)}% preseason prior · ${rating.dataSources.length} sources`
           : `${rating.signalCount} signals · ${rating.dataSources.length} sources · ${Math.round(rating.confidence)}% coverage`}
       </p>
-    </article>
+    </details>
+  )
+}
+
+function DisclosureChevron() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      className="h-4 w-4 shrink-0 fill-none stroke-current transition-transform group-open:rotate-180"
+      strokeWidth="2"
+    >
+      <path d="m5 7.5 5 5 5-5" />
+    </svg>
   )
 }
 

@@ -55,6 +55,7 @@ Confirm the exact target before running `convex dev`, `convex deploy`, or a Verc
 |-- scripts/              Deterministic repository helpers
 |-- SnapCounts.json       Raw 2015–2025 Michigan snap-count/PFF season source
 |-- src/
+|   |-- components/       Shared presentation and interaction primitives
 |   |-- features/         Domain UI and client-side data orchestration
 |   |-- routes/           TanStack file routes; route paths follow filenames
 |   |-- styles/           Global styles and Tailwind import
