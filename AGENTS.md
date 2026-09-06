@@ -4,7 +4,7 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: first Michigan football vertical slice plus a national landscape foundation. `/` remains the Michigan roster explorer; `/games` exposes populated 2000–2026 schedules, one points-scale CFB26 Power ranking with Week 7 Résumé evidence, matchup-quality/playoff/Michigan game orders, optional TV outlets, and custom head-to-head matchups; `/admin/roster` limits in-season edits to jersey number, position, and depth placement while retaining recruit, transfer, walk-on, and departure workflows.
+- Product status: first Michigan football vertical slice plus a national landscape foundation. `/` remains the Michigan roster explorer; `/games` exposes populated 2000–2026 schedules, one points-scale CFB26 Power ranking with Week 7 Résumé evidence, matchup-quality/playoff/Michigan game orders, optional TV outlets, and custom head-to-head matchups; `/admin/roster` limits in-season edits to jersey number, position, and depth placement while retaining recruit, transfer, walk-on, and departure workflows. The approved Michigan-first [system definition](docs/wiki/product/system-definition.md) and [nine-phase backlog](docs/wiki/product/implementation-backlog.md) are planned behavior; phase 1 has not begun.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.

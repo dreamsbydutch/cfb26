@@ -2,7 +2,7 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-This page inventories observable interfaces that another part of the app—or a user—can currently depend on. Update it when a route, function, data shape, environment requirement, or public asset changes.
+This page inventories observable interfaces that another part of the app—or a user—can currently depend on. Update it when a route, function, data shape, environment requirement, or public asset changes. The approved [system definition](../product/system-definition.md) describes planned behavior and must not be read as a shipped contract.
 
 The checked-in backend also defines `internal.cfbdHealth.probe({ season, week })`, a read-only operational canary returning configuration status plus ten endpoint results with required/optional status, latency, row count, classified error details, and warnings. It is not a browser-facing API and becomes callable only after an authorized push to the selected deployment.
 

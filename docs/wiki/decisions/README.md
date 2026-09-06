@@ -13,6 +13,9 @@ Architectural decision records explain durable choices and their consequences. O
 | [0007](0007-optimize-predictions-with-held-out-seasons.md)       | Accepted   | Optimize margin MAE and probability calibration through leakage-safe held-out seasons.                |
 | [0008](0008-separate-power-and-resume-ratings.md)                | Accepted   | Replace the percentile composite with points-scale Power and wins-above-expectation Résumé ratings.   |
 | [0009](0009-use-one-predictive-ranking-and-three-game-orders.md) | Accepted   | Present one evidence-rich predictive ranking and separate quality, playoff, and Michigan game orders. |
+| [0010](0010-model-one-person-with-stints-and-player-seasons.md)  | Accepted   | Represent one person across commitments, Michigan stints, Player Seasons, and later identities.       |
+| [0011](0011-replace-pff-data-with-cfb26-player-grades.md)        | Accepted   | Remove PFF data and replace it with phase-specific owner-authored CFB26 Player Grades.                |
+| [0012](0012-assign-data-authority-and-retention.md)              | Accepted   | Assign source authority and retain only durable evidence and immutable outputs.                       |
 
 ## Adding an ADR
 

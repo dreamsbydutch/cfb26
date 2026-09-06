@@ -25,14 +25,14 @@ This wiki is the durable source of truth for the application. It describes what 
 
 **Current:** `cfb26` is a three-route TanStack Start application. `/` is a responsive Michigan football personnel explorer; `/games` combines one evidence-rich Power ranking, Week 7 Résumé context, separate matchup-quality/playoff/Michigan game orders, optional television outlets, and custom matchup projections; `/admin/roster` is a no-index, deployment-key-gated movement desk whose in-season edit surface is limited to jersey number, position, and depth placement, alongside complete recruit/transfer/walk-on arrivals and history-preserving departures. Checked-in source has the 21-table immutable rating-edition contract, but it has not been pushed: development still hosts the prior 19-table composite model and production remains on the earlier 17-table, 47,774-document foundation. The owner-confirmed Vercel project and production domain are recorded, but the Nitro-backed web deployment still needs a production smoke check. The repository has offline CFBD and rating-model tests, but no identity provider or CI workflow.
 
-**Planned:** redeploy and smoke-test the Nitro-backed Vercel production pipeline. Define the product audience, longer-term problem statement, and production data-access policy.
+**Planned:** the approved [CFB26 system definition](product/system-definition.md) expands the current slice into a Michigan-first intelligence system with public read-only exploration and one private owner. Delivery starts with the backed-up schema/PFF/OpenSheet migration in [phase 1](product/implementation-backlog.md#phase-1--schema-and-controlled-migration), proceeds through national, roster, player-game, rating, ranking, NFL, and operational workflows, and ends with the final UI redesign.
 
-**Undecided:** product audience, future multi-user authentication/roles, final branding, analytics, and production service-level expectations. The current single-owner roster workflow is fixed by [ADR 0005](decisions/0005-single-owner-roster-admin-key.md).
+**Undecided:** the single-owner authentication mechanism, any Power challenger that can pass held-out promotion gates, free-tier scheduling details, and final visual language remain later engineering selections. No unresolved product decision blocks phase 1.
 
 ## Documentation map
 
 - [Product](product/README.md)
-  - Known end goal, scope boundaries, milestones, and open decisions.
+  - Approved system definition, current/end-state vision, scope boundaries, and phase backlog.
 - [Architecture](architecture/README.md)
   - System flow, frontend, and Convex backend.
 - [Guides](guides/README.md)

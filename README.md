@@ -1,6 +1,8 @@
 # cfb26
 
-`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. It presents the current depth chart, recruiting and draft classes, 2015–2025 snap counts and PFF grades, one points-scale CFB26 Power ranking with supporting evidence, weekly game orders for matchup quality, the playoff chase, and Michigan relevance, optional TV outlets, and custom head-to-head matchups.
+`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. Today it presents the current depth chart, recruiting and draft classes, legacy 2015–2025 snap/PFF data, one points-scale CFB26 Power ranking with supporting evidence, weekly game orders, optional TV outlets, and custom head-to-head matchups.
+
+The approved destination is a Michigan-first college football intelligence system with public read-only exploration, private single-owner administration, owner-authored CFB26 Player Grades, national Power/Résumé/playoff tools, and Michigan-alumni NFL tracking. Phase 1 will remove PFF and OpenSheet dependencies through a controlled migration; those changes are not implemented yet.
 
 ## Quick start
 
@@ -41,8 +43,10 @@ npm run check       # Full local quality gate
 
 - [Agent guide](AGENTS.md) — commands, repository rules, structure, and completion criteria.
 - [Wiki home](docs/wiki/README.md) — product status, architecture, workflows, operations, and reference material.
+- [System definition](docs/wiki/product/system-definition.md) — approved scope, domain rules, data authority, and non-goals.
+- [Implementation backlog](docs/wiki/product/implementation-backlog.md) — ordered phases, work packages, and exit criteria.
 - [Local development](docs/wiki/guides/local-development.md) — setup and everyday workflows.
 - [Deployment](docs/wiki/guides/deployment.md) — Convex and Vercel configuration.
-- [Product vision](docs/wiki/product/vision.md) — current end goal, boundaries, and open decisions.
+- [Product vision](docs/wiki/product/vision.md) — concise end goal and delivery status.
 
 Backend contributors should also read [convex/README.md](convex/README.md). Repository-specific agent workflows live under [.agents/skills](.agents/skills).
