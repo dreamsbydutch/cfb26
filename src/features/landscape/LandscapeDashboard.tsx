@@ -7,6 +7,7 @@ import type { FunctionReturnType } from 'convex/server'
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { DetailSheet } from '~/components/DetailSheet'
+import { MobilePrimaryNav } from '~/components/MobilePrimaryNav'
 
 type Lens = 'quality' | 'playoff' | 'michigan'
 type View = 'games' | 'rankings' | 'matchup'
@@ -152,7 +153,7 @@ export function LandscapeDashboard() {
         : 'Choose two teams and a venue to compare Power, offense, defense, special teams, team-specific home field, projected score, and win probability.'
 
   return (
-    <main className="min-h-screen bg-michigan-cream text-michigan-blue">
+    <main className="min-h-screen bg-michigan-cream pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-michigan-blue sm:pb-0">
       <header className="border-b-4 border-michigan-maize bg-michigan-blue text-white">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
@@ -170,10 +171,9 @@ export function LandscapeDashboard() {
           </div>
           <Link
             to="/"
-            className="flex min-h-11 shrink-0 items-center border border-white/40 px-3 text-xs font-black transition hover:border-michigan-maize hover:text-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize"
+            className="hidden min-h-11 shrink-0 items-center border border-white/40 px-3 text-xs font-black transition hover:border-michigan-maize hover:text-michigan-maize focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-maize sm:flex"
           >
-            <span className="sm:hidden">Roster</span>
-            <span className="hidden sm:inline">Personnel archive</span>
+            Personnel archive
           </Link>
         </div>
       </header>
@@ -378,6 +378,7 @@ export function LandscapeDashboard() {
           </>
         )}
       </section>
+      <MobilePrimaryNav active="games" />
     </main>
   )
 }

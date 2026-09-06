@@ -15,7 +15,7 @@ Checked-in source defines the 21-table national-data and immutable Power/Résum�
 | `players.ts`       | `getProfile`    | Returns one player with recruiting, stints, career, seasonal stats, movement, and draft. |
 | `rosters.ts`       | `list`          | Returns a bounded program roster, optionally by status and position.                    |
 | `rosters.ts`       | `listMovements` | Returns a bounded season movement list, optionally by event kind.                       |
-| `rosterAdmin.ts`   | `updatePlayer`  | Atomically edits one roster stint after deployment-key verification.                    |
+| `rosterAdmin.ts`   | `updatePlayer`  | Atomically updates one active player's jersey number, position, and depth placement after deployment-key verification. |
 | `rosterAdmin.ts`   | `addPlayer`     | Atomically creates an active player's identity, recruiting profile, stint, zeroed career summary, and arrival event. |
 | `rosterAdmin.ts`   | `removePlayer`  | Atomically closes an active stint and records a transfer, graduation, retirement, or dismissal. |
 | `seasonalStats.ts` | `listBySeason`  | Returns one season's participants plus rostered players with no source participation.   |
@@ -32,9 +32,9 @@ Checked-in source defines the 21-table national-data and immutable Power/Résum�
 | `ratingSystem.ts`  | pure model      | Fits hierarchical Power Ratings, builds Week 7 Résumé Ratings, and produces points/probability matchup projections. |
 | `ratings.ts`       | public and internal orchestration | Selects immutable editions for dashboard/matchup reads, retains legacy fallbacks, and builds nightly/official/amendment/research editions. |
 
-The five Michigan reads and the shared national team/game/Elo reads are available in both environments. Composite reads and the earlier `updatePlayer` roster mutation are development-only until production promotion; the checked-in `addPlayer` and `removePlayer` functions still need an authorized development push. Each environment has its own `CFBD_API_KEY`; every roster write additionally requires a distinct `CFB26_ADMIN_KEY`. Both initial 2000–2026 game backfills are complete. Public reads remain unauthenticated; synchronization and model rebuilds are internal and cron-driven.
+The five Michigan reads and the shared national team/game/Elo reads are available in both environments. Composite reads and the earlier `updatePlayer` roster mutation are development-only until production promotion; the checked-in narrowed `updatePlayer` contract plus `addPlayer` and `removePlayer` still need an authorized development push. Each environment has its own `CFBD_API_KEY`; every roster write additionally requires a distinct `CFB26_ADMIN_KEY`. Both initial 2000–2026 game backfills are complete. Public reads remain unauthenticated; synchronization and model rebuilds are internal and cron-driven.
 
-Public roster-stint results omit the stored legacy redshirt field. They expose source medical and owner-added eligibility seasons and derive `eligibilityEndSeason` from the five-season baseline plus both extensions. Stints may also expose a tier override, current injury, and bounded position-change history. The schema keeps the old redshirt field optional only so existing hosted rows remain valid during the data transition.
+Public roster-stint results omit the stored legacy redshirt field. They expose source medical and owner-added eligibility seasons and derive `eligibilityEndSeason` from the five-season baseline plus both extensions. Stints may also expose a one-based position order, tier override, current injury, and bounded position-change history. The schema keeps the old redshirt field optional only so existing hosted rows remain valid during the data transition.
 
 ## Rules
 

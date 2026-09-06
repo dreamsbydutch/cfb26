@@ -11,7 +11,6 @@ type RosterEntry = FunctionReturnType<typeof api.rosters.list>[number]
 type Program = FunctionReturnType<typeof api.teamData.listPrograms>[number]
 type PlayerId = RosterEntry['player']['_id']
 type DepthTier = NonNullable<RosterEntry['stint']['depthTierOverride']>
-type InjuryKind = NonNullable<RosterEntry['stint']['injury']>['kind']
 type EntrySource = 'high_school' | 'transfer' | 'walk_on'
 type DepartureKind = 'transfer_out' | 'graduated' | 'retired' | 'dismissed'
 type Workspace = 'edit' | 'add' | 'remove'
@@ -31,12 +30,44 @@ const tierOptions: Array<{ label: string; value: 'automatic' | DepthTier }> = [
   { label: 'Walk-ons', value: 'walk-ons' },
 ]
 
-const injuryOptions: Array<{ label: string; value: 'none' | InjuryKind }> = [
-  { label: 'Available — no injury', value: 'none' },
-  { label: 'Short term', value: 'short_term' },
-  { label: 'Long term', value: 'long_term' },
-  { label: 'Out for the season', value: 'season_ending' },
-]
+const rosterPositionOptions = [
+  'QB',
+  'RB',
+  'HB',
+  'FB',
+  'WR',
+  'SLOT',
+  'TE',
+  'LT',
+  'RT',
+  'OT',
+  'LG',
+  'RG',
+  'OG',
+  'C',
+  'OC',
+  'OL',
+  'DL',
+  'DT',
+  'NT',
+  'IDL',
+  'DI',
+  'EDGE',
+  'DE',
+  'SDE',
+  'WDE',
+  'ED',
+  'LB',
+  'ILB',
+  'OLB',
+  'CB',
+  'NICKEL',
+  'S',
+  'DB',
+  'K',
+  'P',
+  'LS',
+] as const
 
 const workspaceOptions: Array<{
   description: string
@@ -44,7 +75,7 @@ const workspaceOptions: Array<{
   value: Workspace
 }> = [
   {
-    description: 'Depth, eligibility, position, and availability',
+    description: 'Number, position, and depth-chart placement',
     label: 'Edit a player',
     value: 'edit',
   },
@@ -311,15 +342,20 @@ function EditPlayerForm({
   const [depthTier, setDepthTier] = useState<'automatic' | DepthTier>(
     'automatic',
   )
+  const [depthChartOrder, setDepthChartOrder] = useState('')
+  const [jerseyNumber, setJerseyNumber] = useState('')
   const [position, setPosition] = useState('')
-  const [extraEligibility, setExtraEligibility] = useState(0)
-  const [injuryKind, setInjuryKind] = useState<'none' | InjuryKind>('none')
-  const [injuryNote, setInjuryNote] = useState('')
-  const [expectedReturn, setExpectedReturn] = useState('')
-  const [effectiveSeason, setEffectiveSeason] = useState(CURRENT_SEASON)
-  const [positionChangeNote, setPositionChangeNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<FormMessage>()
+  const positionOptions = useMemo(
+    () => [
+      ...new Set([
+        ...rosterPositionOptions,
+        ...players.map(({ stint }) => stint.position),
+      ]),
+    ],
+    [players],
+  )
 
   useEffect(() => {
     if (
@@ -334,13 +370,17 @@ function EditPlayerForm({
   useEffect(() => {
     if (!selected) return
     setDepthTier(selected.stint.depthTierOverride ?? 'automatic')
+    setDepthChartOrder(
+      selected.stint.depthChartOrder === undefined
+        ? ''
+        : String(selected.stint.depthChartOrder),
+    )
+    setJerseyNumber(
+      selected.stint.jerseyNumber === undefined
+        ? ''
+        : String(selected.stint.jerseyNumber),
+    )
     setPosition(selected.stint.position)
-    setExtraEligibility(selected.stint.extraEligibilitySeasons)
-    setInjuryKind(selected.stint.injury?.kind ?? 'none')
-    setInjuryNote(selected.stint.injury?.note ?? '')
-    setExpectedReturn(selected.stint.injury?.expectedReturn ?? '')
-    setEffectiveSeason(CURRENT_SEASON)
-    setPositionChangeNote('')
   }, [selected])
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -352,27 +392,19 @@ function EditPlayerForm({
     try {
       await updatePlayer({
         adminKey,
+        depthChartOrder:
+          depthChartOrder === '' ? null : Number(depthChartOrder),
         depthTier: depthTier === 'automatic' ? null : depthTier,
-        effectiveSeason,
-        extraEligibilitySeasons: extraEligibility,
-        injury:
-          injuryKind === 'none'
-            ? null
-            : {
-                expectedReturn: expectedReturn || undefined,
-                kind: injuryKind,
-                note: injuryNote || undefined,
-              },
+        effectiveSeason: CURRENT_SEASON,
+        jerseyNumber: jerseyNumber === '' ? null : Number(jerseyNumber),
         playerId: selected.player._id,
         position,
-        positionChangeNote: positionChangeNote || undefined,
         programKey: 'michigan',
       })
       setMessage({
         kind: 'success',
-        text: `${selected.player.displayName} was updated.`,
+        text: `${selected.player.displayName}’s roster placement was updated.`,
       })
-      setPositionChangeNote('')
     } catch (error) {
       setMessage({ kind: 'error', text: adminErrorMessage(error) })
     } finally {
@@ -384,12 +416,12 @@ function EditPlayerForm({
     <WorkspacePanel
       eyebrow="Player maintenance"
       title="Edit an active player"
-      description="Adjust current roster facts without rewriting the player’s arrival or history."
+      description="Update the number, position, and depth-chart placement used during the season."
     >
       {players.length === 0 ? (
         <EmptyRoster />
       ) : (
-        <form onSubmit={save} className="space-y-8">
+        <form onSubmit={save} className="space-y-5">
           <PlayerPicker
             players={players}
             selectedId={selectedId}
@@ -407,10 +439,63 @@ function EditPlayerForm({
               />
 
               <EditorSection
-                title="Depth chart and eligibility"
-                description="Automatic placement uses position, roster order, acquisition type, and roster year. An override always wins."
+                title="In-season roster placement"
+                description={`These are the only active-player fields exposed during the ${CURRENT_SEASON} season. Position changes are recorded automatically.`}
               >
-                <Field label="Depth-chart section">
+                <Field
+                  label="Jersey number"
+                  hint="Use 0–99, or leave blank when unassigned."
+                >
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={99}
+                    step={1}
+                    value={jerseyNumber}
+                    onChange={(event) =>
+                      setJerseyNumber(event.currentTarget.value)
+                    }
+                    placeholder="Unassigned"
+                    className={compactInputClass}
+                  />
+                </Field>
+                <Field label="Current position">
+                  <select
+                    value={position}
+                    onChange={(event) => setPosition(event.target.value)}
+                    className={inputClass}
+                    required
+                  >
+                    {positionOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field
+                  label="Position order"
+                  hint="1 is first at this position; leave blank to follow ordered players."
+                >
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={99}
+                    step={1}
+                    value={depthChartOrder}
+                    onChange={(event) =>
+                      setDepthChartOrder(event.currentTarget.value)
+                    }
+                    placeholder="Unordered"
+                    className={compactInputClass}
+                  />
+                </Field>
+                <Field
+                  label="Depth-chart section"
+                  hint="Automatic placement uses position order; an override always wins."
+                >
                   <select
                     value={depthTier}
                     onChange={(event) =>
@@ -427,149 +512,10 @@ function EditPlayerForm({
                     ))}
                   </select>
                 </Field>
-                <Field
-                  label="Extra eligibility seasons"
-                  hint="Owner-granted time beyond the standard window and medical extensions."
-                >
-                  <input
-                    type="number"
-                    min={0}
-                    max={5}
-                    step={1}
-                    value={extraEligibility}
-                    onChange={(event) =>
-                      setExtraEligibility(
-                        event.currentTarget.valueAsNumber || 0,
-                      )
-                    }
-                    className={compactInputClass}
-                  />
-                </Field>
-                <div className="self-end border-l-4 border-michigan-maize bg-neutral-100 px-3 py-2.5 text-sm text-neutral-600">
-                  Eligibility ends in{' '}
-                  <strong className="text-neutral-950 tabular-nums">
-                    {selected.stint.eligibilityStartSeason +
-                      4 +
-                      selected.stint.medicalExtensionSeasons +
-                      extraEligibility}
-                  </strong>
-                </div>
-              </EditorSection>
-
-              <EditorSection
-                title="Position change"
-                description="Changing the position records the old and new labels in the player’s public history."
-              >
-                <Field label="Current position">
-                  <input
-                    value={position}
-                    onChange={(event) => setPosition(event.target.value)}
-                    maxLength={16}
-                    className={inputClass}
-                    required
-                  />
-                </Field>
-                <Field label="Effective season">
-                  <input
-                    type="number"
-                    min={1900}
-                    max={2100}
-                    value={effectiveSeason}
-                    onChange={(event) =>
-                      setEffectiveSeason(
-                        event.currentTarget.valueAsNumber || CURRENT_SEASON,
-                      )
-                    }
-                    className={compactInputClass}
-                    required
-                  />
-                </Field>
-                <div className="md:col-span-2">
-                  <Field
-                    label="Position-change note"
-                    hint="Optional, public, and limited to 160 characters."
-                  >
-                    <input
-                      value={positionChangeNote}
-                      onChange={(event) =>
-                        setPositionChangeNote(event.target.value)
-                      }
-                      maxLength={160}
-                      placeholder="Why or when the move was made"
-                      className={inputClass}
-                    />
-                  </Field>
-                </div>
-                {selected.stint.positionChanges &&
-                  selected.stint.positionChanges.length > 0 && (
-                    <div className="md:col-span-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-neutral-500">
-                        Recorded changes
-                      </p>
-                      <ul className="mt-1 divide-y divide-neutral-200 border-y border-neutral-300 text-sm">
-                        {[...selected.stint.positionChanges]
-                          .reverse()
-                          .map((change) => (
-                            <li key={change.recordedAt} className="py-2">
-                              <strong>
-                                {change.fromPosition} → {change.toPosition}
-                              </strong>{' '}
-                              · {change.effectiveSeason}
-                              {change.note ? ` · ${change.note}` : ''}
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  )}
-              </EditorSection>
-
-              <EditorSection
-                title="Availability"
-                description="The current injury marker is public on the roster and replaces any previous marker."
-                columns="md:grid-cols-3"
-              >
-                <Field label="Injury status">
-                  <select
-                    value={injuryKind}
-                    onChange={(event) =>
-                      setInjuryKind(event.target.value as 'none' | InjuryKind)
-                    }
-                    className={inputClass}
-                  >
-                    {injuryOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field
-                  label="Expected return"
-                  hint="Optional; for example, Week 4."
-                >
-                  <input
-                    value={expectedReturn}
-                    onChange={(event) => setExpectedReturn(event.target.value)}
-                    maxLength={80}
-                    disabled={injuryKind === 'none'}
-                    placeholder="Week 4"
-                    className={inputClass}
-                  />
-                </Field>
-                <Field label="Injury note" hint="Optional public roster note.">
-                  <input
-                    value={injuryNote}
-                    onChange={(event) => setInjuryNote(event.target.value)}
-                    maxLength={160}
-                    disabled={injuryKind === 'none'}
-                    placeholder="Availability context"
-                    className={inputClass}
-                  />
-                </Field>
               </EditorSection>
 
               <FormActions
-                buttonLabel="Save player changes"
+                buttonLabel="Save roster placement"
                 pendingLabel="Saving…"
                 disabled={saving || adminKey.length === 0}
                 pending={saving}
@@ -1260,70 +1206,89 @@ function PlayerPicker({
 
   return (
     <section aria-labelledby="player-picker-title">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3
-            id="player-picker-title"
-            className="text-sm font-black text-neutral-950"
-          >
-            Choose a roster player
-          </h3>
-          <p className="text-xs text-neutral-500">
-            Search by name, position, or number.
-          </p>
+      <label className="grid gap-1 text-[10px] font-black uppercase tracking-[0.1em] sm:hidden">
+        Choose a roster player
+        <select
+          value={selectedId ?? ''}
+          onChange={(event) => onSelect(event.target.value as PlayerId)}
+          className={inputClass}
+        >
+          {players.map((entry) => (
+            <option key={entry.player._id} value={entry.player._id}>
+              {entry.stint.jerseyNumber === undefined
+                ? '—'
+                : `#${entry.stint.jerseyNumber}`}{' '}
+              {entry.player.displayName} · {entry.stint.position}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="hidden sm:block">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3
+              id="player-picker-title"
+              className="text-sm font-black text-neutral-950"
+            >
+              Choose a roster player
+            </h3>
+            <p className="text-xs text-neutral-500">
+              Search by name, position, or number.
+            </p>
+          </div>
+          <label className="w-full sm:w-72">
+            <span className="sr-only">Search active players</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search active roster"
+              className={inputClass}
+            />
+          </label>
         </div>
-        <label className="w-full sm:w-72">
-          <span className="sr-only">Search active players</span>
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search active roster"
-            className={inputClass}
-          />
-        </label>
+        <div className="mt-3 max-h-64 overflow-y-auto border-y border-neutral-300">
+          {filtered.length === 0 ? (
+            <p className="px-3 py-5 text-center text-sm text-neutral-500">
+              No active players match “{search}”.
+            </p>
+          ) : (
+            filtered.map((entry) => {
+              const selected = entry.player._id === selectedId
+              return (
+                <button
+                  key={entry.player._id}
+                  type="button"
+                  onClick={() => onSelect(entry.player._id)}
+                  aria-pressed={selected}
+                  className={`grid w-full grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-neutral-200 px-3 py-2 text-left last:border-b-0 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${
+                    selected
+                      ? tone === 'danger'
+                        ? 'bg-red-50 text-red-950 focus-visible:outline-red-700'
+                        : 'bg-blue-50 text-michigan-blue focus-visible:outline-michigan-blue'
+                      : 'bg-white text-neutral-700 hover:bg-neutral-50 focus-visible:outline-michigan-blue'
+                  }`}
+                >
+                  <span className="font-black tabular-nums">
+                    {entry.stint.jerseyNumber === undefined
+                      ? '—'
+                      : `#${entry.stint.jerseyNumber}`}
+                  </span>
+                  <span className="min-w-0 truncate text-sm font-bold">
+                    {entry.player.displayName}
+                  </span>
+                  <span className="text-xs font-black text-neutral-500">
+                    {entry.stint.position}
+                  </span>
+                </button>
+              )
+            })
+          )}
+        </div>
+        <p className="mt-1 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-400">
+          {filtered.length} of {players.length} players
+        </p>
       </div>
-      <div className="mt-3 max-h-64 overflow-y-auto border-y border-neutral-300">
-        {filtered.length === 0 ? (
-          <p className="px-3 py-5 text-center text-sm text-neutral-500">
-            No active players match “{search}”.
-          </p>
-        ) : (
-          filtered.map((entry) => {
-            const selected = entry.player._id === selectedId
-            return (
-              <button
-                key={entry.player._id}
-                type="button"
-                onClick={() => onSelect(entry.player._id)}
-                aria-pressed={selected}
-                className={`grid w-full grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-neutral-200 px-3 py-2 text-left last:border-b-0 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] ${
-                  selected
-                    ? tone === 'danger'
-                      ? 'bg-red-50 text-red-950 focus-visible:outline-red-700'
-                      : 'bg-blue-50 text-michigan-blue focus-visible:outline-michigan-blue'
-                    : 'bg-white text-neutral-700 hover:bg-neutral-50 focus-visible:outline-michigan-blue'
-                }`}
-              >
-                <span className="font-black tabular-nums">
-                  {entry.stint.jerseyNumber === undefined
-                    ? '—'
-                    : `#${entry.stint.jerseyNumber}`}
-                </span>
-                <span className="min-w-0 truncate text-sm font-bold">
-                  {entry.player.displayName}
-                </span>
-                <span className="text-xs font-black text-neutral-500">
-                  {entry.stint.position}
-                </span>
-              </button>
-            )
-          })
-        )}
-      </div>
-      <p className="mt-1 text-right text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-400">
-        {filtered.length} of {players.length} players
-      </p>
     </section>
   )
 }
@@ -1336,7 +1301,7 @@ function PlayerSummary({
   recruitingSeason?: number
 }) {
   return (
-    <section className="grid gap-3 border-y border-neutral-300 bg-neutral-50 px-3 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+    <section className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-y border-neutral-300 bg-neutral-50 px-3 py-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
       <span className="text-3xl font-black tabular-nums text-neutral-950">
         {entry.stint.jerseyNumber === undefined
           ? '—'
@@ -1350,7 +1315,7 @@ function PlayerSummary({
           {entry.stint.position} · Michigan since {entry.stint.startSeason}
         </p>
       </div>
-      <dl className="flex gap-5 text-right text-xs">
+      <dl className="hidden gap-5 text-right text-xs sm:flex">
         {recruitingSeason !== undefined && (
           <div>
             <dt className="font-bold uppercase tracking-[0.08em] text-neutral-400">

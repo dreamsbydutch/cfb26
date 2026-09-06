@@ -10,12 +10,6 @@ const depthTier = v.union(
   v.literal('walk-ons'),
 )
 
-const injuryKind = v.union(
-  v.literal('short_term'),
-  v.literal('long_term'),
-  v.literal('season_ending'),
-)
-
 const entrySource = v.union(
   v.literal('high_school'),
   v.literal('transfer'),
@@ -124,33 +118,26 @@ function slugify(value: string) {
 export const updatePlayer = mutation({
   args: {
     adminKey: v.string(),
+    depthChartOrder: v.union(v.null(), v.number()),
     depthTier: v.union(v.null(), depthTier),
     effectiveSeason: v.number(),
-    extraEligibilitySeasons: v.number(),
-    injury: v.union(
-      v.null(),
-      v.object({
-        expectedReturn: v.optional(v.string()),
-        kind: injuryKind,
-        note: v.optional(v.string()),
-      }),
-    ),
+    jerseyNumber: v.union(v.null(), v.number()),
     playerId: v.id('players'),
     position: v.string(),
-    positionChangeNote: v.optional(v.string()),
     programKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     assertAdminKey(args.adminKey)
 
     const position = footballPosition(args.position)
-    if (
-      !Number.isInteger(args.extraEligibilitySeasons) ||
-      args.extraEligibilitySeasons < 0 ||
-      args.extraEligibilitySeasons > 5
-    ) {
-      throw new Error('Extra eligibility must be a whole number from 0 to 5')
-    }
+    const jerseyNumber =
+      args.jerseyNumber === null
+        ? undefined
+        : wholeNumber(args.jerseyNumber, 'Jersey number', 0, 99)
+    const depthChartOrder =
+      args.depthChartOrder === null
+        ? undefined
+        : wholeNumber(args.depthChartOrder, 'Depth-chart order', 1, 99)
     if (
       !Number.isInteger(args.effectiveSeason) ||
       args.effectiveSeason < 1900 ||
@@ -179,42 +166,20 @@ export const updatePlayer = mutation({
     if (!stint) throw new Error('Roster stint not found')
 
     const now = Date.now()
-    const positionChangeNote = boundedText(
-      args.positionChangeNote,
-      'Position-change note',
-      160,
-    )
     const positionChanges = [...(stint.positionChanges ?? [])]
     if (position !== stint.position) {
       positionChanges.push({
         effectiveSeason: args.effectiveSeason,
         fromPosition: stint.position,
-        note: positionChangeNote,
         recordedAt: now,
         toPosition: position,
       })
     }
 
-    const injury = args.injury
-      ? {
-          expectedReturn: boundedText(
-            args.injury.expectedReturn,
-            'Expected return',
-            80,
-          ),
-          kind: args.injury.kind,
-          note: boundedText(args.injury.note, 'Injury note', 160),
-          updatedAt: now,
-        }
-      : undefined
-
     await ctx.db.patch('rosterStints', stint._id, {
+      depthChartOrder,
       depthTierOverride: args.depthTier ?? undefined,
-      extraEligibilitySeasons:
-        args.extraEligibilitySeasons === 0
-          ? undefined
-          : args.extraEligibilitySeasons,
-      injury,
+      jerseyNumber,
       position,
       positionChanges:
         positionChanges.length === 0 ? undefined : positionChanges.slice(-20),

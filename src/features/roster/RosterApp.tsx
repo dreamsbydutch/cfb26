@@ -5,6 +5,7 @@ import { useMichiganRoster } from './useMichiganRoster'
 import type { EnrichedPlayer, PlayerProfile } from './useMichiganRoster'
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
 import { DetailSheet } from '~/components/DetailSheet'
+import { MobilePrimaryNav } from '~/components/MobilePrimaryNav'
 
 type View = 'depth' | 'recruiting' | 'draft' | 'positions' | 'snaps' | 'players'
 type DepthView = 'offense' | 'defense' | 'special-teams'
@@ -418,7 +419,7 @@ export function RosterApp() {
   return (
     <>
       <main
-        className="min-h-screen bg-michigan-cream text-michigan-blue"
+        className="min-h-screen bg-michigan-cream pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-michigan-blue sm:pb-0"
         inert={selected ? true : undefined}
       >
         <header className="border-b-4 border-michigan-maize bg-michigan-blue text-white">
@@ -452,7 +453,7 @@ export function RosterApp() {
 
         <div className="sticky top-0 z-30 border-b border-michigan-blue/20 bg-michigan-cream/95 backdrop-blur">
           <div className="mx-auto flex max-w-[1500px] flex-col gap-1.5 px-4 py-1.5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1 sm:hidden">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1 sm:hidden">
               <label>
                 <span className="sr-only">Roster view</span>
                 <select
@@ -467,12 +468,6 @@ export function RosterApp() {
                   ))}
                 </select>
               </label>
-              <Link
-                to="/games"
-                className="grid min-h-11 place-items-center border border-michigan-blue/25 bg-white px-3 text-xs font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
-              >
-                Games
-              </Link>
               <Link
                 to="/admin/roster"
                 className="grid min-h-11 place-items-center border border-michigan-blue/25 bg-white px-3 text-xs font-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-michigan-blue"
@@ -590,6 +585,7 @@ export function RosterApp() {
           )}
         </section>
       </main>
+      <MobilePrimaryNav active="roster" />
       {selected && (
         <PlayerDrawer
           entry={
