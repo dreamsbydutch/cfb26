@@ -22,6 +22,19 @@ Power answers “How strong is this team right now?” in expected points above 
 
 The model accepts a versioned logistic margin calibrator. Until an eight-season held-out evaluation promotes learned coefficients, published builds explicitly identify the existing `fixed-logistic-v1` probability mapping. Talent, returning production, transfers, coaching, and recency are not silently activated: each requires reliable historical coverage and promotion under [ADR 0007](../decisions/0007-optimize-predictions-with-held-out-seasons.md).
 
+### Ranking universe and visible fallback
+
+Power is not a top-25 or top-50 list. The selected season's FBS schedule defines the published universe, and ranks run consecutively from `1` through that season's actual field size. That makes the field dynamic: a current 138-team season can show all 138, while a historical season with fewer members stops at its smaller total. Programs beyond an alphabetical query window are not dropped.
+
+When a weekly immutable edition exists, its snapshots remain the source of truth. Without an edition, the dashboard uses a season composite when one exists. If neither exists, a complete-field fallback ranks each scheduled FBS program using the first available evidence in this order:
+
+1. current-season Elo;
+2. prior-season composite converted to the same display points scale;
+3. prior-season Elo; or
+4. a neutral zero-point baseline when no current or prior rating exists.
+
+The fallback is intentionally labeled and never presented as a weekly `cfb26-power-v1` edition. Each Power row exposes the basis season, neutral Power, offense, defense, separated special teams when available, remaining prior weight, sample state, sources, and signal coverage. Schedule badges are joined from that same complete field, so a ranked FBS team cannot disappear only on the Games tab.
+
 ### CFB26 Résumé Rating
 
 Résumé answers “Whose record was hardest to achieve?” in wins above the expectation of an average top-25 team. The reference strength and home-field value are fixed from the current edition’s top 25. For every completed regular- or postseason game:

@@ -4,7 +4,7 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: all nine backend/source phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented. `/` currently hosts three live-data DbyD CFB roster redesign prototypes with roster intelligence, player quick views, and four-player comparison; the broader Michigan feature replacement remains in review. `/games` covers schedules, Power, Résumé, quadrants/SOS, playoff projection, team profiles, matchups, and the blind ballot; `/admin/roster` covers owner lifecycle, season, game, identity, import, backup, rollover, rule, and health workflows.
+- Product status: all nine backend/source phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented. `/` is Matrix-first, with the Workbench retained as its overview alternative plus roster intelligence, player quick views, and four-player comparison; the broader Michigan feature replacement remains in review. `/games` covers complete-field schedules and Power rankings, Résumé, quadrants/SOS, playoff projection, team profiles, matchups, and the blind ballot; `/admin/roster` covers owner lifecycle, season, game, identity, import, backup, rollover, rule, and health workflows.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.

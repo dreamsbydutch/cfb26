@@ -6,11 +6,11 @@ This page inventories source interfaces synchronized to development `adjoining-o
 
 ## Web routes
 
-| Route           | Contract                                                                                                                                                                                                                                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`             | In-review DbyD CFB Michigan front door with three URL-selectable (`variant=A`, `variant=B`, or `variant=C`) live-data roster concepts. All share season/search/room filtering, movement evidence, player quick views, and a persistent comparison tray capped at four people. The former broad roster UI is not rendered during evaluation. |
-| `/games`        | Public national workspace with Games, Power, Résumé, Playoff, Teams, Simulator, and Blind Ballot tabs. Schedule evidence is edition-cutoff safe and hardest-first. Ballot identities remain hidden until owner submission.                                                                                                                  |
-| `/admin/roster` | No-index private owner workspace. A password creates a revocable 12-hour session; lifecycle, annual season, Player Game, identity, draft/NFL, import, backup, rollover, rules/champions, repair, and health operations validate server-side.                                                                                                |
+| Route           | Contract                                                                                                                                                                                                                                                                                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`             | In-review DbyD CFB Michigan front door defaulting to the Roster Matrix (`variant=C`), with Workbench (`variant=B`) as the overview alternative and Command (`variant=A`) retained for comparison. All share football-ordered position rooms, season/search filtering, movement evidence, player quick views, and a persistent comparison tray capped at four people. |
+| `/games`        | Public national workspace with Games, complete-field Power, Résumé, Playoff, Teams, Simulator, and Blind Ballot tabs. Schedule ranks use the same season-specific field shown on Power, and each ranking row exposes its components and evidence basis. Ballot identities remain hidden until owner submission.                                                      |
+| `/admin/roster` | No-index private owner workspace. A password creates a revocable 12-hour session; lifecycle, annual season, Player Game, identity, draft/NFL, import, backup, rollover, rules/champions, repair, and health operations validate server-side.                                                                                                                         |
 
 All routes include responsive navigation, semantic controls, visible focus treatment, and explicit loading/error/empty states.
 
@@ -49,6 +49,9 @@ The owner contract includes:
 ## Rating and ranking contract
 
 - Power is a neutral-field points scale with explicit prior weight, version, calibration, units, home field, and sample state.
+- Power ranks the complete season-specific FBS schedule field from `1` through the field size; it has no fixed top-25 or top-50 publication cutoff, so historical and future counts can differ.
+- When no weekly edition or season composite exists, the complete-field fallback uses current-season Elo where present, then the prior-season composite, then prior-season Elo, and finally a visible neutral baseline. It never leaves a scheduled FBS team unranked silently.
+- The Power UI exposes offense, defense, special teams, prior weight, sample state, source list, signal count/confidence when available, and the exact edition/composite/fallback basis for every team.
 - Résumé appears from Week 7 and uses the approved 90% results/schedule plus 10% capped-dominance split.
 - Edition snapshots drive historical quadrants, schedule strength, and playoff/ballot evidence; future data is never substituted.
 - Scheduled 2026-forward prospective forecasts freeze before kickoff. Research reconstructions are labeled and kept separate.
