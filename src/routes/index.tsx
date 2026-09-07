@@ -1,15 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
-  RosterPrototype,
-  RosterPrototypeError,
-  RosterPrototypeLoading,
-} from '~/features/roster/prototype/RosterPrototype'
+  MichiganError,
+  MichiganLoading,
+  MichiganMatrix,
+} from '~/features/michigan/MichiganWorkspace'
 
 export const Route = createFileRoute('/')({
   ssr: false,
-  component: RosterPrototype,
-  pendingComponent: RosterPrototypeLoading,
-  errorComponent: RosterPrototypeError,
+  beforeLoad: ({ location }) => {
+    const search = new URLSearchParams(location.searchStr)
+    const legacyVariant = search.get('variant')?.toUpperCase()
+    if (!legacyVariant) return
+
+    search.delete('variant')
+    const query = search.toString()
+    const pathname = legacyVariant === 'B' ? '/michigan/overview' : '/'
+    throw redirect({ href: `${pathname}${query ? `?${query}` : ''}` })
+  },
+  component: MichiganMatrix,
+  pendingComponent: MichiganLoading,
+  errorComponent: MichiganError,
   head: () => ({
     meta: [
       { title: 'DbyD CFB | Michigan Roster Intelligence' },

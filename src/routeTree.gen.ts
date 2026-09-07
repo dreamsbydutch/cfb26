@@ -12,6 +12,26 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as AdminRosterRouteImport } from './routes/admin.roster'
+import { Route as MichiganAlumniRouteImport } from './routes/michigan.alumni'
+import { Route as MichiganCompareRouteImport } from './routes/michigan.compare'
+import { Route as MichiganMatrixRouteImport } from './routes/michigan.matrix'
+import { Route as MichiganMovementRouteImport } from './routes/michigan.movement'
+import { Route as MichiganOverviewRouteImport } from './routes/michigan.overview'
+import { Route as NationalBallotRouteImport } from './routes/national.ballot'
+import { Route as NationalGamesRouteImport } from './routes/national.games'
+import { Route as NationalMethodologyRouteImport } from './routes/national.methodology'
+import { Route as NationalPlayoffRouteImport } from './routes/national.playoff'
+import { Route as NationalPowerRouteImport } from './routes/national.power'
+import { Route as NationalResumeRouteImport } from './routes/national.resume'
+import { Route as NationalSimulatorRouteImport } from './routes/national.simulator'
+import { Route as NationalTeamsRouteImport } from './routes/national.teams'
+import { Route as AdminRosterDataRouteImport } from './routes/admin.roster.data'
+import { Route as AdminRosterOperationsRouteImport } from './routes/admin.roster.operations'
+import { Route as AdminRosterPlayersRouteImport } from './routes/admin.roster.players'
+import { Route as AdminRosterSeasonRouteImport } from './routes/admin.roster.season'
+import { Route as MichiganPlayersPlayerIdRouteImport } from './routes/michigan.players.$playerId'
+import { Route as NationalTeamsProgramKeyRouteImport } from './routes/national.teams.$programKey'
+import { Route as AdminRosterPlayersPlayerIdRouteImport } from './routes/admin.roster.players.$playerId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +48,280 @@ const AdminRosterRoute = AdminRosterRouteImport.update({
   path: '/admin/roster',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MichiganAlumniRoute = MichiganAlumniRouteImport.update({
+  id: '/michigan/alumni',
+  path: '/michigan/alumni',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MichiganCompareRoute = MichiganCompareRouteImport.update({
+  id: '/michigan/compare',
+  path: '/michigan/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MichiganMatrixRoute = MichiganMatrixRouteImport.update({
+  id: '/michigan/matrix',
+  path: '/michigan/matrix',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MichiganMovementRoute = MichiganMovementRouteImport.update({
+  id: '/michigan/movement',
+  path: '/michigan/movement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MichiganOverviewRoute = MichiganOverviewRouteImport.update({
+  id: '/michigan/overview',
+  path: '/michigan/overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalBallotRoute = NationalBallotRouteImport.update({
+  id: '/national/ballot',
+  path: '/national/ballot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalGamesRoute = NationalGamesRouteImport.update({
+  id: '/national/games',
+  path: '/national/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalMethodologyRoute = NationalMethodologyRouteImport.update({
+  id: '/national/methodology',
+  path: '/national/methodology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalPlayoffRoute = NationalPlayoffRouteImport.update({
+  id: '/national/playoff',
+  path: '/national/playoff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalPowerRoute = NationalPowerRouteImport.update({
+  id: '/national/power',
+  path: '/national/power',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalResumeRoute = NationalResumeRouteImport.update({
+  id: '/national/resume',
+  path: '/national/resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalSimulatorRoute = NationalSimulatorRouteImport.update({
+  id: '/national/simulator',
+  path: '/national/simulator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalTeamsRoute = NationalTeamsRouteImport.update({
+  id: '/national/teams',
+  path: '/national/teams',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRosterDataRoute = AdminRosterDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => AdminRosterRoute,
+} as any)
+const AdminRosterOperationsRoute = AdminRosterOperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
+  getParentRoute: () => AdminRosterRoute,
+} as any)
+const AdminRosterPlayersRoute = AdminRosterPlayersRouteImport.update({
+  id: '/players',
+  path: '/players',
+  getParentRoute: () => AdminRosterRoute,
+} as any)
+const AdminRosterSeasonRoute = AdminRosterSeasonRouteImport.update({
+  id: '/season',
+  path: '/season',
+  getParentRoute: () => AdminRosterRoute,
+} as any)
+const MichiganPlayersPlayerIdRoute = MichiganPlayersPlayerIdRouteImport.update({
+  id: '/michigan/players/$playerId',
+  path: '/michigan/players/$playerId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NationalTeamsProgramKeyRoute = NationalTeamsProgramKeyRouteImport.update({
+  id: '/$programKey',
+  path: '/$programKey',
+  getParentRoute: () => NationalTeamsRoute,
+} as any)
+const AdminRosterPlayersPlayerIdRoute =
+  AdminRosterPlayersPlayerIdRouteImport.update({
+    id: '/$playerId',
+    path: '/$playerId',
+    getParentRoute: () => AdminRosterPlayersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/games': typeof GamesRoute
-  '/admin/roster': typeof AdminRosterRoute
+  '/admin/roster': typeof AdminRosterRouteWithChildren
+  '/michigan/alumni': typeof MichiganAlumniRoute
+  '/michigan/compare': typeof MichiganCompareRoute
+  '/michigan/matrix': typeof MichiganMatrixRoute
+  '/michigan/movement': typeof MichiganMovementRoute
+  '/michigan/overview': typeof MichiganOverviewRoute
+  '/national/ballot': typeof NationalBallotRoute
+  '/national/games': typeof NationalGamesRoute
+  '/national/methodology': typeof NationalMethodologyRoute
+  '/national/playoff': typeof NationalPlayoffRoute
+  '/national/power': typeof NationalPowerRoute
+  '/national/resume': typeof NationalResumeRoute
+  '/national/simulator': typeof NationalSimulatorRoute
+  '/national/teams': typeof NationalTeamsRouteWithChildren
+  '/admin/roster/data': typeof AdminRosterDataRoute
+  '/admin/roster/operations': typeof AdminRosterOperationsRoute
+  '/admin/roster/players': typeof AdminRosterPlayersRouteWithChildren
+  '/admin/roster/season': typeof AdminRosterSeasonRoute
+  '/michigan/players/$playerId': typeof MichiganPlayersPlayerIdRoute
+  '/national/teams/$programKey': typeof NationalTeamsProgramKeyRoute
+  '/admin/roster/players/$playerId': typeof AdminRosterPlayersPlayerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/games': typeof GamesRoute
-  '/admin/roster': typeof AdminRosterRoute
+  '/admin/roster': typeof AdminRosterRouteWithChildren
+  '/michigan/alumni': typeof MichiganAlumniRoute
+  '/michigan/compare': typeof MichiganCompareRoute
+  '/michigan/matrix': typeof MichiganMatrixRoute
+  '/michigan/movement': typeof MichiganMovementRoute
+  '/michigan/overview': typeof MichiganOverviewRoute
+  '/national/ballot': typeof NationalBallotRoute
+  '/national/games': typeof NationalGamesRoute
+  '/national/methodology': typeof NationalMethodologyRoute
+  '/national/playoff': typeof NationalPlayoffRoute
+  '/national/power': typeof NationalPowerRoute
+  '/national/resume': typeof NationalResumeRoute
+  '/national/simulator': typeof NationalSimulatorRoute
+  '/national/teams': typeof NationalTeamsRouteWithChildren
+  '/admin/roster/data': typeof AdminRosterDataRoute
+  '/admin/roster/operations': typeof AdminRosterOperationsRoute
+  '/admin/roster/players': typeof AdminRosterPlayersRouteWithChildren
+  '/admin/roster/season': typeof AdminRosterSeasonRoute
+  '/michigan/players/$playerId': typeof MichiganPlayersPlayerIdRoute
+  '/national/teams/$programKey': typeof NationalTeamsProgramKeyRoute
+  '/admin/roster/players/$playerId': typeof AdminRosterPlayersPlayerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/games': typeof GamesRoute
-  '/admin/roster': typeof AdminRosterRoute
+  '/admin/roster': typeof AdminRosterRouteWithChildren
+  '/michigan/alumni': typeof MichiganAlumniRoute
+  '/michigan/compare': typeof MichiganCompareRoute
+  '/michigan/matrix': typeof MichiganMatrixRoute
+  '/michigan/movement': typeof MichiganMovementRoute
+  '/michigan/overview': typeof MichiganOverviewRoute
+  '/national/ballot': typeof NationalBallotRoute
+  '/national/games': typeof NationalGamesRoute
+  '/national/methodology': typeof NationalMethodologyRoute
+  '/national/playoff': typeof NationalPlayoffRoute
+  '/national/power': typeof NationalPowerRoute
+  '/national/resume': typeof NationalResumeRoute
+  '/national/simulator': typeof NationalSimulatorRoute
+  '/national/teams': typeof NationalTeamsRouteWithChildren
+  '/admin/roster/data': typeof AdminRosterDataRoute
+  '/admin/roster/operations': typeof AdminRosterOperationsRoute
+  '/admin/roster/players': typeof AdminRosterPlayersRouteWithChildren
+  '/admin/roster/season': typeof AdminRosterSeasonRoute
+  '/michigan/players/$playerId': typeof MichiganPlayersPlayerIdRoute
+  '/national/teams/$programKey': typeof NationalTeamsProgramKeyRoute
+  '/admin/roster/players/$playerId': typeof AdminRosterPlayersPlayerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/games' | '/admin/roster'
+  fullPaths:
+    | '/'
+    | '/games'
+    | '/admin/roster'
+    | '/michigan/alumni'
+    | '/michigan/compare'
+    | '/michigan/matrix'
+    | '/michigan/movement'
+    | '/michigan/overview'
+    | '/national/ballot'
+    | '/national/games'
+    | '/national/methodology'
+    | '/national/playoff'
+    | '/national/power'
+    | '/national/resume'
+    | '/national/simulator'
+    | '/national/teams'
+    | '/admin/roster/data'
+    | '/admin/roster/operations'
+    | '/admin/roster/players'
+    | '/admin/roster/season'
+    | '/michigan/players/$playerId'
+    | '/national/teams/$programKey'
+    | '/admin/roster/players/$playerId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/games' | '/admin/roster'
-  id: '__root__' | '/' | '/games' | '/admin/roster'
+  to:
+    | '/'
+    | '/games'
+    | '/admin/roster'
+    | '/michigan/alumni'
+    | '/michigan/compare'
+    | '/michigan/matrix'
+    | '/michigan/movement'
+    | '/michigan/overview'
+    | '/national/ballot'
+    | '/national/games'
+    | '/national/methodology'
+    | '/national/playoff'
+    | '/national/power'
+    | '/national/resume'
+    | '/national/simulator'
+    | '/national/teams'
+    | '/admin/roster/data'
+    | '/admin/roster/operations'
+    | '/admin/roster/players'
+    | '/admin/roster/season'
+    | '/michigan/players/$playerId'
+    | '/national/teams/$programKey'
+    | '/admin/roster/players/$playerId'
+  id:
+    | '__root__'
+    | '/'
+    | '/games'
+    | '/admin/roster'
+    | '/michigan/alumni'
+    | '/michigan/compare'
+    | '/michigan/matrix'
+    | '/michigan/movement'
+    | '/michigan/overview'
+    | '/national/ballot'
+    | '/national/games'
+    | '/national/methodology'
+    | '/national/playoff'
+    | '/national/power'
+    | '/national/resume'
+    | '/national/simulator'
+    | '/national/teams'
+    | '/admin/roster/data'
+    | '/admin/roster/operations'
+    | '/admin/roster/players'
+    | '/admin/roster/season'
+    | '/michigan/players/$playerId'
+    | '/national/teams/$programKey'
+    | '/admin/roster/players/$playerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GamesRoute: typeof GamesRoute
-  AdminRosterRoute: typeof AdminRosterRoute
+  AdminRosterRoute: typeof AdminRosterRouteWithChildren
+  MichiganAlumniRoute: typeof MichiganAlumniRoute
+  MichiganCompareRoute: typeof MichiganCompareRoute
+  MichiganMatrixRoute: typeof MichiganMatrixRoute
+  MichiganMovementRoute: typeof MichiganMovementRoute
+  MichiganOverviewRoute: typeof MichiganOverviewRoute
+  NationalBallotRoute: typeof NationalBallotRoute
+  NationalGamesRoute: typeof NationalGamesRoute
+  NationalMethodologyRoute: typeof NationalMethodologyRoute
+  NationalPlayoffRoute: typeof NationalPlayoffRoute
+  NationalPowerRoute: typeof NationalPowerRoute
+  NationalResumeRoute: typeof NationalResumeRoute
+  NationalSimulatorRoute: typeof NationalSimulatorRoute
+  NationalTeamsRoute: typeof NationalTeamsRouteWithChildren
+  MichiganPlayersPlayerIdRoute: typeof MichiganPlayersPlayerIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +347,208 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRosterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/michigan/alumni': {
+      id: '/michigan/alumni'
+      path: '/michigan/alumni'
+      fullPath: '/michigan/alumni'
+      preLoaderRoute: typeof MichiganAlumniRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/michigan/compare': {
+      id: '/michigan/compare'
+      path: '/michigan/compare'
+      fullPath: '/michigan/compare'
+      preLoaderRoute: typeof MichiganCompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/michigan/matrix': {
+      id: '/michigan/matrix'
+      path: '/michigan/matrix'
+      fullPath: '/michigan/matrix'
+      preLoaderRoute: typeof MichiganMatrixRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/michigan/movement': {
+      id: '/michigan/movement'
+      path: '/michigan/movement'
+      fullPath: '/michigan/movement'
+      preLoaderRoute: typeof MichiganMovementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/michigan/overview': {
+      id: '/michigan/overview'
+      path: '/michigan/overview'
+      fullPath: '/michigan/overview'
+      preLoaderRoute: typeof MichiganOverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/ballot': {
+      id: '/national/ballot'
+      path: '/national/ballot'
+      fullPath: '/national/ballot'
+      preLoaderRoute: typeof NationalBallotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/games': {
+      id: '/national/games'
+      path: '/national/games'
+      fullPath: '/national/games'
+      preLoaderRoute: typeof NationalGamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/methodology': {
+      id: '/national/methodology'
+      path: '/national/methodology'
+      fullPath: '/national/methodology'
+      preLoaderRoute: typeof NationalMethodologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/playoff': {
+      id: '/national/playoff'
+      path: '/national/playoff'
+      fullPath: '/national/playoff'
+      preLoaderRoute: typeof NationalPlayoffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/power': {
+      id: '/national/power'
+      path: '/national/power'
+      fullPath: '/national/power'
+      preLoaderRoute: typeof NationalPowerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/resume': {
+      id: '/national/resume'
+      path: '/national/resume'
+      fullPath: '/national/resume'
+      preLoaderRoute: typeof NationalResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/simulator': {
+      id: '/national/simulator'
+      path: '/national/simulator'
+      fullPath: '/national/simulator'
+      preLoaderRoute: typeof NationalSimulatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/teams': {
+      id: '/national/teams'
+      path: '/national/teams'
+      fullPath: '/national/teams'
+      preLoaderRoute: typeof NationalTeamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/roster/data': {
+      id: '/admin/roster/data'
+      path: '/data'
+      fullPath: '/admin/roster/data'
+      preLoaderRoute: typeof AdminRosterDataRouteImport
+      parentRoute: typeof AdminRosterRoute
+    }
+    '/admin/roster/operations': {
+      id: '/admin/roster/operations'
+      path: '/operations'
+      fullPath: '/admin/roster/operations'
+      preLoaderRoute: typeof AdminRosterOperationsRouteImport
+      parentRoute: typeof AdminRosterRoute
+    }
+    '/admin/roster/players': {
+      id: '/admin/roster/players'
+      path: '/players'
+      fullPath: '/admin/roster/players'
+      preLoaderRoute: typeof AdminRosterPlayersRouteImport
+      parentRoute: typeof AdminRosterRoute
+    }
+    '/admin/roster/season': {
+      id: '/admin/roster/season'
+      path: '/season'
+      fullPath: '/admin/roster/season'
+      preLoaderRoute: typeof AdminRosterSeasonRouteImport
+      parentRoute: typeof AdminRosterRoute
+    }
+    '/michigan/players/$playerId': {
+      id: '/michigan/players/$playerId'
+      path: '/michigan/players/$playerId'
+      fullPath: '/michigan/players/$playerId'
+      preLoaderRoute: typeof MichiganPlayersPlayerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/teams/$programKey': {
+      id: '/national/teams/$programKey'
+      path: '/$programKey'
+      fullPath: '/national/teams/$programKey'
+      preLoaderRoute: typeof NationalTeamsProgramKeyRouteImport
+      parentRoute: typeof NationalTeamsRoute
+    }
+    '/admin/roster/players/$playerId': {
+      id: '/admin/roster/players/$playerId'
+      path: '/$playerId'
+      fullPath: '/admin/roster/players/$playerId'
+      preLoaderRoute: typeof AdminRosterPlayersPlayerIdRouteImport
+      parentRoute: typeof AdminRosterPlayersRoute
+    }
   }
 }
+
+interface AdminRosterPlayersRouteChildren {
+  AdminRosterPlayersPlayerIdRoute: typeof AdminRosterPlayersPlayerIdRoute
+}
+
+const AdminRosterPlayersRouteChildren: AdminRosterPlayersRouteChildren = {
+  AdminRosterPlayersPlayerIdRoute: AdminRosterPlayersPlayerIdRoute,
+}
+
+const AdminRosterPlayersRouteWithChildren =
+  AdminRosterPlayersRoute._addFileChildren(AdminRosterPlayersRouteChildren)
+
+interface AdminRosterRouteChildren {
+  AdminRosterDataRoute: typeof AdminRosterDataRoute
+  AdminRosterOperationsRoute: typeof AdminRosterOperationsRoute
+  AdminRosterPlayersRoute: typeof AdminRosterPlayersRouteWithChildren
+  AdminRosterSeasonRoute: typeof AdminRosterSeasonRoute
+}
+
+const AdminRosterRouteChildren: AdminRosterRouteChildren = {
+  AdminRosterDataRoute: AdminRosterDataRoute,
+  AdminRosterOperationsRoute: AdminRosterOperationsRoute,
+  AdminRosterPlayersRoute: AdminRosterPlayersRouteWithChildren,
+  AdminRosterSeasonRoute: AdminRosterSeasonRoute,
+}
+
+const AdminRosterRouteWithChildren = AdminRosterRoute._addFileChildren(
+  AdminRosterRouteChildren,
+)
+
+interface NationalTeamsRouteChildren {
+  NationalTeamsProgramKeyRoute: typeof NationalTeamsProgramKeyRoute
+}
+
+const NationalTeamsRouteChildren: NationalTeamsRouteChildren = {
+  NationalTeamsProgramKeyRoute: NationalTeamsProgramKeyRoute,
+}
+
+const NationalTeamsRouteWithChildren = NationalTeamsRoute._addFileChildren(
+  NationalTeamsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GamesRoute: GamesRoute,
-  AdminRosterRoute: AdminRosterRoute,
+  AdminRosterRoute: AdminRosterRouteWithChildren,
+  MichiganAlumniRoute: MichiganAlumniRoute,
+  MichiganCompareRoute: MichiganCompareRoute,
+  MichiganMatrixRoute: MichiganMatrixRoute,
+  MichiganMovementRoute: MichiganMovementRoute,
+  MichiganOverviewRoute: MichiganOverviewRoute,
+  NationalBallotRoute: NationalBallotRoute,
+  NationalGamesRoute: NationalGamesRoute,
+  NationalMethodologyRoute: NationalMethodologyRoute,
+  NationalPlayoffRoute: NationalPlayoffRoute,
+  NationalPowerRoute: NationalPowerRoute,
+  NationalResumeRoute: NationalResumeRoute,
+  NationalSimulatorRoute: NationalSimulatorRoute,
+  NationalTeamsRoute: NationalTeamsRouteWithChildren,
+  MichiganPlayersPlayerIdRoute: MichiganPlayersPlayerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

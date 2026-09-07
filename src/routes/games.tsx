@@ -17,7 +17,11 @@ export const Route = createFileRoute('/games')({
       },
     ],
   }),
-  component: LandscapeDashboard,
+  component: GamesRoute,
   pendingComponent: LandscapeLoading,
   errorComponent: LandscapeError,
 })
+
+function GamesRoute() {
+  return <LandscapeDashboard view="games" />
+}

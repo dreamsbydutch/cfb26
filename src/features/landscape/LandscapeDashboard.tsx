@@ -1,35 +1,44 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import {
-  AppShell,
+  ContextBar,
   EmptyState,
+  ErrorState,
+  LoadingState,
   Metric,
-  SectionTabs,
+  PageFrame,
+  PageHero,
+  PublicShell,
+  StatusPill,
+  Surface,
 } from '~/components/AppShell'
 
-type View =
-  'ballot' | 'games' | 'playoff' | 'power' | 'resume' | 'simulator' | 'teams'
+export type LandscapeView =
+  | 'ballot'
+  | 'games'
+  | 'methodology'
+  | 'playoff'
+  | 'power'
+  | 'resume'
+  | 'simulator'
+  | 'teams'
 type Program = FunctionReturnType<typeof api.teamData.listPrograms>[number]
 const CURRENT_SEASON = new Date().getFullYear()
-const TABS: ReadonlyArray<{ id: View; label: string }> = [
-  { id: 'games', label: 'Games' },
-  { id: 'power', label: 'Power' },
-  { id: 'resume', label: 'Résumé' },
-  { id: 'playoff', label: 'Playoff' },
-  { id: 'teams', label: 'Teams' },
-  { id: 'simulator', label: 'Simulator' },
-  { id: 'ballot', label: 'Blind ballot' },
-]
 
-export function LandscapeDashboard() {
-  const [season, setSeason] = useState(CURRENT_SEASON)
-  const [week, setWeek] = useState(1)
-  const [view, setView] = useState<View>('games')
+export function LandscapeDashboard({
+  programKey,
+  view = 'games',
+}: {
+  programKey?: string
+  view?: LandscapeView
+}) {
+  const { season, setSeason, setWeek, week } = useNationalParams()
   const dashboard = useQuery(
     convexQuery(api.ratings.getWeeklyDashboard, { season, week }),
   )
@@ -45,67 +54,75 @@ export function LandscapeDashboard() {
   )
   const data = dashboard.data
   return (
-    <AppShell
-      active="national"
-      eyebrow={`${season} · Week ${week}`}
-      title="Strength predicts. Résumé earns. Keep the questions separate."
-    >
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-3">
-          <select
-            value={season}
-            onChange={(event) => setSeason(Number(event.target.value))}
-            aria-label="Season"
-            className={controlClass}
-          >
-            {Array.from({ length: CURRENT_SEASON - 2014 }, (_, index) => (
-              <option key={index}>{CURRENT_SEASON - index}</option>
-            ))}
-          </select>
-          <select
-            value={week}
-            onChange={(event) => setWeek(Number(event.target.value))}
-            aria-label="Week"
-            className={controlClass}
-          >
-            {Array.from({ length: 21 }, (_, index) => (
-              <option key={index} value={index}>
-                Week {index}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="text-right text-xs text-slate-500">
-          {data?.edition
-            ? `${data.edition.editionType} edition · ${data.edition.modelVersion}`
-            : data
-              ? `Complete fallback field · ${data.ratingCount} FBS teams`
-              : 'Loading ranking basis'}
-        </div>
-      </div>
-      <SectionTabs active={view} onChange={setView} tabs={TABS} />
-      {dashboard.isLoading ? (
-        <LandscapeLoading />
-      ) : dashboard.isError || !data ? (
-        <EmptyState>
-          No national edition is available for this selection.
-        </EmptyState>
-      ) : (
-        <>
-          {view === 'games' && <Games data={data} />}
-          {view === 'power' && <Power data={data} />}
-          {view === 'resume' && <Resume merit={merit.data ?? null} />}
-          {view === 'playoff' && <Playoff merit={merit.data ?? null} />}
-          {view === 'teams' && (
-            <Teams programs={programs.data ?? []} season={season} />
-          )}
-          {view === 'simulator' && (
-            <Simulator programs={programs.data ?? []} season={season} />
-          )}
-          {view === 'ballot' && <Ballot season={season} week={week} />}
-        </>
-      )}
-    </AppShell>
+    <PublicShell active={view} context="national">
+      <PageFrame>
+        <PageHero
+          eyebrow={`${season} · Week ${week} · National`}
+          summary="Power estimates team strength. Résumé measures what a team has earned. Every view names the edition and evidence it uses."
+          title="Strength predicts. Résumé earns. Keep the questions separate."
+        />
+        <ContextBar>
+          <div className="flex gap-3">
+            <select
+              value={season}
+              onChange={(event) => setSeason(Number(event.target.value))}
+              aria-label="Season"
+              className={controlClass}
+            >
+              {Array.from({ length: CURRENT_SEASON - 2014 }, (_, index) => (
+                <option key={index}>{CURRENT_SEASON - index}</option>
+              ))}
+            </select>
+            <select
+              value={week}
+              onChange={(event) => setWeek(Number(event.target.value))}
+              aria-label="Week"
+              className={controlClass}
+            >
+              {Array.from({ length: 21 }, (_, index) => (
+                <option key={index} value={index}>
+                  Week {index}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="ml-auto text-right text-xs text-white/40">
+            {data?.edition
+              ? `${data.edition.editionType} edition · ${data.edition.modelVersion} · ${new Date(data.edition.generatedAt).toLocaleString()}`
+              : data
+                ? `Complete fallback field · ${data.ratingCount} FBS teams`
+                : 'Loading ranking basis'}
+          </div>
+        </ContextBar>
+        {dashboard.isLoading ? (
+          <LoadingState label="Building the selected national edition" />
+        ) : dashboard.isError || !data ? (
+          <EmptyState>
+            No national edition is available for this selection.
+          </EmptyState>
+        ) : (
+          <>
+            {view === 'games' && <Games data={data} />}
+            {view === 'power' && <Power data={data} />}
+            {view === 'resume' && <Resume merit={merit.data ?? null} />}
+            {view === 'playoff' && <Playoff merit={merit.data ?? null} />}
+            {view === 'teams' && (
+              <Teams
+                initialProgramKey={programKey}
+                programs={programs.data ?? []}
+                ratings={data.ratings}
+                season={season}
+              />
+            )}
+            {view === 'simulator' && (
+              <Simulator programs={programs.data ?? []} season={season} />
+            )}
+            {view === 'ballot' && <Ballot season={season} week={week} />}
+            {view === 'methodology' && <Methodology data={data} />}
+          </>
+        )}
+      </PageFrame>
+    </PublicShell>
   )
 }
 
@@ -117,19 +134,24 @@ function Games({
   const [lens, setLens] = useState<'quality' | 'playoff' | 'michigan'>(
     'quality',
   )
-  const games = useMemo(
-    () =>
-      [...data.games].sort((left, right) => {
-        const field =
-          lens === 'quality'
-            ? 'matchupQuality'
-            : lens === 'playoff'
-              ? 'playoffImportance'
-              : 'michiganImportance'
-        return right[field] - left[field] || left.startTime - right.startTime
-      }),
-    [data.games, lens],
-  )
+  const windows = useMemo(() => {
+    const sorted = [...data.games].sort((left, right) => {
+      const field =
+        lens === 'quality'
+          ? 'matchupQuality'
+          : lens === 'playoff'
+            ? 'playoffImportance'
+            : 'michiganImportance'
+      return left.startTime - right.startTime || right[field] - left[field]
+    })
+    const grouped = new Map<number, Array<(typeof data.games)[number]>>()
+    for (const game of sorted) {
+      const rows = grouped.get(game.startTime) ?? []
+      rows.push(game)
+      grouped.set(game.startTime, rows)
+    }
+    return [...grouped.entries()]
+  }, [data.games, lens])
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -139,73 +161,95 @@ function Games({
               key={option}
               type="button"
               onClick={() => setLens(option)}
-              className={`${pillClass} ${lens === option ? 'bg-[#00274c] text-white' : 'bg-white text-slate-600'}`}
+              className={`${pillClass} ${lens === option ? 'border-[#ffcb05]/30 bg-[#ffcb05] text-[#071421]' : 'text-white/45'}`}
             >
               {option}
             </button>
           ))}
         </div>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-white/40">
           Schedule badges use the complete {data.ratingCount}-team Power field.
         </p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        {games.map((game) => (
-          <article
-            key={game._id}
-            className="relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-5 shadow-sm"
-          >
-            <div className="absolute inset-y-0 left-0 w-1.5 bg-[#ffcb05]" />
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-              <span>
-                Week {game.week} ·{' '}
-                {game.conferenceGame ? 'Conference' : 'Nonconference'}
+      <div className="grid gap-7">
+        {windows.map(([startTime, games]) => (
+          <section key={startTime}>
+            <div className="mb-3 flex items-center gap-3">
+              <time className="font-display text-xl font-extrabold uppercase tracking-wide">
+                {new Date(startTime).toLocaleString([], {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}
+              </time>
+              <span className="h-px flex-1 bg-white/10" />
+              <span className="text-xs text-white/35">
+                {games.length} games
               </span>
-              <span>{new Date(game.startTime).toLocaleDateString()}</span>
             </div>
-            <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-              <Team
-                name={game.awaySourceName}
-                rank={game.awayRank}
-                rating={game.awayRating}
-              />
-              <div className="text-center text-xs font-black text-slate-400">
-                AT
-              </div>
-              <Team
-                name={game.homeSourceName}
-                rank={game.homeRank}
-                rating={game.homeRating}
-                align="right"
-              />
+            <div className="grid gap-3 lg:grid-cols-2">
+              {games.map((game) => (
+                <article
+                  key={game._id}
+                  className="app-card relative overflow-hidden p-5"
+                >
+                  <div className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-[#ffcb05]" />
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+                    <span>
+                      Week {game.week} ·{' '}
+                      {game.conferenceGame ? 'Conference' : 'Nonconference'}
+                    </span>
+                    <span>{new Date(game.startTime).toLocaleDateString()}</span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <Team
+                      name={game.awaySourceName}
+                      rank={game.awayRank}
+                      rating={game.awayRating}
+                    />
+                    <div className="text-center text-xs font-black text-white/25">
+                      AT
+                    </div>
+                    <Team
+                      name={game.homeSourceName}
+                      rank={game.homeRank}
+                      rating={game.homeRating}
+                      align="right"
+                    />
+                  </div>
+                  <div className="mt-5 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 text-center text-xs text-white/40">
+                    <div>
+                      <b className="font-display block text-xl text-white">
+                        {game.matchupQuality}
+                      </b>
+                      quality
+                    </div>
+                    <div>
+                      <b className="font-display block text-xl text-white">
+                        {game.playoffImportance}
+                      </b>
+                      playoff
+                    </div>
+                    <div>
+                      <b className="font-display block text-xl text-white">
+                        {game.projectedMargin > 0 ? '+' : ''}
+                        {game.projectedMargin.toFixed(1)}
+                      </b>
+                      home margin
+                    </div>
+                  </div>
+                  <p className="mt-4 text-xs text-white/40">
+                    {game.michiganRelation} ·{' '}
+                    {game.neutralSite
+                      ? 'Neutral site'
+                      : (game.venue ?? 'Venue TBD')}
+                    {game.tvOutlets?.length
+                      ? ` · ${game.tvOutlets.join(', ')}`
+                      : ''}
+                  </p>
+                </article>
+              ))}
             </div>
-            <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-200 pt-4 text-center text-xs">
-              <div>
-                <b className="block text-xl text-[#00274c]">
-                  {game.matchupQuality}
-                </b>
-                quality
-              </div>
-              <div>
-                <b className="block text-xl text-[#00274c]">
-                  {game.playoffImportance}
-                </b>
-                playoff
-              </div>
-              <div>
-                <b className="block text-xl text-[#00274c]">
-                  {game.projectedMargin > 0 ? '+' : ''}
-                  {game.projectedMargin.toFixed(1)}
-                </b>
-                home margin
-              </div>
-            </div>
-            <p className="mt-4 text-xs text-slate-500">
-              {game.michiganRelation} ·{' '}
-              {game.neutralSite ? 'Neutral site' : (game.venue ?? 'Venue TBD')}
-              {game.tvOutlets?.length ? ` · ${game.tvOutlets.join(', ')}` : ''}
-            </p>
-          </article>
+          </section>
         ))}
       </div>
     </>
@@ -225,13 +269,13 @@ function Team({
 }) {
   return (
     <div className={align === 'right' ? 'text-right' : ''}>
-      <div className="font-serif text-xl font-black text-[#00274c]">
+      <div className="font-display text-xl font-extrabold text-white">
         {rank ? (
-          <span className="mr-1 text-sm text-slate-400">#{rank}</span>
+          <span className="mr-1 text-sm text-[#ffcb05]">#{rank}</span>
         ) : null}
         {name}
       </div>
-      <div className="mt-1 text-xs text-slate-500">
+      <div className="mt-1 text-xs text-white/40">
         Power {rating > 0 ? '+' : ''}
         {rating.toFixed(1)}
       </div>
@@ -244,50 +288,87 @@ function Power({
 }: {
   data: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
 }) {
+  const [search, setSearch] = useState('')
+  const [conference, setConference] = useState('all')
   const modelVersion = data.edition
     ? data.edition.modelVersion
     : (data.ratings.at(0)?.modelVersion ?? 'unavailable')
+  const conferences = [
+    ...new Set(data.ratings.map((row) => row.conference).filter(Boolean)),
+  ].sort()
+  const rows = data.ratings
+    .filter(
+      (row) =>
+        row.published &&
+        (conference === 'all' || row.conference === conference) &&
+        row.sourceProgramName
+          .toLowerCase()
+          .includes(search.trim().toLowerCase()),
+    )
+    .sort((a, b) => (a.powerRank ?? 999) - (b.powerRank ?? 999))
+    .map((row) => ({
+      label: row.sourceProgramName,
+      primary: row.power.toFixed(1),
+      rank: row.powerRank ?? 999,
+      secondary: `${row.conference ?? 'Independent'} · ${rankingBasisLabel(row.rankingBasis, row.sourceSeason)}`,
+      details: [
+        { label: 'Neutral Power', value: signed(row.power) },
+        { label: 'Offense', value: signed(row.offense) },
+        { label: 'Defense', value: signed(row.defense) },
+        {
+          label: 'Special teams',
+          value: row.specialTeamsAvailable
+            ? signed(row.specialTeams)
+            : 'Not separated',
+        },
+        {
+          label: 'Prior weight',
+          value: `${Math.round(row.priorWeight * 100)}%`,
+        },
+        {
+          label: 'Evidence',
+          value: row.limitedSample
+            ? `Limited sample · ${row.gamesPlayed} games`
+            : `${row.gamesPlayed} games`,
+        },
+      ],
+      note: `Sources: ${row.dataSources.map(sourceLabel).join(', ')}${row.confidence === undefined ? '' : ` · coverage confidence ${row.confidence}%`}${row.signalCount === undefined ? '' : ` · ${row.signalCount} signals`}`,
+    }))
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
-      <RankingTable
-        rows={data.ratings
-          .filter((row) => row.published)
-          .sort((a, b) => (a.powerRank ?? 999) - (b.powerRank ?? 999))
-          .map((row) => ({
-            label: row.sourceProgramName,
-            primary: row.power.toFixed(1),
-            rank: row.powerRank ?? 999,
-            secondary: `${row.conference ?? 'Independent'} · ${rankingBasisLabel(row.rankingBasis, row.sourceSeason)}`,
-            details: [
-              { label: 'Neutral Power', value: signed(row.power) },
-              { label: 'Offense', value: signed(row.offense) },
-              { label: 'Defense', value: signed(row.defense) },
-              {
-                label: 'Special teams',
-                value: row.specialTeamsAvailable
-                  ? signed(row.specialTeams)
-                  : 'Not separated',
-              },
-              {
-                label: 'Prior weight',
-                value: `${Math.round(row.priorWeight * 100)}%`,
-              },
-              {
-                label: 'Evidence',
-                value: row.limitedSample
-                  ? 'Limited sample'
-                  : `${row.gamesPlayed} games`,
-              },
-            ],
-            note: `Sources: ${row.dataSources.map(sourceLabel).join(', ')}${row.confidence === undefined ? '' : ` · coverage confidence ${row.confidence}%`}${row.signalCount === undefined ? '' : ` · ${row.signalCount} signals`}`,
-          }))}
-        heading={`DbyD CFB Power · all ${data.ratingCount} teams`}
-      />
+      <div>
+        <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+          <input
+            aria-label="Search Power rankings"
+            className={controlClass}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search all FBS teams"
+            value={search}
+          />
+          <select
+            aria-label="Filter by conference"
+            className={controlClass}
+            onChange={(event) => setConference(event.target.value)}
+            value={conference}
+          >
+            <option value="all">All conferences</option>
+            {conferences.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+        <RankingTable
+          heading={`DbyD CFB Power · ${rows.length} of ${data.ratingCount} teams`}
+          rows={rows}
+        />
+      </div>
       <aside className="space-y-4">
         <Metric label="Rated teams" value={data.ratingCount} />
         <Metric label="Model" value={modelVersion} />
-        <section className="rounded-2xl bg-[#00274c] p-5 text-sm leading-6 text-white shadow-sm">
-          <b className="block font-serif text-xl text-[#ffcb05]">
+        <Surface className="p-5 text-sm leading-6">
+          <b className="font-display block text-xl text-[#ffcb05]">
             How the order is built
           </b>
           <ol className="mt-3 list-decimal space-y-2 pl-4 text-white/80">
@@ -313,7 +394,13 @@ function Power({
             Active basis: {rankingModeLabel(data.rankingMode)} · model{' '}
             {modelVersion}
           </p>
-        </section>
+          <Link
+            className="mt-4 inline-flex min-h-10 items-center rounded-xl bg-white/5 px-3 text-xs font-bold text-white/65 hover:bg-white/10 hover:text-white"
+            to="/national/methodology"
+          >
+            Read the complete methodology
+          </Link>
+        </Surface>
       </aside>
     </div>
   )
@@ -326,8 +413,13 @@ function Resume({
 }) {
   if (!merit?.edition.resumeVisible)
     return (
-      <EmptyState>
-        Résumé editions begin in Week 7. Power remains available before then.
+      <EmptyState title="Résumé unlocks in Week 7">
+        Résumé needs enough completed-game evidence to measure achievement.
+        Until then, use{' '}
+        <Link className="font-bold text-[#ffcb05]" to="/national/power">
+          Power
+        </Link>{' '}
+        for strength estimates.
       </EmptyState>
     )
   return (
@@ -342,7 +434,7 @@ function Resume({
         }))}
       />
       <div className="space-y-5">
-        <h2 className="font-serif text-2xl font-black text-[#00274c]">
+        <h2 className="font-display text-2xl font-extrabold text-white">
           Michigan schedule strength
         </h2>
         {merit.schedule ? (
@@ -368,7 +460,7 @@ function Resume({
             {merit.schedule.quadrants.map((quadrant) => (
               <div
                 key={quadrant.quadrant}
-                className="border-l-4 border-[#ffcb05] bg-white p-4"
+                className="rounded-2xl border-l-4 border-[#ffcb05] bg-white/[0.04] p-4"
               >
                 <b>{quadrant.quadrant}</b>
                 <span className="float-right">
@@ -412,21 +504,21 @@ function Playoff({
         {merit.playoff.field.map((entry) => (
           <article
             key={entry.seed}
-            className="border-t-8 border-[#00274c] bg-white p-5 shadow-sm"
+            className="app-card border-t-4 border-[#ffcb05]/70 p-5"
           >
             <div className="flex justify-between">
-              <span className="font-serif text-4xl font-black text-[#ffcb05]">
+              <span className="font-display text-4xl font-extrabold text-[#ffcb05]">
                 {entry.seed}
               </span>
-              <span className="text-xs font-black uppercase text-slate-500">
+              <span className="text-xs font-black uppercase text-white/35">
                 {entry.bid.replace('_', ' ')}
                 {entry.bye ? ' · Bye' : ''}
               </span>
             </div>
-            <h2 className="mt-4 font-serif text-2xl font-black text-[#00274c]">
+            <h2 className="font-display mt-4 text-2xl font-extrabold text-white">
               {entry.program?.name ?? 'Unknown program'}
             </h2>
-            <p className="mt-2 text-sm leading-5 text-slate-500">
+            <p className="mt-2 text-sm leading-5 text-white/45">
               {entry.explanation}
             </p>
           </article>
@@ -437,33 +529,61 @@ function Playoff({
 }
 
 function Teams({
+  initialProgramKey,
   programs,
+  ratings,
   season,
 }: {
+  initialProgramKey?: string
   programs: Array<Program>
+  ratings: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>['ratings']
   season: number
 }) {
-  const [programKey, setProgramKey] = useState('michigan')
-  return (
-    <div>
-      <ProgramSelect
-        programs={programs}
-        value={programKey}
-        onChange={setProgramKey}
-      />
+  if (initialProgramKey) {
+    return (
       <ProgramProfile
-        key={`${programKey}:${season}`}
-        programKey={programKey}
+        programKey={initialProgramKey}
+        ratings={ratings}
         season={season}
       />
+    )
+  }
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {[...programs]
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map((program) => (
+          <Link
+            className="app-card group flex items-center justify-between gap-3 p-4 transition hover:bg-white/[0.07]"
+            key={program._id}
+            params={{ programKey: program.key }}
+            to="/national/teams/$programKey"
+          >
+            <span>
+              <strong className="block group-hover:text-[#ffcb05]">
+                {program.name}
+              </strong>
+              <small className="mt-1 block text-white/35">
+                {program.conference ?? 'Independent'}
+              </small>
+            </span>
+            <span className="font-display text-lg font-extrabold tabular-nums text-white/35">
+              #
+              {ratings.find((row) => row.programId === program._id)
+                ?.powerRank ?? '—'}
+            </span>
+          </Link>
+        ))}
     </div>
   )
 }
-function ProgramProfile({
+export function ProgramProfile({
   programKey,
+  ratings,
   season,
 }: {
   programKey: string
+  ratings: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>['ratings']
   season: number
 }) {
   const result = useQuery(
@@ -472,68 +592,97 @@ function ProgramProfile({
   const data = result.data
   if (!data) return <EmptyState>No team profile is available.</EmptyState>
   const completed = data.games.filter((game) => game.completed)
+  const ratingByProgram = new Map(
+    ratings.map((rating) => [String(rating.programId), rating]),
+  )
+  const ownRating = ratingByProgram.get(String(data.program._id))
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-      <section className="bg-[#00274c] p-6 text-white">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ffcb05]">
-          {data.program.conference ?? 'Independent'}
-        </p>
-        <h2 className="mt-2 font-serif text-4xl font-black">
-          {data.program.name}
-        </h2>
-        <p className="mt-2 text-sm text-white/60">
-          {data.program.mascot ?? 'Mascot unavailable'} ·{' '}
-          {data.program.classification?.toUpperCase() ??
-            'Classification unknown'}
-        </p>
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <Metric
-            label="Recruit rank"
-            value={data.profile?.recruitingRank ?? '—'}
-          />
-          <Metric
-            label="Talent"
-            value={data.profile?.talent?.toFixed(1) ?? '—'}
-          />
-          <Metric
-            label="Returning PPA"
-            value={
-              data.profile?.returningPpa === null ||
-              data.profile?.returningPpa === undefined
-                ? '—'
-                : `${Math.round(data.profile.returningPpa * 100)}%`
-            }
-          />
-          <Metric label="Draft picks (5y)" value={data.draft.length} />
-        </div>
-      </section>
-      <section className="bg-white p-6">
-        <h3 className="font-serif text-2xl font-black text-[#00274c]">
-          Season schedule
-        </h3>
-        <div className="mt-4 divide-y divide-slate-200">
-          {data.games.map((game) => (
-            <div
-              key={game._id}
-              className="flex justify-between gap-4 py-3 text-sm"
-            >
-              <span>
-                W{game.week} · {game.awaySourceName} at {game.homeSourceName}
-              </span>
-              <b>
-                {game.completed
-                  ? `${game.awayPoints ?? '—'}–${game.homePoints ?? '—'}`
-                  : new Date(game.startTime).toLocaleDateString()}
-              </b>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-xs text-slate-500">
-          {completed.length} completed games · {data.affiliations.length}{' '}
-          retained affiliation editions ·{' '}
-          {data.venues[0]?.venue?.name ?? 'Venue unavailable'}
-        </p>
-      </section>
+    <div>
+      <Link
+        className="mb-5 inline-flex items-center gap-2 text-sm font-bold text-white/45 hover:text-white"
+        to="/national/teams"
+      >
+        ← All teams
+      </Link>
+      <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+        <Surface className="p-6">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ffcb05]">
+            {data.program.conference ?? 'Independent'}
+          </p>
+          <h2 className="font-display mt-2 text-4xl font-extrabold uppercase">
+            {data.program.name}
+          </h2>
+          <p className="mt-2 text-sm text-white/50">
+            {data.program.mascot ?? 'Mascot unavailable'} ·{' '}
+            {data.program.classification?.toUpperCase() ??
+              'Classification unknown'}
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <Metric
+              label="DbyD Power"
+              value={ownRating?.powerRank ? `#${ownRating.powerRank}` : '—'}
+            />
+            <Metric
+              label="Recruit rank"
+              value={data.profile?.recruitingRank ?? '—'}
+            />
+            <Metric
+              label="Talent"
+              value={data.profile?.talent?.toFixed(1) ?? '—'}
+            />
+            <Metric
+              label="Returning PPA"
+              value={
+                data.profile?.returningPpa === null ||
+                data.profile?.returningPpa === undefined
+                  ? '—'
+                  : `${Math.round(data.profile.returningPpa * 100)}%`
+              }
+            />
+            <Metric label="Draft picks (5y)" value={data.draft.length} />
+          </div>
+        </Surface>
+        <Surface className="p-6">
+          <h3 className="font-display text-2xl font-extrabold text-white">
+            Season schedule
+          </h3>
+          <div className="mt-4 divide-y divide-white/[0.07]">
+            {data.games.map((game) => {
+              const opponentId =
+                game.homeProgramId === data.program._id
+                  ? game.awayProgramId
+                  : game.homeProgramId
+              const opponentRank = ratingByProgram.get(
+                String(opponentId),
+              )?.powerRank
+              return (
+                <div
+                  key={game._id}
+                  className="flex justify-between gap-4 py-3 text-sm"
+                >
+                  <span>
+                    W{game.week} ·{' '}
+                    {opponentRank && opponentRank <= 50
+                      ? `#${opponentRank} `
+                      : ''}
+                    {game.awaySourceName} at {game.homeSourceName}
+                  </span>
+                  <b>
+                    {game.completed
+                      ? `${game.awayPoints ?? '—'}–${game.homePoints ?? '—'}`
+                      : new Date(game.startTime).toLocaleDateString()}
+                  </b>
+                </div>
+              )
+            })}
+          </div>
+          <p className="mt-4 text-xs text-white/40">
+            {completed.length} completed games · {data.affiliations.length}{' '}
+            retained affiliation editions ·{' '}
+            {data.venues[0]?.venue?.name ?? 'Venue unavailable'}
+          </p>
+        </Surface>
+      </div>
     </div>
   )
 }
@@ -545,9 +694,33 @@ function Simulator({
   programs: Array<Program>
   season: number
 }) {
-  const [a, setA] = useState('michigan')
-  const [b, setB] = useState('ohio-state')
-  const [venue, setVenue] = useState<'neutral' | 'team_a' | 'team_b'>('team_a')
+  const [a, setAState] = useState(() => readStringParam('teamA', 'michigan'))
+  const [b, setBState] = useState(() => readStringParam('teamB', 'ohio-state'))
+  const [venue, setVenueState] = useState<'neutral' | 'team_a' | 'team_b'>(
+    () => {
+      const value = readStringParam('venue', 'team_a')
+      return value === 'neutral' || value === 'team_b' ? value : 'team_a'
+    },
+  )
+  const [adjustment, setAdjustmentState] = useState(() =>
+    readNumericParam('adjustment', 0),
+  )
+  const setA = (value: string) => {
+    setAState(value)
+    setUrlParam('teamA', value)
+  }
+  const setB = (value: string) => {
+    setBState(value)
+    setUrlParam('teamB', value)
+  }
+  const setVenue = (value: typeof venue) => {
+    setVenueState(value)
+    setUrlParam('venue', value)
+  }
+  const setAdjustment = (value: number) => {
+    setAdjustmentState(value)
+    setUrlParam('adjustment', String(value))
+  }
   const result = useQuery(
     convexQuery(api.ratings.getMatchup, {
       programKeyA: a,
@@ -558,7 +731,7 @@ function Simulator({
   )
   return (
     <div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <ProgramSelect programs={programs} value={a} onChange={setA} />
         <ProgramSelect programs={programs} value={b} onChange={setB} />
         <select
@@ -570,12 +743,29 @@ function Simulator({
           <option value="neutral">Neutral</option>
           <option value="team_b">Team B home</option>
         </select>
+        <label className="grid gap-1 text-xs font-bold text-white/45">
+          Your adjustment (Team A points)
+          <input
+            className={controlClass}
+            max={21}
+            min={-21}
+            onChange={(event) => setAdjustment(Number(event.target.value))}
+            step={0.5}
+            type="number"
+            value={adjustment}
+          />
+        </label>
       </div>
       {result.data ? (
-        <div className="mt-8 grid gap-4 md:grid-cols-4">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <Metric
-            label="Expected margin A"
+            label="Model baseline A"
             value={`${result.data.projection.projectedMargin > 0 ? '+' : ''}${result.data.projection.projectedMargin}`}
+          />
+          <Metric
+            label="Adjusted margin A"
+            note={`Your adjustment ${adjustment >= 0 ? '+' : ''}${adjustment}`}
+            value={`${result.data.projection.projectedMargin + adjustment > 0 ? '+' : ''}${(result.data.projection.projectedMargin + adjustment).toFixed(1)}`}
           />
           <Metric
             label="A win probability"
@@ -656,14 +846,15 @@ function Ballot({ season, week }: { season: number; week: number }) {
     <div>
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <b className="font-serif text-2xl text-[#00274c]">
+          <b className="font-display text-2xl font-extrabold text-white">
             {data.status === 'draft'
               ? 'Identity-blind draft'
               : 'Revealed ballot'}
           </b>
-          <p className="text-xs text-slate-500">
-            Insertion ordering shifts every displaced team automatically. Drag,
-            use Arrow keys, or enter a rank.
+          <p className="text-xs text-white/40">
+            Rank achievement: wins, schedule, and dominance. Identity stays
+            hidden until submission; every move autosaves. Drag, use Arrow keys,
+            or enter a rank.
           </p>
         </div>
         {data.status === 'draft' && (
@@ -728,12 +919,12 @@ function Ballot({ season, week }: { season: number; week: number }) {
                 moveEntry(entry.programId, entry.rank + 1)
               }
             }}
-            className="grid grid-cols-[3rem_1fr_auto] items-center gap-3 bg-white p-3 shadow-sm focus-visible:outline-2 focus-visible:outline-[#00274c]"
+            className="app-card grid grid-cols-[3rem_1fr_auto] items-center gap-3 p-3 focus-visible:outline-2 focus-visible:outline-[#ffcb05]"
           >
-            <b className="font-serif text-2xl text-[#00274c]">{entry.rank}</b>
+            <b className="font-display text-2xl text-[#ffcb05]">{entry.rank}</b>
             <div>
               <b>{entry.program?.name ?? `Blind team ${entry.seedRank}`}</b>
-              <div className="mt-1 text-xs text-slate-500">
+              <div className="mt-1 text-xs text-white/40">
                 Seed {entry.seedRank} · {entry.evidence?.actualWins ?? '—'} wins
                 · schedule {entry.evidence?.schedule?.toFixed(1) ?? '—'} ·
                 dominance {entry.evidence?.dominance?.toFixed(1) ?? '—'}
@@ -754,7 +945,7 @@ function Ballot({ season, week }: { season: number; week: number }) {
                   if (targetRank !== entry.rank)
                     moveEntry(entry.programId, targetRank)
                 }}
-                className="w-16 border border-slate-400 px-2 py-1"
+                className="app-control w-16 bg-[#0c1b2a] px-2 py-1 text-white"
               />
             )}
           </div>
@@ -779,40 +970,43 @@ function RankingTable({
   }>
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
-      <h2 className="bg-[#00274c] px-5 py-4 font-serif text-2xl font-black text-white">
+    <section className="app-card overflow-hidden p-0">
+      <h2 className="font-display sticky top-[7.8rem] z-10 border-b border-white/10 bg-[#0b1d2e]/95 px-5 py-4 text-2xl font-extrabold text-white backdrop-blur-xl">
         {heading}
       </h2>
-      <div className="divide-y divide-slate-200">
+      <div className="divide-y divide-white/[0.07]">
         {rows.map((row) => (
           <article key={`${row.rank}:${row.label}`} className="px-5 py-3">
             <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
-              <b className="font-serif text-2xl text-[#00274c]">{row.rank}</b>
+              <b className="font-display text-2xl text-[#ffcb05]">{row.rank}</b>
               <div>
                 <b>{row.label}</b>
-                <div className="text-xs text-slate-500">{row.secondary}</div>
+                <div className="text-xs text-white/40">{row.secondary}</div>
               </div>
               <b className="text-lg">{row.primary}</b>
             </div>
             {row.details && (
-              <details className="group ml-12 mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs">
-                <summary className="cursor-pointer font-black uppercase tracking-[0.08em] text-[#00274c] marker:text-[#ffcb05]">
+              <details className="group ml-12 mt-2 rounded-xl bg-black/15 px-3 py-2 text-xs">
+                <summary className="cursor-pointer font-black uppercase tracking-[0.08em] text-[#ffcb05] marker:text-[#ffcb05]">
                   Why this rank
                 </summary>
                 <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {row.details.map((detail) => (
-                    <div key={detail.label} className="rounded-lg bg-white p-2">
-                      <dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                    <div
+                      key={detail.label}
+                      className="rounded-lg bg-white/[0.04] p-2"
+                    >
+                      <dt className="text-[10px] font-bold uppercase tracking-wide text-white/35">
                         {detail.label}
                       </dt>
-                      <dd className="mt-1 font-black text-slate-900">
+                      <dd className="mt-1 font-black text-white">
                         {detail.value}
                       </dd>
                     </div>
                   ))}
                 </dl>
                 {row.note && (
-                  <p className="mt-3 leading-5 text-slate-500">{row.note}</p>
+                  <p className="mt-3 leading-5 text-white/40">{row.note}</p>
                 )}
               </details>
             )}
@@ -820,6 +1014,147 @@ function RankingTable({
         ))}
       </div>
     </section>
+  )
+}
+
+function Methodology({
+  data,
+}: {
+  data: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
+}) {
+  const edition = data.edition
+  return (
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.65fr)]">
+      <div className="grid gap-5">
+        <Surface className="p-5 sm:p-6">
+          <p className="app-kicker">Predictive model</p>
+          <h2 className="mt-2 text-3xl font-bold">CFB26 Power</h2>
+          <p className="mt-3 max-w-4xl text-sm leading-6 text-white/55">
+            Power is expected points above or below an average FBS team on a
+            neutral field. The model jointly estimates opponent-adjusted offense
+            and defense, fits robust margin strength, strongly shrinks special
+            teams, and keeps home-field value outside the neutral rank.
+          </p>
+          <div className="mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm text-[#ffe16a]">
+            Power = reconciled neutral margin strength (offense, defense,
+            special teams, prior)
+          </div>
+          <ul className="mt-5 grid gap-2 pl-5 text-sm leading-6 text-white/50">
+            <li>
+              Regulation margins cap at 35; overtime margins cap at seven.
+            </li>
+            <li>
+              Huber residual weights reduce the influence of extreme results.
+            </li>
+            <li>Every current-season game has equal weight.</li>
+            <li>
+              Up to four prior seasons fade recursively as games accumulate.
+            </li>
+            <li>
+              FCS teams participate in adjustment with stronger shrinkage but
+              are not published.
+            </li>
+          </ul>
+        </Surface>
+        <Surface className="p-5 sm:p-6">
+          <p className="app-kicker">Earned record model</p>
+          <h2 className="mt-2 text-3xl font-bold">CFB26 Résumé</h2>
+          <p className="mt-3 max-w-4xl text-sm leading-6 text-white/55">
+            Résumé is wins above the expectation of an average top-25 team.
+            Opponent quality comes from the selected edition&apos;s Power field;
+            venue changes expected wins. It has no talent, conference, rivalry,
+            championship, bowl, playoff, or human bonus.
+          </p>
+          <div className="mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm text-[#ffe16a]">
+            Résumé = 0.90 × schedule/results + 0.10 × capped dominance
+          </div>
+          <p className="mt-4 text-sm leading-6 text-white/50">
+            Provisional rows remain hidden before Week 7. Teams with fewer than
+            five games remain ranked afterward and carry a limited-sample flag.
+          </p>
+        </Surface>
+        <Surface className="p-5 sm:p-6">
+          <p className="app-kicker">Evaluation and limits</p>
+          <h2 className="mt-2 text-3xl font-bold">What earns promotion</h2>
+          <p className="mt-3 text-sm leading-6 text-white/55">
+            Rolling held-out seasons evaluate margin mean absolute error and
+            Brier score as co-primary objectives; calibration error is reported
+            separately. A challenger must improve both aggregate objectives in
+            most comparable seasons without a material single-season or
+            calibration regression. The repository does not yet hold historical
+            weekly as-of forecasts, so no accuracy improvement beyond the
+            checked-in baseline is claimed.
+          </p>
+        </Surface>
+      </div>
+      <aside className="space-y-4">
+        <Surface className="p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="app-kicker">Active edition</p>
+              <h2 className="mt-2 text-2xl font-bold">
+                {edition?.editionType ?? 'Fallback'}
+              </h2>
+            </div>
+            <StatusPill tone={edition ? 'success' : 'maize'}>
+              {edition ? 'Immutable' : 'Labeled fallback'}
+            </StatusPill>
+          </div>
+          <dl className="mt-5 grid gap-4 text-sm">
+            <MethodRow
+              label="Power model"
+              value={
+                edition?.modelVersion ??
+                data.ratings.at(0)?.modelVersion ??
+                'Unavailable'
+              }
+            />
+            <MethodRow
+              label="Résumé model"
+              value={edition?.resumeModelVersion ?? 'Not active'}
+            />
+            <MethodRow
+              label="Calibration"
+              value={edition?.calibrationVersion ?? 'fixed-logistic-v1'}
+            />
+            <MethodRow label="Field" value={`${data.ratingCount} FBS teams`} />
+            <MethodRow
+              label="Basis"
+              value={rankingModeLabel(data.rankingMode)}
+            />
+            <MethodRow
+              label="Cutoff"
+              value={
+                edition
+                  ? new Date(edition.cutoffAt).toLocaleString()
+                  : 'Live fallback evidence'
+              }
+            />
+            <MethodRow
+              label="Revision"
+              value={edition ? String(edition.revision) : '—'}
+            />
+          </dl>
+        </Surface>
+        <Surface className="p-5">
+          <p className="app-kicker">Publication universe</p>
+          <p className="mt-3 text-sm leading-6 text-white/50">
+            The selected season&apos;s FBS schedule defines the field. Ranks run
+            continuously from 1 through that field size—138 today when 138 teams
+            are present, fewer in older seasons, and more if membership expands.
+          </p>
+        </Surface>
+      </aside>
+    </div>
+  )
+}
+
+function MethodRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="app-label">{label}</dt>
+      <dd className="m-0 mt-1 font-semibold text-white/75">{value}</dd>
+    </div>
   )
 }
 
@@ -874,30 +1209,73 @@ function ProgramSelect({
   )
 }
 
-const controlClass =
-  'min-h-11 rounded-xl border border-slate-400 bg-white px-3 py-2 text-sm font-bold focus-visible:outline-2 focus-visible:outline-[#00274c]'
-const pillClass =
-  'rounded-full border border-slate-300 px-4 py-2 text-xs font-black uppercase tracking-[0.1em]'
-const primaryButton =
-  'min-h-11 rounded-xl bg-[#00274c] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white shadow-[0_6px_18px_rgb(0_39_76_/_0.24)] disabled:opacity-40'
-export function LandscapeLoading() {
-  return (
-    <div className="animate-pulse border border-slate-300 bg-white p-12 text-center text-sm font-bold text-slate-500">
-      Building the selected national edition…
-    </div>
+function useNationalParams() {
+  const [season, setSeasonState] = useState(() =>
+    readNumericParam('season', CURRENT_SEASON),
   )
+  const [week, setWeekState] = useState(() => {
+    const selected = readNumericParam('week', 1)
+    return selected >= 0 && selected <= 20 ? selected : 1
+  })
+  useEffect(() => {
+    setUrlParam('season', String(season))
+    setUrlParam('week', String(week))
+  }, [season, week])
+  return {
+    season,
+    setSeason(value: number) {
+      setSeasonState(value)
+      setUrlParam('season', String(value))
+    },
+    setWeek(value: number) {
+      setWeekState(value)
+      setUrlParam('week', String(value))
+    },
+    week,
+  }
+}
+
+function readNumericParam(key: string, fallback: number) {
+  if (typeof window === 'undefined') return fallback
+  const stored = window.localStorage.getItem(`dbyd-national-${key}`)
+  const raw = new URLSearchParams(window.location.search).get(key) ?? stored
+  if (raw === null) return fallback
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : fallback
+}
+
+function readStringParam(key: string, fallback: string) {
+  if (typeof window === 'undefined') return fallback
+  return new URLSearchParams(window.location.search).get(key) || fallback
+}
+
+function setUrlParam(key: string, value: string) {
+  const url = new URL(window.location.href)
+  url.searchParams.set(key, value)
+  window.history.replaceState(window.history.state, '', url)
+  if (key === 'season' || key === 'week') {
+    window.localStorage.setItem(`dbyd-national-${key}`, value)
+  }
+}
+
+const controlClass =
+  'app-control min-h-11 bg-[#0c1b2a] px-3 py-2 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-[#ffcb05]'
+const pillClass =
+  'rounded-full border border-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] transition'
+const primaryButton =
+  'min-h-11 rounded-xl bg-[#ffcb05] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#071421] shadow-[0_6px_18px_rgb(255_203_5_/_0.16)] disabled:opacity-40'
+export function LandscapeLoading() {
+  return <LoadingState label="Building the selected national edition" />
 }
 export function LandscapeError() {
   return (
-    <AppShell
-      active="national"
-      eyebrow="National data unavailable"
-      title="The last valid edition could not be loaded."
-    >
-      <EmptyState>
-        Check source health. Official editions remain immutable and are never
-        replaced by an empty response.
-      </EmptyState>
-    </AppShell>
+    <PublicShell active="games" context="national">
+      <PageFrame>
+        <ErrorState>
+          The last valid national edition could not be loaded. Official editions
+          remain immutable and are never replaced by an empty response.
+        </ErrorState>
+      </PageFrame>
+    </PublicShell>
   )
 }
