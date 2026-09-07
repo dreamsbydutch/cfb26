@@ -161,7 +161,7 @@ function Games({
               key={option}
               type="button"
               onClick={() => setLens(option)}
-              className={`${pillClass} ${lens === option ? 'border-[#ffcb05]/30 bg-[#ffcb05] text-[#071421]' : 'text-white/45'}`}
+              className={`${pillClass} ${lens === option ? 'app-filter-active' : 'text-white/45'}`}
             >
               {option}
             </button>
@@ -190,9 +190,11 @@ function Games({
               {games.map((game) => (
                 <article
                   key={game._id}
-                  className="app-card relative overflow-hidden p-5"
+                  className={`app-card relative overflow-hidden p-5 ${isMichiganProgram(game.awaySourceName) || isMichiganProgram(game.homeSourceName) ? 'michigan-highlight' : ''}`}
                 >
-                  <div className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-[#ffcb05]" />
+                  <div
+                    className={`absolute inset-y-3 left-0 w-1 rounded-r-full ${isMichiganProgram(game.awaySourceName) || isMichiganProgram(game.homeSourceName) ? 'michigan-marker' : 'app-list-marker'}`}
+                  />
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
                     <span>
                       Week {game.week} ·{' '}
@@ -267,11 +269,18 @@ function Team({
   rank?: number
   rating: number
 }) {
+  const highlightsMichigan = isMichiganProgram(name)
   return (
     <div className={align === 'right' ? 'text-right' : ''}>
-      <div className="font-display text-xl font-extrabold text-white">
+      <div
+        className={`font-display text-xl font-extrabold ${highlightsMichigan ? 'michigan-accent' : 'text-white'}`}
+      >
         {rank ? (
-          <span className="mr-1 text-sm text-[#ffcb05]">#{rank}</span>
+          <span
+            className={`mr-1 text-sm ${highlightsMichigan ? 'michigan-accent' : 'app-accent-text'}`}
+          >
+            #{rank}
+          </span>
         ) : null}
         {name}
       </div>
@@ -290,9 +299,6 @@ function Power({
 }) {
   const [search, setSearch] = useState('')
   const [conference, setConference] = useState('all')
-  const modelVersion = data.edition
-    ? data.edition.modelVersion
-    : (data.ratings.at(0)?.modelVersion ?? 'unavailable')
   const conferences = [
     ...new Set(data.ratings.map((row) => row.conference).filter(Boolean)),
   ].sort()
@@ -307,6 +313,7 @@ function Power({
     )
     .sort((a, b) => (a.powerRank ?? 999) - (b.powerRank ?? 999))
     .map((row) => ({
+      highlight: isMichiganProgram(row.sourceProgramName),
       label: row.sourceProgramName,
       primary: row.power.toFixed(1),
       rank: row.powerRank ?? 999,
@@ -335,73 +342,33 @@ function Power({
       note: `Sources: ${row.dataSources.map(sourceLabel).join(', ')}${row.confidence === undefined ? '' : ` · coverage confidence ${row.confidence}%`}${row.signalCount === undefined ? '' : ` · ${row.signalCount} signals`}`,
     }))
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
-      <div>
-        <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-          <input
-            aria-label="Search Power rankings"
-            className={controlClass}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search all FBS teams"
-            value={search}
-          />
-          <select
-            aria-label="Filter by conference"
-            className={controlClass}
-            onChange={(event) => setConference(event.target.value)}
-            value={conference}
-          >
-            <option value="all">All conferences</option>
-            {conferences.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </div>
-        <RankingTable
-          heading={`DbyD CFB Power · ${rows.length} of ${data.ratingCount} teams`}
-          rows={rows}
+    <div>
+      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+        <input
+          aria-label="Search Power rankings"
+          className={controlClass}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search all FBS teams"
+          value={search}
         />
+        <select
+          aria-label="Filter by conference"
+          className={controlClass}
+          onChange={(event) => setConference(event.target.value)}
+          value={conference}
+        >
+          <option value="all">All conferences</option>
+          {conferences.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
       </div>
-      <aside className="space-y-4">
-        <Metric label="Rated teams" value={data.ratingCount} />
-        <Metric label="Model" value={modelVersion} />
-        <Surface className="p-5 text-sm leading-6">
-          <b className="font-display block text-xl text-[#ffcb05]">
-            How the order is built
-          </b>
-          <ol className="mt-3 list-decimal space-y-2 pl-4 text-white/80">
-            <li>
-              The selected season’s schedule defines the FBS field, so the list
-              grows or shrinks with real membership instead of stopping at 50.
-            </li>
-            <li>
-              Power is neutral-field points above or below the average team,
-              learned from opponent-adjusted results with extreme margins
-              reduced in influence.
-            </li>
-            <li>
-              Offense, defense, and special teams are estimated separately;
-              preseason evidence carries forward and fades as games accumulate.
-            </li>
-            <li>
-              Missing current evidence uses the prior season, then a neutral
-              baseline. Every row identifies which path it used.
-            </li>
-          </ol>
-          <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-xs text-white/70">
-            Active basis: {rankingModeLabel(data.rankingMode)} · model{' '}
-            {modelVersion}
-          </p>
-          <Link
-            className="mt-4 inline-flex min-h-10 items-center rounded-xl bg-white/5 px-3 text-xs font-bold text-white/65 hover:bg-white/10 hover:text-white"
-            to="/national/methodology"
-          >
-            Read the complete methodology
-          </Link>
-        </Surface>
-      </aside>
+      <RankingTable
+        heading={`DbyD CFB Power · ${rows.length} of ${data.ratingCount} teams`}
+        rows={rows}
+      />
     </div>
   )
 }
@@ -416,7 +383,7 @@ function Resume({
       <EmptyState title="Résumé unlocks in Week 7">
         Résumé needs enough completed-game evidence to measure achievement.
         Until then, use{' '}
-        <Link className="font-bold text-[#ffcb05]" to="/national/power">
+        <Link className="app-accent-text font-bold" to="/national/power">
           Power
         </Link>{' '}
         for strength estimates.
@@ -427,6 +394,9 @@ function Resume({
       <RankingTable
         heading="CFB26 Résumé"
         rows={merit.rankings.map(({ program, snapshot }) => ({
+          highlight:
+            program?.key === 'michigan' ||
+            isMichiganProgram(snapshot.sourceProgramName),
           label: program?.name ?? snapshot.sourceProgramName,
           primary: snapshot.resume?.toFixed(1) ?? '—',
           rank: snapshot.resumeRank ?? 999,
@@ -434,7 +404,7 @@ function Resume({
         }))}
       />
       <div className="space-y-5">
-        <h2 className="font-display text-2xl font-extrabold text-white">
+        <h2 className="michigan-accent font-display text-2xl font-extrabold">
           Michigan schedule strength
         </h2>
         {merit.schedule ? (
@@ -504,10 +474,12 @@ function Playoff({
         {merit.playoff.field.map((entry) => (
           <article
             key={entry.seed}
-            className="app-card border-t-4 border-[#ffcb05]/70 p-5"
+            className={`app-card border-t-4 p-5 ${entry.program?.key === 'michigan' ? 'michigan-highlight' : 'border-white/20'}`}
           >
             <div className="flex justify-between">
-              <span className="font-display text-4xl font-extrabold text-[#ffcb05]">
+              <span
+                className={`font-display text-4xl font-extrabold ${entry.program?.key === 'michigan' ? 'michigan-accent' : 'app-accent-text'}`}
+              >
                 {entry.seed}
               </span>
               <span className="text-xs font-black uppercase text-white/35">
@@ -554,13 +526,15 @@ function Teams({
         .sort((left, right) => left.name.localeCompare(right.name))
         .map((program) => (
           <Link
-            className="app-card group flex items-center justify-between gap-3 p-4 transition hover:bg-white/[0.07]"
+            className={`app-card group flex items-center justify-between gap-3 p-4 transition hover:bg-white/[0.07] ${program.key === 'michigan' ? 'michigan-highlight' : ''}`}
             key={program._id}
             params={{ programKey: program.key }}
             to="/national/teams/$programKey"
           >
             <span>
-              <strong className="block group-hover:text-[#ffcb05]">
+              <strong
+                className={`block ${program.key === 'michigan' ? 'michigan-accent' : 'group-hover:text-white'}`}
+              >
                 {program.name}
               </strong>
               <small className="mt-1 block text-white/35">
@@ -606,7 +580,9 @@ export function ProgramProfile({
       </Link>
       <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
         <Surface className="p-6">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#ffcb05]">
+          <p
+            className={`text-xs font-black uppercase tracking-[0.14em] ${data.program.key === 'michigan' ? 'michigan-accent' : 'app-accent-text'}`}
+          >
             {data.program.conference ?? 'Independent'}
           </p>
           <h2 className="font-display mt-2 text-4xl font-extrabold uppercase">
@@ -665,7 +641,25 @@ export function ProgramProfile({
                     {opponentRank && opponentRank <= 50
                       ? `#${opponentRank} `
                       : ''}
-                    {game.awaySourceName} at {game.homeSourceName}
+                    <span
+                      className={
+                        isMichiganProgram(game.awaySourceName)
+                          ? 'michigan-accent font-bold'
+                          : undefined
+                      }
+                    >
+                      {game.awaySourceName}
+                    </span>{' '}
+                    at{' '}
+                    <span
+                      className={
+                        isMichiganProgram(game.homeSourceName)
+                          ? 'michigan-accent font-bold'
+                          : undefined
+                      }
+                    >
+                      {game.homeSourceName}
+                    </span>
                   </span>
                   <b>
                     {game.completed
@@ -919,9 +913,13 @@ function Ballot({ season, week }: { season: number; week: number }) {
                 moveEntry(entry.programId, entry.rank + 1)
               }
             }}
-            className="app-card grid grid-cols-[3rem_1fr_auto] items-center gap-3 p-3 focus-visible:outline-2 focus-visible:outline-[#ffcb05]"
+            className={`app-card grid grid-cols-[3rem_1fr_auto] items-center gap-3 p-3 focus-visible:outline-2 ${entry.program?.key === 'michigan' ? 'michigan-highlight' : ''}`}
           >
-            <b className="font-display text-2xl text-[#ffcb05]">{entry.rank}</b>
+            <b
+              className={`font-display text-2xl ${entry.program?.key === 'michigan' ? 'michigan-accent' : 'app-accent-text'}`}
+            >
+              {entry.rank}
+            </b>
             <div>
               <b>{entry.program?.name ?? `Blind team ${entry.seedRank}`}</b>
               <div className="mt-1 text-xs text-white/40">
@@ -945,7 +943,7 @@ function Ballot({ season, week }: { season: number; week: number }) {
                   if (targetRank !== entry.rank)
                     moveEntry(entry.programId, targetRank)
                 }}
-                className="app-control w-16 bg-[#0c1b2a] px-2 py-1 text-white"
+                className="app-control w-16 px-2 py-1 text-white"
               />
             )}
           </div>
@@ -966,28 +964,38 @@ function RankingTable({
     rank: number
     secondary: string
     details?: Array<{ label: string; value: string }>
+    highlight?: boolean
     note?: string
   }>
 }) {
   return (
     <section className="app-card overflow-hidden p-0">
-      <h2 className="font-display sticky top-[7.8rem] z-10 border-b border-white/10 bg-[#0b1d2e]/95 px-5 py-4 text-2xl font-extrabold text-white backdrop-blur-xl">
+      <h2 className="app-ranking-header font-display border-b border-white/10 px-5 py-4 text-2xl font-extrabold text-white">
         {heading}
       </h2>
       <div className="divide-y divide-white/[0.07]">
         {rows.map((row) => (
-          <article key={`${row.rank}:${row.label}`} className="px-5 py-3">
+          <article
+            key={`${row.rank}:${row.label}`}
+            className={`px-5 py-3 ${row.highlight ? 'michigan-highlight' : ''}`}
+          >
             <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
-              <b className="font-display text-2xl text-[#ffcb05]">{row.rank}</b>
+              <b
+                className={`font-display text-2xl ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
+              >
+                {row.rank}
+              </b>
               <div>
-                <b>{row.label}</b>
+                <b className={row.highlight ? 'michigan-accent' : undefined}>
+                  {row.label}
+                </b>
                 <div className="text-xs text-white/40">{row.secondary}</div>
               </div>
               <b className="text-lg">{row.primary}</b>
             </div>
             {row.details && (
               <details className="group ml-12 mt-2 rounded-xl bg-black/15 px-3 py-2 text-xs">
-                <summary className="cursor-pointer font-black uppercase tracking-[0.08em] text-[#ffcb05] marker:text-[#ffcb05]">
+                <summary className="app-accent-text cursor-pointer font-black uppercase tracking-[0.08em] marker:text-current">
                   Why this rank
                 </summary>
                 <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -1035,7 +1043,7 @@ function Methodology({
             and defense, fits robust margin strength, strongly shrinks special
             teams, and keeps home-field value outside the neutral rank.
           </p>
-          <div className="mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm text-[#ffe16a]">
+          <div className="app-accent-soft-text mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm">
             Power = reconciled neutral margin strength (offense, defense,
             special teams, prior)
           </div>
@@ -1065,7 +1073,7 @@ function Methodology({
             venue changes expected wins. It has no talent, conference, rivalry,
             championship, bowl, playoff, or human bonus.
           </p>
-          <div className="mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm text-[#ffe16a]">
+          <div className="app-accent-soft-text mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm">
             Résumé = 0.90 × schedule/results + 0.10 × capped dominance
           </div>
           <p className="mt-4 text-sm leading-6 text-white/50">
@@ -1096,7 +1104,7 @@ function Methodology({
                 {edition?.editionType ?? 'Fallback'}
               </h2>
             </div>
-            <StatusPill tone={edition ? 'success' : 'maize'}>
+            <StatusPill tone={edition ? 'success' : 'neutral'}>
               {edition ? 'Immutable' : 'Labeled fallback'}
             </StatusPill>
           </div>
@@ -1158,6 +1166,11 @@ function MethodRow({ label, value }: { label: string; value: string }) {
   )
 }
 
+function isMichiganProgram(name: string) {
+  const normalized = name.trim().toLowerCase()
+  return normalized === 'michigan' || normalized === 'michigan wolverines'
+}
+
 function signed(value: number) {
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
 }
@@ -1184,6 +1197,7 @@ function rankingModeLabel(
   if (mode === 'season_composite') return 'season composite'
   return 'complete-field fallback'
 }
+
 function ProgramSelect({
   onChange,
   programs,
@@ -1259,11 +1273,11 @@ function setUrlParam(key: string, value: string) {
 }
 
 const controlClass =
-  'app-control min-h-11 bg-[#0c1b2a] px-3 py-2 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-[#ffcb05]'
+  'app-control min-h-11 px-3 py-2 text-sm font-bold text-white focus-visible:outline-2'
 const pillClass =
   'rounded-full border border-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] transition'
 const primaryButton =
-  'min-h-11 rounded-xl bg-[#ffcb05] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#071421] shadow-[0_6px_18px_rgb(255_203_5_/_0.16)] disabled:opacity-40'
+  'app-primary-button min-h-11 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.12em] shadow-[0_6px_18px_var(--app-accent-shadow)] disabled:opacity-40'
 export function LandscapeLoading() {
   return <LoadingState label="Building the selected national edition" />
 }

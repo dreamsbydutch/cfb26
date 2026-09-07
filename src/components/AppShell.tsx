@@ -118,8 +118,10 @@ export function PublicShell({
   }, [])
 
   return (
-    <div className="min-h-screen pb-20 lg:pb-0">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#030a12]/92 backdrop-blur-xl">
+    <div
+      className={`app-public-shell app-context-${context} min-h-screen pb-20 lg:pb-0`}
+    >
+      <header className="app-shell-header sticky top-0 z-40 border-b border-white/10 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1680px] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <Link
             to="/"
@@ -193,7 +195,7 @@ export function PublicShell({
         {menuOpen && (
           <nav
             aria-label={`${context} navigation`}
-            className="grid gap-1 border-t border-white/10 bg-[#071421] p-3 lg:hidden"
+            className="app-shell-menu grid gap-1 border-t border-white/10 p-3 lg:hidden"
           >
             <div className="mb-2 flex gap-1 rounded-full bg-white/[0.045] p-1 sm:hidden">
               <ShellLink active={context === 'michigan'} href="/">
@@ -217,7 +219,7 @@ export function PublicShell({
       {children}
       <nav
         aria-label="Mobile primary navigation"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-white/10 bg-[#071421]/96 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        className="app-shell-mobile-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-white/10 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
       >
         {mobile.map((item) => (
           <MobileLink key={item.id} item={item} active={active === item.id} />
@@ -247,7 +249,7 @@ function ShellLink({
   return (
     <Link
       to={href}
-      className={`rounded-full px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.12em] transition ${active ? 'bg-[#ffcb05] text-[#071421]' : 'text-white/55 hover:text-white'}`}
+      className={`rounded-full px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.12em] transition ${active ? 'app-shell-switch-active' : 'text-white/55 hover:text-white'}`}
     >
       {children}
     </Link>
@@ -269,7 +271,7 @@ function ContextLink({
       to={item.href}
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-bold transition ${active ? 'bg-white/10 text-[#ffcb05]' : 'text-white/55 hover:bg-white/5 hover:text-white'}`}
+      className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-bold transition ${active ? 'app-shell-nav-active bg-white/10' : 'text-white/55 hover:bg-white/5 hover:text-white'}`}
     >
       <Icon size={16} aria-hidden="true" /> {item.label}
     </Link>
@@ -282,7 +284,7 @@ function MobileLink({ active, item }: { active: boolean; item: NavItem }) {
     <Link
       to={item.href}
       aria-current={active ? 'page' : undefined}
-      className={`flex min-h-16 flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider ${active ? 'text-[#ffcb05]' : 'text-white/55'}`}
+      className={`flex min-h-16 flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider ${active ? 'app-shell-nav-active' : 'text-white/55'}`}
     >
       <Icon size={19} aria-hidden="true" /> {item.label}
     </Link>
@@ -447,7 +449,7 @@ export function ContextBar({ children }: { children: ReactNode }) {
 function DbyDMark() {
   return (
     <span
-      className="grid h-10 w-10 place-items-center rounded-xl border border-[#ffcb05]/35 bg-[#ffcb05] font-display text-[10px] font-extrabold tracking-[-0.04em] text-[#071421] shadow-[0_8px_28px_rgb(255_203_5_/_0.18)]"
+      className="app-mark grid h-10 w-10 place-items-center rounded-xl border font-display text-[10px] font-extrabold tracking-[-0.04em]"
       aria-hidden="true"
     >
       DxDCFB
@@ -462,6 +464,7 @@ type SearchEntry = {
   kind: 'Player' | 'Program'
   label: string
   meta: string
+  isMichigan: boolean
 }
 
 function GlobalSearch({
@@ -511,12 +514,14 @@ function GlobalSearch({
         ...row,
         href: `/michigan/players/${row.id}`,
         id: String(row.id),
+        isMichigan: false,
         kind: 'Player' as const,
       })),
       ...(catalog.data?.programs ?? []).map((row) => ({
         ...row,
         href: `/national/teams/${row.key}`,
         id: String(row.id),
+        isMichigan: row.key === 'michigan',
         kind: 'Program' as const,
       })),
     ],
@@ -549,10 +554,10 @@ function GlobalSearch({
     >
       <section
         ref={dialog}
-        className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-white/15 bg-[#081725] shadow-2xl"
+        className="app-search-panel mx-auto max-w-2xl overflow-hidden rounded-3xl border border-white/15 shadow-2xl"
       >
         <label className="flex items-center gap-3 border-b border-white/10 px-4">
-          <Search size={21} className="text-[#ffcb05]" aria-hidden="true" />
+          <Search size={21} className="app-accent-text" aria-hidden="true" />
           <span className="sr-only">Search players and teams</span>
           <input
             ref={input}
@@ -588,9 +593,11 @@ function GlobalSearch({
                 key={`${entry.kind}:${entry.id}`}
                 to={entry.href}
                 onClick={onClose}
-                className="group flex items-center gap-3 rounded-2xl p-3 transition hover:bg-white/[0.06]"
+                className={`group flex items-center gap-3 rounded-2xl p-3 transition hover:bg-white/[0.06] ${entry.isMichigan ? 'michigan-highlight' : ''}`}
               >
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/5 text-[#ffcb05]">
+                <span
+                  className={`grid h-10 w-10 place-items-center rounded-xl bg-white/5 ${entry.isMichigan ? 'michigan-accent' : 'app-accent-text'}`}
+                >
                   {entry.kind === 'Player' ? (
                     <CircleUserRound size={19} />
                   ) : (

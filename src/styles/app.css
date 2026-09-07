@@ -35,6 +35,12 @@
     --app-text: #eef5fb;
     --app-muted: #8fa4b8;
     --app-maize: #ffcb05;
+    --app-accent: #ffcb05;
+    --app-accent-soft: #ffe16a;
+    --app-accent-contrast: #071421;
+    --app-accent-shadow: rgb(255 203 5 / 0.18);
+    --app-chrome-rgb: 3 10 18;
+    --app-menu-rgb: 7 20 33;
     --radius-control: 0.75rem;
     --radius-card: 1.125rem;
     --radius-overlay: 1.5rem;
@@ -92,12 +98,12 @@
   }
 
   ::selection {
-    background: var(--app-maize);
-    color: #03101d;
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
   }
 
   :focus-visible {
-    outline: 2px solid var(--app-maize);
+    outline: 2px solid var(--app-accent);
     outline-offset: 3px;
   }
 
@@ -152,6 +158,88 @@
 }
 
 @layer components {
+  .app-public-shell {
+    background: var(--app-bg);
+    color: var(--app-text);
+  }
+
+  .app-context-national {
+    --app-bg: #09090b;
+    --app-surface: #111113;
+    --app-surface-raised: #18181b;
+    --app-surface-strong: #222225;
+    --app-line: rgb(255 255 255 / 0.12);
+    --app-line-strong: rgb(255 255 255 / 0.22);
+    --app-text: #f4f4f5;
+    --app-muted: #a1a1aa;
+    --app-accent: #d4d4d8;
+    --app-accent-soft: #f4f4f5;
+    --app-accent-contrast: #18181b;
+    --app-accent-shadow: rgb(255 255 255 / 0.1);
+    --app-chrome-rgb: 9 9 11;
+    --app-menu-rgb: 17 17 19;
+    background:
+      radial-gradient(
+        circle at 16% -12%,
+        rgb(255 255 255 / 0.07),
+        transparent 32rem
+      ),
+      var(--app-bg);
+  }
+
+  .app-shell-header {
+    background: rgb(var(--app-chrome-rgb) / 0.92);
+  }
+
+  .app-shell-menu {
+    background: rgb(var(--app-menu-rgb));
+  }
+
+  .app-shell-mobile-nav {
+    background: rgb(var(--app-menu-rgb) / 0.96);
+  }
+
+  .app-shell-switch-active,
+  .app-primary-button,
+  .app-filter-active {
+    border-color: color-mix(in srgb, var(--app-accent) 30%, transparent);
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+  }
+
+  .app-shell-nav-active,
+  .app-accent-text {
+    color: var(--app-accent);
+  }
+
+  .app-accent-soft-text {
+    color: var(--app-accent-soft);
+  }
+
+  .app-mark {
+    border-color: color-mix(in srgb, var(--app-accent) 35%, transparent);
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+    box-shadow: 0 8px 28px var(--app-accent-shadow);
+  }
+
+  .app-search-panel,
+  .app-ranking-header {
+    background: rgb(var(--app-menu-rgb) / 0.96);
+  }
+
+  .app-list-marker {
+    background: rgb(255 255 255 / 0.22);
+  }
+
+  .michigan-accent {
+    color: #ffcb05;
+  }
+
+  .michigan-marker {
+    background: #ffcb05;
+  }
+
   .app-card {
     border: 1px solid var(--app-line);
     border-radius: var(--radius-card);
@@ -159,6 +247,23 @@
       linear-gradient(145deg, rgb(255 255 255 / 0.035), transparent 45%),
       var(--app-surface-raised);
     box-shadow: 0 18px 48px rgb(0 0 0 / 0.18);
+  }
+
+  .michigan-highlight {
+    border-color: rgb(255 203 5 / 0.42) !important;
+    background: linear-gradient(
+      90deg,
+      rgb(255 203 5 / 0.14),
+      rgb(0 39 76 / 0.16) 55%,
+      transparent
+    );
+    box-shadow: inset 3px 0 #ffcb05;
+  }
+
+  .app-card.michigan-highlight {
+    box-shadow:
+      inset 3px 0 #ffcb05,
+      0 18px 48px rgb(0 0 0 / 0.18);
   }
 
   .app-control {
@@ -186,7 +291,7 @@
   }
 
   .app-kicker {
-    color: var(--app-maize);
+    color: var(--app-accent);
     font-size: 0.7rem;
     font-weight: 850;
     letter-spacing: 0.18em;
