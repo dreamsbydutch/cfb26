@@ -7,6 +7,14 @@ crons.daily(
   'refresh team-level football data',
   { hourUTC: 10, minuteUTC: 17 },
   internal.teamData.syncAll,
+  {},
+)
+
+crons.weekly(
+  'refresh Michigan alumni NFL records',
+  { dayOfWeek: 'tuesday', hourUTC: 13, minuteUTC: 17 },
+  internal.teamData.syncNflverse,
+  {},
 )
 
 crons.daily(

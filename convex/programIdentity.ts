@@ -8,6 +8,12 @@ export type ProgramSource =
   | 'game_stats'
   | 'ratings'
   | 'rating_inputs'
+  | 'programs'
+  | 'venues'
+  | 'affiliations'
+  | 'player_stats'
+  | 'nflverse'
+  | 'polls'
 
 const PROGRAM_KEY_ALIASES: Readonly<Record<string, string>> = {
   'alabama-birmingham': 'uab',

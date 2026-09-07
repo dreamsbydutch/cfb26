@@ -36,6 +36,22 @@ export type CfbdTeamGameStats = CfbdRow & {
 }
 
 export type CfbdFbsTeam = CfbdRow & { id: number; school: string }
+export type CfbdVenue = CfbdRow & { id: number; name: string }
+export type CfbdDraftPick = CfbdRow & {
+  collegeTeam: string
+  nflTeam: string
+  overall: number
+  pick: number
+  playerName: string
+  position: string
+  round: number
+  year: number
+}
+export type CfbdRankingWeek = CfbdRow & {
+  polls: Array<CfbdRow>
+  season: number
+  week: number
+}
 export type CfbdSeasonStat = CfbdRow & {
   season: number
   statName: string
@@ -113,11 +129,13 @@ export type CfbdClient = {
     args: GetSeasonStatsArgs,
   ) => Promise<Array<CfbdAdvancedSeasonStat>>
   getCoachTenures: (args: GetSeasonArgs) => Promise<Array<CfbdCoachTenure>>
+  getDraftPicks: (args: GetSeasonArgs) => Promise<Array<CfbdDraftPick>>
   getFbsTeams: (args: GetSeasonArgs) => Promise<Array<CfbdFbsTeam>>
   getGames: (args: GetGamesArgs) => Promise<Array<CfbdGame>>
   getRecruitingTeams: (
     args: GetSeasonArgs,
   ) => Promise<Array<CfbdRecruitingTeam>>
+  getRankings: (args: GetSeasonArgs) => Promise<Array<CfbdRankingWeek>>
   getReturningProduction: (
     args: GetSeasonArgs,
   ) => Promise<Array<CfbdReturningProduction>>
@@ -127,6 +145,7 @@ export type CfbdClient = {
     args: GetTeamGameStatsArgs,
   ) => Promise<Array<CfbdTeamGameStats>>
   getTransfers: (args: GetSeasonArgs) => Promise<Array<CfbdTransfer>>
+  getVenues: (args?: { signal?: AbortSignal }) => Promise<Array<CfbdVenue>>
 }
 
 export type CfbdClientErrorKind =
@@ -338,6 +357,46 @@ function parseFbsTeam(value: unknown): CfbdFbsTeam {
   }
 }
 
+function parseVenue(value: unknown): CfbdVenue {
+  const endpoint = '/venues'
+  if (!isRow(value)) throw contractError(endpoint, 'non-object row')
+  return {
+    ...value,
+    id: requiredNumber(value, 'id', endpoint),
+    name: requiredString(value, 'name', endpoint),
+  }
+}
+
+function parseDraftPick(value: unknown): CfbdDraftPick {
+  const endpoint = '/draft/picks'
+  if (!isRow(value)) throw contractError(endpoint, 'non-object row')
+  return {
+    ...value,
+    collegeTeam: requiredString(value, 'collegeTeam', endpoint),
+    nflTeam: requiredString(value, 'nflTeam', endpoint),
+    overall: requiredNumber(value, 'overall', endpoint),
+    pick: requiredNumber(value, 'pick', endpoint),
+    playerName: requiredString(value, 'playerName', endpoint),
+    position: requiredString(value, 'position', endpoint),
+    round: requiredNumber(value, 'round', endpoint),
+    year: requiredNumber(value, 'year', endpoint),
+  }
+}
+
+function parseRankingWeek(value: unknown): CfbdRankingWeek {
+  const endpoint = '/rankings'
+  if (!isRow(value)) throw contractError(endpoint, 'non-object row')
+  if (!Array.isArray(value.polls) || value.polls.some((poll) => !isRow(poll))) {
+    throw contractError(endpoint, 'invalid polls')
+  }
+  return {
+    ...value,
+    polls: value.polls as Array<CfbdRow>,
+    season: requiredNumber(value, 'season', endpoint),
+    week: requiredNumber(value, 'week', endpoint),
+  }
+}
+
 function parseSeasonStat(value: unknown): CfbdSeasonStat {
   const endpoint = '/stats/season'
   if (!isRow(value)) throw contractError(endpoint, 'non-object row')
@@ -520,6 +579,11 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
         await requestRows(`/coaches/tenures?year=${args.season}`, args.signal)
       ).map(parseCoachTenure)
     },
+    async getDraftPicks(args) {
+      return (
+        await requestRows(`/draft/picks?year=${args.season}`, args.signal)
+      ).map(parseDraftPick)
+    },
     async getFbsTeams(args) {
       return (
         await requestRows(`/teams/fbs?year=${args.season}`, args.signal)
@@ -574,6 +638,14 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
       return (
         await requestRows(`/player/portal?year=${args.season}`, args.signal)
       ).map(parseTransfer)
+    },
+    async getRankings(args) {
+      return (
+        await requestRows(`/rankings?year=${args.season}`, args.signal)
+      ).map(parseRankingWeek)
+    },
+    async getVenues(args) {
+      return (await requestRows('/venues', args?.signal)).map(parseVenue)
     },
   }
 }
