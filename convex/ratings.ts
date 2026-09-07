@@ -5,6 +5,7 @@ import {
   internalAction,
   internalMutation,
   internalQuery,
+  mutation,
   query,
 } from './_generated/server'
 import { resolveProgram, slug } from './programIdentity'
@@ -16,6 +17,12 @@ import {
   projectPowerMatchup,
   scoreWeeklyMatchup,
 } from './ratingSystem'
+import {
+  buildPlayoffProjection,
+  classifyQuadrant,
+  moveBallotEntry,
+} from './rankingTools'
+import { requireOwnerSession } from './rosterAdmin'
 import type { Doc, Id } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
 import type { LogisticMarginCalibration } from './ratingBacktest'
@@ -663,6 +670,133 @@ export const storeRatingEdition = internalMutation({
   },
 })
 
+export const storeDerivedEditionOutputs = internalMutation({
+  args: { editionId: v.id('ratingEditions') },
+  handler: async (ctx, args) => {
+    const edition = await ctx.db.get('ratingEditions', args.editionId)
+    if (!edition) throw new Error('Rating edition was not found.')
+    if (edition.editionType === 'research' || edition.season < 2026) {
+      return { forecasts: 0, playoff: false }
+    }
+    const [snapshots, games, rule, champions] = await Promise.all([
+      ctx.db
+        .query('teamRatingSnapshots')
+        .withIndex('by_edition_and_power', (q) =>
+          q.eq('editionId', edition._id),
+        )
+        .take(600),
+      ctx.db
+        .query('collegeGames')
+        .withIndex('by_season_and_startTime', (q) =>
+          q.eq('season', edition.season).gte('startTime', edition.cutoffAt),
+        )
+        .take(2_000),
+      ctx.db
+        .query('seasonRules')
+        .withIndex('by_season', (q) => q.eq('season', edition.season))
+        .unique(),
+      ctx.db
+        .query('conferenceChampions')
+        .withIndex('by_season_and_conference', (q) =>
+          q.eq('season', edition.season),
+        )
+        .take(500),
+    ])
+    const byProgram = new Map(
+      snapshots.map((row) => [String(row.programId), row]),
+    )
+    let forecasts = 0
+    for (const game of games) {
+      const home = byProgram.get(String(game.homeProgramId))
+      const away = byProgram.get(String(game.awayProgramId))
+      if (!home || !away || game.completed) continue
+      const homeFieldEffect = game.neutralSite ? 0 : home.homeFieldAdvantage
+      const expectedMargin =
+        Math.round((home.power - away.power + homeFieldEffect) * 10) / 10
+      const winProbability =
+        Math.round(
+          Math.min(
+            Math.max(1 / (1 + Math.exp(-expectedMargin / 6.5)), 0.03),
+            0.97,
+          ) * 10_000,
+        ) / 10_000
+      const sourceKey = `${edition._id}:${game._id}`
+      const existing = await ctx.db
+        .query('frozenForecasts')
+        .withIndex('by_sourceKey', (q) => q.eq('sourceKey', sourceKey))
+        .unique()
+      if (existing) continue
+      await ctx.db.insert('frozenForecasts', {
+        awayProgramId: game.awayProgramId,
+        calibrationVersion: edition.calibrationVersion,
+        cutoffAt: edition.cutoffAt,
+        editionId: edition._id,
+        expectedMargin,
+        frozenAt: Date.now(),
+        gameId: game._id,
+        homeFieldEffect,
+        homeProgramId: game.homeProgramId,
+        modelVersion: edition.modelVersion,
+        sourceKey,
+        uncertainty:
+          Math.round(
+            (7 +
+              Math.max(home.priorWeight, away.priorWeight) * 12 +
+              (home.limitedSample || away.limitedSample ? 3 : 0)) *
+              10,
+          ) / 10,
+        winProbability,
+      })
+      forecasts += 1
+    }
+
+    if (!edition.resumeVisible || !rule) return { forecasts, playoff: false }
+    const championIds = new Set(champions.map((row) => String(row.programId)))
+    const projection = buildPlayoffProjection({
+      rules: {
+        byeCount: rule.playoffByeCount,
+        championBidCount: rule.playoffChampionBidCount,
+        fieldSize: rule.playoffFieldSize,
+      },
+      teams: snapshots.flatMap((snapshot) =>
+        snapshot.resumeRank !== undefined && snapshot.classification === 'fbs'
+          ? [
+              {
+                conference: snapshot.conference ?? null,
+                conferenceChampion: championIds.has(String(snapshot.programId)),
+                programKey: String(snapshot.programId),
+                resumeRank: snapshot.resumeRank,
+              },
+            ]
+          : [],
+      ),
+    })
+    const sourceKey = `${edition._id}:${rule.version}`
+    const existingProjection = await ctx.db
+      .query('playoffProjections')
+      .withIndex('by_sourceKey', (q) => q.eq('sourceKey', sourceKey))
+      .unique()
+    if (!existingProjection) {
+      await ctx.db.insert('playoffProjections', {
+        editionId: edition._id,
+        field: projection.field
+          .map((entry) => ({
+            ...entry,
+            programId: entry.programKey as Id<'programs'>,
+          }))
+          .map(({ programKey: _programKey, ...entry }) => entry),
+        firstTeamOutProgramId: projection.firstTeamOut as Id<'programs'> | null,
+        generatedAt: Date.now(),
+        rulesVersion: rule.version,
+        season: edition.season,
+        sourceKey,
+        week: edition.week,
+      })
+    }
+    return { forecasts, playoff: true }
+  },
+})
+
 function normalizedClassification(value: string | undefined) {
   const classification = value?.toLowerCase()
   if (classification === 'fcs') return 'fcs' as const
@@ -939,33 +1073,42 @@ export const buildRatingEdition = internalAction({
         },
       ]
     })
-    return ctx.runMutation(internal.ratings.storeRatingEdition, {
-      edition: {
-        calibrationFitCount: args.calibration?.fitCount,
-        calibrationIntercept: args.calibration?.intercept,
-        calibrationMaximumProbability: args.calibration?.maximumProbability,
-        calibrationMinimumProbability: args.calibration?.minimumProbability,
-        calibrationSlope: args.calibration?.slope,
-        calibrationTrainingSeasons: args.calibration?.trainingSeasons,
-        calibrationVersion: args.calibration?.version ?? 'fixed-logistic-v1',
-        cutoffAt: args.cutoffAt,
-        editionType: args.editionType,
-        generatedAt,
-        leagueAveragePoints: powerEdition.leagueAveragePoints,
-        modelVersion: powerEdition.modelVersion,
-        resumeModelVersion: resumeEdition.modelVersion,
-        resumeReferencePower: resumeEdition.referencePower,
-        resumeVisible: resumeEdition.visible,
-        revision,
-        season,
-        sourceDataFingerprint,
-        sourceDataUpdatedAt,
-        sourceKey,
-        supersedesEditionId: args.supersedesEditionId,
-        week,
+    const stored: StoredEditionResult = await ctx.runMutation(
+      internal.ratings.storeRatingEdition,
+      {
+        edition: {
+          calibrationFitCount: args.calibration?.fitCount,
+          calibrationIntercept: args.calibration?.intercept,
+          calibrationMaximumProbability: args.calibration?.maximumProbability,
+          calibrationMinimumProbability: args.calibration?.minimumProbability,
+          calibrationSlope: args.calibration?.slope,
+          calibrationTrainingSeasons: args.calibration?.trainingSeasons,
+          calibrationVersion: args.calibration?.version ?? 'fixed-logistic-v1',
+          cutoffAt: args.cutoffAt,
+          editionType: args.editionType,
+          generatedAt,
+          leagueAveragePoints: powerEdition.leagueAveragePoints,
+          modelVersion: powerEdition.modelVersion,
+          resumeModelVersion: resumeEdition.modelVersion,
+          resumeReferencePower: resumeEdition.referencePower,
+          resumeVisible: resumeEdition.visible,
+          revision,
+          season,
+          sourceDataFingerprint,
+          sourceDataUpdatedAt,
+          sourceKey,
+          supersedesEditionId: args.supersedesEditionId,
+          week,
+        },
+        rows,
       },
-      rows,
-    })
+    )
+    if (stored.inserted && args.editionType !== 'research' && season >= 2026) {
+      await ctx.runMutation(internal.ratings.storeDerivedEditionOutputs, {
+        editionId: stored.editionId,
+      })
+    }
+    return stored
   },
 })
 
@@ -1024,6 +1167,27 @@ export const latestNightlyEdition = internalQuery({
       .first(),
 })
 
+export const publicationReadiness = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const games = await ctx.db
+      .query('teamDataSyncState')
+      .withIndex('by_source', (q) => q.eq('source', 'games'))
+      .unique()
+    return {
+      ready: games?.status === 'succeeded' && (games.acceptedRows ?? 0) > 0,
+      reason:
+        games?.status === 'failed'
+          ? (games.error ?? 'The college game sync failed.')
+          : games?.status !== 'succeeded'
+            ? 'The college game sync has not completed successfully.'
+            : (games.acceptedRows ?? 0) === 0
+              ? 'The college game sync returned no accepted rows.'
+              : null,
+    }
+  },
+})
+
 function footballSeason(asOf: number) {
   const date = new Date(asOf)
   return date.getUTCMonth() < 2
@@ -1063,6 +1227,11 @@ export const refreshCurrentPowerRatings = internalAction({
 export const publishCurrentWeeklyRatings = internalAction({
   args: {},
   handler: async (ctx): Promise<StoredEditionResult> => {
+    const readiness: { ready: boolean; reason: string | null } =
+      await ctx.runQuery(internal.ratings.publicationReadiness, {})
+    if (!readiness.ready) {
+      throw new Error(`Official publication blocked: ${readiness.reason}`)
+    }
     const cutoffAt = Date.now()
     const season = footballSeason(cutoffAt)
     const state: {
@@ -1600,5 +1769,383 @@ export const getMatchup = query({
       season,
       venue: args.venue,
     }
+  },
+})
+
+function averageOrNull(values: Array<number>) {
+  return values.length === 0
+    ? null
+    : Math.round(
+        (values.reduce((total, value) => total + value, 0) / values.length) *
+          10,
+      ) / 10
+}
+
+export const getMeritDashboard = query({
+  args: {
+    programKey: v.optional(v.string()),
+    season: v.number(),
+    week: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const edition = await preferredWeeklyEdition(
+      ctx,
+      Math.floor(args.season),
+      Math.floor(args.week),
+    )
+    if (!edition) return null
+    const snapshots = await ctx.db
+      .query('teamRatingSnapshots')
+      .withIndex('by_edition_and_power', (q) => q.eq('editionId', edition._id))
+      .take(600)
+    const programs = await Promise.all(
+      snapshots.map((snapshot) => ctx.db.get('programs', snapshot.programId)),
+    )
+    const programById = new Map(
+      programs.flatMap((program) =>
+        program ? [[String(program._id), program] as const] : [],
+      ),
+    )
+    const powerById = new Map(
+      snapshots.map((snapshot) => [String(snapshot.programId), snapshot]),
+    )
+    const rankings = snapshots
+      .filter((snapshot) => snapshot.published)
+      .sort((a, b) =>
+        edition.resumeVisible
+          ? (a.resumeRank ?? 999) - (b.resumeRank ?? 999)
+          : (a.powerRank ?? 999) - (b.powerRank ?? 999),
+      )
+      .map((snapshot) => ({
+        program: programById.get(String(snapshot.programId)) ?? null,
+        snapshot,
+      }))
+    const playoff = await ctx.db
+      .query('playoffProjections')
+      .withIndex('by_editionId', (q) => q.eq('editionId', edition._id))
+      .unique()
+    const playoffPrograms = playoff
+      ? new Map(
+          (
+            await Promise.all(
+              [
+                ...playoff.field.map((entry) => entry.programId),
+                ...(playoff.firstTeamOutProgramId
+                  ? [playoff.firstTeamOutProgramId]
+                  : []),
+              ].map((programId) => ctx.db.get('programs', programId)),
+            )
+          ).flatMap((program) =>
+            program ? [[String(program._id), program] as const] : [],
+          ),
+        )
+      : new Map()
+
+    let schedule = null
+    if (args.programKey) {
+      const program = await ctx.db
+        .query('programs')
+        .withIndex('by_key', (q) => q.eq('key', args.programKey as string))
+        .unique()
+      if (program) {
+        const [home, away] = await Promise.all([
+          ctx.db
+            .query('collegeGames')
+            .withIndex('by_homeProgramId_and_season', (q) =>
+              q.eq('homeProgramId', program._id).eq('season', edition.season),
+            )
+            .take(40),
+          ctx.db
+            .query('collegeGames')
+            .withIndex('by_awayProgramId_and_season', (q) =>
+              q.eq('awayProgramId', program._id).eq('season', edition.season),
+            )
+            .take(40),
+        ])
+        const top25Power =
+          [...snapshots]
+            .filter((row) => row.classification === 'fbs')
+            .sort((a, b) => b.power - a.power)[24]?.power ?? 0
+        const rows = [...home, ...away]
+          .map((game) => {
+            const isHome = game.homeProgramId === program._id
+            const opponentId = isHome ? game.awayProgramId : game.homeProgramId
+            const opponent = powerById.get(String(opponentId))
+            const opponentProgram = programById.get(String(opponentId)) ?? null
+            const opponentRank = opponent?.powerRank ?? null
+            const venueEffect = game.neutralSite ? 0 : isHome ? 2.5 : -2.5
+            const benchmarkProbability = opponent
+              ? 1 /
+                (1 +
+                  Math.exp(-(top25Power - opponent.power + venueEffect) / 6.5))
+              : null
+            const completedAtCutoff =
+              game.completed && game.startTime < edition.cutoffAt
+            return {
+              benchmarkProbability,
+              completedAtCutoff,
+              game,
+              opponent,
+              opponentProgram,
+              quadrant:
+                completedAtCutoff && opponent?.classification === 'fbs'
+                  ? classifyQuadrant(opponentRank)
+                  : null,
+            }
+          })
+          .sort(
+            (a, b) =>
+              (b.opponent?.power ?? Number.NEGATIVE_INFINITY) -
+                (a.opponent?.power ?? Number.NEGATIVE_INFINITY) ||
+              a.game.startTime - b.game.startTime,
+          )
+        const summarize = (selected: typeof rows) => ({
+          averageOpponentPower: averageOrNull(
+            selected.flatMap((row) =>
+              row.opponent ? [row.opponent.power] : [],
+            ),
+          ),
+          benchmarkExpectedWins:
+            Math.round(
+              selected.reduce(
+                (total, row) => total + (row.benchmarkProbability ?? 0),
+                0,
+              ) * 10,
+            ) / 10,
+          games: selected.length,
+        })
+        schedule = {
+          conference: summarize(rows.filter((row) => row.game.conferenceGame)),
+          full: summarize(rows),
+          nonconference: summarize(
+            rows.filter((row) => !row.game.conferenceGame),
+          ),
+          played: summarize(rows.filter((row) => row.completedAtCutoff)),
+          quadrants: ['Q1', 'Q2', 'Q3', 'Q4'].map((quadrant) => ({
+            quadrant,
+            games: rows.filter((row) => row.quadrant === quadrant),
+          })),
+          remaining: summarize(rows.filter((row) => !row.completedAtCutoff)),
+          rows,
+        }
+      }
+    }
+    return {
+      edition,
+      playoff: playoff
+        ? {
+            ...playoff,
+            field: playoff.field.map((entry) => ({
+              ...entry,
+              program: playoffPrograms.get(String(entry.programId)) ?? null,
+            })),
+            firstTeamOut: playoff.firstTeamOutProgramId
+              ? (playoffPrograms.get(String(playoff.firstTeamOutProgramId)) ??
+                null)
+              : null,
+          }
+        : null,
+      rankings,
+      schedule,
+    }
+  },
+})
+
+export const initializeBallot = mutation({
+  args: {
+    restart: v.optional(v.boolean()),
+    season: v.number(),
+    sessionToken: v.string(),
+    week: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const edition = await preferredWeeklyEdition(ctx, args.season, args.week)
+    if (!edition || !edition.resumeVisible) {
+      throw new Error('A Week 7 or later Resume edition is required.')
+    }
+    const existing = await ctx.db
+      .query('rankingBallots')
+      .withIndex('by_season_and_week', (q) =>
+        q.eq('season', args.season).eq('week', args.week),
+      )
+      .unique()
+    if (existing?.status === 'submitted') {
+      throw new Error('A submitted ballot is locked.')
+    }
+    if (existing && !args.restart) return existing._id
+    const snapshots = await ctx.db
+      .query('teamRatingSnapshots')
+      .withIndex('by_edition_and_resume', (q) => q.eq('editionId', edition._id))
+      .take(600)
+    const seeded = snapshots
+      .filter(
+        (row) => row.classification === 'fbs' && row.resumeRank !== undefined,
+      )
+      .sort(
+        (a, b) =>
+          (a.resumeRank ?? 999) - (b.resumeRank ?? 999) ||
+          a.programKey.localeCompare(b.programKey),
+      )
+      .map((row, index) => ({
+        programId: row.programId,
+        rank: index + 1,
+        seedRank: index + 1,
+      }))
+    const document = {
+      editionId: edition._id,
+      entries: seeded,
+      season: args.season,
+      status: 'draft' as const,
+      submittedAt: null,
+      updatedAt: Date.now(),
+      week: args.week,
+    }
+    if (existing) {
+      await ctx.db.replace('rankingBallots', existing._id, document)
+      return existing._id
+    }
+    return ctx.db.insert('rankingBallots', document)
+  },
+})
+
+export const moveBallotTeam = mutation({
+  args: {
+    programId: v.id('programs'),
+    season: v.number(),
+    sessionToken: v.string(),
+    targetRank: v.number(),
+    week: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const ballot = await ctx.db
+      .query('rankingBallots')
+      .withIndex('by_season_and_week', (q) =>
+        q.eq('season', args.season).eq('week', args.week),
+      )
+      .unique()
+    if (!ballot || ballot.status !== 'draft')
+      throw new Error('Editable ballot was not found.')
+    const order = moveBallotEntry(
+      ballot.entries
+        .sort((a, b) => a.rank - b.rank)
+        .map((entry) => String(entry.programId)),
+      String(args.programId),
+      args.targetRank,
+    )
+    const byId = new Map(
+      ballot.entries.map((entry) => [String(entry.programId), entry]),
+    )
+    const entries = order.map((programId, index) => ({
+      ...byId.get(programId)!,
+      rank: index + 1,
+    }))
+    await ctx.db.patch('rankingBallots', ballot._id, {
+      entries,
+      updatedAt: Date.now(),
+    })
+    return ballot._id
+  },
+})
+
+export const submitBallot = mutation({
+  args: { season: v.number(), sessionToken: v.string(), week: v.number() },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const ballot = await ctx.db
+      .query('rankingBallots')
+      .withIndex('by_season_and_week', (q) =>
+        q.eq('season', args.season).eq('week', args.week),
+      )
+      .unique()
+    if (!ballot || ballot.status !== 'draft')
+      throw new Error('Editable ballot was not found.')
+    await ctx.db.patch('rankingBallots', ballot._id, {
+      status: 'submitted',
+      submittedAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+    return ballot._id
+  },
+})
+
+export const getBallot = query({
+  args: {
+    season: v.number(),
+    sessionToken: v.optional(v.string()),
+    week: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const ballot = await ctx.db
+      .query('rankingBallots')
+      .withIndex('by_season_and_week', (q) =>
+        q.eq('season', args.season).eq('week', args.week),
+      )
+      .unique()
+    if (!ballot) return null
+    if (ballot.status === 'draft') {
+      if (!args.sessionToken) return null
+      await requireOwnerSession(ctx, args.sessionToken)
+    }
+    const snapshots = await ctx.db
+      .query('teamRatingSnapshots')
+      .withIndex('by_edition_and_resume', (q) =>
+        q.eq('editionId', ballot.editionId),
+      )
+      .take(600)
+    const polls = await ctx.db
+      .query('externalPollRanks')
+      .withIndex('by_season_and_week_and_poll', (q) =>
+        q.eq('season', args.season).eq('week', args.week),
+      )
+      .take(1_000)
+    const snapshotById = new Map(
+      snapshots.map((row) => [String(row.programId), row]),
+    )
+    const previous = await ctx.db
+      .query('rankingBallots')
+      .withIndex('by_season_and_week', (q) =>
+        q.eq('season', args.season).eq('week', Math.max(0, args.week - 1)),
+      )
+      .unique()
+    const previousById = new Map(
+      (previous?.status === 'submitted' ? previous.entries : []).map(
+        (entry) => [String(entry.programId), entry.rank] as const,
+      ),
+    )
+    const pollRank = (programId: Id<'programs'>, pattern: RegExp) =>
+      polls.find((row) => row.programId === programId && pattern.test(row.poll))
+        ?.rank ?? null
+    const entries = await Promise.all(
+      ballot.entries
+        .sort((a, b) => a.rank - b.rank)
+        .map(async (entry) => {
+          const snapshot = snapshotById.get(String(entry.programId))
+          return {
+            ...entry,
+            evidence: snapshot
+              ? {
+                  actualWins: snapshot.actualWins ?? null,
+                  apRank: pollRank(entry.programId, /associated press|ap top/i),
+                  cfpRank: pollRank(entry.programId, /playoff|cfp/i),
+                  dominance: snapshot.dominanceComponent ?? null,
+                  expectedWins: snapshot.expectedWins ?? null,
+                  powerRank: snapshot.powerRank ?? null,
+                  previousRank:
+                    previousById.get(String(entry.programId)) ?? null,
+                  quadrantRecord: snapshot.disagreementReasons,
+                  resumeRank: snapshot.resumeRank ?? null,
+                  schedule: snapshot.scheduleComponent ?? null,
+                }
+              : null,
+            program:
+              ballot.status === 'submitted'
+                ? await ctx.db.get('programs', entry.programId)
+                : null,
+          }
+        }),
+    )
+    return { ...ballot, entries }
   },
 })
