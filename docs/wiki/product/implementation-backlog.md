@@ -4,9 +4,9 @@
 
 ## Backlog contract
 
-**Current source — implemented 2026-09-06:** This is the delivery record for the [CFB26 system definition](system-definition.md). All nine phases are represented in the checked-in source contract and local verification suite. The new schema has not been migrated to a hosted Convex deployment; the backed-up development cutover, production promotion, and deployment smoke checks remain separately authorized operational steps.
+**Current source — implemented 2026-09-06; hosted backend cutover 2026-09-07:** This is the delivery record for the [CFB26 system definition](system-definition.md). All nine phases are represented in the checked-in source contract and local verification suite. The backed-up development cutover, production promotion, count reconciliation, and representative backend smoke checks are complete. No web release was included.
 
-The acceptance tables retain the contract that shaped implementation. “Implemented” means the source, UI workflow, validation, and offline tests exist; it does not mean hosted data was destructively migrated or production was promoted.
+The acceptance tables retain the contract that shaped implementation. “Implemented” means the source, UI workflow, validation, and offline tests exist. Hosted migration evidence is recorded separately from source implementation and web delivery.
 
 Every phase must:
 
@@ -21,17 +21,17 @@ Material import, merge, delete, rollover, and migration work additionally requir
 
 ## Phase map
 
-| Phase | Outcome                                     | Source status                                     |
-| ----: | ------------------------------------------- | ------------------------------------------------- |
-|     1 | New schema and controlled migration         | Implemented; hosted cutover pending               |
-|     2 | Unified CFBD team/game layer                | Implemented                                       |
-|     3 | Complete Michigan roster administration     | Implemented                                       |
-|     4 | Michigan player-game tracking and grades    | Implemented                                       |
-|     5 | Predictive ratings and frozen forecasts     | Implemented                                       |
-|     6 | Résumé, schedule, playoff, and ballot tools | Implemented                                       |
-|     7 | Draft and Michigan-alumni NFL tracking      | Implemented                                       |
-|     8 | Operational hardening                       | Implemented locally; deployment rehearsal pending |
-|     9 | Final UI redesign                           | Implemented                                       |
+| Phase | Outcome                                     | Source status                                           |
+| ----: | ------------------------------------------- | ------------------------------------------------------- |
+|     1 | New schema and controlled migration         | Implemented; hosted cutover complete                    |
+|     2 | Unified CFBD team/game layer                | Implemented                                             |
+|     3 | Complete Michigan roster administration     | Implemented                                             |
+|     4 | Michigan player-game tracking and grades    | Implemented                                             |
+|     5 | Predictive ratings and frozen forecasts     | Implemented                                             |
+|     6 | Résumé, schedule, playoff, and ballot tools | Implemented                                             |
+|     7 | Draft and Michigan-alumni NFL tracking      | Implemented                                             |
+|     8 | Operational hardening                       | Implemented; cutover verified, restore drill pending    |
+|     9 | Final UI redesign                           | Replacement prototypes active; direction pending review |
 
 ## Phase 1 — Schema and controlled migration
 

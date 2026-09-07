@@ -2,29 +2,31 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-This page inventories checked-in source interfaces. None of the new backend behavior is a hosted claim until the exact deployment is migrated and verified.
+This page inventories source interfaces synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` during the 2026-09-07 backed-up cutover. Web deployment remains a separate release boundary.
 
 ## Web routes
 
-| Route           | Contract                                                                                                                                                                                                                                                                                  |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`             | Public Michigan season explorer with Roster, Rooms, Scholarships, Eligibility, Development, Grades, Compare, and NFL alumni views. Player profiles join lifecycle, evaluations, movements, draft, Player Games, phase summaries, and NFL history. Comparisons accept at most four people. |
-| `/games`        | Public national workspace with Games, Power, Résumé, Playoff, Teams, Simulator, and Blind Ballot tabs. Schedule evidence is edition-cutoff safe and hardest-first. Ballot identities remain hidden until owner submission.                                                                |
-| `/admin/roster` | No-index private owner workspace. A password creates a revocable 12-hour session; lifecycle, annual season, Player Game, identity, draft/NFL, import, backup, rollover, rules/champions, repair, and health operations validate server-side.                                              |
+| Route           | Contract                                                                                                                                                                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`             | In-review DbyD CFB Michigan front door with three URL-selectable (`variant=A`, `variant=B`, or `variant=C`) live-data roster concepts. All share season/search/room filtering, movement evidence, player quick views, and a persistent comparison tray capped at four people. The former broad roster UI is not rendered during evaluation. |
+| `/games`        | Public national workspace with Games, Power, Résumé, Playoff, Teams, Simulator, and Blind Ballot tabs. Schedule evidence is edition-cutoff safe and hardest-first. Ballot identities remain hidden until owner submission.                                                                                                                  |
+| `/admin/roster` | No-index private owner workspace. A password creates a revocable 12-hour session; lifecycle, annual season, Player Game, identity, draft/NFL, import, backup, rollover, rules/champions, repair, and health operations validate server-side.                                                                                                |
 
 All routes include responsive navigation, semantic controls, visible focus treatment, and explicit loading/error/empty states.
 
 ## Public Convex reads
 
-| Family               | Principal exports                                                                                                                                                                                          |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Players              | `players.search`, `players.getProfile`, `players.compare`, `players.listNflAlumni`                                                                                                                         |
-| Michigan rosters     | `rosters.getSeasonDashboard`, `rosters.list`, `rosters.listMovements`                                                                                                                                      |
-| Michigan games       | `seasonalStats.listBySeason`, `seasonalStats.listGame`                                                                                                                                                     |
-| National games/teams | `games.listByWeek`, `games.listProgramGames`, `games.getMatchupHistory`, `games.getGame`; `teamData.listPrograms`, `teamData.getProgramProfile`, season recruiting/standings/draft/history and sync health |
-| Ratings/ranking      | `ratings.getWeeklyDashboard`, `ratings.getMatchup`, `ratings.getMeritDashboard`, `ratings.getBallot`, `ratings.publicationReadiness`                                                                       |
+| Family               | Principal exports                                                                                                                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Players              | `players.search`, `players.getProfile`, `players.compare`, `players.listNflAlumni`                                                                                                                       |
+| Michigan rosters     | `rosters.getSeasonDashboard`, `rosters.list`, `rosters.listMovements`                                                                                                                                    |
+| Michigan games       | `seasonalStats.listBySeason`, `seasonalStats.listGame`                                                                                                                                                   |
+| National games/teams | `games.listSeasonWeek`, `games.listProgramGames`, `games.listMatchup`, `games.getGame`; `teamData.listPrograms`, `teamData.getProgramProfile`, season recruiting/standings/draft/history and sync health |
+| Ratings/ranking      | `ratings.getWeeklyDashboard`, `ratings.getMatchup`, `ratings.getMeritDashboard`, `ratings.getBallot`                                                                                                     |
 
 Every growing read is bounded through `take` or pagination. Public reads require no owner session.
+
+`ratings.publicationReadiness` is an internal publication gate rather than a public read.
 
 ## Owner functions
 

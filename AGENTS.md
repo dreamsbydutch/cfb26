@@ -4,11 +4,11 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: all nine source phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented. `/` covers season rosters, roster intelligence, comparisons, grades, profiles, and alumni; `/games` covers schedules, Power, Résumé, quadrants/SOS, playoff projection, team profiles, matchups, and the blind ballot; `/admin/roster` covers owner lifecycle, season, game, identity, import, backup, rollover, rule, and health workflows.
+- Product status: all nine backend/source phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented. `/` currently hosts three live-data DbyD CFB roster redesign prototypes with roster intelligence, player quick views, and four-player comparison; the broader Michigan feature replacement remains in review. `/games` covers schedules, Power, Résumé, quadrants/SOS, playoff projection, team profiles, matchups, and the blind ballot; `/admin/roster` covers owner lifecycle, season, game, identity, import, backup, rollover, rule, and health workflows.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
-- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Checked-in source has the 41-table Michigan/national/NFL/operations contract and has not been pushed. Both hosted deployments retain their earlier contracts until a backed-up, exact-target migration and explicit promotion.
+- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Both hosted deployments run the checked-in 41-table Michigan/national/NFL/operations contract after the backed-up 2026-09-07 cutover. Four retired physical table names remain visible but empty. No web deployment was part of that operation.
 - Canonical branch: `main`; remote: `origin`.
 
 Do not present placeholders, sample data, or proposed roadmap items as finished product behavior. The wiki labels facts as **Current**, **Planned**, or **Undecided**.
@@ -115,3 +115,17 @@ For an explicit request to publish a completed goal as a review branch, use `$pr
 ## Definition of done
 
 A change is complete when the requested behavior works, generated boundaries and secrets are clean, relevant wiki pages agree with the code, and the proportional checks pass. For ordinary code changes, run `npm run check`. A linked Convex backend change also requires `npx convex dev --once` against development before production promotion. Report any check that could not run and why.
+
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->

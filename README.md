@@ -1,10 +1,10 @@
 # cfb26
 
-`cfb26` is a Michigan-first college football intelligence system built with React, TanStack Start, and Convex. The checked-in application covers Michigan player lifecycles, season rosters, game participation and CFB26 Player Grades; national programs, schedules, ratings, résumés, playoff projections, and matchups; an identity-blind all-FBS owner ballot; and Michigan-alumni NFL tracking.
+`cfb26` is the source repository for DbyD CFB, a Michigan-first college football intelligence system built with React, TanStack Start, and Convex. The checked-in application covers Michigan player lifecycles, season rosters, game participation and DbyD Player Grades; national programs, schedules, ratings, résumés, playoff projections, and matchups; an identity-blind all-FBS owner ballot; and Michigan-alumni NFL tracking.
 
 The public app is read-only. `/admin/roster` is a private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
 
-The new source contract has not been promoted to either recorded Convex deployment. Hosted migration, development synchronization, production promotion, and smoke testing remain explicit target-specific operations; see [Deployment](docs/wiki/guides/deployment.md).
+The 41-table source contract was promoted to development and production through a backed-up, exact-target cutover on 2026-09-07. The operation did not deploy the web application. See [Deployment](docs/wiki/guides/deployment.md) and the [cutover record](docs/wiki/operations/convex-v2-cutover-2026-09-07.md).
 
 ## Quick start
 
@@ -53,6 +53,6 @@ npm run check        # Full local quality gate
 - [Agent guide](AGENTS.md) — operating rules and repository structure.
 - [Wiki home](docs/wiki/README.md) — current status and durable documentation.
 - [System definition](docs/wiki/product/system-definition.md) — scope, invariants, and non-goals.
-- [Implementation backlog](docs/wiki/product/implementation-backlog.md) — the nine implemented source phases and hosted cutover boundary.
+- [Implementation backlog](docs/wiki/product/implementation-backlog.md) — the nine source phases, completed backend cutover, and UI replacement status.
 - [Deployment](docs/wiki/guides/deployment.md) — migration, Convex, Vercel, rollback, and smoke checks.
 - [Backend contract](convex/README.md) — tables, modules, source ownership, and server rules.

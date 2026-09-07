@@ -21,12 +21,12 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Michigan Football Personnel Archive',
+        title: 'Dreams by Dutch | DbyD CFB',
       },
       {
         name: 'description',
         content:
-          'Explore Michigan football players by depth chart, recruiting class, draft class, and position.',
+          'Michigan-first college football roster, player, game, rating, résumé, playoff, and alumni intelligence.',
       },
     ],
     links: [

@@ -8,13 +8,13 @@ React 19 runs through TanStack Start and file-based routing. `src/router.tsx` co
 
 ## Routes and data
 
-| Route           | Feature module                              | Main reads/writes                                                              |
-| --------------- | ------------------------------------------- | ------------------------------------------------------------------------------ |
-| `/`             | `features/roster/RosterApp.tsx`             | Season dashboard, player profiles/comparison, grade summaries, NFL alumni      |
-| `/games`        | `features/landscape/LandscapeDashboard.tsx` | Weekly Power/games, merit dashboard, program profile, matchup, playoff, ballot |
-| `/admin/roster` | `features/roster/RosterAdmin.tsx`           | Owner session, Michigan roster/games/health plus transactional owner mutations |
+| Route           | Feature module                              | Main reads/writes                                                                          |
+| --------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `/`             | `features/roster/prototype/`                | Three roster concepts sharing season dashboard, movements, player profiles, and comparison |
+| `/games`        | `features/landscape/LandscapeDashboard.tsx` | Weekly Power/games, merit dashboard, program profile, matchup, playoff, ballot             |
+| `/admin/roster` | `features/roster/RosterAdmin.tsx`           | Owner session, Michigan roster/games/health plus transactional owner mutations             |
 
-The public roster uses annual Player Seasons rather than inferring a current roster from a single stint. It exposes Roster, Rooms, Scholarships, Eligibility, Development, Grades, Compare, and NFL views. Profiles join commitments, stints, evaluations, movements, draft outcomes, Player Games, phase summaries, and NFL history. Comparison selection is capped at four.
+The public Michigan front door currently hosts three responsive redesign concepts selected by the `variant=A|B|C` search parameter: Personnel Command, Scout Workbench, and Roster Matrix. They use the same live annual Player Seasons and movement data, season/search/room filtering, player quick views, and persistent comparison state capped at four people. The previous broad roster application remains in source but is not rendered while prototype evaluation is active.
 
 The landscape workspace exposes Games, Power, Résumé, Playoff, Teams, Simulator, and Blind Ballot. It keeps predictive Power separate from earned Résumé evidence. The schedule displays edition-specific quadrants and strength; matchup scenarios label venue and user adjustment separately. Draft ballots omit identifying team fields, autosave insertion moves, and reveal comparisons only after submission.
 
@@ -22,7 +22,7 @@ The owner route exchanges the configured password for a revocable 12-hour token 
 
 ## Presentation system
 
-`components/AppShell.tsx` owns the shared Michigan-first shell, responsive navigation, page framing, metrics, tabs, and empty states. Tailwind CSS 4 provides styling. Michigan blue and maize establish hierarchy; serif display headings, dense data blocks, flat borders, and explicit state colors support a football-research workspace rather than a generic dashboard.
+`components/AppShell.tsx` still owns the National and Owner-era shared shell. The Michigan prototype owns a temporary DbyD CFB shell and URL-backed concept switcher near the feature. Tailwind CSS 4 and prototype-local CSS provide a dark navy, dense scouting-room language with a condensed display stack, tabular numerals, sharp geometry, restrained maize, and no team logos or photography.
 
 Controls are semantic, keyboard reachable, visibly focused, and sized for touch. Tabs collapse into usable narrow layouts, dense tables become stacked rows where needed, and every query surface accounts for loading, error, empty, unavailable, or stale data. No visual treatment changes domain null semantics.
 
