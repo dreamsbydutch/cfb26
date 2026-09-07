@@ -1,71 +1,177 @@
 import { v } from 'convex/values'
-import { env, mutation } from './_generated/server'
-import { publicRosterStint } from './eligibility'
+import { env, mutation, query } from './_generated/server'
+import { derivePositionRoom } from './playerDomain'
+import type { Id } from './_generated/dataModel'
+import type { MutationCtx, QueryCtx } from './_generated/server'
 
-const depthTier = v.union(
-  v.literal('starters'),
-  v.literal('rotation'),
-  v.literal('depth'),
-  v.literal('prospects'),
-  v.literal('walk-ons'),
-)
+const SESSION_DURATION_MS = 12 * 60 * 60 * 1000
+const MAX_BULK_ROWS = 100
 
-const entrySource = v.union(
+const entryMethod = v.union(
   v.literal('high_school'),
   v.literal('transfer'),
   v.literal('walk_on'),
+  v.literal('legacy'),
+)
+const personState = v.union(
+  v.literal('prospect'),
+  v.literal('enrolled'),
+  v.literal('alumni'),
+)
+const dataQuality = v.union(
+  v.literal('owner_verified'),
+  v.literal('source_verified'),
+  v.literal('needs_review'),
+)
+const sourceLink = v.object({ label: v.string(), url: v.string() })
+const nullableNumber = v.union(v.number(), v.null())
+const scholarshipStatus = v.union(
+  v.literal('scholarship'),
+  v.literal('walk_on'),
+  v.literal('exempt'),
+  v.literal('unknown'),
+)
+const depthStatus = v.union(
+  v.literal('available'),
+  v.literal('limited'),
+  v.literal('out'),
+  v.literal('unknown'),
+)
+const playerRole = v.union(
+  v.literal('starter'),
+  v.literal('rotation'),
+  v.literal('reserve'),
+  v.literal('unassigned'),
+)
+const evaluationKind = v.union(
+  v.literal('recruiting'),
+  v.literal('transfer'),
+  v.literal('draft'),
+  v.literal('owner'),
+)
+const evaluationDirection = v.union(
+  v.literal('inbound'),
+  v.literal('outbound'),
+  v.literal('neutral'),
 )
 
-const departureKind = v.union(
-  v.literal('transfer_out'),
-  v.literal('graduated'),
-  v.literal('retired'),
-  v.literal('dismissed'),
-)
+const eligibilityEvidence = v.object({
+  ageBasedExceptionSeasons: v.number(),
+  competitionSeasons: v.array(v.number()),
+  enrollmentSeason: nullableNumber,
+  legacyRedshirtSeason: nullableNumber,
+  medicalHardshipSeasons: v.number(),
+  otherExtensionSeasons: v.number(),
+})
+
+const playerSeasonInput = {
+  availabilityNote: v.optional(v.string()),
+  captain: v.boolean(),
+  dataQuality,
+  depthStatus,
+  eligibleThroughSeasonOverride: nullableNumber,
+  eligibilityEvidence,
+  gamesPlayed: v.number(),
+  heightInches: nullableNumber,
+  honors: v.array(v.string()),
+  jerseyNumber: nullableNumber,
+  listedPosition: v.string(),
+  roomOrder: nullableNumber,
+  role: playerRole,
+  rosterStatus: v.union(
+    v.literal('active'),
+    v.literal('inactive'),
+    v.literal('departed'),
+  ),
+  scholarshipStatus,
+  season: v.number(),
+  sourceLinks: v.array(sourceLink),
+  starts: v.number(),
+  weightPounds: nullableNumber,
+}
+
+const bulkPerson = v.object({
+  canonicalName: v.string(),
+  entryMethod,
+  entrySeason: v.number(),
+  highSchool: v.optional(v.string()),
+  homeState: v.optional(v.string()),
+  hometown: v.optional(v.string()),
+  initialPosition: v.string(),
+  state: personState,
+})
 
 function constantTimeEqual(left: string, right: string) {
   const length = Math.max(left.length, right.length)
   let difference = left.length ^ right.length
-
   for (let index = 0; index < length; index += 1) {
     difference |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0)
   }
-
   return difference === 0
 }
 
-function assertAdminKey(candidate: string) {
+function assertOwnerPassword(candidate: string) {
   const configured = env.CFB26_ADMIN_KEY
   if (
     !configured ||
     configured.length < 24 ||
     !constantTimeEqual(candidate, configured)
   ) {
-    throw new Error('Admin access denied')
+    throw new Error('Owner access denied.')
   }
 }
 
-function boundedText(value: string | undefined, label: string, limit: number) {
+const toHex = (bytes: Uint8Array) =>
+  [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+
+async function hashToken(token: string) {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(token),
+  )
+  return toHex(new Uint8Array(digest))
+}
+
+function createToken() {
+  const bytes = new Uint8Array(32)
+  crypto.getRandomValues(bytes)
+  return toHex(bytes)
+}
+
+export async function requireOwnerSession(
+  ctx: QueryCtx | MutationCtx,
+  sessionToken: string,
+) {
+  if (sessionToken.length < 32) throw new Error('Owner session is invalid.')
+  const tokenHash = await hashToken(sessionToken)
+  const session = await ctx.db
+    .query('ownerSessions')
+    .withIndex('by_tokenHash', (q) => q.eq('tokenHash', tokenHash))
+    .unique()
+  if (
+    !session ||
+    session.revokedAt !== null ||
+    session.expiresAt <= Date.now()
+  ) {
+    throw new Error('Owner session has expired.')
+  }
+  return session
+}
+
+function requiredText(value: string, label: string, maximum = 120) {
+  const normalized = value.trim()
+  if (!normalized) throw new Error(`${label} is required.`)
+  if (normalized.length > maximum) {
+    throw new Error(`${label} must be ${maximum} characters or fewer.`)
+  }
+  return normalized
+}
+
+function nullableText(value: string | undefined, maximum = 160) {
   const normalized = value?.trim()
   if (!normalized) return undefined
-  if (normalized.length > limit) {
-    throw new Error(`${label} must be ${limit} characters or fewer`)
-  }
+  if (normalized.length > maximum) throw new Error('Text value is too long.')
   return normalized
-}
-
-function requiredText(value: string, label: string, limit: number) {
-  const normalized = boundedText(value, label, limit)
-  if (!normalized) throw new Error(`${label} is required`)
-  return normalized
-}
-
-function footballPosition(value: string, label = 'Position') {
-  const position = value.trim().toUpperCase()
-  if (!/^[A-Z][A-Z0-9/-]{0,15}$/.test(position)) {
-    throw new Error(`${label} must be a short football position label`)
-  }
-  return position
 }
 
 function wholeNumber(
@@ -75,35 +181,18 @@ function wholeNumber(
   maximum: number,
 ) {
   if (!Number.isInteger(value) || value < minimum || value > maximum) {
-    throw new Error(
-      `${label} must be a whole number from ${minimum} to ${maximum}`,
-    )
+    throw new Error(`${label} must be ${minimum}–${maximum}.`)
   }
   return value
 }
 
 function optionalWholeNumber(
-  value: number | undefined,
+  value: number | null,
   label: string,
   minimum: number,
   maximum: number,
 ) {
-  return value === undefined
-    ? undefined
-    : wholeNumber(value, label, minimum, maximum)
-}
-
-function optionalNumber(
-  value: number | undefined,
-  label: string,
-  minimum: number,
-  maximum: number,
-) {
-  if (value === undefined) return undefined
-  if (!Number.isFinite(value) || value < minimum || value > maximum) {
-    throw new Error(`${label} must be from ${minimum} to ${maximum}`)
-  }
-  return value
+  return value === null ? null : wholeNumber(value, label, minimum, maximum)
 }
 
 function slugify(value: string) {
@@ -115,502 +204,1294 @@ function slugify(value: string) {
     .replace(/^-|-$/g, '')
 }
 
-export const updatePlayer = mutation({
+async function getProgram(ctx: QueryCtx | MutationCtx, key: string) {
+  const program = await ctx.db
+    .query('programs')
+    .withIndex('by_key', (q) => q.eq('key', key))
+    .unique()
+  if (!program) throw new Error(`Program ${key} was not found.`)
+  return program
+}
+
+type NewPerson = {
+  canonicalName: string
+  entryMethod: 'high_school' | 'legacy' | 'transfer' | 'walk_on'
+  entrySeason: number
+  highSchool?: string
+  homeState?: string
+  hometown?: string
+  initialPosition: string
+  state: 'alumni' | 'enrolled' | 'prospect'
+}
+
+async function insertInitialSeason(
+  ctx: MutationCtx,
+  args: NewPerson,
+  playerId: Id<'players'>,
+  programId: Id<'programs'>,
+) {
+  const now = Date.now()
+  if (args.state === 'prospect') {
+    await ctx.db.insert('commitments', {
+      dataQuality: 'owner_verified',
+      initialPosition: requiredText(
+        args.initialPosition,
+        'Position',
+        16,
+      ).toUpperCase(),
+      playerId,
+      programId,
+      season: args.entrySeason,
+      sourceKey: `owner:${playerId}:commitment:${args.entrySeason}`,
+      sourceLinks: [],
+      status: 'committed',
+    })
+    return
+  }
+  const stintId = await ctx.db.insert('rosterStints', {
+    dataQuality: 'owner_verified',
+    eligibilityStartSeason: args.entrySeason,
+    entryMethod: args.entryMethod,
+    playerId,
+    programId,
+    sourceLinks: [],
+    startSeason: args.entrySeason,
+    endSeason: args.state === 'alumni' ? args.entrySeason : undefined,
+    status: args.state === 'alumni' ? 'departed' : 'active',
+  })
+  await ctx.db.insert('playerSeasons', {
+    captain: false,
+    dataQuality: 'owner_verified',
+    depthStatus: 'unknown',
+    eligibleThroughSeasonOverride: null,
+    eligibilityEvidence: {
+      ageBasedExceptionSeasons: 0,
+      competitionSeasons: [],
+      enrollmentSeason: args.entrySeason,
+      legacyRedshirtSeason: null,
+      medicalHardshipSeasons: 0,
+      otherExtensionSeasons: 0,
+    },
+    gamesPlayed: 0,
+    heightInches: null,
+    honors: [],
+    jerseyNumber: null,
+    listedPosition: requiredText(
+      args.initialPosition,
+      'Position',
+      16,
+    ).toUpperCase(),
+    playerId,
+    positionRoom: derivePositionRoom(args.initialPosition),
+    programId,
+    roomOrder: null,
+    role: 'unassigned',
+    rosterStatus: args.state === 'alumni' ? 'departed' : 'active',
+    scholarshipStatus: args.entryMethod === 'walk_on' ? 'walk_on' : 'unknown',
+    season: args.entrySeason,
+    sourceLinks: [],
+    starts: 0,
+    stintId,
+    weightPounds: null,
+  })
+  await ctx.db.insert('movementEvents', {
+    kind:
+      args.entryMethod === 'transfer'
+        ? 'transfer_in'
+        : args.entryMethod === 'walk_on'
+          ? 'walk_on'
+          : 'recruited',
+    playerId,
+    programId,
+    season: args.entrySeason,
+    sourceKey: `owner:${playerId}:arrival:${now}`,
+  })
+}
+
+async function createPersonRecord(
+  ctx: MutationCtx,
+  args: NewPerson,
+  programId: Id<'programs'>,
+) {
+  const canonicalName = requiredText(args.canonicalName, 'Canonical name', 100)
+  const entrySeason = wholeNumber(args.entrySeason, 'Entry season', 2015, 2100)
+  const slug = slugify(canonicalName)
+  const duplicate = await ctx.db
+    .query('players')
+    .withIndex('by_slug', (q) => q.eq('slug', slug))
+    .first()
+  if (duplicate) throw new Error(`${canonicalName} already exists.`)
+  const playerId = await ctx.db.insert('players', {
+    canonicalName,
+    dataQuality: 'owner_verified',
+    displayName: canonicalName,
+    entryMethod: args.entryMethod,
+    entrySeason,
+    highSchool: nullableText(args.highSchool, 120),
+    homeState: nullableText(args.homeState, 24)?.toUpperCase(),
+    hometown: nullableText(args.hometown, 80),
+    slug,
+    sourceLinks: [],
+    sourceUpdatedAt: Date.now(),
+    state: args.state,
+  })
+  await insertInitialSeason(ctx, { ...args, entrySeason }, playerId, programId)
+  return playerId
+}
+
+export const login = mutation({
+  args: { password: v.string() },
+  handler: async (ctx, args) => {
+    assertOwnerPassword(args.password)
+    const token = createToken()
+    const now = Date.now()
+    await ctx.db.insert('ownerSessions', {
+      createdAt: now,
+      expiresAt: now + SESSION_DURATION_MS,
+      lastUsedAt: now,
+      revokedAt: null,
+      tokenHash: await hashToken(token),
+    })
+    return { expiresAt: now + SESSION_DURATION_MS, token }
+  },
+})
+
+export const sessionStatus = query({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    try {
+      const session = await requireOwnerSession(ctx, args.sessionToken)
+      return { authenticated: true, expiresAt: session.expiresAt }
+    } catch {
+      return { authenticated: false, expiresAt: null }
+    }
+  },
+})
+
+export const logout = mutation({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await ctx.db.patch('ownerSessions', session._id, { revokedAt: Date.now() })
+    return { revoked: true }
+  },
+})
+
+export const revokeAllOwnerSessions = mutation({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const active = await ctx.db
+      .query('ownerSessions')
+      .withIndex('by_expiresAt', (q) => q.gt('expiresAt', Date.now()))
+      .take(500)
+    const revokedAt = Date.now()
+    for (const session of active.filter((row) => row.revokedAt === null)) {
+      await ctx.db.patch('ownerSessions', session._id, { revokedAt })
+    }
+    return { revoked: active.length }
+  },
+})
+
+export const createPerson = mutation({
   args: {
-    adminKey: v.string(),
-    depthChartOrder: v.union(v.null(), v.number()),
-    depthTier: v.union(v.null(), depthTier),
-    effectiveSeason: v.number(),
-    jerseyNumber: v.union(v.null(), v.number()),
+    ...bulkPerson.fields,
+    programKey: v.optional(v.string()),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const program = await getProgram(ctx, args.programKey ?? 'michigan')
+    return {
+      playerId: await createPersonRecord(ctx, args, program._id),
+    }
+  },
+})
+
+export const setCommitmentStatus = mutation({
+  args: {
     playerId: v.id('players'),
-    position: v.string(),
-    programKey: v.optional(v.string()),
+    season: v.number(),
+    sessionToken: v.string(),
+    status: v.union(v.literal('decommitted'), v.literal('enrolled')),
   },
   handler: async (ctx, args) => {
-    assertAdminKey(args.adminKey)
-
-    const position = footballPosition(args.position)
-    const jerseyNumber =
-      args.jerseyNumber === null
-        ? undefined
-        : wholeNumber(args.jerseyNumber, 'Jersey number', 0, 99)
-    const depthChartOrder =
-      args.depthChartOrder === null
-        ? undefined
-        : wholeNumber(args.depthChartOrder, 'Depth-chart order', 1, 99)
-    if (
-      !Number.isInteger(args.effectiveSeason) ||
-      args.effectiveSeason < 1900 ||
-      args.effectiveSeason > 2100
-    ) {
-      throw new Error('Effective season is outside the supported range')
-    }
-
-    const program = await ctx.db
-      .query('programs')
-      .withIndex('by_key', (query) =>
-        query.eq('key', args.programKey ?? 'michigan'),
+    await requireOwnerSession(ctx, args.sessionToken)
+    const commitment = await ctx.db
+      .query('commitments')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', args.playerId).eq('season', args.season),
       )
       .unique()
-    if (!program) throw new Error('Program not found')
-
-    const stints = await ctx.db
-      .query('rosterStints')
-      .withIndex('by_playerId_and_startSeason', (query) =>
-        query.eq('playerId', args.playerId),
-      )
-      .take(20)
-    const stint = stints.find(
-      (candidate) => candidate.programId === program._id,
-    )
-    if (!stint) throw new Error('Roster stint not found')
-
+    if (!commitment) throw new Error('Commitment was not found.')
+    if (commitment.status !== 'committed') {
+      throw new Error('Only an active commitment can change status.')
+    }
     const now = Date.now()
-    const positionChanges = [...(stint.positionChanges ?? [])]
-    if (position !== stint.position) {
-      positionChanges.push({
-        effectiveSeason: args.effectiveSeason,
-        fromPosition: stint.position,
-        recordedAt: now,
-        toPosition: position,
+    await ctx.db.patch('commitments', commitment._id, {
+      endedAt: now,
+      status: args.status,
+    })
+    if (args.status === 'decommitted') {
+      await ctx.db.insert('movementEvents', {
+        kind: 'decommitted',
+        playerId: args.playerId,
+        programId: commitment.programId,
+        season: args.season,
+        sourceKey: `owner:${args.playerId}:decommitment:${now}`,
       })
+      return { status: args.status }
     }
-
-    await ctx.db.patch('rosterStints', stint._id, {
-      depthChartOrder,
-      depthTierOverride: args.depthTier ?? undefined,
-      jerseyNumber,
-      position,
-      positionChanges:
-        positionChanges.length === 0 ? undefined : positionChanges.slice(-20),
-    })
-
-    const updated = await ctx.db.get('rosterStints', stint._id)
-    if (!updated) throw new Error('Roster stint was not available after update')
-
-    return publicRosterStint(updated)
+    const player = await ctx.db.get('players', args.playerId)
+    if (!player) throw new Error('Person was not found.')
+    await insertInitialSeason(
+      ctx,
+      {
+        canonicalName: player.canonicalName,
+        entryMethod: player.entryMethod,
+        entrySeason: args.season,
+        initialPosition: commitment.initialPosition,
+        state: 'enrolled',
+      },
+      player._id,
+      commitment.programId,
+    )
+    await ctx.db.patch('players', player._id, { state: 'enrolled' })
+    return { status: args.status }
   },
 })
 
-export const addPlayer = mutation({
+export const upsertPlayerSeason = mutation({
   args: {
-    adminKey: v.string(),
-    displayName: v.string(),
-    eligibilityStartSeason: v.number(),
-    entrySource,
-    extraEligibilitySeasons: v.number(),
-    highSchool: v.string(),
-    homeState: v.string(),
-    hometown: v.string(),
-    jerseyNumber: v.optional(v.number()),
-    medicalExtensionSeasons: v.number(),
-    position: v.string(),
-    previousProgramId: v.optional(v.id('programs')),
+    ...playerSeasonInput,
+    playerId: v.id('players'),
     programKey: v.optional(v.string()),
-    recruiting: v.object({
-      compositeOverallRank: v.optional(v.number()),
-      compositePositionRank: v.optional(v.number()),
-      compositeRating: v.optional(v.number()),
-      compositeStateRank: v.optional(v.number()),
-      heightInches: v.optional(v.number()),
-      position: v.string(),
-      service247OverallRank: v.optional(v.number()),
-      service247PositionRank: v.optional(v.number()),
-      service247Rating: v.optional(v.number()),
-      service247StateRank: v.optional(v.number()),
-      weightPounds: v.optional(v.number()),
-    }),
-    recruitingSeason: v.number(),
-    rosterHeightInches: v.optional(v.number()),
-    rosterWeightPounds: v.optional(v.number()),
-    startSeason: v.number(),
+    sessionToken: v.string(),
+    stintId: v.id('rosterStints'),
   },
   handler: async (ctx, args) => {
-    assertAdminKey(args.adminKey)
-
-    const displayName = requiredText(args.displayName, 'Player name', 100)
-    const highSchool = requiredText(args.highSchool, 'High school', 120)
-    const homeState = requiredText(
-      args.homeState,
-      'Home state',
-      24,
+    await requireOwnerSession(ctx, args.sessionToken)
+    const [player, stint, program] = await Promise.all([
+      ctx.db.get('players', args.playerId),
+      ctx.db.get('rosterStints', args.stintId),
+      getProgram(ctx, args.programKey ?? 'michigan'),
+    ])
+    if (!player || !stint || stint.playerId !== args.playerId) {
+      throw new Error('Player stint was not found.')
+    }
+    const season = wholeNumber(args.season, 'Season', 2015, 2100)
+    const listedPosition = requiredText(
+      args.listedPosition,
+      'Position',
+      16,
     ).toUpperCase()
-    const hometown = requiredText(args.hometown, 'Hometown', 80)
-    const position = footballPosition(args.position)
-    const recruitingPosition = footballPosition(
-      args.recruiting.position,
-      'Recruiting position',
-    )
-    const recruitingSeason = wholeNumber(
-      args.recruitingSeason,
-      'Original recruiting season',
-      1900,
-      2100,
-    )
-    const startSeason = wholeNumber(
-      args.startSeason,
-      'Michigan arrival season',
-      1900,
-      2100,
-    )
-    const eligibilityStartSeason = wholeNumber(
-      args.eligibilityStartSeason,
-      'Eligibility start season',
-      1900,
-      2100,
-    )
-    const medicalExtensionSeasons = wholeNumber(
-      args.medicalExtensionSeasons,
-      'Medical extensions',
-      0,
-      5,
-    )
-    const extraEligibilitySeasons = wholeNumber(
-      args.extraEligibilitySeasons,
-      'Extra eligibility',
-      0,
-      5,
-    )
-    const jerseyNumber = optionalWholeNumber(
-      args.jerseyNumber,
-      'Jersey number',
-      0,
-      99,
-    )
-    const rosterHeightInches = optionalWholeNumber(
-      args.rosterHeightInches,
-      'Roster height',
-      48,
-      96,
-    )
-    const rosterWeightPounds = optionalWholeNumber(
-      args.rosterWeightPounds,
-      'Roster weight',
-      100,
-      500,
-    )
-    const recruitingHeightInches = optionalWholeNumber(
-      args.recruiting.heightInches,
-      'Recruiting height',
-      48,
-      96,
-    )
-    const recruitingWeightPounds = optionalWholeNumber(
-      args.recruiting.weightPounds,
-      'Recruiting weight',
-      100,
-      500,
-    )
-    const compositeRating = optionalNumber(
-      args.recruiting.compositeRating,
-      'Composite rating',
-      0,
-      1,
-    )
-    const service247Rating = optionalNumber(
-      args.recruiting.service247Rating,
-      '247 rating',
-      0,
-      100,
-    )
-    const compositeOverallRank = optionalWholeNumber(
-      args.recruiting.compositeOverallRank,
-      'Composite overall rank',
-      1,
-      10000,
-    )
-    const compositePositionRank = optionalWholeNumber(
-      args.recruiting.compositePositionRank,
-      'Composite position rank',
-      1,
-      10000,
-    )
-    const compositeStateRank = optionalWholeNumber(
-      args.recruiting.compositeStateRank,
-      'Composite state rank',
-      1,
-      10000,
-    )
-    const service247OverallRank = optionalWholeNumber(
-      args.recruiting.service247OverallRank,
-      '247 overall rank',
-      1,
-      10000,
-    )
-    const service247PositionRank = optionalWholeNumber(
-      args.recruiting.service247PositionRank,
-      '247 position rank',
-      1,
-      10000,
-    )
-    const service247StateRank = optionalWholeNumber(
-      args.recruiting.service247StateRank,
-      '247 state rank',
-      1,
-      10000,
-    )
-
-    const program = await ctx.db
-      .query('programs')
-      .withIndex('by_key', (query) =>
-        query.eq('key', args.programKey ?? 'michigan'),
+    const gamesPlayed = wholeNumber(args.gamesPlayed, 'Games played', 0, 30)
+    const starts = wholeNumber(args.starts, 'Starts', 0, gamesPlayed)
+    const document = {
+      availabilityNote: nullableText(args.availabilityNote, 240),
+      captain: args.captain,
+      dataQuality: args.dataQuality,
+      depthStatus: args.depthStatus,
+      eligibleThroughSeasonOverride: args.eligibleThroughSeasonOverride,
+      eligibilityEvidence: args.eligibilityEvidence,
+      gamesPlayed,
+      heightInches: optionalWholeNumber(args.heightInches, 'Height', 48, 96),
+      honors: args.honors.map((honor) => requiredText(honor, 'Honor', 100)),
+      jerseyNumber: optionalWholeNumber(args.jerseyNumber, 'Jersey', 0, 99),
+      listedPosition,
+      playerId: args.playerId,
+      positionRoom: derivePositionRoom(listedPosition),
+      programId: program._id,
+      roomOrder: optionalWholeNumber(args.roomOrder, 'Room order', 1, 200),
+      role: args.role,
+      rosterStatus: args.rosterStatus,
+      scholarshipStatus: args.scholarshipStatus,
+      season,
+      sourceLinks: args.sourceLinks,
+      starts,
+      stintId: args.stintId,
+      weightPounds: optionalWholeNumber(args.weightPounds, 'Weight', 100, 500),
+    }
+    const existing = await ctx.db
+      .query('playerSeasons')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', args.playerId).eq('season', season),
       )
       .unique()
-    if (!program) throw new Error('Program not found')
-
-    if (args.entrySource === 'transfer' && !args.previousProgramId) {
-      throw new Error('A previous school is required for a transfer')
+    if (existing) {
+      await ctx.db.replace('playerSeasons', existing._id, document)
+      return existing._id
     }
-    if (args.previousProgramId) {
-      if (args.previousProgramId === program._id) {
-        throw new Error('A previous school must be outside Michigan')
-      }
-      const previousProgram = await ctx.db.get(
-        'programs',
-        args.previousProgramId,
-      )
-      if (!previousProgram) throw new Error('Previous school not found')
-    }
-    if (args.entrySource === 'high_school' && args.previousProgramId) {
-      throw new Error('Previous school applies only to transfers and walk-ons')
-    }
-
-    const baseSlug = slugify(displayName)
-    if (!baseSlug)
-      throw new Error('Player name needs at least one letter or number')
-    const legacyKey = `manual:${baseSlug}:${recruitingSeason}:${slugify(highSchool)}`
-    const [sameSlug, duplicate] = await Promise.all([
-      ctx.db
-        .query('players')
-        .withIndex('by_slug', (query) => query.eq('slug', baseSlug))
-        .take(20),
-      ctx.db
-        .query('players')
-        .withIndex('by_legacyKey', (query) => query.eq('legacyKey', legacyKey))
-        .first(),
-    ])
-    if (
-      duplicate ||
-      sameSlug.some(
-        (player) =>
-          player.displayName.trim().toLowerCase() === displayName.toLowerCase(),
-      )
-    ) {
-      throw new Error('This player already exists in the roster ledger')
-    }
-
-    const movementKind =
-      args.entrySource === 'high_school'
-        ? 'recruited'
-        : args.entrySource === 'transfer'
-          ? 'transfer_in'
-          : 'walk_on'
-    const legacyCode =
-      args.entrySource === 'high_school'
-        ? 'R'
-        : args.entrySource === 'transfer'
-          ? 'T'
-          : 'W'
-    const cohort = await ctx.db
-      .query('movementEvents')
-      .withIndex('by_programId_and_season_and_kind', (query) =>
-        query
-          .eq('programId', program._id)
-          .eq('season', startSeason)
-          .eq('kind', movementKind),
-      )
-      .take(200)
-    const classRank =
-      cohort.reduce(
-        (highest, event) => Math.max(highest, event.cohortRank ?? 0),
-        0,
-      ) + 1
-    const now = Date.now()
-    const playerId = await ctx.db.insert('players', {
-      displayName,
-      highSchool,
-      homeState,
-      hometown,
-      legacyKey,
-      slug: baseSlug,
-      sourceUpdatedAt: now,
-    })
-
-    await ctx.db.insert('recruitingProfiles', {
-      classRank,
-      compositeOverallRank,
-      compositePositionRank,
-      compositeRating,
-      compositeStateRank,
-      heightInches: recruitingHeightInches,
-      legacyKey,
-      playerId,
-      position: recruitingPosition,
-      recruitingSeason,
-      service247OverallRank,
-      service247PositionRank,
-      service247Rating,
-      service247StateRank,
-      source: args.entrySource,
-      weightPounds: recruitingWeightPounds,
-    })
-    const stintId = await ctx.db.insert('rosterStints', {
-      eligibilityEndSeason:
-        eligibilityStartSeason +
-        4 +
-        medicalExtensionSeasons +
-        extraEligibilitySeasons,
-      eligibilityLeaveSeason: recruitingSeason + 2,
-      eligibilityStartSeason,
-      extraEligibilitySeasons:
-        extraEligibilitySeasons === 0 ? undefined : extraEligibilitySeasons,
-      heightInches: rosterHeightInches,
-      jerseyNumber,
-      legacyKey,
-      medicalExtensionSeasons:
-        medicalExtensionSeasons === 0 ? undefined : medicalExtensionSeasons,
-      playerId,
-      position,
-      programId: program._id,
-      startSeason,
-      status: 'active',
-      weightPounds: rosterWeightPounds,
-    })
-    await ctx.db.insert('programCareerSummaries', {
-      gamesPlayed: 0,
-      legacyKey,
-      playerId,
-      programId: program._id,
-      recentRating: 0,
-      snaps: 0,
-    })
-    await ctx.db.insert('movementEvents', {
-      cohortRank: classRank,
-      fromProgramId: args.previousProgramId,
-      kind: movementKind,
-      legacyCode,
-      playerId,
-      programId: program._id,
-      season: startSeason,
-      sourceKey: `${legacyKey}:arrival`,
-    })
-
-    const stint = await ctx.db.get('rosterStints', stintId)
-    if (!stint) throw new Error('Roster stint was not available after addition')
-
-    return { playerId, stint: publicRosterStint(stint) }
+    return ctx.db.insert('playerSeasons', document)
   },
 })
 
-export const removePlayer = mutation({
+export const addEvaluation = mutation({
   args: {
-    adminKey: v.string(),
-    departureKind,
+    dataQuality,
+    direction: evaluationDirection,
+    evaluatedAt: v.number(),
+    kind: evaluationKind,
+    notes: v.optional(v.string()),
+    playerId: v.id('players'),
+    provider: v.string(),
+    rank: nullableNumber,
+    scale: v.string(),
+    score: nullableNumber,
+    sessionToken: v.string(),
+    sourceUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!(await ctx.db.get('players', args.playerId))) {
+      throw new Error('Person was not found.')
+    }
+    return ctx.db.insert('evaluations', {
+      dataQuality: args.dataQuality,
+      direction: args.direction,
+      evaluatedAt: args.evaluatedAt,
+      kind: args.kind,
+      notes: nullableText(args.notes, 500),
+      playerId: args.playerId,
+      provider: requiredText(args.provider, 'Provider', 80),
+      rank: args.rank,
+      scale: requiredText(args.scale, 'Scale', 40),
+      score: args.score,
+      sourceUrl: nullableText(args.sourceUrl, 500),
+    })
+  },
+})
+
+export const upsertDraftOutcome = mutation({
+  args: {
+    combine: v.optional(
+      v.object({
+        fortyYardSeconds: nullableNumber,
+        heightInches: nullableNumber,
+        weightPounds: nullableNumber,
+      }),
+    ),
+    overallPick: nullableNumber,
+    playerId: v.id('players'),
+    round: nullableNumber,
+    sessionToken: v.string(),
+    status: v.union(
+      v.literal('drafted'),
+      v.literal('undrafted_free_agent'),
+      v.literal('practice_squad'),
+      v.literal('later_entry'),
+    ),
+    team: v.optional(v.string()),
+    year: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!(await ctx.db.get('players', args.playerId))) {
+      throw new Error('Person was not found.')
+    }
+    const year = wholeNumber(args.year, 'Draft year', 2015, 2100)
+    if (
+      args.status === 'drafted' &&
+      (args.round === null || args.overallPick === null)
+    ) {
+      throw new Error('Drafted players require a round and overall pick.')
+    }
+    const document = {
+      combine: args.combine,
+      dataQuality: 'owner_verified' as const,
+      overallPick: optionalWholeNumber(
+        args.overallPick,
+        'Overall pick',
+        1,
+        500,
+      ),
+      playerId: args.playerId,
+      round: optionalWholeNumber(args.round, 'Round', 1, 20),
+      sourceLinks: [],
+      status: args.status,
+      team: nullableText(args.team, 80),
+      year,
+    }
+    const existing = await ctx.db
+      .query('draftOutcomes')
+      .withIndex('by_playerId_and_year', (q) =>
+        q.eq('playerId', args.playerId).eq('year', year),
+      )
+      .unique()
+    if (existing) {
+      await ctx.db.replace('draftOutcomes', existing._id, document)
+      return existing._id
+    }
+    return ctx.db.insert('draftOutcomes', document)
+  },
+})
+
+export const upsertNflIdentity = mutation({
+  args: {
+    entryPath: v.union(
+      v.literal('drafted'),
+      v.literal('undrafted_free_agent'),
+      v.literal('practice_squad'),
+      v.literal('later_entry'),
+    ),
+    firstSeason: v.number(),
+    playerId: v.id('players'),
+    providerId: v.string(),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!(await ctx.db.get('players', args.playerId)))
+      throw new Error('Person was not found.')
+    const providerId = requiredText(args.providerId, 'nflverse GSIS ID', 80)
+    const existing = await ctx.db
+      .query('nflIdentities')
+      .withIndex('by_provider_and_providerId', (q) =>
+        q.eq('provider', 'nflverse').eq('providerId', providerId),
+      )
+      .unique()
+    const document = {
+      dataQuality: 'owner_verified' as const,
+      entryPath: args.entryPath,
+      firstSeason: wholeNumber(
+        args.firstSeason,
+        'First NFL season',
+        2015,
+        2100,
+      ),
+      playerId: args.playerId,
+      provider: 'nflverse',
+      providerId,
+      sourceLinks: [],
+    }
+    if (existing) {
+      await ctx.db.replace('nflIdentities', existing._id, document)
+      return existing._id
+    }
+    return ctx.db.insert('nflIdentities', document)
+  },
+})
+
+export const upsertNflWeeklyRoster = mutation({
+  args: {
+    playerId: v.id('players'),
+    season: v.number(),
+    sessionToken: v.string(),
+    status: v.union(
+      v.literal('active'),
+      v.literal('practice_squad'),
+      v.literal('injured_reserve'),
+      v.literal('reserve'),
+      v.literal('inactive'),
+    ),
+    team: v.string(),
+    week: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const identity = await ctx.db
+      .query('nflIdentities')
+      .withIndex('by_playerId', (q) => q.eq('playerId', args.playerId))
+      .unique()
+    if (!identity) throw new Error('NFL identity was not found.')
+    const season = wholeNumber(args.season, 'NFL season', 2015, 2100)
+    const week = wholeNumber(args.week, 'NFL week', 0, 30)
+    const sourceKey = `owner:nfl-roster:${args.playerId}:${season}:${week}`
+    const existing = await ctx.db
+      .query('nflWeeklyRosters')
+      .withIndex('by_sourceKey', (q) => q.eq('sourceKey', sourceKey))
+      .unique()
+    const document = {
+      nflIdentityId: identity._id,
+      playerId: args.playerId,
+      season,
+      sourceKey,
+      sourceUpdatedAt: Date.now(),
+      status: args.status,
+      team: requiredText(args.team, 'NFL team', 12).toUpperCase(),
+      week,
+    }
+    if (existing) {
+      await ctx.db.replace('nflWeeklyRosters', existing._id, document)
+      return existing._id
+    }
+    return ctx.db.insert('nflWeeklyRosters', document)
+  },
+})
+
+export const recordDeparture = mutation({
+  args: {
     destinationProgramId: v.optional(v.id('programs')),
     finalSeason: v.number(),
+    kind: v.union(
+      v.literal('transfer_out'),
+      v.literal('graduated'),
+      v.literal('retired'),
+      v.literal('dismissed'),
+    ),
+    note: v.optional(v.string()),
     playerId: v.id('players'),
-    programKey: v.optional(v.string()),
+    sessionToken: v.string(),
+    stintId: v.id('rosterStints'),
   },
   handler: async (ctx, args) => {
-    assertAdminKey(args.adminKey)
+    await requireOwnerSession(ctx, args.sessionToken)
+    const [player, stint] = await Promise.all([
+      ctx.db.get('players', args.playerId),
+      ctx.db.get('rosterStints', args.stintId),
+    ])
+    if (!player || !stint || stint.playerId !== player._id) {
+      throw new Error('Player stint was not found.')
+    }
     const finalSeason = wholeNumber(
       args.finalSeason,
-      'Final Michigan season',
-      1900,
+      'Final season',
+      stint.startSeason,
       2100,
     )
-
-    const program = await ctx.db
-      .query('programs')
-      .withIndex('by_key', (query) =>
-        query.eq('key', args.programKey ?? 'michigan'),
+    if (args.kind === 'transfer_out' && !args.destinationProgramId) {
+      throw new Error('Transfer destination is required.')
+    }
+    await ctx.db.patch('rosterStints', stint._id, {
+      endSeason: finalSeason,
+      status: 'departed',
+      toProgramId: args.destinationProgramId,
+    })
+    const playerSeason = await ctx.db
+      .query('playerSeasons')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', player._id).eq('season', finalSeason),
       )
       .unique()
-    if (!program) throw new Error('Program not found')
+    if (playerSeason) {
+      await ctx.db.patch('playerSeasons', playerSeason._id, {
+        rosterStatus: 'departed',
+      })
+    }
+    await ctx.db.patch('players', player._id, { state: 'alumni' })
+    await ctx.db.insert('movementEvents', {
+      kind: args.kind,
+      note: nullableText(args.note, 300),
+      playerId: player._id,
+      programId: stint.programId,
+      season: finalSeason + 1,
+      sourceKey: `owner:${player._id}:departure:${Date.now()}`,
+      toProgramId: args.destinationProgramId,
+    })
+    return { departed: true }
+  },
+})
 
-    const player = await ctx.db.get('players', args.playerId)
-    if (!player) throw new Error('Player not found')
-    const stints = await ctx.db
-      .query('rosterStints')
-      .withIndex('by_playerId_and_startSeason', (query) =>
-        query.eq('playerId', args.playerId),
-      )
-      .take(20)
-    const stint = stints.find(
-      (candidate) => candidate.programId === program._id,
+export const previewRosterImport = query({
+  args: { rows: v.array(bulkPerson), sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (args.rows.length > MAX_BULK_ROWS) {
+      throw new Error(`A bulk operation is limited to ${MAX_BULK_ROWS} rows.`)
+    }
+    return Promise.all(
+      args.rows.map(async (row, index) => {
+        const slug = slugify(row.canonicalName)
+        const existing = slug
+          ? await ctx.db
+              .query('players')
+              .withIndex('by_slug', (q) => q.eq('slug', slug))
+              .first()
+          : null
+        return {
+          action: existing ? ('match' as const) : ('create' as const),
+          errors: [
+            ...(!slug ? ['Canonical name is invalid.'] : []),
+            ...(row.entrySeason < 2015 ? ['Entry season predates scope.'] : []),
+          ],
+          existingPlayerId: existing?._id ?? null,
+          index,
+          normalizedName: requiredText(
+            row.canonicalName,
+            'Canonical name',
+            100,
+          ),
+        }
+      }),
     )
-    if (!stint) throw new Error('Roster stint not found')
-    if (stint.status !== 'active') {
-      throw new Error('Only an active player can be removed from the roster')
-    }
-    if (finalSeason < stint.startSeason) {
-      throw new Error('Final season cannot precede the Michigan arrival season')
-    }
+  },
+})
 
-    if (args.departureKind === 'transfer_out') {
-      if (!args.destinationProgramId) {
-        throw new Error('A destination school is required for a transfer')
+export const applyRosterImport = mutation({
+  args: {
+    backupManifestId: v.id('backupManifests'),
+    programKey: v.optional(v.string()),
+    rows: v.array(bulkPerson),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (args.rows.length > MAX_BULK_ROWS) {
+      throw new Error(`A bulk operation is limited to ${MAX_BULK_ROWS} rows.`)
+    }
+    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
+      throw new Error('A verified backup manifest is required.')
+    }
+    const operationId = await ctx.db.insert('operationRuns', {
+      backupManifestId: args.backupManifestId,
+      completedAt: null,
+      errors: [],
+      fingerprint: `bulk:${Date.now()}:${args.rows.length}`,
+      kind: 'bulk_import',
+      startedAt: Date.now(),
+      status: 'running',
+      warnings: [],
+    })
+    const program = await getProgram(ctx, args.programKey ?? 'michigan')
+    const created: Array<Id<'players'>> = []
+    const matched: Array<Id<'players'>> = []
+    for (const row of args.rows) {
+      const existing = await ctx.db
+        .query('players')
+        .withIndex('by_slug', (q) => q.eq('slug', slugify(row.canonicalName)))
+        .first()
+      if (existing) {
+        matched.push(existing._id)
+        continue
       }
-      if (args.destinationProgramId === program._id) {
-        throw new Error('A transfer destination must be outside Michigan')
-      }
-      const destination = await ctx.db.get(
-        'programs',
-        args.destinationProgramId,
-      )
-      if (!destination) throw new Error('Destination school not found')
-    } else if (args.destinationProgramId) {
-      throw new Error('Destination school applies only to transfer departures')
+      created.push(await createPersonRecord(ctx, row, program._id))
     }
+    await ctx.db.patch('operationRuns', operationId, {
+      completedAt: Date.now(),
+      status: 'succeeded',
+    })
+    return { created, matched }
+  },
+})
 
-    const movements = await ctx.db
-      .query('movementEvents')
-      .withIndex('by_playerId_and_season', (query) =>
-        query.eq('playerId', args.playerId),
+export const startStint = mutation({
+  args: {
+    entryMethod,
+    fromProgramId: v.optional(v.id('programs')),
+    initialPosition: v.string(),
+    playerId: v.id('players'),
+    programKey: v.optional(v.string()),
+    season: v.number(),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const [player, program] = await Promise.all([
+      ctx.db.get('players', args.playerId),
+      getProgram(ctx, args.programKey ?? 'michigan'),
+    ])
+    if (!player) throw new Error('Person was not found.')
+    const season = wholeNumber(args.season, 'Season', 2015, 2100)
+    const duplicate = await ctx.db
+      .query('rosterStints')
+      .withIndex('by_playerId_and_startSeason', (q) =>
+        q.eq('playerId', player._id).eq('startSeason', season),
       )
-      .take(20)
-    if (movements.some((event) => event.sourceKey.endsWith(':departure'))) {
-      throw new Error('This player already has a recorded departure')
-    }
-
-    await ctx.db.patch('rosterStints', stint._id, {
-      departureClass:
-        args.departureKind === 'transfer_out'
-          ? 'T'
-          : args.departureKind === 'graduated'
-            ? 'G'
-            : undefined,
-      departureRank: undefined,
-      depthChartOrder: undefined,
-      depthTierOverride: undefined,
-      endSeason: finalSeason,
-      injury: undefined,
-      status: 'departed',
+      .unique()
+    if (duplicate) throw new Error('A stint already starts in that season.')
+    const stintId = await ctx.db.insert('rosterStints', {
+      dataQuality: 'owner_verified',
+      eligibilityStartSeason: season,
+      entryMethod: args.entryMethod,
+      fromProgramId: args.fromProgramId,
+      playerId: player._id,
+      programId: program._id,
+      sourceLinks: [],
+      startSeason: season,
+      status: 'active',
+    })
+    const listedPosition = requiredText(
+      args.initialPosition,
+      'Position',
+      16,
+    ).toUpperCase()
+    await ctx.db.insert('playerSeasons', {
+      captain: false,
+      dataQuality: 'owner_verified',
+      depthStatus: 'unknown',
+      eligibleThroughSeasonOverride: null,
+      eligibilityEvidence: {
+        ageBasedExceptionSeasons: 0,
+        competitionSeasons: [],
+        enrollmentSeason: season,
+        legacyRedshirtSeason: null,
+        medicalHardshipSeasons: 0,
+        otherExtensionSeasons: 0,
+      },
+      gamesPlayed: 0,
+      heightInches: null,
+      honors: [],
+      jerseyNumber: null,
+      listedPosition,
+      playerId: player._id,
+      positionRoom: derivePositionRoom(listedPosition),
+      programId: program._id,
+      roomOrder: null,
+      role: 'unassigned',
+      rosterStatus: 'active',
+      scholarshipStatus: args.entryMethod === 'walk_on' ? 'walk_on' : 'unknown',
+      season,
+      sourceLinks: [],
+      starts: 0,
+      stintId,
+      weightPounds: null,
     })
     await ctx.db.insert('movementEvents', {
-      kind: args.departureKind,
-      legacyCode:
-        args.departureKind === 'transfer_out'
-          ? 'T'
-          : args.departureKind === 'graduated'
-            ? 'G'
-            : args.departureKind === 'retired'
-              ? 'R'
-              : 'D',
-      playerId: args.playerId,
+      fromProgramId: args.fromProgramId,
+      kind: args.entryMethod === 'transfer' ? 'transfer_in' : 'returned',
+      playerId: player._id,
       programId: program._id,
-      season: finalSeason + 1,
-      sourceKey: `${stint.legacyKey}:departure`,
-      toProgramId:
-        args.departureKind === 'transfer_out'
-          ? args.destinationProgramId
-          : undefined,
+      season,
+      sourceKey: `owner:${player._id}:stint:${season}:${Date.now()}`,
     })
+    await ctx.db.patch('players', player._id, { state: 'enrolled' })
+    return { stintId }
+  },
+})
 
-    const updated = await ctx.db.get('rosterStints', stint._id)
-    if (!updated)
-      throw new Error('Roster stint was not available after removal')
+export const previewRollover = query({
+  args: {
+    fromSeason: v.number(),
+    programKey: v.optional(v.string()),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const program = await getProgram(ctx, args.programKey ?? 'michigan')
+    const current = await ctx.db
+      .query('playerSeasons')
+      .withIndex('by_programId_and_season_and_room', (q) =>
+        q.eq('programId', program._id).eq('season', args.fromSeason),
+      )
+      .take(500)
+    const next = await ctx.db
+      .query('playerSeasons')
+      .withIndex('by_programId_and_season_and_room', (q) =>
+        q.eq('programId', program._id).eq('season', args.fromSeason + 1),
+      )
+      .take(500)
+    const existing = new Set(next.map((row) => row.playerId))
+    return {
+      carry: current.filter(
+        (row) => row.rosterStatus === 'active' && !existing.has(row.playerId),
+      ),
+      existing: next.length,
+      fromSeason: args.fromSeason,
+      toSeason: args.fromSeason + 1,
+      warnings: current
+        .filter((row) => row.scholarshipStatus === 'unknown')
+        .map((row) => `${row.playerId} has unknown scholarship status.`),
+    }
+  },
+})
 
-    return { player, stint: publicRosterStint(updated) }
+export const applyRollover = mutation({
+  args: {
+    backupManifestId: v.id('backupManifests'),
+    fromSeason: v.number(),
+    programKey: v.optional(v.string()),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
+      throw new Error('A verified backup manifest is required.')
+    }
+    const operationId = await ctx.db.insert('operationRuns', {
+      backupManifestId: args.backupManifestId,
+      completedAt: null,
+      errors: [],
+      fingerprint: `rollover:${args.fromSeason}:${Date.now()}`,
+      kind: 'rollover',
+      startedAt: Date.now(),
+      status: 'running',
+      warnings: [],
+    })
+    const program = await getProgram(ctx, args.programKey ?? 'michigan')
+    const current = await ctx.db
+      .query('playerSeasons')
+      .withIndex('by_programId_and_season_and_room', (q) =>
+        q.eq('programId', program._id).eq('season', args.fromSeason),
+      )
+      .take(500)
+    let created = 0
+    for (const row of current.filter(
+      (season) => season.rosterStatus === 'active',
+    )) {
+      const existing = await ctx.db
+        .query('playerSeasons')
+        .withIndex('by_playerId_and_season', (q) =>
+          q.eq('playerId', row.playerId).eq('season', args.fromSeason + 1),
+        )
+        .unique()
+      if (existing) continue
+      const {
+        _creationTime: _ignoredCreation,
+        _id: _ignoredId,
+        ...values
+      } = row
+      await ctx.db.insert('playerSeasons', {
+        ...values,
+        captain: false,
+        gamesPlayed: 0,
+        honors: [],
+        season: args.fromSeason + 1,
+        starts: 0,
+      })
+      created += 1
+    }
+    await ctx.db.patch('operationRuns', operationId, {
+      completedAt: Date.now(),
+      status: 'succeeded',
+    })
+    return { created, season: args.fromSeason + 1 }
+  },
+})
+
+export const createBackupManifest = mutation({
+  args: {
+    counts: v.array(v.object({ count: v.number(), dataset: v.string() })),
+    fingerprint: v.string(),
+    reason: v.string(),
+    schemaVersion: v.string(),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!args.counts.length) throw new Error('Backup counts are required.')
+    return ctx.db.insert('backupManifests', {
+      completedAt: Date.now(),
+      counts: args.counts,
+      fingerprint: requiredText(args.fingerprint, 'Fingerprint', 128),
+      reason: requiredText(args.reason, 'Reason', 240),
+      schemaVersion: requiredText(args.schemaVersion, 'Schema version', 40),
+    })
+  },
+})
+
+const exportDataset = v.union(
+  v.literal('players'),
+  v.literal('commitments'),
+  v.literal('rosterStints'),
+  v.literal('playerSeasons'),
+  v.literal('evaluations'),
+  v.literal('movementEvents'),
+  v.literal('draftOutcomes'),
+  v.literal('playerGames'),
+  v.literal('nflIdentities'),
+  v.literal('nflWeeklyRosters'),
+  v.literal('nflPlayerGames'),
+  v.literal('nflSeasonSummaries'),
+  v.literal('providerIdentities'),
+  v.literal('seasonRules'),
+  v.literal('unresolvedMatches'),
+)
+
+export const exportMichiganPage = query({
+  args: {
+    cursor: v.union(v.string(), v.null()),
+    dataset: exportDataset,
+    numItems: v.number(),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const paginationOpts = {
+      cursor: args.cursor,
+      numItems: wholeNumber(args.numItems, 'Page size', 1, 100),
+    }
+    switch (args.dataset) {
+      case 'players':
+        return ctx.db.query('players').paginate(paginationOpts)
+      case 'commitments':
+        return ctx.db.query('commitments').paginate(paginationOpts)
+      case 'rosterStints':
+        return ctx.db.query('rosterStints').paginate(paginationOpts)
+      case 'playerSeasons':
+        return ctx.db.query('playerSeasons').paginate(paginationOpts)
+      case 'evaluations':
+        return ctx.db.query('evaluations').paginate(paginationOpts)
+      case 'movementEvents':
+        return ctx.db.query('movementEvents').paginate(paginationOpts)
+      case 'draftOutcomes':
+        return ctx.db.query('draftOutcomes').paginate(paginationOpts)
+      case 'playerGames':
+        return ctx.db.query('playerGames').paginate(paginationOpts)
+      case 'nflIdentities':
+        return ctx.db.query('nflIdentities').paginate(paginationOpts)
+      case 'nflWeeklyRosters':
+        return ctx.db.query('nflWeeklyRosters').paginate(paginationOpts)
+      case 'nflPlayerGames':
+        return ctx.db.query('nflPlayerGames').paginate(paginationOpts)
+      case 'nflSeasonSummaries':
+        return ctx.db.query('nflSeasonSummaries').paginate(paginationOpts)
+      case 'providerIdentities':
+        return ctx.db.query('providerIdentities').paginate(paginationOpts)
+      case 'seasonRules':
+        return ctx.db.query('seasonRules').paginate(paginationOpts)
+      case 'unresolvedMatches':
+        return ctx.db.query('unresolvedMatches').paginate(paginationOpts)
+    }
+  },
+})
+
+async function dependentRows(ctx: MutationCtx, sourcePlayerId: Id<'players'>) {
+  const [
+    commitments,
+    stints,
+    seasons,
+    evaluations,
+    identities,
+    movements,
+    drafts,
+    games,
+    nflIdentities,
+    nflWeeks,
+    nflGames,
+    nflSeasons,
+  ] = await Promise.all([
+    ctx.db
+      .query('commitments')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(100),
+    ctx.db
+      .query('rosterStints')
+      .withIndex('by_playerId_and_startSeason', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(50),
+    ctx.db
+      .query('playerSeasons')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(100),
+    ctx.db
+      .query('evaluations')
+      .withIndex('by_playerId_and_evaluatedAt', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(100),
+    ctx.db
+      .query('providerIdentities')
+      .withIndex('by_playerId_and_provider', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(100),
+    ctx.db
+      .query('movementEvents')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(100),
+    ctx.db
+      .query('draftOutcomes')
+      .withIndex('by_playerId_and_year', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(50),
+    ctx.db
+      .query('playerGames')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(500),
+    ctx.db
+      .query('nflIdentities')
+      .withIndex('by_playerId', (q) => q.eq('playerId', sourcePlayerId))
+      .take(20),
+    ctx.db
+      .query('nflWeeklyRosters')
+      .withIndex('by_playerId_and_season_and_week', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(500),
+    ctx.db
+      .query('nflPlayerGames')
+      .withIndex('by_playerId_and_gameId', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(500),
+    ctx.db
+      .query('nflSeasonSummaries')
+      .withIndex('by_playerId_and_season', (q) =>
+        q.eq('playerId', sourcePlayerId),
+      )
+      .take(100),
+  ])
+  return {
+    commitments,
+    drafts,
+    evaluations,
+    games,
+    identities,
+    movements,
+    nflGames,
+    nflIdentities,
+    nflSeasons,
+    nflWeeks,
+    seasons,
+    stints,
+  }
+}
+
+export const mergePlayers = mutation({
+  args: {
+    backupManifestId: v.id('backupManifests'),
+    sessionToken: v.string(),
+    sourcePlayerId: v.id('players'),
+    targetPlayerId: v.id('players'),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (args.sourcePlayerId === args.targetPlayerId)
+      throw new Error('Choose two people.')
+    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
+      throw new Error('A verified backup manifest is required.')
+    }
+    const [source, target, rows] = await Promise.all([
+      ctx.db.get('players', args.sourcePlayerId),
+      ctx.db.get('players', args.targetPlayerId),
+      dependentRows(ctx, args.sourcePlayerId),
+    ])
+    if (!source || !target) throw new Error('Person was not found.')
+    const operationId = await ctx.db.insert('operationRuns', {
+      backupManifestId: args.backupManifestId,
+      completedAt: null,
+      errors: [],
+      fingerprint: `merge:${source._id}:${target._id}:${Date.now()}`,
+      kind: 'merge',
+      startedAt: Date.now(),
+      status: 'running',
+      warnings: [],
+    })
+    const targetGames = await ctx.db
+      .query('playerGames')
+      .withIndex('by_playerId_and_season', (q) => q.eq('playerId', target._id))
+      .take(500)
+    if (
+      rows.games.some((row) =>
+        targetGames.some((targetRow) => targetRow.gameId === row.gameId),
+      )
+    ) {
+      throw new Error('Merge has a duplicate Player Game; resolve it first.')
+    }
+    for (const row of rows.commitments)
+      await ctx.db.patch('commitments', row._id, { playerId: target._id })
+    for (const row of rows.stints)
+      await ctx.db.patch('rosterStints', row._id, { playerId: target._id })
+    for (const row of rows.seasons)
+      await ctx.db.patch('playerSeasons', row._id, { playerId: target._id })
+    for (const row of rows.evaluations)
+      await ctx.db.patch('evaluations', row._id, { playerId: target._id })
+    for (const row of rows.identities)
+      await ctx.db.patch('providerIdentities', row._id, {
+        playerId: target._id,
+      })
+    for (const row of rows.movements)
+      await ctx.db.patch('movementEvents', row._id, { playerId: target._id })
+    for (const row of rows.drafts)
+      await ctx.db.patch('draftOutcomes', row._id, { playerId: target._id })
+    for (const row of rows.games)
+      await ctx.db.patch('playerGames', row._id, { playerId: target._id })
+    for (const row of rows.nflIdentities)
+      await ctx.db.patch('nflIdentities', row._id, { playerId: target._id })
+    for (const row of rows.nflWeeks)
+      await ctx.db.patch('nflWeeklyRosters', row._id, { playerId: target._id })
+    for (const row of rows.nflGames)
+      await ctx.db.patch('nflPlayerGames', row._id, { playerId: target._id })
+    for (const row of rows.nflSeasons)
+      await ctx.db.patch('nflSeasonSummaries', row._id, {
+        playerId: target._id,
+      })
+    await ctx.db.delete('players', source._id)
+    await ctx.db.patch('operationRuns', operationId, {
+      completedAt: Date.now(),
+      status: 'succeeded',
+    })
+    return { mergedInto: target._id }
+  },
+})
+
+export const deleteErroneousPerson = mutation({
+  args: {
+    backupManifestId: v.id('backupManifests'),
+    playerId: v.id('players'),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
+      throw new Error('A verified backup manifest is required.')
+    }
+    const person = await ctx.db.get('players', args.playerId)
+    if (!person) throw new Error('Person was not found.')
+    const rows = await dependentRows(ctx, args.playerId)
+    const operationId = await ctx.db.insert('operationRuns', {
+      backupManifestId: args.backupManifestId,
+      completedAt: null,
+      errors: [],
+      fingerprint: `delete:${person._id}:${Date.now()}`,
+      kind: 'delete',
+      startedAt: Date.now(),
+      status: 'running',
+      warnings: [],
+    })
+    for (const row of rows.commitments)
+      await ctx.db.delete('commitments', row._id)
+    for (const row of rows.stints)
+      await ctx.db.delete('rosterStints', row._id)
+    for (const row of rows.seasons)
+      await ctx.db.delete('playerSeasons', row._id)
+    for (const row of rows.evaluations)
+      await ctx.db.delete('evaluations', row._id)
+    for (const row of rows.identities)
+      await ctx.db.delete('providerIdentities', row._id)
+    for (const row of rows.movements)
+      await ctx.db.delete('movementEvents', row._id)
+    for (const row of rows.drafts)
+      await ctx.db.delete('draftOutcomes', row._id)
+    for (const row of rows.games)
+      await ctx.db.delete('playerGames', row._id)
+    for (const row of rows.nflIdentities)
+      await ctx.db.delete('nflIdentities', row._id)
+    for (const row of rows.nflWeeks)
+      await ctx.db.delete('nflWeeklyRosters', row._id)
+    for (const row of rows.nflGames)
+      await ctx.db.delete('nflPlayerGames', row._id)
+    for (const row of rows.nflSeasons)
+      await ctx.db.delete('nflSeasonSummaries', row._id)
+    await ctx.db.delete('players', person._id)
+    await ctx.db.patch('operationRuns', operationId, {
+      completedAt: Date.now(),
+      status: 'succeeded',
+    })
+    return { deleted: true }
+  },
+})
+
+export const upsertSeasonRules = mutation({
+  args: {
+    baseEligibilitySeasons: v.number(),
+    clockSeasons: v.number(),
+    legacyRedshirtExtendsClock: v.boolean(),
+    playoffByeCount: v.number(),
+    playoffChampionBidCount: v.number(),
+    playoffFieldSize: v.number(),
+    rosterLimit: nullableNumber,
+    season: v.number(),
+    sessionToken: v.string(),
+    version: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const { sessionToken: _sessionToken, ...document } = args
+    const existing = await ctx.db
+      .query('seasonRules')
+      .withIndex('by_season', (q) => q.eq('season', args.season))
+      .unique()
+    if (existing) {
+      await ctx.db.replace('seasonRules', existing._id, document)
+      return existing._id
+    }
+    return ctx.db.insert('seasonRules', document)
+  },
+})
+
+export const setConferenceChampion = mutation({
+  args: {
+    conference: v.string(),
+    programId: v.id('programs'),
+    season: v.number(),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    if (!(await ctx.db.get('programs', args.programId))) {
+      throw new Error('Program was not found.')
+    }
+    const season = wholeNumber(args.season, 'Season', 2015, 2100)
+    const conference = requiredText(args.conference, 'Conference', 80)
+    const existing = await ctx.db
+      .query('conferenceChampions')
+      .withIndex('by_season_and_conference', (q) =>
+        q.eq('season', season).eq('conference', conference),
+      )
+      .unique()
+    const document = {
+      conference,
+      programId: args.programId,
+      season,
+      sourceLinks: [],
+    }
+    if (existing) {
+      await ctx.db.replace('conferenceChampions', existing._id, document)
+      return existing._id
+    }
+    return ctx.db.insert('conferenceChampions', document)
+  },
+})
+
+export const resolveProviderIdentity = mutation({
+  args: {
+    matchId: v.id('unresolvedMatches'),
+    playerId: v.id('players'),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const [match, player] = await Promise.all([
+      ctx.db.get('unresolvedMatches', args.matchId),
+      ctx.db.get('players', args.playerId),
+    ])
+    if (!match || !player) throw new Error('Match or person was not found.')
+    const existing = await ctx.db
+      .query('providerIdentities')
+      .withIndex('by_provider_and_providerId', (q) =>
+        q.eq('provider', match.provider).eq('providerId', match.sourceKey),
+      )
+      .unique()
+    if (!existing) {
+      await ctx.db.insert('providerIdentities', {
+        confirmed: true,
+        playerId: player._id,
+        provider: match.provider,
+        providerId: match.sourceKey,
+        sourceUpdatedAt: Date.now(),
+      })
+    }
+    await ctx.db.patch('unresolvedMatches', match._id, {
+      resolvedPlayerId: player._id,
+      status: 'resolved',
+    })
+    return { resolved: true }
+  },
+})
+
+export const getDataHealth = query({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const [unresolved, sync, operations, backups] = await Promise.all([
+      ctx.db
+        .query('unresolvedMatches')
+        .withIndex('by_status_and_lastSeenAt', (q) => q.eq('status', 'open'))
+        .order('desc')
+        .take(100),
+      ctx.db.query('teamDataSyncState').take(20),
+      ctx.db
+        .query('operationRuns')
+        .withIndex('by_kind_and_startedAt')
+        .order('desc')
+        .take(50),
+      ctx.db
+        .query('backupManifests')
+        .withIndex('by_completedAt')
+        .order('desc')
+        .take(10),
+    ])
+    return { backups, operations, sync, unresolved }
   },
 })

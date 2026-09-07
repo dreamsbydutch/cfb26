@@ -1,24 +1,27 @@
+import { deriveEligibility } from './playerDomain'
 import type { Doc } from './_generated/dataModel'
 
-export function publicRosterStint(stint: Doc<'rosterStints'>) {
-  const { redshirtSeasons, ...publicStint } = stint
-  const medicalExtensionSeasons = Math.max(
-    stint.medicalExtensionSeasons ?? (redshirtSeasons ?? 1) - 1,
-    0,
-  )
-  const extraEligibilitySeasons = Math.max(
-    Math.floor(stint.extraEligibilitySeasons ?? 0),
-    0,
-  )
+export const DEFAULT_ELIGIBILITY_RULE = {
+  baseEligibilitySeasons: 4,
+  clockSeasons: 5,
+  legacyRedshirtExtendsClock: false,
+  season: 2026,
+} as const
 
-  return {
-    ...publicStint,
-    eligibilityEndSeason:
-      stint.eligibilityStartSeason +
-      4 +
-      medicalExtensionSeasons +
-      extraEligibilitySeasons,
-    extraEligibilitySeasons,
-    medicalExtensionSeasons,
-  }
+export function resolvePlayerSeasonEligibility(
+  season: Doc<'playerSeasons'>,
+  rule: Doc<'seasonRules'> | null,
+) {
+  return deriveEligibility({
+    evidence: season.eligibilityEvidence,
+    override: season.eligibleThroughSeasonOverride,
+    rule: rule
+      ? {
+          baseEligibilitySeasons: rule.baseEligibilitySeasons,
+          clockSeasons: rule.clockSeasons,
+          legacyRedshirtExtendsClock: rule.legacyRedshirtExtendsClock,
+          season: rule.season,
+        }
+      : DEFAULT_ELIGIBILITY_RULE,
+  })
 }

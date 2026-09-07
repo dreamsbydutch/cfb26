@@ -1,46 +1,63 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-const rosterStatus = v.union(
+const stintStatus = v.union(
   v.literal('active'),
-  v.literal('committed'),
   v.literal('departed'),
+  v.literal('prospect'),
 )
 
-const depthTier = v.union(
-  v.literal('starters'),
+const depthStatus = v.union(
+  v.literal('available'),
+  v.literal('limited'),
+  v.literal('out'),
+  v.literal('unknown'),
+)
+
+const playerRole = v.union(
+  v.literal('starter'),
   v.literal('rotation'),
-  v.literal('depth'),
-  v.literal('prospects'),
-  v.literal('walk-ons'),
+  v.literal('reserve'),
+  v.literal('unassigned'),
 )
 
-const injuryKind = v.union(
-  v.literal('short_term'),
-  v.literal('long_term'),
-  v.literal('season_ending'),
+const scholarshipStatus = v.union(
+  v.literal('scholarship'),
+  v.literal('walk_on'),
+  v.literal('exempt'),
+  v.literal('unknown'),
 )
 
-const injury = v.object({
-  expectedReturn: v.optional(v.string()),
-  kind: injuryKind,
-  note: v.optional(v.string()),
-  updatedAt: v.number(),
-})
-
-const positionChange = v.object({
-  effectiveSeason: v.number(),
-  fromPosition: v.string(),
-  note: v.optional(v.string()),
-  recordedAt: v.number(),
-  toPosition: v.string(),
-})
-
-const recruitingSource = v.union(
+const entryMethod = v.union(
   v.literal('high_school'),
   v.literal('transfer'),
   v.literal('walk_on'),
+  v.literal('legacy'),
 )
+
+const personState = v.union(
+  v.literal('prospect'),
+  v.literal('enrolled'),
+  v.literal('alumni'),
+)
+
+const dataQuality = v.union(
+  v.literal('owner_verified'),
+  v.literal('source_verified'),
+  v.literal('needs_review'),
+)
+
+const nullableNumber = v.union(v.number(), v.null())
+
+const sourceLink = v.object({
+  label: v.string(),
+  url: v.string(),
+})
+
+const phasePerformance = v.object({
+  grade: nullableNumber,
+  snaps: nullableNumber,
+})
 
 const movementKind = v.union(
   v.literal('recruited'),
@@ -50,9 +67,10 @@ const movementKind = v.union(
   v.literal('graduated'),
   v.literal('retired'),
   v.literal('dismissed'),
+  v.literal('decommitted'),
+  v.literal('enrolled'),
+  v.literal('returned'),
 )
-
-const snapPhase = v.union(v.literal('offense'), v.literal('defense'))
 
 const teamDataSource = v.union(
   v.literal('recruiting'),
@@ -62,6 +80,12 @@ const teamDataSource = v.union(
   v.literal('game_stats'),
   v.literal('ratings'),
   v.literal('rating_inputs'),
+  v.literal('programs'),
+  v.literal('venues'),
+  v.literal('affiliations'),
+  v.literal('player_stats'),
+  v.literal('nflverse'),
+  v.literal('polls'),
 )
 
 const seasonType = v.union(v.literal('regular'), v.literal('postseason'))
@@ -127,115 +151,173 @@ const perGameUnit = v.object({
 
 export default defineSchema({
   players: defineTable({
+    canonicalName: v.string(),
+    dataQuality,
     displayName: v.string(),
-    highSchool: v.string(),
-    homeState: v.string(),
-    hometown: v.string(),
-    legacyKey: v.string(),
+    entryMethod,
+    entrySeason: v.number(),
+    highSchool: v.optional(v.string()),
+    homeState: v.optional(v.string()),
+    hometown: v.optional(v.string()),
+    legacyKey: v.optional(v.string()),
     slug: v.string(),
+    sourceLinks: v.array(sourceLink),
     sourceUpdatedAt: v.number(),
+    state: personState,
   })
     .index('by_legacyKey', ['legacyKey'])
     .index('by_slug', ['slug'])
+    .index('by_entrySeason_and_state', ['entrySeason', 'state'])
     .searchIndex('search_displayName', {
       searchField: 'displayName',
       filterFields: ['homeState'],
     }),
 
-  recruitingProfiles: defineTable({
-    classRank: v.number(),
-    compositeOverallRank: v.optional(v.number()),
-    compositePositionRank: v.optional(v.number()),
-    compositeRating: v.optional(v.number()),
-    compositeStateRank: v.optional(v.number()),
-    heightInches: v.optional(v.number()),
-    legacyKey: v.string(),
+  commitments: defineTable({
+    committedAt: v.optional(v.number()),
+    dataQuality,
+    endedAt: v.optional(v.number()),
+    initialPosition: v.string(),
     playerId: v.id('players'),
-    position: v.optional(v.string()),
-    recruitingSeason: v.number(),
-    service247OverallRank: v.optional(v.number()),
-    service247PositionRank: v.optional(v.number()),
-    service247Rating: v.optional(v.number()),
-    service247StateRank: v.optional(v.number()),
-    source: recruitingSource,
-    weightPounds: v.optional(v.number()),
+    programId: v.id('programs'),
+    season: v.number(),
+    sourceKey: v.string(),
+    sourceLinks: v.array(sourceLink),
+    status: v.union(
+      v.literal('committed'),
+      v.literal('decommitted'),
+      v.literal('enrolled'),
+    ),
   })
-    .index('by_playerId', ['playerId'])
-    .index('by_recruitingSeason_and_source', ['recruitingSeason', 'source']),
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_playerId_and_season', ['playerId', 'season'])
+    .index('by_programId_and_season_and_status', [
+      'programId',
+      'season',
+      'status',
+    ]),
 
   rosterStints: defineTable({
-    departureClass: v.optional(v.string()),
-    departureRank: v.optional(v.number()),
-    depthChartOrder: v.optional(v.number()),
-    depthTierOverride: v.optional(depthTier),
-    eligibilityEndSeason: v.number(),
-    eligibilityLeaveSeason: v.number(),
+    dataQuality,
     eligibilityStartSeason: v.number(),
     endSeason: v.optional(v.number()),
-    extraEligibilitySeasons: v.optional(v.number()),
-    heightInches: v.optional(v.number()),
-    injury: v.optional(injury),
-    jerseyNumber: v.optional(v.number()),
-    legacyKey: v.string(),
-    medicalExtensionSeasons: v.optional(v.number()),
+    entryMethod,
+    fromProgramId: v.optional(v.id('programs')),
+    legacyKey: v.optional(v.string()),
     playerId: v.id('players'),
-    position: v.string(),
-    positionChanges: v.optional(v.array(positionChange)),
     programId: v.id('programs'),
-    redshirtSeasons: v.optional(v.number()),
+    sourceLinks: v.array(sourceLink),
     startSeason: v.number(),
-    status: rosterStatus,
-    weightPounds: v.optional(v.number()),
+    status: stintStatus,
+    toProgramId: v.optional(v.id('programs')),
   })
     .index('by_legacyKey', ['legacyKey'])
     .index('by_playerId_and_startSeason', ['playerId', 'startSeason'])
     .index('by_programId_and_startSeason', ['programId', 'startSeason'])
-    .index('by_programId_and_status_and_position', [
-      'programId',
-      'status',
-      'position',
-    ]),
+    .index('by_programId_and_status', ['programId', 'status']),
 
-  programCareerSummaries: defineTable({
+  playerSeasons: defineTable({
+    availabilityNote: v.optional(v.string()),
+    captain: v.boolean(),
+    dataQuality,
+    depthStatus,
+    eligibleThroughSeasonOverride: v.union(v.number(), v.null()),
+    eligibilityEvidence: v.object({
+      ageBasedExceptionSeasons: v.number(),
+      competitionSeasons: v.array(v.number()),
+      enrollmentSeason: nullableNumber,
+      legacyRedshirtSeason: nullableNumber,
+      medicalHardshipSeasons: v.number(),
+      otherExtensionSeasons: v.number(),
+    }),
     gamesPlayed: v.number(),
-    legacyKey: v.string(),
+    heightInches: nullableNumber,
+    honors: v.array(v.string()),
+    jerseyNumber: nullableNumber,
+    listedPosition: v.string(),
     playerId: v.id('players'),
+    positionRoom: v.string(),
     programId: v.id('programs'),
-    recentRating: v.number(),
-    snaps: v.number(),
-  })
-    .index('by_legacyKey', ['legacyKey'])
-    .index('by_playerId_and_programId', ['playerId', 'programId']),
-
-  seasonalPlayerStats: defineTable({
-    compositeRating: v.number(),
-    gamesPlayed: v.number(),
-    phase: snapPhase,
-    playerId: v.optional(v.id('players')),
-    pffRating: v.number(),
-    position: v.string(),
-    programId: v.id('programs'),
-    recruitingSeason: v.number(),
-    recruitingType: v.string(),
+    roomOrder: nullableNumber,
+    role: playerRole,
+    rosterStatus: v.union(
+      v.literal('active'),
+      v.literal('inactive'),
+      v.literal('departed'),
+    ),
+    scholarshipStatus,
     season: v.number(),
-    snaps: v.number(),
-    sourceKey: v.string(),
-    sourceNumber: v.string(),
-    sourcePlayerName: v.string(),
+    sourceLinks: v.array(sourceLink),
+    starts: v.number(),
+    stintId: v.id('rosterStints'),
+    weightPounds: nullableNumber,
   })
     .index('by_playerId_and_season', ['playerId', 'season'])
-    .index('by_programId_and_season_and_snaps', [
+    .index('by_stintId_and_season', ['stintId', 'season'])
+    .index('by_programId_and_season_and_room', [
       'programId',
       'season',
-      'snaps',
-    ])
-    .index('by_sourceKey', ['sourceKey']),
+      'positionRoom',
+    ]),
+
+  evaluations: defineTable({
+    dataQuality,
+    direction: v.union(
+      v.literal('inbound'),
+      v.literal('outbound'),
+      v.literal('neutral'),
+    ),
+    evaluatedAt: v.number(),
+    kind: v.union(
+      v.literal('recruiting'),
+      v.literal('transfer'),
+      v.literal('draft'),
+      v.literal('owner'),
+    ),
+    notes: v.optional(v.string()),
+    playerId: v.id('players'),
+    provider: v.string(),
+    rank: nullableNumber,
+    scale: v.string(),
+    score: nullableNumber,
+    sourceUrl: v.optional(v.string()),
+  })
+    .index('by_playerId_and_evaluatedAt', ['playerId', 'evaluatedAt'])
+    .index('by_provider_and_evaluatedAt', ['provider', 'evaluatedAt']),
+
+  providerIdentities: defineTable({
+    confirmed: v.boolean(),
+    playerId: v.id('players'),
+    provider: v.string(),
+    providerId: v.string(),
+    sourceUpdatedAt: v.number(),
+  })
+    .index('by_provider_and_providerId', ['provider', 'providerId'])
+    .index('by_playerId_and_provider', ['playerId', 'provider']),
+
+  unresolvedMatches: defineTable({
+    candidatePlayerIds: v.array(v.id('players')),
+    firstSeenAt: v.number(),
+    label: v.string(),
+    lastSeenAt: v.number(),
+    provider: v.string(),
+    reason: v.string(),
+    resolvedPlayerId: v.optional(v.id('players')),
+    sourceKey: v.string(),
+    status: v.union(
+      v.literal('open'),
+      v.literal('resolved'),
+      v.literal('ignored'),
+    ),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_status_and_lastSeenAt', ['status', 'lastSeenAt']),
 
   movementEvents: defineTable({
     cohortRank: v.optional(v.number()),
     fromProgramId: v.optional(v.id('programs')),
     kind: movementKind,
-    legacyCode: v.string(),
+    note: v.optional(v.string()),
     playerId: v.id('players'),
     programId: v.id('programs'),
     season: v.number(),
@@ -247,22 +329,44 @@ export default defineSchema({
     .index('by_sourceKey', ['sourceKey']),
 
   draftOutcomes: defineTable({
-    legacyKey: v.string(),
-    overallPick: v.optional(v.number()),
+    combine: v.optional(
+      v.object({
+        fortyYardSeconds: nullableNumber,
+        heightInches: nullableNumber,
+        weightPounds: nullableNumber,
+      }),
+    ),
+    dataQuality,
+    overallPick: nullableNumber,
     playerId: v.id('players'),
-    round: v.optional(v.number()),
-    status: v.union(v.literal('drafted'), v.literal('undrafted_free_agent')),
-    team: v.string(),
+    round: nullableNumber,
+    sourceLinks: v.array(sourceLink),
+    status: v.union(
+      v.literal('drafted'),
+      v.literal('undrafted_free_agent'),
+      v.literal('practice_squad'),
+      v.literal('later_entry'),
+    ),
+    team: v.optional(v.string()),
     year: v.number(),
   })
-    .index('by_legacyKey', ['legacyKey'])
-    .index('by_playerId', ['playerId'])
+    .index('by_playerId_and_year', ['playerId', 'year'])
     .index('by_year_and_status', ['year', 'status']),
 
   programs: defineTable({
+    abbreviation: v.optional(v.string()),
+    classification: v.optional(ratingClassification),
+    color: v.optional(v.string()),
+    conference: v.optional(v.string()),
+    cfbdId: v.optional(v.number()),
     key: v.string(),
+    logos: v.optional(v.array(v.string())),
+    mascot: v.optional(v.string()),
     name: v.string(),
-  }).index('by_key', ['key']),
+    sourceUpdatedAt: v.optional(v.number()),
+  })
+    .index('by_key', ['key'])
+    .index('by_cfbdId', ['cfbdId']),
 
   programAliases: defineTable({
     programId: v.id('programs'),
@@ -272,6 +376,61 @@ export default defineSchema({
   })
     .index('by_sourceKey', ['sourceKey'])
     .index('by_programId_and_source', ['programId', 'source']),
+
+  programAffiliations: defineTable({
+    conference: v.string(),
+    division: v.optional(v.string()),
+    endSeason: v.optional(v.number()),
+    programId: v.id('programs'),
+    sourceKey: v.string(),
+    startSeason: v.number(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_programId_and_startSeason', ['programId', 'startSeason'])
+    .index('by_startSeason_and_conference', ['startSeason', 'conference']),
+
+  venues: defineTable({
+    capacity: v.optional(v.number()),
+    city: v.optional(v.string()),
+    country: v.optional(v.string()),
+    elevationFeet: v.optional(v.number()),
+    grass: v.optional(v.boolean()),
+    name: v.string(),
+    sourceVenueId: v.number(),
+    state: v.optional(v.string()),
+    timezone: v.optional(v.string()),
+    yearConstructed: v.optional(v.number()),
+  }).index('by_sourceVenueId', ['sourceVenueId']),
+
+  programVenues: defineTable({
+    endSeason: v.optional(v.number()),
+    programId: v.id('programs'),
+    startSeason: v.number(),
+    venueId: v.id('venues'),
+  })
+    .index('by_programId_and_startSeason', ['programId', 'startSeason'])
+    .index('by_venueId', ['venueId']),
+
+  seasonRules: defineTable({
+    baseEligibilitySeasons: v.number(),
+    clockSeasons: v.number(),
+    legacyRedshirtExtendsClock: v.boolean(),
+    playoffByeCount: v.number(),
+    playoffChampionBidCount: v.number(),
+    playoffFieldSize: v.number(),
+    rosterLimit: nullableNumber,
+    season: v.number(),
+    version: v.string(),
+  }).index('by_season', ['season']),
+
+  conferenceChampions: defineTable({
+    conference: v.string(),
+    programId: v.id('programs'),
+    season: v.number(),
+    sourceLinks: v.array(sourceLink),
+  })
+    .index('by_season_and_conference', ['season', 'conference'])
+    .index('by_programId_and_season', ['programId', 'season']),
 
   teamRecruitingClasses: defineTable({
     averageRating: v.number(),
@@ -323,6 +482,21 @@ export default defineSchema({
     .index('by_sourceKey', ['sourceKey'])
     .index('by_season_and_wins', ['season', 'wins'])
     .index('by_programId_and_season', ['programId', 'season']),
+
+  teamSeasonProfiles: defineTable({
+    averageRecruitRating: nullableNumber,
+    conference: v.optional(v.string()),
+    programId: v.id('programs'),
+    recruitingPoints: nullableNumber,
+    recruitingRank: nullableNumber,
+    returningPpa: nullableNumber,
+    returningUsage: nullableNumber,
+    season: v.number(),
+    sourceUpdatedAt: v.number(),
+    talent: nullableNumber,
+  })
+    .index('by_programId_and_season', ['programId', 'season'])
+    .index('by_season_and_recruitingRank', ['season', 'recruitingRank']),
 
   teamDraftSelections: defineTable({
     age: v.optional(v.number()),
@@ -400,6 +574,7 @@ export default defineSchema({
     tvOutlets: v.optional(v.array(v.string())),
     venue: v.optional(v.string()),
     venueId: v.optional(v.number()),
+    venueRef: v.optional(v.id('venues')),
     week: v.number(),
   })
     .index('by_sourceKey', ['sourceKey'])
@@ -537,6 +712,234 @@ export default defineSchema({
     .index('by_edition_and_resume', ['editionId', 'resume'])
     .index('by_programId_and_edition', ['programId', 'editionId']),
 
+  frozenForecasts: defineTable({
+    awayProgramId: v.id('programs'),
+    calibrationVersion: v.string(),
+    cutoffAt: v.number(),
+    editionId: v.id('ratingEditions'),
+    expectedMargin: v.number(),
+    frozenAt: v.number(),
+    gameId: v.id('collegeGames'),
+    homeFieldEffect: v.number(),
+    homeProgramId: v.id('programs'),
+    modelVersion: v.string(),
+    sourceKey: v.string(),
+    uncertainty: v.number(),
+    winProbability: v.number(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_gameId_and_frozenAt', ['gameId', 'frozenAt'])
+    .index('by_editionId', ['editionId']),
+
+  playoffProjections: defineTable({
+    editionId: v.id('ratingEditions'),
+    field: v.array(
+      v.object({
+        bid: v.union(v.literal('automatic'), v.literal('at_large')),
+        bye: v.boolean(),
+        explanation: v.string(),
+        programId: v.id('programs'),
+        seed: v.number(),
+      }),
+    ),
+    firstTeamOutProgramId: v.union(v.id('programs'), v.null()),
+    generatedAt: v.number(),
+    rulesVersion: v.string(),
+    season: v.number(),
+    sourceKey: v.string(),
+    week: v.number(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_editionId', ['editionId'])
+    .index('by_season_and_week', ['season', 'week']),
+
+  rankingBallots: defineTable({
+    editionId: v.id('ratingEditions'),
+    entries: v.array(
+      v.object({
+        programId: v.id('programs'),
+        rank: v.number(),
+        seedRank: v.number(),
+      }),
+    ),
+    season: v.number(),
+    status: v.union(v.literal('draft'), v.literal('submitted')),
+    submittedAt: v.union(v.number(), v.null()),
+    updatedAt: v.number(),
+    week: v.number(),
+  }).index('by_season_and_week', ['season', 'week']),
+
+  externalPollRanks: defineTable({
+    poll: v.string(),
+    programId: v.id('programs'),
+    rank: v.number(),
+    season: v.number(),
+    sourceKey: v.string(),
+    sourceUpdatedAt: v.number(),
+    week: v.number(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_season_and_week_and_poll', ['season', 'week', 'poll'])
+    .index('by_programId_and_season_and_week', ['programId', 'season', 'week']),
+
+  playerGames: defineTable({
+    dataQuality,
+    defense: phasePerformance,
+    gameId: v.id('collegeGames'),
+    offense: phasePerformance,
+    playerId: v.id('players'),
+    programId: v.id('programs'),
+    season: v.number(),
+    sourceLinks: v.array(sourceLink),
+    specialTeams: phasePerformance,
+    statistics: v.array(
+      v.object({
+        category: v.string(),
+        value: v.number(),
+      }),
+    ),
+    updatedAt: v.number(),
+  })
+    .index('by_playerId_and_gameId', ['playerId', 'gameId'])
+    .index('by_gameId_and_playerId', ['gameId', 'playerId'])
+    .index('by_playerId_and_season', ['playerId', 'season'])
+    .index('by_programId_and_season', ['programId', 'season']),
+
+  nflIdentities: defineTable({
+    dataQuality,
+    entryPath: v.union(
+      v.literal('drafted'),
+      v.literal('undrafted_free_agent'),
+      v.literal('practice_squad'),
+      v.literal('later_entry'),
+    ),
+    firstSeason: v.number(),
+    playerId: v.id('players'),
+    provider: v.string(),
+    providerId: v.string(),
+    sourceLinks: v.array(sourceLink),
+  })
+    .index('by_provider_and_providerId', ['provider', 'providerId'])
+    .index('by_playerId', ['playerId'])
+    .index('by_firstSeason', ['firstSeason']),
+
+  nflWeeklyRosters: defineTable({
+    nflIdentityId: v.id('nflIdentities'),
+    playerId: v.id('players'),
+    season: v.number(),
+    sourceKey: v.string(),
+    sourceUpdatedAt: v.number(),
+    status: v.union(
+      v.literal('active'),
+      v.literal('practice_squad'),
+      v.literal('injured_reserve'),
+      v.literal('reserve'),
+      v.literal('inactive'),
+    ),
+    team: v.string(),
+    week: v.number(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_playerId_and_season_and_week', ['playerId', 'season', 'week']),
+
+  nflGames: defineTable({
+    awayTeam: v.string(),
+    completed: v.boolean(),
+    homeTeam: v.string(),
+    season: v.number(),
+    sourceGameId: v.string(),
+    startTime: v.number(),
+    week: v.number(),
+  })
+    .index('by_sourceGameId', ['sourceGameId'])
+    .index('by_season_and_week', ['season', 'week']),
+
+  nflPlayerGames: defineTable({
+    defenseSnaps: nullableNumber,
+    gameId: v.id('nflGames'),
+    offenseSnaps: nullableNumber,
+    playerId: v.id('players'),
+    sourceKey: v.string(),
+    sourceUpdatedAt: v.number(),
+    specialTeamsSnaps: nullableNumber,
+    started: v.boolean(),
+    statistics: v.array(
+      v.object({
+        category: v.string(),
+        value: v.number(),
+      }),
+    ),
+    team: v.string(),
+  })
+    .index('by_sourceKey', ['sourceKey'])
+    .index('by_playerId_and_gameId', ['playerId', 'gameId'])
+    .index('by_gameId', ['gameId']),
+
+  nflSeasonSummaries: defineTable({
+    defenseSnaps: v.number(),
+    games: v.number(),
+    offenseSnaps: v.number(),
+    playerId: v.id('players'),
+    season: v.number(),
+    specialTeamsSnaps: v.number(),
+    starts: v.number(),
+    statistics: v.array(
+      v.object({
+        category: v.string(),
+        value: v.number(),
+      }),
+    ),
+  })
+    .index('by_playerId_and_season', ['playerId', 'season'])
+    .index('by_season', ['season']),
+
+  ownerSessions: defineTable({
+    createdAt: v.number(),
+    expiresAt: v.number(),
+    lastUsedAt: v.number(),
+    revokedAt: v.union(v.number(), v.null()),
+    tokenHash: v.string(),
+  })
+    .index('by_tokenHash', ['tokenHash'])
+    .index('by_expiresAt', ['expiresAt']),
+
+  backupManifests: defineTable({
+    completedAt: v.number(),
+    counts: v.array(
+      v.object({
+        count: v.number(),
+        dataset: v.string(),
+      }),
+    ),
+    fingerprint: v.string(),
+    reason: v.string(),
+    schemaVersion: v.string(),
+  }).index('by_completedAt', ['completedAt']),
+
+  operationRuns: defineTable({
+    backupManifestId: v.optional(v.id('backupManifests')),
+    completedAt: v.union(v.number(), v.null()),
+    errors: v.array(v.string()),
+    fingerprint: v.string(),
+    kind: v.union(
+      v.literal('bulk_import'),
+      v.literal('delete'),
+      v.literal('merge'),
+      v.literal('migration'),
+      v.literal('prune'),
+      v.literal('restore'),
+      v.literal('rollover'),
+    ),
+    startedAt: v.number(),
+    status: v.union(
+      v.literal('dry_run'),
+      v.literal('running'),
+      v.literal('succeeded'),
+      v.literal('failed'),
+    ),
+    warnings: v.array(v.string()),
+  }).index('by_kind_and_startedAt', ['kind', 'startedAt']),
+
   teamDataSyncState: defineTable({
     acceptedRows: v.optional(v.number()),
     completedAt: v.optional(v.number()),
@@ -552,52 +955,4 @@ export default defineSchema({
     ),
     warnings: v.optional(v.array(v.string())),
   }).index('by_source', ['source']),
-
-  legacyPlayerRows: defineTable({
-    CompositeOverallRank: v.string(),
-    CompositePositionRank: v.string(),
-    CompositeRating: v.string(),
-    CompositeStateRank: v.string(),
-    CurrentHeight: v.string(),
-    CurrentPos: v.string(),
-    CurrentWeight: v.string(),
-    DepartRank: v.string(),
-    DepthChart: v.string(),
-    DraftOverall: v.string(),
-    DraftRound: v.string(),
-    DraftTeam: v.string(),
-    DraftYear: v.string(),
-    EligEnd: v.string(),
-    EligLeave: v.string(),
-    EligStart: v.string(),
-    FinishType: v.string(),
-    FirstYear: v.string(),
-    Highschool: v.string(),
-    Hometown: v.string(),
-    LastYear: v.string(),
-    MichiganGamesPlayed: v.string(),
-    MichiganSnaps: v.string(),
-    Number: v.string(),
-    Player: v.string(),
-    ProCareerValue: v.string(),
-    ProGamesPlayed: v.string(),
-    RecentMichiganRtg: v.string(),
-    Recruit: v.string(),
-    RecruitHeight: v.string(),
-    RecruitingRank: v.string(),
-    RecruitPos: v.string(),
-    RecruitWeight: v.string(),
-    RecruitYear: v.string(),
-    RedshirtYears: v.string(),
-    State: v.string(),
-    TransferInTeam: v.string(),
-    TransferOutTeam: v.string(),
-    migratedAt: v.number(),
-    migrationState: v.string(),
-    migrationVersion: v.number(),
-    service247OverallRank: v.string(),
-    service247PositionRank: v.string(),
-    service247Rating: v.string(),
-    service247StateRank: v.string(),
-  }).index('by_migrationState', ['migrationState']),
 })
