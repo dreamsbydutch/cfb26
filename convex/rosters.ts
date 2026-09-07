@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
 import { resolvePlayerSeasonEligibility } from './eligibility'
+import { comparePositionRooms, derivePositionRoom } from './playerDomain'
 
 const boundedLimit = (limit: number | undefined, fallback: number) =>
   Math.min(Math.max(Math.floor(limit ?? fallback), 1), 500)
@@ -67,15 +68,18 @@ export const getSeasonDashboard = query({
       ).filter((entry) => entry[1] !== null),
     )
     const entries = seasons
-      .map((season) => ({
-        eligibility: resolvePlayerSeasonEligibility(season, rule),
-        player: players.get(season.playerId) ?? null,
-        season,
+      .map((storedSeason) => ({
+        eligibility: resolvePlayerSeasonEligibility(storedSeason, rule),
+        player: players.get(storedSeason.playerId) ?? null,
+        season: {
+          ...storedSeason,
+          positionRoom: derivePositionRoom(storedSeason.listedPosition),
+        },
       }))
       .filter((entry) => entry.player !== null)
       .sort(
         (a, b) =>
-          a.season.positionRoom.localeCompare(b.season.positionRoom) ||
+          comparePositionRooms(a.season.positionRoom, b.season.positionRoom) ||
           (a.season.roomOrder ?? 999) - (b.season.roomOrder ?? 999) ||
           (a.player?.displayName ?? '').localeCompare(
             b.player?.displayName ?? '',
@@ -154,9 +158,21 @@ export const list = query({
     return Promise.all(
       rows.map(async (playerSeason) => ({
         player: await ctx.db.get('players', playerSeason.playerId),
-        season: playerSeason,
+        season: {
+          ...playerSeason,
+          positionRoom: derivePositionRoom(playerSeason.listedPosition),
+        },
       })),
-    ).then((entries) => entries.filter((entry) => entry.player !== null))
+    ).then((entries) =>
+      entries
+        .filter((entry) => entry.player !== null)
+        .sort((left, right) =>
+          comparePositionRooms(
+            left.season.positionRoom,
+            right.season.positionRoom,
+          ),
+        ),
+    )
   },
 })
 

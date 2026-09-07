@@ -63,18 +63,20 @@ type LegacyMovement = ExportedDocument & {
 
 const positionRoom = (position: string) => {
   const normalized = position.toUpperCase()
-  if (['QB'].includes(normalized)) return 'Quarterback'
-  if (['RB', 'HB', 'FB'].includes(normalized)) return 'Backfield'
+  if (['QB'].includes(normalized)) return 'Quarterbacks'
+  if (['RB', 'HB', 'FB'].includes(normalized)) return 'Backs'
   if (['WR', 'SLOT', 'TE'].includes(normalized)) return 'Receivers'
-  if (['OT', 'LT', 'RT', 'OG', 'LG', 'RG', 'C', 'OL'].includes(normalized))
+  if (
+    ['OT', 'LT', 'RT', 'OG', 'LG', 'RG', 'C', 'OC', 'OL'].includes(normalized)
+  )
     return 'Offensive line'
   if (['DT', 'NT', 'DE', 'EDGE', 'DL'].includes(normalized))
     return 'Defensive line'
-  if (['LB', 'ILB', 'OLB'].includes(normalized)) return 'Linebacker'
+  if (['LB', 'ILB', 'OLB'].includes(normalized)) return 'Linebackers'
   if (['CB', 'S', 'FS', 'SS', 'DB', 'NICKEL'].includes(normalized))
     return 'Secondary'
   if (['K', 'P', 'LS'].includes(normalized)) return 'Specialists'
-  return 'Athletes'
+  return 'Other'
 }
 
 const entryMethodFor = (

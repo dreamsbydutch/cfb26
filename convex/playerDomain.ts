@@ -158,24 +158,66 @@ export function deriveEligibility(input: {
 
 const POSITION_ROOMS: Readonly<Record<string, string>> = {
   C: 'Offensive line',
-  CB: 'Cornerbacks',
-  DB: 'Defensive backs',
+  CB: 'Secondary',
+  DB: 'Secondary',
+  DE: 'Defensive line',
   DL: 'Defensive line',
-  EDGE: 'Edge',
-  FB: 'Running backs',
+  DT: 'Defensive line',
+  EDGE: 'Defensive line',
+  FB: 'Backs',
+  FS: 'Secondary',
   G: 'Offensive line',
+  HB: 'Backs',
+  ILB: 'Linebackers',
   K: 'Specialists',
+  LG: 'Offensive line',
   LB: 'Linebackers',
+  LT: 'Offensive line',
   LS: 'Specialists',
+  NICKEL: 'Secondary',
+  NT: 'Defensive line',
+  OC: 'Offensive line',
+  OG: 'Offensive line',
   OL: 'Offensive line',
+  OLB: 'Linebackers',
+  OT: 'Offensive line',
   P: 'Specialists',
   QB: 'Quarterbacks',
-  RB: 'Running backs',
-  S: 'Safeties',
-  TE: 'Tight ends',
-  WR: 'Wide receivers',
+  RB: 'Backs',
+  RG: 'Offensive line',
+  RT: 'Offensive line',
+  S: 'Secondary',
+  SLOT: 'Receivers',
+  SS: 'Secondary',
+  TE: 'Receivers',
+  WR: 'Receivers',
 }
+
+const POSITION_ROOM_ORDER = [
+  'Quarterbacks',
+  'Backs',
+  'Receivers',
+  'Offensive line',
+  'Defensive line',
+  'Linebackers',
+  'Secondary',
+  'Specialists',
+] as const
 
 export function derivePositionRoom(listedPosition: string) {
   return POSITION_ROOMS[listedPosition.trim().toUpperCase()] ?? 'Other'
+}
+
+export function comparePositionRooms(left: string, right: string) {
+  const leftIndex = POSITION_ROOM_ORDER.indexOf(
+    left as (typeof POSITION_ROOM_ORDER)[number],
+  )
+  const rightIndex = POSITION_ROOM_ORDER.indexOf(
+    right as (typeof POSITION_ROOM_ORDER)[number],
+  )
+  return (
+    (leftIndex < 0 ? POSITION_ROOM_ORDER.length : leftIndex) -
+      (rightIndex < 0 ? POSITION_ROOM_ORDER.length : rightIndex) ||
+    left.localeCompare(right)
+  )
 }

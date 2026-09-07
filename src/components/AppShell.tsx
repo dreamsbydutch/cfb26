@@ -28,7 +28,7 @@ export function AppShell({
             to="/"
             className="group flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffcb05]"
           >
-            <span className="grid h-11 w-11 place-items-center rounded-sm bg-[#ffcb05] font-serif text-2xl font-black text-[#00274c] shadow-[4px_4px_0_#35608a]">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#ffcb05] font-serif text-2xl font-black text-[#00274c] shadow-[0_6px_18px_rgb(255_203_5_/_0.22)]">
               M
             </span>
             <span>
@@ -49,7 +49,7 @@ export function AppShell({
                 key={link.area}
                 to={link.to}
                 aria-current={active === link.area ? 'page' : undefined}
-                className={`rounded-sm px-4 py-2 text-xs font-black uppercase tracking-[0.14em] transition focus-visible:outline-2 focus-visible:outline-[#ffcb05] ${
+                className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.14em] transition focus-visible:outline-2 focus-visible:outline-[#ffcb05] ${
                   active === link.area
                     ? 'bg-[#ffcb05] text-[#00274c]'
                     : 'text-white/70 hover:bg-white/10 hover:text-white'
@@ -105,7 +105,7 @@ export function SectionTabs<T extends string>({
   tabs: ReadonlyArray<{ id: T; label: string }>
 }) {
   return (
-    <div className="scrollbar-none -mx-4 mb-6 flex overflow-x-auto border-y border-slate-300 bg-white px-4 sm:mx-0 sm:rounded-sm sm:border">
+    <div className="scrollbar-none -mx-4 mb-6 flex overflow-x-auto border-y border-slate-300 bg-white px-4 sm:mx-0 sm:rounded-2xl sm:border">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -126,7 +126,7 @@ export function SectionTabs<T extends string>({
 
 export function Metric({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="border-l-4 border-[#ffcb05] bg-white px-4 py-3 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-900/5">
       <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
         {label}
       </div>
@@ -137,7 +137,7 @@ export function Metric({ label, value }: { label: string; value: ReactNode }) {
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-sm border border-dashed border-slate-400 bg-white/50 p-8 text-center text-sm text-slate-600">
+    <div className="rounded-2xl border border-dashed border-slate-400 bg-white/50 p-8 text-center text-sm text-slate-600">
       {children}
     </div>
   )

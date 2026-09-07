@@ -154,7 +154,7 @@ function Rooms({
       rows.push(entry)
       grouped.set(entry.season.positionRoom, rows)
     }
-    return [...grouped].sort(([left], [right]) => left.localeCompare(right))
+    return [...grouped]
   }, [entries])
   if (rooms.length === 0)
     return (

@@ -32,9 +32,9 @@ const VARIANTS: ReadonlyArray<{
   label: string
   shortLabel: string
 }> = [
-  { id: 'A', label: 'Personnel Command', shortLabel: 'Command' },
-  { id: 'B', label: 'Scout Workbench', shortLabel: 'Workbench' },
   { id: 'C', label: 'Roster Matrix', shortLabel: 'Matrix' },
+  { id: 'B', label: 'Scout Workbench', shortLabel: 'Overview' },
+  { id: 'A', label: 'Personnel Command', shortLabel: 'Command' },
 ]
 
 export function RosterPrototype() {
@@ -69,10 +69,7 @@ export function RosterPrototype() {
     [dashboard.data?.entries],
   )
   const rooms = useMemo(
-    () =>
-      [...new Set(entries.map((entry) => entry.season.positionRoom))].sort(
-        (left, right) => left.localeCompare(right),
-      ),
+    () => [...new Set(entries.map((entry) => entry.season.positionRoom))],
     [entries],
   )
   const filteredEntries = useMemo(() => {
@@ -245,7 +242,8 @@ function PrototypeHeader({
           <a href="#movement-feed">Alumni</a>
         </nav>
         <span className="prototype-header__mode">
-          Concept {variant} · Live Convex data
+          {VARIANTS.find((option) => option.id === variant)?.shortLabel} view ·
+          Live Convex data
         </span>
       </div>
     </header>
@@ -259,7 +257,7 @@ function DbyDMark() {
         className="prototype-mark__grid"
         d="M16 2v44M32 2v44M2 16h44M2 32h44"
       />
-      <rect x="2" y="2" width="44" height="44" />
+      <rect x="2" y="2" width="44" height="44" rx="10" />
       <path d="M9 10v28h5c9 0 9-28 0-28H9m17 1 13 26m0-26L26 37" />
     </svg>
   )
@@ -293,10 +291,10 @@ function VariantSwitcher({
     <div
       className="variant-switcher"
       role="group"
-      aria-label="Prototype variant"
+      aria-label="Roster view"
       onKeyDown={moveSelection}
     >
-      <span className="variant-switcher__label">Prototype</span>
+      <span className="variant-switcher__label">View</span>
       {VARIANTS.map((variant) => (
         <button
           key={variant.id}
@@ -590,11 +588,11 @@ function PrototypeErrorPanel() {
 }
 
 function readVariant(): Variant {
-  if (typeof window === 'undefined') return 'A'
+  if (typeof window === 'undefined') return 'C'
   const value = new URLSearchParams(window.location.search)
     .get('variant')
     ?.toUpperCase()
-  return value === 'B' || value === 'C' ? value : 'A'
+  return value === 'A' || value === 'B' ? value : 'C'
 }
 
 function readSeason() {

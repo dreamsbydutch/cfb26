@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
 import { resolvePlayerSeasonEligibility } from './eligibility'
-import { summarizePhaseGrades } from './playerDomain'
+import { derivePositionRoom, summarizePhaseGrades } from './playerDomain'
 
 const boundedLimit = (limit: number | undefined, fallback: number) =>
   Math.min(Math.max(Math.floor(limit ?? fallback), 1), 100)
@@ -139,6 +139,7 @@ export const getProfile = query({
           season,
           rules.get(season.season) ?? null,
         ),
+        positionRoom: derivePositionRoom(season.listedPosition),
       })),
       stints,
     }
@@ -186,7 +187,10 @@ export const compare = query({
           },
           nfl,
           player,
-          seasons,
+          seasons: seasons.map((season) => ({
+            ...season,
+            positionRoom: derivePositionRoom(season.listedPosition),
+          })),
         }
       }),
     ).then((rows) => rows.filter((row) => row !== null))

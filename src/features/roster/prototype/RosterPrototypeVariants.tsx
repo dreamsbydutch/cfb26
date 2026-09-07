@@ -821,9 +821,7 @@ function groupByRoom(entries: Array<ActiveRosterEntry>) {
     values.push(entry)
     grouped.set(entry.season.positionRoom, values)
   }
-  return [...grouped.entries()].sort(([left], [right]) =>
-    left.localeCompare(right),
-  )
+  return [...grouped.entries()]
 }
 
 function countBy<T>(rows: Array<T>, key: (row: T) => string) {

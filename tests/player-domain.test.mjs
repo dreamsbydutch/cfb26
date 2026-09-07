@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   classifyPlayerGrade,
+  comparePositionRooms,
   deriveEligibility,
+  derivePositionRoom,
   normalizePlayerGame,
   summarizePhaseGrades,
 } from '../convex/playerDomain.ts'
@@ -53,6 +55,36 @@ test('CFB26 grade bands use the approved thresholds', () => {
   assert.equal(classifyPlayerGrade(60), 'Slightly above average')
   assert.equal(classifyPlayerGrade(50), 'Below average')
   assert.equal(classifyPlayerGrade(49.9), 'Poor')
+})
+
+test('OC is grouped with the offensive line', () => {
+  assert.equal(derivePositionRoom('OC'), 'Offensive line')
+  assert.equal(derivePositionRoom(' oc '), 'Offensive line')
+})
+
+test('position rooms follow football order', () => {
+  assert.deepEqual(
+    [
+      'Specialists',
+      'Secondary',
+      'Offensive line',
+      'Quarterbacks',
+      'Linebackers',
+      'Backs',
+      'Defensive line',
+      'Receivers',
+    ].sort(comparePositionRooms),
+    [
+      'Quarterbacks',
+      'Backs',
+      'Receivers',
+      'Offensive line',
+      'Defensive line',
+      'Linebackers',
+      'Secondary',
+      'Specialists',
+    ],
+  )
 })
 
 test('eligibility honors an owner override without erasing derived evidence', () => {
