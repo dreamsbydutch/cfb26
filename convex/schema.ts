@@ -912,9 +912,29 @@ export default defineSchema({
       }),
     ),
     fingerprint: v.string(),
+    dataRevision: v.optional(v.number()),
     reason: v.string(),
     schemaVersion: v.string(),
   }).index('by_completedAt', ['completedAt']),
+
+  michiganDataRevisions: defineTable({
+    key: v.string(),
+    revision: v.number(),
+    updatedAt: v.number(),
+  }).index('by_key', ['key']),
+
+  ownerAuditEvents: defineTable({
+    action: v.string(),
+    actor: v.string(),
+    backupManifestId: v.optional(v.id('backupManifests')),
+    completedAt: v.number(),
+    error: v.optional(v.string()),
+    result: v.union(v.literal('failed'), v.literal('succeeded')),
+    sessionId: v.optional(v.id('ownerSessions')),
+    startedAt: v.number(),
+    target: v.string(),
+    warnings: v.array(v.string()),
+  }).index('by_startedAt', ['startedAt']),
 
   operationRuns: defineTable({
     backupManifestId: v.optional(v.id('backupManifests')),

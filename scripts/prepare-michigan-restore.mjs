@@ -36,17 +36,38 @@ if (!input || !output) {
   const inputPath = resolve(input)
   const outputPath = resolve(output)
   const parsed = JSON.parse(await readFile(inputPath, 'utf8'))
-  if (parsed.schemaVersion !== '2' || typeof parsed.datasets !== 'object') {
-    throw new Error('Only CFB26 Michigan backup schema version 2 is supported.')
+  if (
+    !['2', '3'].includes(parsed.schemaVersion) ||
+    typeof parsed.datasets !== 'object'
+  ) {
+    throw new Error(
+      'Only CFB26 Michigan backup schema versions 2 and 3 are supported.',
+    )
+  }
+  if (
+    parsed.schemaVersion === '3' &&
+    (!Number.isInteger(parsed.dataRevision) || parsed.dataRevision < 0)
+  ) {
+    throw new Error(
+      'Backup schema version 3 requires a Michigan data revision.',
+    )
   }
   if (typeof parsed.fingerprint !== 'string') {
     throw new Error('The backup does not contain a SHA-256 fingerprint.')
   }
 
-  const canonical = JSON.stringify({
-    schemaVersion: parsed.schemaVersion,
-    datasets: parsed.datasets,
-  })
+  const canonical = JSON.stringify(
+    parsed.schemaVersion === '3'
+      ? {
+          dataRevision: parsed.dataRevision,
+          datasets: parsed.datasets,
+          schemaVersion: parsed.schemaVersion,
+        }
+      : {
+          schemaVersion: parsed.schemaVersion,
+          datasets: parsed.datasets,
+        },
+  )
   const actual = createHash('sha256').update(canonical).digest('hex')
   if (actual !== parsed.fingerprint) {
     throw new Error('Backup fingerprint mismatch; restore preparation stopped.')
@@ -80,6 +101,7 @@ if (!input || !output) {
       {
         fingerprint: actual,
         input: basename(inputPath),
+        dataRevision: parsed.dataRevision ?? null,
         restoreOrder: RESTORE_ORDER,
         schemaVersion: parsed.schemaVersion,
         verifiedAt: new Date().toISOString(),

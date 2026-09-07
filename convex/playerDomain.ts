@@ -103,6 +103,22 @@ export function summarizePhaseGrades(rows: Array<PhasePerformance>) {
   }
 }
 
+export function summarizeOverallGrade(
+  rows: Array<{
+    defense: PhasePerformance
+    offense: PhasePerformance
+    specialTeams: PhasePerformance
+  }>,
+) {
+  const summary = summarizePhaseGrades(
+    rows.flatMap((row) => [row.offense, row.defense, row.specialTeams]),
+  )
+  return {
+    ...summary,
+    band: classifyPlayerGrade(summary.weightedGrade),
+  }
+}
+
 export function deriveEligibility(input: {
   evidence: EligibilityEvidence
   override: number | null

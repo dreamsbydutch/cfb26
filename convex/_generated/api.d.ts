@@ -16,6 +16,7 @@ import type * as crons from "../crons.js";
 import type * as eligibility from "../eligibility.js";
 import type * as games from "../games.js";
 import type * as migrationV2 from "../migrationV2.js";
+import type * as migrations from "../migrations.js";
 import type * as nflverse from "../nflverse.js";
 import type * as playerDomain from "../playerDomain.js";
 import type * as players from "../players.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   eligibility: typeof eligibility;
   games: typeof games;
   migrationV2: typeof migrationV2;
+  migrations: typeof migrations;
   nflverse: typeof nflverse;
   playerDomain: typeof playerDomain;
   players: typeof players;
@@ -90,4 +92,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
+};

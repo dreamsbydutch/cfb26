@@ -80,6 +80,9 @@ export const getSeasonDashboard = query({
       .sort(
         (a, b) =>
           comparePositionRooms(a.season.positionRoom, b.season.positionRoom) ||
+          roleOrder(a.season.role) - roleOrder(b.season.role) ||
+          b.season.starts - a.season.starts ||
+          b.season.gamesPlayed - a.season.gamesPlayed ||
           (a.season.roomOrder ?? 999) - (b.season.roomOrder ?? 999) ||
           (a.player?.displayName ?? '').localeCompare(
             b.player?.displayName ?? '',
@@ -135,6 +138,13 @@ export const getSeasonDashboard = query({
     }
   },
 })
+
+function roleOrder(role: 'reserve' | 'rotation' | 'starter' | 'unassigned') {
+  if (role === 'starter') return 0
+  if (role === 'rotation') return 1
+  if (role === 'reserve') return 2
+  return 3
+}
 
 export const list = query({
   args: {

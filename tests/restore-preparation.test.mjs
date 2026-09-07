@@ -86,3 +86,30 @@ test('restore preparation rejects a modified backup', async () => {
     await rm(directory, { recursive: true, force: true })
   }
 })
+
+test('restore preparation preserves a version 3 Michigan revision', async () => {
+  const directory = await mkdtemp(resolve(tmpdir(), 'cfb26-restore-v3-'))
+  const backupPath = resolve(directory, 'backup.json')
+  const outputPath = resolve(directory, 'prepared')
+  const core = { dataRevision: 42, datasets, schemaVersion: '3' }
+  const fingerprint = createHash('sha256')
+    .update(JSON.stringify(core))
+    .digest('hex')
+  await writeFile(backupPath, JSON.stringify({ ...core, fingerprint }))
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ['scripts/prepare-michigan-restore.mjs', backupPath, outputPath],
+      { cwd: process.cwd(), encoding: 'utf8' },
+    )
+    assert.equal(result.status, 0, result.stderr)
+    const manifest = JSON.parse(
+      await readFile(resolve(outputPath, 'restore-manifest.json'), 'utf8'),
+    )
+    assert.equal(manifest.dataRevision, 42)
+    assert.equal(manifest.schemaVersion, '3')
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})

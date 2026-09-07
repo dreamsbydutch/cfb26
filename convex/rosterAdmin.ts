@@ -158,6 +158,81 @@ export async function requireOwnerSession(
   return session
 }
 
+export async function getMichiganDataRevision(ctx: QueryCtx | MutationCtx) {
+  const state = await ctx.db
+    .query('michiganDataRevisions')
+    .withIndex('by_key', (q) => q.eq('key', 'michigan'))
+    .unique()
+  return state?.revision ?? 0
+}
+
+export async function advanceMichiganDataRevision(
+  ctx: MutationCtx,
+  args: {
+    action: string
+    backupManifestId?: Id<'backupManifests'>
+    sessionId: Id<'ownerSessions'>
+    target: string
+    warnings?: Array<string>
+  },
+) {
+  const startedAt = Date.now()
+  await ctx.db.patch('ownerSessions', args.sessionId, {
+    lastUsedAt: startedAt,
+  })
+  const state = await ctx.db
+    .query('michiganDataRevisions')
+    .withIndex('by_key', (q) => q.eq('key', 'michigan'))
+    .unique()
+  const revision = (state?.revision ?? 0) + 1
+  if (state) {
+    await ctx.db.patch('michiganDataRevisions', state._id, {
+      revision,
+      updatedAt: startedAt,
+    })
+  } else {
+    await ctx.db.insert('michiganDataRevisions', {
+      key: 'michigan',
+      revision,
+      updatedAt: startedAt,
+    })
+  }
+  await ctx.db.insert('ownerAuditEvents', {
+    action: args.action,
+    actor: 'owner',
+    backupManifestId: args.backupManifestId,
+    completedAt: Date.now(),
+    result: 'succeeded',
+    sessionId: args.sessionId,
+    startedAt,
+    target: args.target,
+    warnings: args.warnings ?? [],
+  })
+  return revision
+}
+
+export async function requireCurrentBackup(
+  ctx: QueryCtx | MutationCtx,
+  backupManifestId: Id<'backupManifests'>,
+) {
+  const [manifest, currentRevision] = await Promise.all([
+    ctx.db.get('backupManifests', backupManifestId),
+    getMichiganDataRevision(ctx),
+  ])
+  if (!manifest) throw new Error('A verified backup manifest is required.')
+  if (manifest.dataRevision === undefined) {
+    throw new Error(
+      'This backup manifest predates data revisions. Export a new backup.',
+    )
+  }
+  if (manifest.dataRevision !== currentRevision) {
+    throw new Error(
+      `Backup revision ${manifest.dataRevision} is stale; Michigan is at revision ${currentRevision}. Export a current backup.`,
+    )
+  }
+  return manifest
+}
+
 function requiredText(value: string, label: string, maximum = 120) {
   const normalized = value.trim()
   if (!normalized) throw new Error(`${label} is required.`)
@@ -361,9 +436,13 @@ export const sessionStatus = query({
   handler: async (ctx, args) => {
     try {
       const session = await requireOwnerSession(ctx, args.sessionToken)
-      return { authenticated: true, expiresAt: session.expiresAt }
+      return {
+        authenticated: true,
+        expiresAt: session.expiresAt,
+        lastUsedAt: session.lastUsedAt,
+      }
     } catch {
-      return { authenticated: false, expiresAt: null }
+      return { authenticated: false, expiresAt: null, lastUsedAt: null }
     }
   },
 })
@@ -400,7 +479,12 @@ export const createPerson = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'create_person',
+      sessionId: session._id,
+      target: args.canonicalName,
+    })
     const program = await getProgram(ctx, args.programKey ?? 'michigan')
     return {
       playerId: await createPersonRecord(ctx, args, program._id),
@@ -416,7 +500,12 @@ export const setCommitmentStatus = mutation({
     status: v.union(v.literal('decommitted'), v.literal('enrolled')),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'set_commitment_status',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.season}:${args.status}`,
+    })
     const commitment = await ctx.db
       .query('commitments')
       .withIndex('by_playerId_and_season', (q) =>
@@ -470,7 +559,12 @@ export const upsertPlayerSeason = mutation({
     stintId: v.id('rosterStints'),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'upsert_player_season',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.season}`,
+    })
     const [player, stint, program] = await Promise.all([
       ctx.db.get('players', args.playerId),
       ctx.db.get('rosterStints', args.stintId),
@@ -526,6 +620,58 @@ export const upsertPlayerSeason = mutation({
   },
 })
 
+export const applySeasonGrid = mutation({
+  args: {
+    rows: v.array(
+      v.object({
+        depthStatus,
+        gamesPlayed: v.number(),
+        playerSeasonId: v.id('playerSeasons'),
+        role: playerRole,
+        roomOrder: nullableNumber,
+        scholarshipStatus,
+        starts: v.number(),
+      }),
+    ),
+    sessionToken: v.string(),
+  },
+  returns: v.object({ updated: v.number() }),
+  handler: async (ctx, args) => {
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'apply_season_grid',
+      sessionId: session._id,
+      target: `${args.rows.length} player seasons`,
+    })
+    if (args.rows.length === 0 || args.rows.length > 200) {
+      throw new Error('Season grid requires between 1 and 200 changed rows.')
+    }
+    const program = await getProgram(ctx, 'michigan')
+    const seen = new Set<string>()
+    for (const row of args.rows) {
+      if (seen.has(String(row.playerSeasonId))) {
+        throw new Error('A Player Season appears more than once in the grid.')
+      }
+      seen.add(String(row.playerSeasonId))
+      const stored = await ctx.db.get('playerSeasons', row.playerSeasonId)
+      if (!stored || stored.programId !== program._id) {
+        throw new Error('A Michigan Player Season was not found.')
+      }
+      const gamesPlayed = wholeNumber(row.gamesPlayed, 'Games played', 0, 30)
+      const starts = wholeNumber(row.starts, 'Starts', 0, gamesPlayed)
+      await ctx.db.patch('playerSeasons', row.playerSeasonId, {
+        depthStatus: row.depthStatus,
+        gamesPlayed,
+        role: row.role,
+        roomOrder: optionalWholeNumber(row.roomOrder, 'Room order', 1, 200),
+        scholarshipStatus: row.scholarshipStatus,
+        starts,
+      })
+    }
+    return { updated: args.rows.length }
+  },
+})
+
 export const addEvaluation = mutation({
   args: {
     dataQuality,
@@ -542,7 +688,12 @@ export const addEvaluation = mutation({
     sourceUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'add_evaluation',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.kind}`,
+    })
     if (!(await ctx.db.get('players', args.playerId))) {
       throw new Error('Person was not found.')
     }
@@ -585,7 +736,12 @@ export const upsertDraftOutcome = mutation({
     year: v.number(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'upsert_draft_outcome',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.year}`,
+    })
     if (!(await ctx.db.get('players', args.playerId))) {
       throw new Error('Person was not found.')
     }
@@ -640,7 +796,12 @@ export const upsertNflIdentity = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'upsert_nfl_identity',
+      sessionId: session._id,
+      target: String(args.playerId),
+    })
     if (!(await ctx.db.get('players', args.playerId)))
       throw new Error('Person was not found.')
     const providerId = requiredText(args.providerId, 'nflverse GSIS ID', 80)
@@ -688,7 +849,12 @@ export const upsertNflWeeklyRoster = mutation({
     week: v.number(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'upsert_nfl_weekly_roster',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.season}:${args.week}`,
+    })
     const identity = await ctx.db
       .query('nflIdentities')
       .withIndex('by_playerId', (q) => q.eq('playerId', args.playerId))
@@ -735,7 +901,12 @@ export const recordDeparture = mutation({
     stintId: v.id('rosterStints'),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'record_departure',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.finalSeason}:${args.kind}`,
+    })
     const [player, stint] = await Promise.all([
       ctx.db.get('players', args.playerId),
       ctx.db.get('rosterStints', args.stintId),
@@ -825,13 +996,17 @@ export const applyRosterImport = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
     if (args.rows.length > MAX_BULK_ROWS) {
       throw new Error(`A bulk operation is limited to ${MAX_BULK_ROWS} rows.`)
     }
-    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
-      throw new Error('A verified backup manifest is required.')
-    }
+    await requireCurrentBackup(ctx, args.backupManifestId)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'apply_roster_import',
+      backupManifestId: args.backupManifestId,
+      sessionId: session._id,
+      target: `${args.rows.length} roster rows`,
+    })
     const operationId = await ctx.db.insert('operationRuns', {
       backupManifestId: args.backupManifestId,
       completedAt: null,
@@ -875,7 +1050,12 @@ export const startStint = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'start_stint',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.season}`,
+    })
     const [player, program] = await Promise.all([
       ctx.db.get('players', args.playerId),
       getProgram(ctx, args.programKey ?? 'michigan'),
@@ -993,10 +1173,14 @@ export const applyRollover = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
-    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
-      throw new Error('A verified backup manifest is required.')
-    }
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await requireCurrentBackup(ctx, args.backupManifestId)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'apply_rollover',
+      backupManifestId: args.backupManifestId,
+      sessionId: session._id,
+      target: `${args.fromSeason}:${args.fromSeason + 1}`,
+    })
     const operationId = await ctx.db.insert('operationRuns', {
       backupManifestId: args.backupManifestId,
       completedAt: null,
@@ -1051,21 +1235,42 @@ export const applyRollover = mutation({
 export const createBackupManifest = mutation({
   args: {
     counts: v.array(v.object({ count: v.number(), dataset: v.string() })),
+    dataRevision: v.number(),
     fingerprint: v.string(),
     reason: v.string(),
     schemaVersion: v.string(),
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
     if (!args.counts.length) throw new Error('Backup counts are required.')
-    return ctx.db.insert('backupManifests', {
+    const dataRevision = await getMichiganDataRevision(ctx)
+    if (args.dataRevision !== dataRevision) {
+      throw new Error(
+        `Michigan changed during export: expected revision ${args.dataRevision}, now ${dataRevision}. Export again.`,
+      )
+    }
+    const startedAt = Date.now()
+    const manifestId = await ctx.db.insert('backupManifests', {
       completedAt: Date.now(),
       counts: args.counts,
+      dataRevision,
       fingerprint: requiredText(args.fingerprint, 'Fingerprint', 128),
       reason: requiredText(args.reason, 'Reason', 240),
       schemaVersion: requiredText(args.schemaVersion, 'Schema version', 40),
     })
+    await ctx.db.insert('ownerAuditEvents', {
+      action: 'create_backup_manifest',
+      actor: 'owner',
+      backupManifestId: manifestId,
+      completedAt: Date.now(),
+      result: 'succeeded',
+      sessionId: session._id,
+      startedAt,
+      target: `Michigan revision ${dataRevision}`,
+      warnings: [],
+    })
+    return manifestId
   },
 })
 
@@ -1135,7 +1340,10 @@ export const exportMichiganPage = query({
   },
 })
 
-async function dependentRows(ctx: MutationCtx, sourcePlayerId: Id<'players'>) {
+async function dependentRows(
+  ctx: QueryCtx | MutationCtx,
+  sourcePlayerId: Id<'players'>,
+) {
   const [
     commitments,
     stints,
@@ -1237,6 +1445,56 @@ async function dependentRows(ctx: MutationCtx, sourcePlayerId: Id<'players'>) {
   }
 }
 
+export const previewIdentityRepair = query({
+  args: {
+    playerId: v.id('players'),
+    sessionToken: v.string(),
+  },
+  returns: v.object({
+    counts: v.object({
+      commitments: v.number(),
+      drafts: v.number(),
+      evaluations: v.number(),
+      games: v.number(),
+      identities: v.number(),
+      movements: v.number(),
+      nflGames: v.number(),
+      nflIdentities: v.number(),
+      nflSeasons: v.number(),
+      nflWeeks: v.number(),
+      seasons: v.number(),
+      stints: v.number(),
+    }),
+    name: v.union(v.string(), v.null()),
+    playerId: v.id('players'),
+  }),
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    const [player, rows] = await Promise.all([
+      ctx.db.get('players', args.playerId),
+      dependentRows(ctx, args.playerId),
+    ])
+    return {
+      counts: {
+        commitments: rows.commitments.length,
+        drafts: rows.drafts.length,
+        evaluations: rows.evaluations.length,
+        games: rows.games.length,
+        identities: rows.identities.length,
+        movements: rows.movements.length,
+        nflGames: rows.nflGames.length,
+        nflIdentities: rows.nflIdentities.length,
+        nflSeasons: rows.nflSeasons.length,
+        nflWeeks: rows.nflWeeks.length,
+        seasons: rows.seasons.length,
+        stints: rows.stints.length,
+      },
+      name: player?.displayName ?? null,
+      playerId: args.playerId,
+    }
+  },
+})
+
 export const mergePlayers = mutation({
   args: {
     backupManifestId: v.id('backupManifests'),
@@ -1245,12 +1503,16 @@ export const mergePlayers = mutation({
     targetPlayerId: v.id('players'),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
     if (args.sourcePlayerId === args.targetPlayerId)
       throw new Error('Choose two people.')
-    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
-      throw new Error('A verified backup manifest is required.')
-    }
+    await requireCurrentBackup(ctx, args.backupManifestId)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'merge_players',
+      backupManifestId: args.backupManifestId,
+      sessionId: session._id,
+      target: `${args.sourcePlayerId}->${args.targetPlayerId}`,
+    })
     const [source, target, rows] = await Promise.all([
       ctx.db.get('players', args.sourcePlayerId),
       ctx.db.get('players', args.targetPlayerId),
@@ -1322,10 +1584,14 @@ export const deleteErroneousPerson = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
-    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
-      throw new Error('A verified backup manifest is required.')
-    }
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await requireCurrentBackup(ctx, args.backupManifestId)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'delete_erroneous_person',
+      backupManifestId: args.backupManifestId,
+      sessionId: session._id,
+      target: String(args.playerId),
+    })
     const person = await ctx.db.get('players', args.playerId)
     if (!person) throw new Error('Person was not found.')
     const rows = await dependentRows(ctx, args.playerId)
@@ -1341,8 +1607,7 @@ export const deleteErroneousPerson = mutation({
     })
     for (const row of rows.commitments)
       await ctx.db.delete('commitments', row._id)
-    for (const row of rows.stints)
-      await ctx.db.delete('rosterStints', row._id)
+    for (const row of rows.stints) await ctx.db.delete('rosterStints', row._id)
     for (const row of rows.seasons)
       await ctx.db.delete('playerSeasons', row._id)
     for (const row of rows.evaluations)
@@ -1351,10 +1616,8 @@ export const deleteErroneousPerson = mutation({
       await ctx.db.delete('providerIdentities', row._id)
     for (const row of rows.movements)
       await ctx.db.delete('movementEvents', row._id)
-    for (const row of rows.drafts)
-      await ctx.db.delete('draftOutcomes', row._id)
-    for (const row of rows.games)
-      await ctx.db.delete('playerGames', row._id)
+    for (const row of rows.drafts) await ctx.db.delete('draftOutcomes', row._id)
+    for (const row of rows.games) await ctx.db.delete('playerGames', row._id)
     for (const row of rows.nflIdentities)
       await ctx.db.delete('nflIdentities', row._id)
     for (const row of rows.nflWeeks)
@@ -1386,7 +1649,12 @@ export const upsertSeasonRules = mutation({
     version: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'upsert_season_rules',
+      sessionId: session._id,
+      target: String(args.season),
+    })
     const { sessionToken: _sessionToken, ...document } = args
     const existing = await ctx.db
       .query('seasonRules')
@@ -1408,7 +1676,12 @@ export const setConferenceChampion = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'set_conference_champion',
+      sessionId: session._id,
+      target: `${args.season}:${args.conference}:${args.programId}`,
+    })
     if (!(await ctx.db.get('programs', args.programId))) {
       throw new Error('Program was not found.')
     }
@@ -1441,7 +1714,12 @@ export const resolveProviderIdentity = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'resolve_provider_identity',
+      sessionId: session._id,
+      target: `${args.matchId}:${args.playerId}`,
+    })
     const [match, player] = await Promise.all([
       ctx.db.get('unresolvedMatches', args.matchId),
       ctx.db.get('players', args.playerId),
@@ -1474,24 +1752,31 @@ export const getDataHealth = query({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
     await requireOwnerSession(ctx, args.sessionToken)
-    const [unresolved, sync, operations, backups] = await Promise.all([
-      ctx.db
-        .query('unresolvedMatches')
-        .withIndex('by_status_and_lastSeenAt', (q) => q.eq('status', 'open'))
-        .order('desc')
-        .take(100),
-      ctx.db.query('teamDataSyncState').take(20),
-      ctx.db
-        .query('operationRuns')
-        .withIndex('by_kind_and_startedAt')
-        .order('desc')
-        .take(50),
-      ctx.db
-        .query('backupManifests')
-        .withIndex('by_completedAt')
-        .order('desc')
-        .take(10),
-    ])
-    return { backups, operations, sync, unresolved }
+    const [unresolved, sync, operations, backups, audit, revision] =
+      await Promise.all([
+        ctx.db
+          .query('unresolvedMatches')
+          .withIndex('by_status_and_lastSeenAt', (q) => q.eq('status', 'open'))
+          .order('desc')
+          .take(100),
+        ctx.db.query('teamDataSyncState').take(20),
+        ctx.db
+          .query('operationRuns')
+          .withIndex('by_kind_and_startedAt')
+          .order('desc')
+          .take(50),
+        ctx.db
+          .query('backupManifests')
+          .withIndex('by_completedAt')
+          .order('desc')
+          .take(10),
+        ctx.db
+          .query('ownerAuditEvents')
+          .withIndex('by_startedAt')
+          .order('desc')
+          .take(100),
+        getMichiganDataRevision(ctx),
+      ])
+    return { audit, backups, operations, revision, sync, unresolved }
   },
 })

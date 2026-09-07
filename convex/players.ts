@@ -1,7 +1,11 @@
 import { v } from 'convex/values'
 import { query } from './_generated/server'
 import { resolvePlayerSeasonEligibility } from './eligibility'
-import { derivePositionRoom, summarizePhaseGrades } from './playerDomain'
+import {
+  derivePositionRoom,
+  summarizeOverallGrade,
+  summarizePhaseGrades,
+} from './playerDomain'
 
 const boundedLimit = (limit: number | undefined, fallback: number) =>
   Math.min(Math.max(Math.floor(limit ?? fallback), 1), 100)
@@ -24,6 +28,61 @@ export const search = query({
           : results
       })
       .take(boundedLimit(args.limit, 25))
+  },
+})
+
+export const searchCatalog = query({
+  args: {},
+  returns: v.object({
+    players: v.array(
+      v.object({
+        id: v.id('players'),
+        label: v.string(),
+        meta: v.string(),
+        aliases: v.array(v.string()),
+      }),
+    ),
+    programs: v.array(
+      v.object({
+        id: v.id('programs'),
+        key: v.string(),
+        label: v.string(),
+        meta: v.string(),
+        aliases: v.array(v.string()),
+      }),
+    ),
+  }),
+  handler: async (ctx) => {
+    const [players, programs, programAliases] = await Promise.all([
+      ctx.db.query('players').withIndex('by_slug').take(500),
+      ctx.db.query('programs').withIndex('by_key').take(1_000),
+      ctx.db.query('programAliases').withIndex('by_sourceKey').take(2_000),
+    ])
+    const aliasesByProgram = new Map<string, Array<string>>()
+    for (const alias of programAliases) {
+      const values = aliasesByProgram.get(String(alias.programId)) ?? []
+      if (!values.includes(alias.sourceName)) values.push(alias.sourceName)
+      aliasesByProgram.set(String(alias.programId), values)
+    }
+    return {
+      players: players.map((player) => ({
+        aliases:
+          player.canonicalName === player.displayName
+            ? []
+            : [player.canonicalName],
+        id: player._id,
+        label: player.displayName,
+        meta: `${player.state} · ${player.entrySeason}`,
+      })),
+      programs: programs.map((program) => ({
+        aliases: aliasesByProgram.get(String(program._id)) ?? [],
+        id: program._id,
+        key: program.key,
+        label: program.name,
+        meta:
+          program.conference ?? program.classification ?? 'College football',
+      })),
+    }
   },
 })
 
@@ -123,6 +182,17 @@ export const getProfile = query({
         games.map((game) => game.specialTeams),
       ),
     }
+    const overallGrades = {
+      career: summarizeOverallGrade(games),
+      bySeason: [...new Set(games.map((game) => game.season))]
+        .sort((left, right) => right - left)
+        .map((season) => ({
+          ...summarizeOverallGrade(
+            games.filter((game) => game.season === season),
+          ),
+          season,
+        })),
+    }
 
     return {
       commitments,
@@ -132,6 +202,7 @@ export const getProfile = query({
       games,
       movements,
       nfl: { identity: nflIdentity, seasons: nflSeasons, weeks: nflWeeks },
+      overallGrades,
       player,
       seasons: seasons.map((season) => ({
         ...season,
@@ -147,7 +218,10 @@ export const getProfile = query({
 })
 
 export const compare = query({
-  args: { playerIds: v.array(v.id('players')) },
+  args: {
+    playerIds: v.array(v.id('players')),
+    season: v.optional(v.number()),
+  },
   handler: async (ctx, args) => {
     const playerIds = [...new Set(args.playerIds)]
     if (playerIds.length === 0 || playerIds.length > 4) {
@@ -186,6 +260,15 @@ export const compare = query({
             ),
           },
           nfl,
+          overallGrades: {
+            career: summarizeOverallGrade(games),
+            selectedSeason:
+              args.season === undefined
+                ? null
+                : summarizeOverallGrade(
+                    games.filter((game) => game.season === args.season),
+                  ),
+          },
           player,
           seasons: seasons.map((season) => ({
             ...season,

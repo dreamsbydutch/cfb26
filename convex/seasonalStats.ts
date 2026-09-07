@@ -1,7 +1,15 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
-import { normalizePlayerGame, summarizePhaseGrades } from './playerDomain'
-import { requireOwnerSession } from './rosterAdmin'
+import {
+  normalizePlayerGame,
+  summarizeOverallGrade,
+  summarizePhaseGrades,
+} from './playerDomain'
+import {
+  advanceMichiganDataRevision,
+  requireCurrentBackup,
+  requireOwnerSession,
+} from './rosterAdmin'
 import type { Id } from './_generated/dataModel'
 
 const nullableNumber = v.union(v.number(), v.null())
@@ -84,6 +92,7 @@ export const listBySeason = query({
     }
     return Promise.all(
       [...byPlayer.entries()].map(async ([playerId, rows]) => ({
+        overall: summarizeOverallGrade(rows),
         phases: {
           defense: summarizePhaseGrades(rows.map((row) => row.defense)),
           offense: summarizePhaseGrades(rows.map((row) => row.offense)),
@@ -122,7 +131,12 @@ export const listGame = query({
 export const upsertPlayerGame = mutation({
   args: { ...playerGameInput, sessionToken: v.string() },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'upsert_player_game',
+      sessionId: session._id,
+      target: `${args.playerId}:${args.gameId}`,
+    })
     const [player, game, program] = await Promise.all([
       ctx.db.get('players', args.playerId),
       ctx.db.get('collegeGames', args.gameId),
@@ -198,12 +212,16 @@ export const applyImport = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSession(ctx, args.sessionToken)
+    const session = await requireOwnerSession(ctx, args.sessionToken)
     if (args.rows.length > 200)
       throw new Error('Import is limited to 200 rows.')
-    if (!(await ctx.db.get('backupManifests', args.backupManifestId))) {
-      throw new Error('A verified backup manifest is required.')
-    }
+    await requireCurrentBackup(ctx, args.backupManifestId)
+    await advanceMichiganDataRevision(ctx, {
+      action: 'apply_player_game_import',
+      backupManifestId: args.backupManifestId,
+      sessionId: session._id,
+      target: `${args.rows.length} player game rows`,
+    })
     const operationId = await ctx.db.insert('operationRuns', {
       backupManifestId: args.backupManifestId,
       completedAt: null,
