@@ -33,7 +33,7 @@ npm run dev:web
 
 The script runs `vite dev` on port 3000. `/` reads the Michigan development deployment without pushing backend code.
 
-For backend work, `npm run dev` runs `convex dev --start 'vite dev'`, synchronizes the configured development functions, regenerates typed files, and starts Vite.
+For backend work, `npm run dev` runs `convex dev --start "vite dev"`, synchronizes the configured development functions, regenerates typed files, and starts Vite.
 
 ## Working with an existing deployment
 

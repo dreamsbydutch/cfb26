@@ -39,7 +39,7 @@ The known deployment URLs are recorded in [Deployment](../guides/deployment.md).
 
 | Script                                                   | Expansion                       | Notes                                                                                         |
 | -------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| `npm run dev`                                            | `convex dev --start 'vite dev'` | Requires/establishes Convex CLI configuration, then serves Vite.                              |
+| `npm run dev`                                            | `convex dev --start "vite dev"` | Requires/establishes Convex CLI configuration, then serves Vite.                              |
 | `npm run dev:web`                                        | `vite dev`                      | Starts the browser app without pushing Convex code.                                           |
 | `npm run typecheck`                                      | `tsc --noEmit`                  | Checks root includes: `src`, `convex`, and Vite config.                                       |
 | `npm run lint`                                           | typecheck, then ESLint          | Uses TanStack and Convex recommended rules.                                                   |
