@@ -41,7 +41,7 @@ export function LandscapeDashboard() {
     }),
   )
   const programs = useQuery(
-    convexQuery(api.teamData.listPrograms, { limit: 500 }),
+    convexQuery(api.teamData.listPrograms, { limit: 1_000 }),
   )
   const data = dashboard.data
   return (
@@ -78,7 +78,9 @@ export function LandscapeDashboard() {
         <div className="text-right text-xs text-slate-500">
           {data?.edition
             ? `${data.edition.editionType} edition · ${data.edition.modelVersion}`
-            : 'No edition at this cutoff'}
+            : data
+              ? `Complete fallback field · ${data.ratingCount} FBS teams`
+              : 'Loading ranking basis'}
         </div>
       </div>
       <SectionTabs active={view} onChange={setView} tabs={TABS} />
@@ -130,23 +132,28 @@ function Games({
   )
   return (
     <>
-      <div className="mb-4 flex gap-2">
-        {(['quality', 'playoff', 'michigan'] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setLens(option)}
-            className={`${pillClass} ${lens === option ? 'bg-[#00274c] text-white' : 'bg-white text-slate-600'}`}
-          >
-            {option}
-          </button>
-        ))}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2">
+          {(['quality', 'playoff', 'michigan'] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setLens(option)}
+              className={`${pillClass} ${lens === option ? 'bg-[#00274c] text-white' : 'bg-white text-slate-600'}`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-slate-500">
+          Schedule badges use the complete {data.ratingCount}-team Power field.
+        </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         {games.map((game) => (
           <article
             key={game._id}
-            className="relative overflow-hidden border border-slate-300 bg-white p-5 shadow-sm"
+            className="relative overflow-hidden rounded-2xl border border-slate-300 bg-white p-5 shadow-sm"
           >
             <div className="absolute inset-y-0 left-0 w-1.5 bg-[#ffcb05]" />
             <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
@@ -237,6 +244,9 @@ function Power({
 }: {
   data: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
 }) {
+  const modelVersion = data.edition
+    ? data.edition.modelVersion
+    : (data.ratings.at(0)?.modelVersion ?? 'unavailable')
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
       <RankingTable
@@ -247,24 +257,63 @@ function Power({
             label: row.sourceProgramName,
             primary: row.power.toFixed(1),
             rank: row.powerRank ?? 999,
-            secondary: `${row.gamesPlayed} games · prior ${Math.round(row.priorWeight * 100)}%`,
+            secondary: `${row.conference ?? 'Independent'} · ${rankingBasisLabel(row.rankingBasis, row.sourceSeason)}`,
+            details: [
+              { label: 'Neutral Power', value: signed(row.power) },
+              { label: 'Offense', value: signed(row.offense) },
+              { label: 'Defense', value: signed(row.defense) },
+              {
+                label: 'Special teams',
+                value: row.specialTeamsAvailable
+                  ? signed(row.specialTeams)
+                  : 'Not separated',
+              },
+              {
+                label: 'Prior weight',
+                value: `${Math.round(row.priorWeight * 100)}%`,
+              },
+              {
+                label: 'Evidence',
+                value: row.limitedSample
+                  ? 'Limited sample'
+                  : `${row.gamesPlayed} games`,
+              },
+            ],
+            note: `Sources: ${row.dataSources.map(sourceLabel).join(', ')}${row.confidence === undefined ? '' : ` · coverage confidence ${row.confidence}%`}${row.signalCount === undefined ? '' : ` · ${row.signalCount} signals`}`,
           }))}
-        heading="CFB26 Power"
+        heading={`DbyD CFB Power · all ${data.ratingCount} teams`}
       />
       <aside className="space-y-4">
         <Metric label="Rated teams" value={data.ratingCount} />
-        <Metric
-          label="Model"
-          value={data.edition?.modelVersion ?? 'fallback'}
-        />
-        <div className="bg-[#00274c] p-5 text-sm leading-6 text-white">
+        <Metric label="Model" value={modelVersion} />
+        <section className="rounded-2xl bg-[#00274c] p-5 text-sm leading-6 text-white shadow-sm">
           <b className="block font-serif text-xl text-[#ffcb05]">
-            Predictive by design
+            How the order is built
           </b>
-          Power estimates expected future strength. Priors fade as
-          current-season evidence grows, and published ratings show the
-          remaining prior weight.
-        </div>
+          <ol className="mt-3 list-decimal space-y-2 pl-4 text-white/80">
+            <li>
+              The selected season’s schedule defines the FBS field, so the list
+              grows or shrinks with real membership instead of stopping at 50.
+            </li>
+            <li>
+              Power is neutral-field points above or below the average team,
+              learned from opponent-adjusted results with extreme margins
+              reduced in influence.
+            </li>
+            <li>
+              Offense, defense, and special teams are estimated separately;
+              preseason evidence carries forward and fades as games accumulate.
+            </li>
+            <li>
+              Missing current evidence uses the prior season, then a neutral
+              baseline. Every row identifies which path it used.
+            </li>
+          </ol>
+          <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-xs text-white/70">
+            Active basis: {rankingModeLabel(data.rankingMode)} · model{' '}
+            {modelVersion}
+          </p>
+        </section>
       </aside>
     </div>
   )
@@ -725,30 +774,80 @@ function RankingTable({
     primary: string
     rank: number
     secondary: string
+    details?: Array<{ label: string; value: string }>
+    note?: string
   }>
 }) {
   return (
-    <section className="overflow-hidden border border-slate-300 bg-white">
+    <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
       <h2 className="bg-[#00274c] px-5 py-4 font-serif text-2xl font-black text-white">
         {heading}
       </h2>
       <div className="divide-y divide-slate-200">
         {rows.map((row) => (
-          <div
-            key={`${row.rank}:${row.label}`}
-            className="grid grid-cols-[3rem_1fr_auto] items-center gap-3 px-5 py-3"
-          >
-            <b className="font-serif text-2xl text-[#00274c]">{row.rank}</b>
-            <div>
-              <b>{row.label}</b>
-              <div className="text-xs text-slate-500">{row.secondary}</div>
+          <article key={`${row.rank}:${row.label}`} className="px-5 py-3">
+            <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
+              <b className="font-serif text-2xl text-[#00274c]">{row.rank}</b>
+              <div>
+                <b>{row.label}</b>
+                <div className="text-xs text-slate-500">{row.secondary}</div>
+              </div>
+              <b className="text-lg">{row.primary}</b>
             </div>
-            <b className="text-lg">{row.primary}</b>
-          </div>
+            {row.details && (
+              <details className="group ml-12 mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs">
+                <summary className="cursor-pointer font-black uppercase tracking-[0.08em] text-[#00274c] marker:text-[#ffcb05]">
+                  Why this rank
+                </summary>
+                <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {row.details.map((detail) => (
+                    <div key={detail.label} className="rounded-lg bg-white p-2">
+                      <dt className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                        {detail.label}
+                      </dt>
+                      <dd className="mt-1 font-black text-slate-900">
+                        {detail.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                {row.note && (
+                  <p className="mt-3 leading-5 text-slate-500">{row.note}</p>
+                )}
+              </details>
+            )}
+          </article>
         ))}
       </div>
     </section>
   )
+}
+
+function signed(value: number) {
+  return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
+}
+
+function sourceLabel(source: string) {
+  return source.replaceAll('_', ' ')
+}
+
+function rankingBasisLabel(basis: string, sourceSeason: number | null) {
+  if (basis === 'weekly_edition') return 'weekly edition'
+  if (basis === 'season_composite') return 'season composite'
+  if (basis === 'current_season_elo') return 'current-season Elo fallback'
+  if (basis === 'prior_season_composite')
+    return `${sourceSeason ?? 'prior'} composite carryover`
+  if (basis === 'prior_season_elo')
+    return `${sourceSeason ?? 'prior'} Elo carryover`
+  return 'neutral baseline · no current or prior rating'
+}
+
+function rankingModeLabel(
+  mode: 'fallback' | 'season_composite' | 'weekly_edition',
+) {
+  if (mode === 'weekly_edition') return 'weekly Power edition'
+  if (mode === 'season_composite') return 'season composite'
+  return 'complete-field fallback'
 }
 function ProgramSelect({
   onChange,
@@ -776,11 +875,11 @@ function ProgramSelect({
 }
 
 const controlClass =
-  'min-h-11 rounded-sm border border-slate-400 bg-white px-3 py-2 text-sm font-bold focus-visible:outline-2 focus-visible:outline-[#00274c]'
+  'min-h-11 rounded-xl border border-slate-400 bg-white px-3 py-2 text-sm font-bold focus-visible:outline-2 focus-visible:outline-[#00274c]'
 const pillClass =
   'rounded-full border border-slate-300 px-4 py-2 text-xs font-black uppercase tracking-[0.1em]'
 const primaryButton =
-  'min-h-11 rounded-sm bg-[#00274c] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white shadow-[3px_3px_0_#ffcb05] disabled:opacity-40'
+  'min-h-11 rounded-xl bg-[#00274c] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-white shadow-[0_6px_18px_rgb(0_39_76_/_0.24)] disabled:opacity-40'
 export function LandscapeLoading() {
   return (
     <div className="animate-pulse border border-slate-300 bg-white p-12 text-center text-sm font-bold text-slate-500">

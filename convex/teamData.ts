@@ -7,9 +7,7 @@ import {
   internalQuery,
   query,
 } from './_generated/server'
-import {
-  createCfbdClient,
-} from './cfbdClient'
+import { createCfbdClient } from './cfbdClient'
 import { resolveProgram, slug } from './programIdentity'
 import { nflRosterStatus, nflStatistics, parseCsv } from './nflverse'
 import type { Id } from './_generated/dataModel'
@@ -998,7 +996,7 @@ export const syncNflverse = internalAction({
 })
 
 const boundedLimit = (limit: number | undefined, fallback: number) =>
-  Math.min(Math.max(Math.floor(limit ?? fallback), 1), 500)
+  Math.min(Math.max(Math.floor(limit ?? fallback), 1), 1_000)
 
 export const listPrograms = query({
   args: { limit: v.optional(v.number()) },

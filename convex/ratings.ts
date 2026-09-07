@@ -8,7 +8,8 @@ import {
   mutation,
   query,
 } from './_generated/server'
-import { resolveProgram, slug } from './programIdentity'
+import { resolveProgram } from './programIdentity'
+import { buildFallbackPowerField } from './ratingFallback'
 import { buildMatchupProjection, buildSeasonRatings } from './ratingModel'
 import {
   POWER_MODEL_VERSION,
@@ -40,6 +41,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const HOME_FIELD_ADVANTAGE = 55
 const COMPOSITE_BATCH_SIZE = 40
 const MAX_MODEL_ROWS = 250
+const MAX_PROGRAM_ROWS = 1_000
 
 type SourceRow = Record<string, unknown>
 type PowerModelData = {
@@ -362,7 +364,7 @@ export const loadSeasonModelData = internalQuery({
       recruitingBySeason,
       draftByYear,
     ] = await Promise.all([
-      ctx.db.query('programs').withIndex('by_key').take(500),
+      ctx.db.query('programs').withIndex('by_key').take(MAX_PROGRAM_ROWS),
       ctx.db
         .query('teamSeasonRatings')
         .withIndex('by_season_and_rating', (q) => q.eq('season', season))
@@ -551,7 +553,7 @@ export const loadPowerModelData = internalQuery({
     const season = Math.floor(args.season)
     const seasons = Array.from({ length: 5 }, (_, index) => season - 4 + index)
     const [programs, gamesBySeason] = await Promise.all([
-      ctx.db.query('programs').withIndex('by_key').take(500),
+      ctx.db.query('programs').withIndex('by_key').take(MAX_PROGRAM_ROWS),
       Promise.all(
         seasons.map((modelSeason) =>
           ctx.db
@@ -1340,6 +1342,91 @@ export const getWeeklyDashboard = query({
           .unique(),
       ])
 
+    const fallbackRows =
+      snapshotRows.length === 0
+        ? await Promise.all([
+            ctx.db
+              .query('collegeGames')
+              .withIndex('by_season_and_startTime', (q) =>
+                q.eq('season', season),
+              )
+              .take(2_000),
+            ctx.db
+              .query('teamCompositeRatings')
+              .withIndex('by_season_and_overall', (q) =>
+                q.eq('season', season - 1),
+              )
+              .order('desc')
+              .take(200),
+            ctx.db
+              .query('teamSeasonRatings')
+              .withIndex('by_season_and_rating', (q) =>
+                q.eq('season', season - 1),
+              )
+              .order('desc')
+              .take(200),
+            ctx.db.query('programs').withIndex('by_key').take(MAX_PROGRAM_ROWS),
+          ]).then(([seasonGames, previousComposite, previousElo, programs]) =>
+            buildFallbackPowerField({
+              currentComposite: compositeRows.map((row) => ({
+                confidence: row.confidence,
+                conference: row.conference,
+                dataSources: row.dataSources,
+                defense: row.dimensions.defense,
+                modelVersion: row.modelVersion,
+                offense: row.dimensions.offense,
+                overall: row.overall,
+                programId: String(row.programId),
+                signalCount: row.signalCount,
+                sourceProgramName: row.sourceProgramName,
+                specialTeams: row.dimensions.specialTeams,
+              })),
+              currentElo: ratingRows.map((row) => ({
+                conference: row.conference,
+                programId: String(row.programId),
+                rating: row.rating,
+                sourceProgramName: row.sourceProgramName,
+              })),
+              games: seasonGames.map((game) => ({
+                awayClassification: game.awayClassification,
+                awayConference: game.awayConference,
+                awayProgramId: String(game.awayProgramId),
+                awaySourceName: game.awaySourceName,
+                homeClassification: game.homeClassification,
+                homeConference: game.homeConference,
+                homeProgramId: String(game.homeProgramId),
+                homeSourceName: game.homeSourceName,
+              })),
+              previousComposite: previousComposite.map((row) => ({
+                confidence: row.confidence,
+                conference: row.conference,
+                dataSources: row.dataSources,
+                defense: row.dimensions.defense,
+                modelVersion: row.modelVersion,
+                offense: row.dimensions.offense,
+                overall: row.overall,
+                programId: String(row.programId),
+                signalCount: row.signalCount,
+                sourceProgramName: row.sourceProgramName,
+                specialTeams: row.dimensions.specialTeams,
+              })),
+              previousElo: previousElo.map((row) => ({
+                conference: row.conference,
+                programId: String(row.programId),
+                rating: row.rating,
+                sourceProgramName: row.sourceProgramName,
+              })),
+              previousSeason: season - 1,
+              programs: programs.map((program) => ({
+                conference: program.conference,
+                id: String(program._id),
+                key: program.key,
+                name: program.name,
+              })),
+            }),
+          )
+        : []
+
     const ratings =
       snapshotRows.length > 0 && edition
         ? snapshotRows
@@ -1347,79 +1434,41 @@ export const getWeeklyDashboard = query({
             .map((row) => ({
               ...row,
               calibrationVersion: edition.calibrationVersion,
+              confidence: undefined,
               generatedAt: edition.generatedAt,
               modelVersion: edition.modelVersion,
               rank: row.powerRank ?? 999,
+              rankingBasis: 'weekly_edition' as const,
               rating: row.power,
+              signalCount: undefined,
+              sourceSeason: season,
             }))
-        : compositeRows.length > 0
-          ? compositeRows.map((row) => ({
-              actualWins: undefined,
-              calibrationVersion: 'fixed-logistic-v1',
-              classification: 'fbs' as const,
-              conference: row.conference,
-              dataSources: row.dataSources,
-              defense: (row.dimensions.defense - 50) * 0.3,
-              disagreementReasons: [] as Array<string>,
-              dominanceComponent: undefined,
-              expectedWins: undefined,
-              gamesPlayed: 0,
-              generatedAt: row.generatedAt,
-              homeFieldAdvantage: 2.5,
-              limitedSample: true,
-              modelVersion: row.modelVersion,
-              offense: (row.dimensions.offense - 50) * 0.3,
-              power: (row.overall - 50) * 0.3,
-              powerRank: row.rank,
-              priorWeight: 0,
-              programId: row.programId,
-              programKey: row.programKey,
-              published: true,
-              rank: row.rank,
-              rankDifference: undefined,
-              rating: (row.overall - 50) * 0.3,
-              resume: undefined,
-              resumeRank: undefined,
-              scheduleComponent: undefined,
-              sourceProgramName: row.sourceProgramName,
-              specialTeams: (row.dimensions.specialTeams - 50) * 0.3,
-              specialTeamsAvailable: row.dataSources.includes('game_stats'),
-            }))
-          : ratingRows.map((row, index) => {
-              const power = (row.rating - 1500) / 25
-              return {
-                actualWins: undefined,
-                calibrationVersion: 'elo-logistic-fallback-v1',
-                classification: 'fbs' as const,
-                conference: row.conference,
-                dataSources: ['elo'],
-                defense: power / 2,
-                disagreementReasons: [] as Array<string>,
-                dominanceComponent: undefined,
-                expectedWins: undefined,
-                gamesPlayed: 0,
-                generatedAt: row.sourceUpdatedAt,
-                homeFieldAdvantage: 2.5,
-                limitedSample: true,
-                modelVersion: 'elo-fallback',
-                offense: power / 2,
-                power,
-                powerRank: index + 1,
-                priorWeight: 0,
-                programId: row.programId,
-                programKey: slug(row.sourceProgramName),
-                published: true,
-                rank: index + 1,
-                rankDifference: undefined,
-                rating: power,
-                resume: undefined,
-                resumeRank: undefined,
-                scheduleComponent: undefined,
-                sourceProgramName: row.sourceProgramName,
-                specialTeams: 0,
-                specialTeamsAvailable: false,
-              }
-            })
+        : fallbackRows.map((row) => ({
+            ...row,
+            actualWins: undefined,
+            calibrationVersion: 'fixed-logistic-v1',
+            classification: 'fbs' as const,
+            disagreementReasons:
+              row.rankingBasis === 'neutral_baseline'
+                ? ['no_current_or_prior_rating_evidence']
+                : row.sourceSeason === season
+                  ? ([] as Array<string>)
+                  : ['prior_season_carryover'],
+            dominanceComponent: undefined,
+            expectedWins: undefined,
+            gamesPlayed: 0,
+            generatedAt: Date.now(),
+            homeFieldAdvantage: 2.5,
+            limitedSample: true,
+            programId: row.programId as Id<'programs'>,
+            published: true,
+            rank: row.powerRank,
+            rankDifference: undefined,
+            rating: row.power,
+            resume: undefined,
+            resumeRank: undefined,
+            scheduleComponent: undefined,
+          }))
     const ratingByProgram = new Map(
       ratings.map((row) => [String(row.programId), row]),
     )
@@ -1528,6 +1577,12 @@ export const getWeeklyDashboard = query({
       generatedAt: Date.now(),
       edition,
       ratingCount: ratings.length,
+      rankingMode:
+        snapshotRows.length > 0 && edition
+          ? ('weekly_edition' as const)
+          : fallbackRows.every((row) => row.rankingBasis === 'season_composite')
+            ? ('season_composite' as const)
+            : ('fallback' as const),
       ratings,
       resumeVisible: edition?.resumeVisible ?? false,
       season,

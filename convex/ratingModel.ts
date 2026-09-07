@@ -994,17 +994,23 @@ export function buildSeasonRatings(
   const programs = new Map(
     data.programs.map((program) => [String(program._id), program]),
   )
-  const candidateRows =
-    data.elo.length > 0
-      ? data.elo
-      : data.inputs.length > 0
-        ? data.inputs
-        : data.standings.length > 0
-          ? data.standings
-          : data.recruiting.filter((row) => row.season === season)
-  const candidateIds = new Set(
-    candidateRows.map((row) => String(row.programId)),
-  )
+  const evidenceRows = [
+    ...data.elo,
+    ...data.inputs,
+    ...data.standings.filter((row) => row.season === season),
+    ...data.recruiting.filter((row) => row.season === season),
+  ]
+  const candidateIds = new Set(data.elo.map((row) => String(row.programId)))
+  for (const game of data.games) {
+    if (game.season !== season) continue
+    if (game.homeClassification !== 'fcs')
+      candidateIds.add(String(game.homeProgramId))
+    if (game.awayClassification !== 'fcs')
+      candidateIds.add(String(game.awayProgramId))
+  }
+  if (candidateIds.size === 0) {
+    for (const row of evidenceRows) candidateIds.add(String(row.programId))
+  }
   const teams = new Map<string, RawTeam>()
   for (const programId of candidateIds) {
     const program = programs.get(programId)
