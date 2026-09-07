@@ -22,7 +22,7 @@ The Owner shell exchanges the configured password for a revocable 12-hour token 
 
 ## Presentation system
 
-`components/AppShell.tsx` owns the unified public context shell, keyboard search, responsive navigation, surfaces, status, metrics, and route states. Owner uses the same tokens in a distinct sidebar shell. Tailwind CSS 4, bundled Inter Variable and Barlow Condensed, Lucide icons, layered navy surfaces, restrained maize, 10–24px radii, soft shadows, and reduced-motion support form the presentation system. Fuse.js powers the client-side typo-tolerant player/program catalog after the bounded catalog query loads.
+`components/AppShell.tsx` owns the unified public context shell, keyboard search, responsive navigation, surfaces, status, metrics, and route states. Owner uses the same tokens in a distinct sidebar shell. Tailwind CSS 4, bundled Inter Variable and Barlow Condensed, Lucide icons, 10–24px radii, soft shadows, and reduced-motion support form the presentation system. Michigan and Owner use layered navy surfaces with restrained maize. National routes use neutral charcoal and grayscale surfaces; Michigan entries retain a maize-and-navy highlight wherever programs or matchups are listed. Fuse.js powers the client-side typo-tolerant player/program catalog after the bounded catalog query loads.
 
 Controls are semantic, keyboard reachable, visibly focused, and sized for touch. Public navigation becomes a bottom context bar on narrow screens; Matrix rooms collapse into accordions. The global search dialog is focus-contained and opens with Ctrl/Cmd-K. Every query surface accounts for loading, error, empty, unavailable, or stale data. No visual treatment changes domain null semantics.
 
