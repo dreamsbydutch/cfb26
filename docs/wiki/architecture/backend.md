@@ -48,7 +48,7 @@ Sync state is set to running before an external request and succeeded/failed aft
 
 The source authority is CFBD for national college facts, nflverse for Michigan-alumni NFL performance, the owner for Michigan-specific facts/corrections, and CFB26 for derived outputs. OpenSheet and PFF paths are absent.
 
-The 41-table source model has not been synchronized to either recorded deployment. Their older hosted state remains documented in [Deployment](../guides/deployment.md); a source contract is not production behavior until migration and smoke checks succeed against the named target.
+The 41-table source model was synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` on 2026-09-07. The backed-up migration reconciled Michigan v2 counts with zero unresolved identities and passed representative public-read smoke checks. Four retired physical table names remain visible but empty. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md).
 
 ## Development loop
 

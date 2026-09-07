@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-09-06
-- Implemented in source: 2026-09-06; hosted data migration pending exact-target authorization
+- Implemented in source: 2026-09-06; hosted data migration completed 2026-09-07
 
 ## Context
 

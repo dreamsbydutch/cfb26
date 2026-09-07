@@ -4,7 +4,7 @@
 
 ## Current rating systems
 
-**Current in checked-in source:** `cfb26-power-v1` and `cfb26-resume-v1` replace the manually weighted percentile composite. The surrounding 41-table contract adds frozen forecasts, schedule/quadrant evidence, playoff projections, and owner ballots. It has not been pushed: the hosted deployments retain their earlier models pending controlled migration.
+**Current in source and hosted backend:** `cfb26-power-v1` and `cfb26-resume-v1` replace the manually weighted percentile composite. The surrounding 41-table contract adds frozen forecasts, schedule/quadrant evidence, playoff projections, and owner ballots. Development and production received that contract during the backed-up 2026-09-07 cutover. New editions still depend on synchronized source data and publication readiness.
 
 The public rankings page has one predictive ordering: CFB26 Power Rank. Offense, defense, special teams, team-specific home field, sample size, prior influence, and source coverage explain that position in the same team row. Résumé is supporting record evidence beginning in Week 7, not another predictive perspective. The 16 perspectives documented below exist only in the legacy migration fallback and are not public ranking choices.
 

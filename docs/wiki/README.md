@@ -13,7 +13,7 @@ This wiki is the durable source of truth for the application. [AGENTS.md](../../
 
 **Current source:** the nine-phase Michigan-first system is implemented across three route shells. `/` covers 2015-forward season rosters, room/scholarship/eligibility/development views, four-player comparisons, CFB26 Player Grades, profiles, and alumni NFL summaries. `/games` covers national schedules, Power, Résumé, schedule strength/quadrants, playoff projection, program profiles, hypothetical matchups, and the all-FBS blind ballot. `/admin/roster` provides revocable single-owner sessions and the Michigan lifecycle, Player Season, Player Game, evaluation, identity, NFL-gap, import, rollover, backup, and health workflows. Direct CFBD and nflverse boundaries replace intermediary/proprietary ingestion.
 
-**Hosted current:** neither recorded Convex deployment has received this source/schema migration. Development and production retain their previously documented contracts until an exact-target, backed-up cutover is separately authorized and verified. No production behavior should be inferred from source status.
+**Hosted current:** development `adjoining-opossum-710` and production `doting-chipmunk-7` received the 41-table source/schema contract in a backed-up, exact-target cutover on 2026-09-07. Michigan v2 counts and representative public reads were reconciled in both environments. The operation did not deploy the web application; see the [cutover record](operations/convex-v2-cutover-2026-09-07.md).
 
 **Undecided:** no major product decision is open. A richer Power challenger can become official only after it passes the recorded held-out performance and calibration gate.
 

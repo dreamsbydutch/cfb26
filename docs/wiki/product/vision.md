@@ -24,7 +24,7 @@ The [system definition](system-definition.md) remains the canonical product cont
 | Product definition                                     | Complete                                                    |
 | Phases 1–9 source implementation                       | Complete                                                    |
 | Offline verification                                   | Complete when `npm run check` passes for the change         |
-| Development data migration and backend synchronization | Pending explicit exact-target authorization                 |
-| Production promotion and smoke test                    | Pending separate authorization after development validation |
+| Development data migration and backend synchronization | Complete 2026-09-07                                         |
+| Production backend promotion and smoke test            | Complete 2026-09-07; web release not included               |
 
 No major product decision remains open. A richer Power challenger is an evidence-gated model change, not a scope blocker. Deployment scheduling must remain within the free-source/free-allowance operating target.

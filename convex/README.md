@@ -1,6 +1,6 @@
 # Convex backend
 
-This directory is the checked-in server boundary for `cfb26`. Source defines 41 tables and 103 indexes spanning the Michigan lifecycle, national team/game data, immutable rating outputs, owner operations, and Michigan-alumni NFL history. It has not been synchronized to either recorded deployment; confirm the exact target before running Convex commands.
+This directory is the checked-in server boundary for `cfb26`. Source defines 41 tables and 103 indexes spanning the Michigan lifecycle, national team/game data, immutable rating outputs, owner operations, and Michigan-alumni NFL history. The contract was synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` during the backed-up 2026-09-07 cutover. Confirm the exact target before running Convex commands.
 
 ## Module map
 

@@ -14,7 +14,7 @@
 | Vercel project    | `cfb`                          |
 | Production URL    | `https://cfb-hazel.vercel.app` |
 
-The 41-table source contract has not been deployed. Development retains the earlier 19-table contract and production the earlier 17-table foundation until a separately authorized migration. Do not run the following procedure without reconfirming the exact target and obtaining an immediate export.
+The 41-table source contract was deployed to development and production during the backed-up 2026-09-07 v2 cutover. Michigan data was migrated and reconciled; four retired physical table names remain visible but empty. The operation did not deploy the web application. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md). Do not repeat or extend the procedure without reconfirming the exact target and obtaining an immediate export.
 
 ## Migration rehearsal
 
