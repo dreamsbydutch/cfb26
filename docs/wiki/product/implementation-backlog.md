@@ -4,9 +4,9 @@
 
 ## Backlog contract
 
-**Planned — approved 2026-09-06:** This is the ordered delivery backlog for the [CFB26 system definition](system-definition.md). Work proceeds phase by phase because later contracts depend on identities and immutable historical boundaries established earlier.
+**Current source — implemented 2026-09-06:** This is the delivery record for the [CFB26 system definition](system-definition.md). All nine phases are represented in the checked-in source contract and local verification suite. The new schema has not been migrated to a hosted Convex deployment; the backed-up development cutover, production promotion, and deployment smoke checks remain separately authorized operational steps.
 
-This backlog is intentionally implementation-level but not a promise that a listed item has shipped. Move a work package to **Current** only in the change that delivers it, and update [Current contracts](../reference/current-contracts.md) at the same time.
+The acceptance tables retain the contract that shaped implementation. “Implemented” means the source, UI workflow, validation, and offline tests exist; it does not mean hosted data was destructively migrated or production was promoted.
 
 Every phase must:
 
@@ -21,17 +21,17 @@ Material import, merge, delete, rollover, and migration work additionally requir
 
 ## Phase map
 
-| Phase | Outcome                                     | Depends on                         |
-| ----: | ------------------------------------------- | ---------------------------------- |
-|     1 | New schema and controlled migration         | Approved system definition         |
-|     2 | Unified CFBD team/game layer                | Phase 1 identity/source boundaries |
-|     3 | Complete Michigan roster administration     | Phase 1 Player Season contract     |
-|     4 | Michigan player-game tracking and grades    | Phases 2–3                         |
-|     5 | Predictive ratings and frozen forecasts     | Phase 2                            |
-|     6 | Résumé, schedule, playoff, and ballot tools | Phase 5 editions                   |
-|     7 | Draft and Michigan-alumni NFL tracking      | Phases 1–2                         |
-|     8 | Operational hardening                       | All data-producing phases          |
-|     9 | Final UI redesign                           | Stable workflows and contracts     |
+| Phase | Outcome                                     | Source status                                     |
+| ----: | ------------------------------------------- | ------------------------------------------------- |
+|     1 | New schema and controlled migration         | Implemented; hosted cutover pending               |
+|     2 | Unified CFBD team/game layer                | Implemented                                       |
+|     3 | Complete Michigan roster administration     | Implemented                                       |
+|     4 | Michigan player-game tracking and grades    | Implemented                                       |
+|     5 | Predictive ratings and frozen forecasts     | Implemented                                       |
+|     6 | Résumé, schedule, playoff, and ballot tools | Implemented                                       |
+|     7 | Draft and Michigan-alumni NFL tracking      | Implemented                                       |
+|     8 | Operational hardening                       | Implemented locally; deployment rehearsal pending |
+|     9 | Final UI redesign                           | Implemented                                       |
 
 ## Phase 1 — Schema and controlled migration
 

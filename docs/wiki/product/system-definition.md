@@ -4,7 +4,7 @@
 
 ## Status and purpose
 
-**Planned — approved 2026-09-06:** CFB26 is a Michigan-first college football intelligence system. It joins Michigan recruiting, roster, development, game, departure, draft, and NFL-career history with national team, schedule, rating, résumé, playoff, and matchup analysis.
+**Current source — approved and implemented 2026-09-06:** CFB26 is a Michigan-first college football intelligence system. It joins Michigan recruiting, roster, development, game, departure, draft, and NFL-career history with national team, schedule, rating, résumé, playoff, and matchup analysis. Hosted migration and promotion remain separate operational work.
 
 This page is the canonical target product contract. It records approved behavior, not behavior already shipped. [Vision](vision.md) summarizes the destination and [Current contracts](../reference/current-contracts.md) inventories the application as it exists today. When the two differ, the current-contract page governs claims about shipped behavior and this page governs implementation direction.
 
@@ -109,7 +109,7 @@ CFB26 Player Grades use a 0–100 scale with one decimal place:
 
 Season grades are snap-weighted within each phase when snaps are known. Grades with unknown snaps remain separately summarized and are never quietly mixed into the weighted grade. Conventional CFBD player statistics appear separately from subjective CFB26 grades.
 
-PFF is outside the target product. Phase 1 will delete the existing PFF grades and associated snap data through a backed-up, controlled migration; remove `SnapCounts.json` and its preparation/import path; and remove PFF presentation. Nothing will be relabeled to hide its origin, and no future PFF copy/paste workflow will exist. [ADR 0011](../decisions/0011-replace-pff-data-with-cfb26-player-grades.md) records the decision.
+PFF is outside the product. Source no longer contains `SnapCounts.json`, the PFF preparation/import/read path, or PFF presentation. The controlled hosted migration explicitly deletes the legacy PFF rows after a verified backup; nothing is relabeled to hide its origin. [ADR 0011](../decisions/0011-replace-pff-data-with-cfb26-player-grades.md) records the decision.
 
 ## Public application
 

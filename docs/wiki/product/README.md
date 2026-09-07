@@ -1,6 +1,6 @@
 # Product
 
-Product documentation separates the approved CFB26 destination from the smaller application that is implemented today.
+Product documentation records the approved CFB26 system, its implemented source contract, and the still-separate hosted cutover.
 
 - [System definition](system-definition.md) — canonical approved scope, domain rules, data authority, retention, and non-goals.
 - [Implementation backlog](implementation-backlog.md) — ordered phases, work packages, dependencies, and exit criteria.

@@ -6,67 +6,48 @@
 
 ```mermaid
 flowchart LR
-  B[Browser] <--> T[TanStack Start server/client]
-  T --> R[TanStack Router]
-  R --> Q[React Query]
-  Q <--> CQC[ConvexQueryClient]
-  CQC <--> C[Convex deployment]
-  C --> DB[(Convex database)]
+  B[Browser] <--> T[TanStack Start]
+  T --> Q[React Query + Convex client]
+  Q <--> C[Convex functions]
+  C <--> D[(Normalized data)]
+  F[CFBD] --> C
+  N[nflverse] --> C
+  O[Single owner] --> B
 ```
 
-TanStack Start renders the React application and owns file-based routing. `getRouter()` creates a React Query client, connects it to `ConvexQueryClient`, and wraps the route tree in `ConvexProvider`. Components then use generated Convex references for typed reads and writes.
+TanStack Start owns routing and rendering. Convex owns validation, transactions, external synchronization, immutable publications, and real-time reads. There is no separate REST server.
 
-## Source-to-runtime boundaries
+## Request paths
 
-| Boundary             | Source                                       | Responsibility                                                                            |
-| -------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Build/runtime        | `vite.config.ts`                             | Composes Tailwind, path aliases, TanStack Start, Nitro, and React; dev port is 3000.      |
-| Router and providers | `src/router.tsx`                             | Creates the router, React Query cache, Convex client, preload policy, and default errors. |
-| Root document        | `src/routes/__root.tsx`                      | Defines HTML shell, global metadata/assets, stylesheet, scripts, and route outlet.        |
-| Route UI             | `src/routes/*.tsx`                           | Defines URL-addressable components and route-specific data use.                           |
-| Backend              | `convex/*.ts`                                | Defines database schema and server queries, mutations, and actions.                       |
-| Generated contracts  | `src/routeTree.gen.ts`, `convex/_generated/` | Carries generated route and backend types; never hand-edited.                             |
+### Public exploration
 
-## Current request paths
+1. `/` requests one bounded Michigan season dashboard and only fetches profiles/comparisons/grade/NFL detail needed by the selected view.
+2. `/games` requests one season/week edition dashboard; Résumé/SOS/playoff/team/matchup/ballot detail is loaded for its active tab.
+3. All evidence is normalized server-side. Historical views select stored edition cutoffs rather than recomputing with future facts.
 
-### Michigan personnel explorer
+### Owner workflow
 
-1. A browser requests `/`.
-2. The client-rendered index route makes one bounded `rosters.list` read for active players and paints the current depth chart.
-3. A commitment read plus position-specific departed reads hydrate in the background to work around the hosted function's 200-row cap, then the client deduplicates all 428 roster entries by player ID.
-4. Up to 12 concurrent `players.getProfile` reads progressively add recruiting, career, seasonal, movement, and draft details as players are discovered.
-5. `seasonalStats.listBySeason` reads one bounded 2015–2025 season and merges participants with zero-snap roster players.
-6. Search and the six views derive from the typed records without a separate REST layer or client data copy.
+1. `/admin/roster` exchanges `CFB26_ADMIN_KEY` for a random token. Only its hash, expiry, and revocation state are stored server-side.
+2. The UI sends the token to bounded owner queries and mutations.
+3. Player lifecycle, annual records, games, grades, identities, and gaps write transactionally.
+4. Imports and rollovers require a dry run/preview; import, rollover, merge, and delete require a verified backup manifest.
+5. Reactive public reads receive committed changes without a separate data copy.
 
-### Roster administration
+### Source synchronization
 
-1. A browser requests `/admin/roster` and reads the same bounded active roster plus the bounded canonical-program list.
-2. The owner chooses Edit, Add, or Remove and keeps the deployment key only in the page's React state.
-3. The selected `rosterAdmin` mutation verifies that key against the target Convex environment before reading data.
-4. `updatePlayer` changes current stint facts; `addPlayer` creates a complete normalized identity/profile/stint/summary/arrival lifecycle; `removePlayer` closes the stint and adds a departure without deleting history.
-5. Reactive public roster reads propagate the resulting active-roster and football-fact changes back to both routes.
+1. Direct CFBD/nflverse actions mark their source running.
+2. Valid rows upsert in bounded batches under stable keys; unresolved identities never create guessed people.
+3. Success records counts and freshness. Failure records the error and retains the last valid data.
+4. Edition publication checks core source readiness; optional enrichment may degrade without blocking.
 
-## Build and deployment path
+## Build/deployment
 
-```mermaid
-flowchart LR
-  G[Git commit] --> V[Vercel build]
-  V --> D[npx convex deploy]
-  D --> CB[Convex backend]
-  D --> W[npm run build]
-  W --> A[Web deployment]
-```
-
-`vercel.json` selects the `tanstack-start` framework preset and defines `npx convex deploy --cmd 'npm run build'`. The deployment needs credentials for the selected Convex project and must expose the resulting Convex URL to the web build. Nitro packages the web application for the Vercel runtime.
-
-Development has the prior 19-table percentile-composite model and the earlier roster-update function. Checked-in source adds the roster arrival/departure functions plus the 21-table immutable Power/Résumé edition contract, but both remain pending an authorized development push; production remains on the prior 17-table/function foundation until explicit promotion. The owner-confirmed Vercel project is `cfb`, and its production URL is `https://cfb-hazel.vercel.app`. A production redeploy containing the Nitro configuration and a successful smoke test are still required before the hosted web pipeline is considered verified.
+`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 41 tables and has not been synchronized to either recorded deployment. Any schema/data cutover follows the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
 
 ## Deliberate boundaries
 
-- There is no separate REST or Express server. Convex is the data/backend boundary.
-- There is no identity provider, user session, or roles layer. Three narrowly scoped roster mutations use the deployment-secret authorization in [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md).
-- There is no HTTP route module under `convex/http.ts`.
-- There is no separate design-system package, test package, monorepo, or shared library.
-- There is no service worker or offline data layer beyond the generated web manifest.
-
-Introduce a new boundary only when a product requirement cannot be served cleanly by the current stack, and record durable choices in an ADR.
+- Michigan is the only college player archive; NFL rows are retained only for confirmed Michigan alumni.
+- Direct source data and owner facts are separated from CFB26-derived editions.
+- Raw provider responses, play-by-play, and import payloads are transient.
+- Owner sessions are single-principal access, not a social/multi-role account system.
+- There is no public data API, betting layer, notification system, or native app.

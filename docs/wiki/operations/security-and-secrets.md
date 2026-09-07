@@ -2,64 +2,42 @@
 
 [Operations index](README.md) · [Wiki home](../README.md)
 
-## Current trust model
+## Trust model
 
-**Current:** no identity provider, user accounts, or sessions are configured. Football reads remain public. Development has the earlier roster-edit mutation protected by a server-side `CFB26_ADMIN_KEY`; checked-in source adds arrival/departure mutations but they have not been pushed. Every roster write fails closed while the key is absent. Production remains on the prior function set until explicit promotion.
+Football exploration is public and read-only. `/admin/roster` is private to one owner. The checked-in backend exchanges the deployment's high-entropy `CFB26_ADMIN_KEY` for a random 32-byte token, stores only its SHA-256 hash, expires it after 12 hours, and supports explicit revocation. Every owner function verifies the token server-side; browser route visibility is not authorization.
 
-Do not assume the hosted football data is safe for unrestricted access merely because no auth exists. Classify its ownership/privacy requirements before deploying public functions, and add identity/ownership checks before introducing private or user-specific data.
+This is intentionally a single-principal mechanism, not a user/role platform. It must not be extended to private multi-user records without a new identity and ownership design.
 
 ## Environment classes
 
-| Class                        | Example             | Exposure                      | Rule                                                                         |
-| ---------------------------- | ------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
-| Browser-public configuration | `VITE_CONVEX_URL`   | Bundled/readable by clients   | Never store secrets in `VITE_*`.                                             |
-| Local deployment metadata    | `CONVEX_DEPLOYMENT` | Developer machine/CLI         | Keep in ignored `.env.local`.                                                |
-| Deployment credential        | `CONVEX_DEPLOY_KEY` | Hosting build environment     | Store only as a protected secret.                                            |
-| Server integration secret    | `CFBD_API_KEY`      | Convex deployment environment | Access only from server functions that need it.                              |
-| Single-owner admin secret    | `CFB26_ADMIN_KEY`   | Convex deployment environment | Minimum 24 characters; never store under `VITE_*` or persist in the browser. |
+| Class                        | Example             | Rule                                                                  |
+| ---------------------------- | ------------------- | --------------------------------------------------------------------- |
+| Browser-public configuration | `VITE_CONVEX_URL`   | Bundled and readable; never contains a secret                         |
+| Local deployment metadata    | `CONVEX_DEPLOYMENT` | Keep in ignored local configuration                                   |
+| Deployment credential        | `CONVEX_DEPLOY_KEY` | Protected hosting secret only                                         |
+| Server integration secret    | `CFBD_API_KEY`      | Convex environment only                                               |
+| Owner password               | `CFB26_ADMIN_KEY`   | Convex environment only; minimum 24 characters, unique per deployment |
 
-`.env.example` documents names and non-secret placeholders. `.env` and `.env.local` are ignored. Check staged files before every publish.
-
-## Current single-owner roster gate
-
-Every exported mutation in `rosterAdmin.ts` compares an unguessable key against `CFB26_ADMIN_KEY` before reading or writing roster data. The admin page holds the entered value only in React state. Configure it interactively so the value is not placed in shell history:
+Configure secrets interactively after confirming the exact deployment:
 
 ```powershell
 npx convex env set CFB26_ADMIN_KEY
-npx convex dev --once
 ```
 
-Run those commands only after confirming the intended deployment; the push installs the checked-in functions and activates the changed typed environment. Use a different key per environment. Removing or leaving the variable unset disables all roster writes. The key requires at least 24 characters; each mutation validates and bounds its football fields, and none intentionally logs its arguments. See [ADR 0005](../decisions/0005-single-owner-roster-admin-key.md).
+Do not put values in arguments, source, documentation, fixtures, logs, screenshots, or `VITE_*` variables. `.env` and `.env.local` remain ignored.
 
-This mechanism is deliberately narrower than authentication: it identifies one shared operator credential, not a person. Do not use it for private data, multiple admins, audit attribution, or user-facing permissions.
+## Data protection
 
-## Future authentication and authorization requirements
+- Public functions return only the normalized football fields needed by the UI.
+- External actions do not persist raw payloads or log credentials.
+- Owner/session arguments are never intentionally logged.
+- Public and owner inputs are shape-validated and bounded.
+- Material Michigan operations require a verified backup; imports/rollovers require preview evidence.
+- Official editions, frozen forecasts, and submitted ballots are immutable.
+- Source failure retains prior good data rather than replacing it with an empty result.
 
-Before adding accounts or private records:
+## Release review
 
-1. Choose and document the identity provider.
-2. Define which routes/functions are public.
-3. Add stable ownership/tenant fields and indexes to the schema.
-4. Enforce identity and ownership in every relevant query and mutation; client-side hiding is not authorization.
-5. Define onboarding, session expiry, account deletion, and data-retention behavior.
-6. Add tests for cross-user/unauthenticated access.
-7. Record the durable architecture choice in an ADR.
+Before publishing, inspect tracked/staged files and history for secrets, run `npm run check`, verify absent/wrong/expired/revoked owner tokens fail, and ensure no internal mutation has become public accidentally. Use different owner/integration secrets in development and production.
 
-## Data and logging
-
-- Return only client-needed fields from public functions.
-- Do not log secrets, tokens, private records, or full third-party payloads.
-- Public reads and the roster mutations do not intentionally log player payloads or credentials.
-- Validate input shape and impose practical size/count limits at public boundaries.
-- Plan migrations and backups before destructive schema/data changes.
-
-## Dependency and supply-chain rules
-
-- Use the committed npm lockfile.
-- Review package purpose, maintenance, runtime boundary, and transitive impact before adding a dependency.
-- Avoid running unreviewed install scripts or copying secrets into command lines/output.
-- Treat vulnerability findings by exploitability and app exposure; document any accepted risk.
-
-## Reporting security work
-
-Never paste real credentials into issues, commits, documentation, or chat output. If a secret is exposed, stop using it, rotate it in the owning service, remove it from the published surface/history as appropriate, and document only the remediation—not the secret.
+If a secret is exposed, stop using it, rotate it in the owning service, remove it from published surfaces/history where required, and document only the remediation.

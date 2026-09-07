@@ -4,11 +4,11 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: first Michigan football vertical slice plus a national landscape foundation. `/` remains the Michigan roster explorer; `/games` exposes populated 2000–2026 schedules, one points-scale CFB26 Power ranking with Week 7 Résumé evidence, matchup-quality/playoff/Michigan game orders, optional TV outlets, and custom head-to-head matchups; `/admin/roster` limits in-season edits to jersey number, position, and depth placement while retaining recruit, transfer, walk-on, and departure workflows. The approved Michigan-first [system definition](docs/wiki/product/system-definition.md) and [nine-phase backlog](docs/wiki/product/implementation-backlog.md) are planned behavior; phase 1 has not begun.
+- Product status: all nine source phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented. `/` covers season rosters, roster intelligence, comparisons, grades, profiles, and alumni; `/games` covers schedules, Power, Résumé, quadrants/SOS, playoff projection, team profiles, matchups, and the blind ballot; `/admin/roster` covers owner lifecycle, season, game, identity, import, backup, rollover, rule, and health workflows.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
-- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Checked-in source now has the 21-table Power/Résumé edition contract, but it has not been pushed. Development still hosts the prior 19-table percentile-composite contract; production remains on the earlier 17-table, 47,774-document foundation until explicitly promoted.
+- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Checked-in source has the 41-table Michigan/national/NFL/operations contract and has not been pushed. Both hosted deployments retain their earlier contracts until a backed-up, exact-target migration and explicit promotion.
 - Canonical branch: `main`; remote: `origin`.
 
 Do not present placeholders, sample data, or proposed roadmap items as finished product behavior. The wiki labels facts as **Current**, **Planned**, or **Undecided**.
@@ -17,25 +17,27 @@ Do not present placeholders, sample data, or proposed roadmap items as finished 
 
 Run commands from the repository root.
 
-| Command                                                        | Use                                                                                  |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `npm install`                                                  | Install the locked dependency graph.                                                 |
-| `npm run dev`                                                  | Start Convex development and Vite together; requires a configured Convex deployment. |
-| `npm run dev:web`                                              | Start only Vite without synchronizing Convex source.                                 |
-| `npm run typecheck`                                            | Run strict TypeScript checks across `src/`, `convex/`, and Vite config.              |
-| `npm run lint`                                                 | Run type checking and the TanStack/Convex ESLint rules.                              |
-| `npm run build`                                                | Type-check and create the Nitro production output in `.output/`.                     |
-| `npm run start`                                                | Preview an existing Nitro production build; requires runtime environment values.     |
-| `npm run docs:check`                                           | Validate local links in maintained Markdown.                                         |
-| `npm run test:ratings`                                         | Run leakage, forecast-scoring, calibration, and model-selection tests.               |
-| `npm test`                                                     | Run the offline automated test suite.                                                |
-| `npm run test:cfbd`                                            | Run only CFBD client, audit, and health-probe tests.                                 |
-| `npm run cfbd:probe -- '<json>'`                               | Run the deployed read-only CFBD health canary with season/week arguments.            |
-| `npm run data:prepare-snaps -- <players.json> <programs.json>` | Prepare the ignored `seasonalPlayerStats` import from `SnapCounts.json`.             |
-| `npm run preview:find -- <owner/repo> <sha>`                   | Resolve a direct Vercel preview URL for one pushed commit.                           |
-| `npm run check`                                                | Run tests, lint, docs links, and the production build.                               |
-| `npm run format`                                               | Format the repository with Prettier; review the resulting diff.                      |
-| `npx convex dev --once`                                        | Push backend changes once and regenerate Convex types; requires a linked deployment. |
+| Command                                                    | Use                                                                                      |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `npm install`                                              | Install the locked dependency graph.                                                     |
+| `npm run dev`                                              | Start Convex development and Vite together; requires a configured Convex deployment.     |
+| `npm run dev:web`                                          | Start only Vite without synchronizing Convex source.                                     |
+| `npm run typecheck`                                        | Run strict TypeScript checks across `src/`, `convex/`, and Vite config.                  |
+| `npm run lint`                                             | Run type checking and the TanStack/Convex ESLint rules.                                  |
+| `npm run build`                                            | Type-check and create the Nitro production output in `.output/`.                         |
+| `npm run start`                                            | Preview an existing Nitro production build; requires runtime environment values.         |
+| `npm run docs:check`                                       | Validate local links in maintained Markdown.                                             |
+| `npm run test:ratings`                                     | Run leakage, forecast-scoring, calibration, and model-selection tests.                   |
+| `npm test`                                                 | Run the offline automated test suite.                                                    |
+| `npm run test:cfbd`                                        | Run only CFBD client, audit, and health-probe tests.                                     |
+| `npm run cfbd:probe -- '<json>'`                           | Run the deployed read-only CFBD health canary with season/week arguments.                |
+| `npm run migration:plan -- <legacy.json>`                  | Dry-run the legacy Michigan migration and report PFF deletion/unresolved identities.     |
+| `npm run migration:prepare -- <legacy.json> <directory>`   | Prepare non-overwriting v2 Michigan JSONL and a migration audit without writing Convex.  |
+| `npm run restore:prepare -- <backup.json> <new-directory>` | Verify a Michigan backup and prepare ordered JSONL restore files without writing Convex. |
+| `npm run preview:find -- <owner/repo> <sha>`               | Resolve a direct Vercel preview URL for one pushed commit.                               |
+| `npm run check`                                            | Run tests, lint, docs links, and the production build.                                   |
+| `npm run format`                                           | Format the repository with Prettier; review the resulting diff.                          |
+| `npx convex dev --once`                                    | Push backend changes once and regenerate Convex types; requires a linked deployment.     |
 
 Do not run deployment, commit, push, or other external-write commands unless the user requested that action.
 
@@ -53,7 +55,6 @@ Confirm the exact target before running `convex dev`, `convex deploy`, or a Verc
 |-- docs/wiki/            Detailed, indexed source of project knowledge
 |-- public/               Static files copied to the site root
 |-- scripts/              Deterministic repository helpers
-|-- SnapCounts.json       Raw 2015–2025 Michigan snap-count/PFF season source
 |-- src/
 |   |-- components/       Shared presentation and interaction primitives
 |   |-- features/         Domain UI and client-side data orchestration

@@ -2,13 +2,14 @@
 
 - Status: Accepted
 - Date: 2026-09-06
+- Implemented in source: 2026-09-06
 - Extends: [ADR 0002](0002-tiered-college-game-retention.md)
 
 ## Context
 
 The target system joins national college data, owner-maintained Michigan facts, derived CFB26 publications, and Michigan-alumni NFL data. Treating every source as equally authoritative would permit imports to overwrite owner corrections or derived outputs. Retaining every raw response would work against the $0 operating target, while overwriting official editions or forecasts would make historical claims irreproducible.
 
-The existing OpenSheet feeds add an avoidable intermediary over source data. Sports Reference and Football Reference scraping are not supported ingestion paths.
+The pre-v2 OpenSheet feeds added an avoidable intermediary over source data. Sports Reference and Football Reference scraping are not supported ingestion paths.
 
 ## Decision
 

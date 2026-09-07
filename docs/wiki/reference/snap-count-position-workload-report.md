@@ -1,6 +1,8 @@
-# Position workload from Michigan snap counts
+# Position workload from Michigan snap counts (legacy migration evidence)
 
 [Reference index](README.md) · [Wiki home](../README.md)
+
+**Historical, not current behavior:** this analysis is retained only to audit the intentionally deleted pre-v2 proprietary dataset. The source file and all ingestion/presentation paths are absent from the current product.
 
 ## Bottom line
 

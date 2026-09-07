@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-08-23
+- Amended: 2026-09-06 to exchange the secret for revocable sessions
 
 ## Context
 
@@ -9,16 +10,16 @@ The product needs one owner to maintain current football facts and record roster
 
 ## Decision
 
-Add narrowly scoped roster mutations protected by a high-entropy `CFB26_ADMIN_KEY` stored in the target Convex deployment environment. The admin enters the key for the current page session; the browser does not persist it. Convex compares it before any read or write and rejects every update when the environment variable is absent, too short, or different.
+Protect owner functions with a high-entropy `CFB26_ADMIN_KEY` stored in the target Convex deployment environment. The owner submits it only to `rosterAdmin.login`; Convex compares it in constant time, creates a random 32-byte token, stores only its SHA-256 hash, and expires it after 12 hours. The browser persists the token so a refresh does not require resending the password. Logout revokes the server session, and every owner function verifies expiry/revocation.
 
-The mutations remain within the canonical player lifecycle. One edits an existing stint's depth, eligibility, injury, and position facts. One creates the normalized identity, recruiting profile, active Michigan stint, zeroed career summary, and arrival event for a recruit, transfer, or walk-on. One closes an active stint and records a transfer, graduation, retirement, or dismissal without deleting player history. Public roster reads continue to expose these football facts so the roster UI can render them. This gate is for a single owner and does not establish user identity, roles, tenants, or private records.
+The protected functions remain within the canonical Michigan lifecycle and system operations: people/stints/seasons/games/evaluations/NFL gaps, imports, backups, rollover, identity repair, season rules, and health. Public reads expose the intended football facts. This gate identifies one owner principal and does not establish multiple identities, roles, tenants, or social accounts.
 
 ## Consequences
 
 - Each deployment needs its own key, configured outside tracked files and never under a `VITE_*` name.
-- Losing or rotating the key requires changing the Convex environment value; no recovery or session system exists in the app.
-- The mutations accept an unguessable credential argument. A future multi-user product must replace this gate with an identity provider and explicit role authorization rather than extending it into an account system.
-- Position history is capped at the latest 20 changes and injury state represents current public availability, not a medical record.
+- Losing or rotating the key requires changing the Convex environment value and using the owner control to revoke all existing sessions.
+- Owner functions accept a high-entropy session token, never the password. A future multi-user product must replace this gate with identity and explicit role authorization.
+- Session storage contains only the token; it remains sensitive and must never appear in logs or URLs.
 - A deployment receives neither new mutations nor its key until an explicit push/promotion.
 
 [Back to architecture decisions](README.md)

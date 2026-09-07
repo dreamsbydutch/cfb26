@@ -1,95 +1,63 @@
-# Deployment
+# Deployment and controlled migration
 
 [Guides index](README.md) · [Wiki home](../README.md)
 
-## Current deployment model
+## Recorded targets
 
-**Current:** the repository records the `dreamsbydutch:michigan` Convex development and production deployments below. The owner identified the attached Vercel project as `cfb` and its production domain as `https://cfb-hazel.vercel.app`; the domain returned Vercel `NOT_FOUND` before the Nitro deployment configuration was added and still requires a new production deployment and smoke check.
+| Item              | Value                          |
+| ----------------- | ------------------------------ |
+| GitHub repository | `dreamsbydutch/cfb26`          |
+| Canonical branch  | `main`                         |
+| Convex project    | `dreamsbydutch:michigan`       |
+| Development       | `adjoining-opossum-710`        |
+| Production        | `doting-chipmunk-7`            |
+| Vercel project    | `cfb`                          |
+| Production URL    | `https://cfb-hazel.vercel.app` |
 
-`vite.config.ts` registers Nitro after TanStack Start so a production build emits `.output/public` and `.output/server`. `vercel.json` selects the `tanstack-start` framework preset and configures this build command:
+The 41-table source contract has not been deployed. Development retains the earlier 19-table contract and production the earlier 17-table foundation until a separately authorized migration. Do not run the following procedure without reconfirming the exact target and obtaining an immediate export.
 
-```text
-npx convex deploy --cmd 'npm run build'
+## Migration rehearsal
+
+1. Export the target Michigan legacy tables (`players`, `recruitingProfiles`, `rosterStints`, `movementEvents`, `draftOutcomes`, and `seasonalPlayerStats`) into one ignored JSON object keyed by table name.
+2. Run `npm run migration:plan -- <legacy-export.json>`. Reconcile people, generated Player Seasons, draft outcomes, deleted PFF rows, and every unresolved record.
+3. Run `npm run migration:prepare -- <legacy-export.json> <new-directory> <current-season>`. It refuses to overwrite a directory and emits target JSONL plus a source fingerprint/report.
+4. Preserve both the raw export and prepared output outside the repository. Exercise restoration against a disposable development target.
+5. Review every `needs_review` Player Season. The converter repeats the last retained stint facts because the legacy model did not preserve annual changes; it never invents participation, starts, scholarship, honors, or owner grades.
+6. Only after reconciliation, schedule the exact-target cutover: clear incompatible legacy Michigan tables while the old schema is active, synchronize the new schema/functions, import the prepared target tables in relationship order, then run count and query verification. This is a maintenance operation and must not be combined with an unreviewed production web deployment.
+
+PFF rows are counted in the report but intentionally have no target dataset. The proprietary file and parser are absent from source. Orphaned lifecycle/draft identities remain in the report; do not create guessed canonical links.
+
+## Backup and restore
+
+The owner UI exports v2 Michigan datasets, computes a SHA-256 fingerprint over `{ schemaVersion, datasets }`, creates a server-side manifest, and downloads the fingerprinted envelope. Material imports, rollovers, merges, and deletes require that manifest.
+
+Prepare a backup without writing a deployment:
+
+```bash
+npm run restore:prepare -- path/to/cfb26-michigan.json path/to/new-restore-directory
 ```
 
-This sequence deploys the backend associated with the supplied Convex credentials and then builds the TanStack Start app against that deployment.
+The command rejects a modified envelope, unexpected/missing datasets, or an existing output directory. It emits ordered JSONL and `restore-manifest.json`. Restore only to a confirmed target after exporting its current state. Use the Convex CLI import mode appropriate to the installed CLI and rehearse replace behavior on development; inspect `npx convex import --help` rather than assuming production flags. After import, reconcile every manifest count, sampled relationship, Player Game summary, and profile before reopening owner writes.
 
-### Source alignment
+## Development-first release
 
-**Resolved 2026-08-22:** the checked-in nine-table schema and five public reads were push-validated in development and deployed to production. The owner authorized retiring the unrecovered internal legacy-import functions. Both environments were then populated with the same 921 seasonal rows and verified at 4,005 documents.
+1. Confirm the commit, development deployment, and intended data operation.
+2. Run `npm run check` and inspect the full diff for secrets/generated edits.
+3. Complete the migration rehearsal and verified target export when schema/data changes require it.
+4. Set `CFBD_API_KEY` and a unique `CFB26_ADMIN_KEY` in the development Convex environment through interactive secret input.
+5. Run `npx convex dev --once` only after the target is confirmed.
+6. Verify public reads, owner session rejection/expiry, one reversible owner workflow, source staleness, official publication readiness, and data counts.
+7. Run direct CFBD and nflverse syncs in bounded slices; inspect rejected identities and last-valid preservation.
+8. Build and smoke-test `/`, `/games`, and `/admin/roster` at narrow and wide widths.
+9. Promote production only under separate authorization, using a fresh production export and the same reconciliation gates.
 
-**Resolved 2026-08-23:** the checked-in 17-table national-data contract and its scheduled sync functions were deployed to `doting-chipmunk-7`. The three OpenSheet feeds and restartable 2000–2026 CFBD backfill were run in production, bringing both Convex environments to 47,774 documents with matching aggregate table counts. A live production dashboard read returned 142 games and 136 ratings for 2025 Week 1.
+`vercel.json` runs `npx convex deploy --cmd 'npm run build'`. A failed Convex step means the web release is not releasable. Preview publication follows the [$preview-pr workflow](preview-pull-request.md) and never authorizes production.
 
-**Current checked-in source, 2026-09-02:** development still hosts the 19-table percentile-composite contract, 2000–2026 composite snapshots, 2025–2026 advanced inputs, and the earlier deployment-key-gated roster-update mutation. Checked-in source adds complete arrival/departure mutations plus the 21-table immutable Power/Résumé edition contract and revised nightly/weekly jobs; none has been pushed. The development admin key is intentionally not configured yet, so writes fail closed. Production intentionally remains at the resolved 17-table state above. Promotion must first push/verify the complete development function set, build and inspect a development rating edition, configure a distinct production admin key if roster writes are wanted, and smoke-test Power/Résumé rankings, matchup reads, edition selection, and roster authorization before the web app targets production.
+## Rollback
 
-Later backend changes still follow development-first validation. A URL alone is not permission to overwrite backend configuration; confirm the exact environment and operation before synchronization.
+- Application rollback deploys a known-good commit through the same pipeline.
+- Data rollback restores the verified pre-operation export to the exact target and reconciles counts before traffic/writes resume.
+- Never patch generated files or hand-edit production documents as a substitute for a controlled restore.
+- If the web build fails after a backend change, first determine backward compatibility; do not blindly deploy an older schema over migrated data.
 
-### Seasonal-data refresh
-
-`SnapCounts.json` is the tracked source for the hosted `seasonalPlayerStats` table. To refresh it, roll out one environment at a time:
-
-1. Export all target `players` and `programs` documents as JSON arrays into ignored `.tmp/players.json` and `.tmp/programs.json` files.
-2. Run `npm run data:prepare-snaps -- .tmp/players.json .tmp/programs.json`.
-3. Confirm the preparation report says 921 rows and review its linked/source-only counts for that target.
-4. Push the schema and functions to development with `npx convex dev --once`; deploy production only after development verification.
-5. Import `.tmp/seasonal-player-stats.json` into `seasonalPlayerStats` with `npx convex import --table seasonalPlayerStats --replace .tmp/seasonal-player-stats.json` against the same explicit deployment.
-6. Verify 921 table rows, all 11 season counts, `seasonalStats.listBySeason`, linked player profiles, and source-only names before considering another environment.
-
-`--replace` is intentional because the preparation output is a complete deterministic table snapshot. Never reuse a generated file across deployments unless their player/program IDs were verified identical immediately before import.
-
-## Attach local development to Convex
-
-1. Obtain the exact Convex deployment URL and confirm which project/deployment it represents.
-2. Put the URL in untracked `.env.local` as `VITE_CONVEX_URL` when overriding the development fallback.
-3. Run `npm run dev:web` for web-only work or `npm run dev` when authenticated development synchronization is intended.
-4. Visit `/`, confirm 428 players and 109 recorded NFL entries load, exercise every view, search, and a player profile.
-
-To install the checked-in roster functions and enable writes in the confirmed development deployment, run `npx convex env set CFB26_ADMIN_KEY` without a value so the CLI prompts for a secret of at least 24 characters, then run `npx convex dev --once`. Visit `/admin/roster`, enter the same key, and make a reviewed reversible edit. Record arrivals/departures only for real reviewed roster moves because those workflows intentionally create durable history. Leaving the variable unset disables every write.
-
-A URL connects the browser. CLI authentication/deployment selection is additionally required to push schema and function changes.
-
-## Configure a Vercel project
-
-The production project must provide the Convex deployment credential expected by `npx convex deploy` (normally a `CONVEX_DEPLOY_KEY`) as a protected environment value. Confirm that the web build receives the matching public `VITE_CONVEX_URL`; the Convex deployment command can coordinate this value for its child build.
-
-Never place deploy keys in `.env.example`, `vercel.json`, GitHub, client code, or a `VITE_*` variable.
-
-## Preview deployments
-
-The [`$preview-pr` workflow](preview-pull-request.md) publishes completed agent work on a new `preview/*` branch. The Vercel GitHub integration is expected to build the pushed commit and report a GitHub deployment with a direct `environment_url`. The workflow binds the PR to that exact SHA, smoke-tests the URL, and keeps the PR draft if deployment cannot be proven.
-
-Preview publishing does not authorize or trigger a production promotion. If the Vercel project is configured to deploy only after a PR event, the workflow uses a single draft PR as the trigger and marks it ready only after success.
-
-## Release procedure
-
-1. Confirm the target Git commit, Convex deployment, and Vercel project/environment.
-2. Run `npm run check` locally.
-3. If backend code changed, run `npx convex dev --once` against the intended non-production environment first.
-4. Review the diff and confirm no secrets/local environment files are tracked.
-5. Commit and push only when authorized.
-6. Trigger or observe the Vercel build.
-7. Verify the Convex deploy step and both client/server build bundles.
-8. Smoke-test `/`, all six roster views, search, a linked player profile, a zero-snap season row, and a source-only season row. For rating changes, also smoke-test `/games` weekly importance, one alternate ranking perspective, and a two-team matchup. For roster-admin changes, verify an absent/wrong key is rejected, then use the target environment's key to edit and restore a reviewed player field. Confirm the Add and Remove workspaces render their source/reason-specific fields; execute them only for real reviewed moves because the lifecycle history is durable.
-9. Record the production URL and ownership here once a project is attached.
-
-## Failure and rollback
-
-- If Convex deployment fails, the web build should not be treated as releasable. Fix the schema/function/configuration error and rerun the same commit.
-- If the web build fails after Convex deploy, determine whether the backend change is backward compatible before retrying or rolling back.
-- Roll back by deploying a known-good commit through the same pipeline; do not manually edit generated files or production data as a substitute.
-- Data migrations require their own forward/rollback plan before execution. No migration framework exists today.
-
-## Deployment record
-
-| Item                     | Value                                                                                                                                                                                                             |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub repository        | `dreamsbydutch/cfb26`                                                                                                                                                                                             |
-| Default branch           | `main`                                                                                                                                                                                                            |
-| Convex project           | `dreamsbydutch:michigan`                                                                                                                                                                                          |
-| Development deployment   | `https://adjoining-opossum-710.convex.cloud`                                                                                                                                                                      |
-| Production deployment    | `https://doting-chipmunk-7.convex.cloud`                                                                                                                                                                          |
-| Production data mirror   | 2026-08-23; 17 tables and 47,774 documents, aggregate counts verified against development                                                                                                                         |
-| Seasonal data extension  | 921 rows: 708 linked to canonical players and 213 preserved as source-only records                                                                                                                                |
-| Backend source alignment | **Partial:** development has the 19-table composite model and earlier roster update; checked-in roster and 21-table Power/Résumé functions need a development push; production remains on the 17-table foundation |
-| Vercel project           | `cfb` (owner-confirmed; Vercel project/team IDs remain untracked)                                                                                                                                                 |
-| Production URL           | `https://cfb-hazel.vercel.app` (owner-confirmed; Nitro redeploy and smoke check pending)                                                                                                                          |
+Record the commit, source fingerprints, counts, operation timestamps, direct URLs, and smoke results after every hosted cutover.

@@ -2,10 +2,11 @@
 
 - Status: Accepted
 - Date: 2026-09-06
+- Implemented in source: 2026-09-06; hosted data migration pending exact-target authorization
 
 ## Context
 
-The current repository stores a manually assembled `SnapCounts.json` source, PFF season grades, associated season snaps, and a PFF-specific preparation/import/read path. The source has incomplete identity coverage, combines proprietary grades with participation data, and cannot support the intended owner-entered game-by-game workflow. Relabeling those values would erase provenance rather than create a CFB26 measure.
+The pre-v2 repository stored a manually assembled `SnapCounts.json` source, PFF season grades, associated season snaps, and a PFF-specific preparation/import/read path. The source had incomplete identity coverage, combined proprietary grades with participation data, and could not support the intended owner-entered game-by-game workflow. Relabeling those values would erase provenance rather than create a CFB26 measure.
 
 The owner needs to record subjective grades and participation independently for offense, defense, and special teams while preserving the difference between a confirmed zero and unknown coverage.
 
@@ -20,7 +21,7 @@ Grades use 0–100 with one decimal place. Phase season grades are weighted only
 ## Consequences
 
 - The PFF deletion is intentionally destructive and cannot run until a Michigan export and restore have been verified against the exact target environment.
-- Historical workload reports remain repository history until phase 1; after removal, documentation must not present their source as an active product contract.
+- Historical workload reports remain migration evidence and are explicitly labeled as retired behavior.
 - Player-game entry and imports need validation for range, precision, uniqueness, zero/null semantics, and identity resolution.
 - Public views must label the measure exactly as CFB26 Player Grades and expose incomplete coverage.
 - CFB26 Player Grades never become inputs to national Power.

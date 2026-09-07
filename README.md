@@ -1,8 +1,10 @@
 # cfb26
 
-`cfb26` is a Michigan football personnel and national landscape explorer built with TanStack Start and Convex. Today it presents the current depth chart, recruiting and draft classes, legacy 2015–2025 snap/PFF data, one points-scale CFB26 Power ranking with supporting evidence, weekly game orders, optional TV outlets, and custom head-to-head matchups.
+`cfb26` is a Michigan-first college football intelligence system built with React, TanStack Start, and Convex. The checked-in application covers Michigan player lifecycles, season rosters, game participation and CFB26 Player Grades; national programs, schedules, ratings, résumés, playoff projections, and matchups; an identity-blind all-FBS owner ballot; and Michigan-alumni NFL tracking.
 
-The approved destination is a Michigan-first college football intelligence system with public read-only exploration, private single-owner administration, owner-authored CFB26 Player Grades, national Power/Résumé/playoff tools, and Michigan-alumni NFL tracking. Phase 1 will remove PFF and OpenSheet dependencies through a controlled migration; those changes are not implemented yet.
+The public app is read-only. `/admin/roster` is a private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
+
+The new source contract has not been promoted to either recorded Convex deployment. Hosted migration, development synchronization, production promotion, and smoke testing remain explicit target-specific operations; see [Deployment](docs/wiki/guides/deployment.md).
 
 ## Quick start
 
@@ -13,40 +15,44 @@ npm install
 npm run dev:web
 ```
 
-The browser defaults to the public Michigan development deployment. Set `VITE_CONVEX_URL` in an ignored `.env.local` only to use another compatible deployment. Use `npm run dev` when authenticated Convex source synchronization is intended. See [Deployment](docs/wiki/guides/deployment.md).
+The browser needs a compatible `VITE_CONVEX_URL` in an ignored `.env.local`. Use `npm run dev` only when synchronizing against the confirmed development deployment is intended.
 
-## Roster administration
+## Owner administration
 
-`/admin/roster` separates three active-roster tasks: maintain depth/eligibility/availability, add a recruit/transfer/walk-on with a complete arrival record, or close a Michigan stint with a recorded departure. Additions create the canonical player, recruiting profile, roster stint, career summary, and arrival event atomically; removals retain player history. Writes are disabled until the selected Convex deployment has the checked-in functions and a high-entropy key:
+Set a unique high-entropy owner secret in the selected Convex deployment. The browser exchanges it for a revocable 12-hour session; the password is never stored in browser state.
 
 ```powershell
 npx convex env set CFB26_ADMIN_KEY
-npx convex dev --once
 ```
 
-The first command prompts for the value so it does not enter shell history; the second pushes the checked-in functions and activates the changed typed environment. Confirm the intended development deployment before running either command. Enter that same value on the admin page. Keep it out of tracked files and `VITE_*` variables; use a different value for each deployment.
+Never place that value in source, shell arguments, or a `VITE_*` variable. Confirm the exact deployment before any Convex command.
+
+Material import, rollover, merge, or deletion requires an owner-generated Michigan backup manifest. Prepare a downloaded backup for a controlled restore with:
+
+```bash
+npm run restore:prepare -- path/to/backup.json path/to/new-restore-directory
+```
+
+The command verifies the backup fingerprint and writes ordered JSONL datasets without changing Convex.
 
 ## Common commands
 
 ```bash
-npm test            # Offline automated tests
-npm run test:cfbd   # CFBD contracts and data integrity
-npm run test:ratings # Rating backtest and calibration contracts
-npm run typecheck   # TypeScript
-npm run lint        # TypeScript + ESLint
-npm run build       # Production bundles
-npm run docs:check  # Local Markdown links
-npm run check       # Full local quality gate
+npm test             # Offline automated tests
+npm run test:cfbd    # CFBD contracts and integrity
+npm run test:ratings # Rating leakage/calibration/model gates
+npm run typecheck    # Strict TypeScript
+npm run lint         # TypeScript and ESLint
+npm run build        # Production bundle
+npm run docs:check   # Maintained Markdown links
+npm run check        # Full local quality gate
 ```
 
 ## Documentation
 
-- [Agent guide](AGENTS.md) — commands, repository rules, structure, and completion criteria.
-- [Wiki home](docs/wiki/README.md) — product status, architecture, workflows, operations, and reference material.
-- [System definition](docs/wiki/product/system-definition.md) — approved scope, domain rules, data authority, and non-goals.
-- [Implementation backlog](docs/wiki/product/implementation-backlog.md) — ordered phases, work packages, and exit criteria.
-- [Local development](docs/wiki/guides/local-development.md) — setup and everyday workflows.
-- [Deployment](docs/wiki/guides/deployment.md) — Convex and Vercel configuration.
-- [Product vision](docs/wiki/product/vision.md) — concise end goal and delivery status.
-
-Backend contributors should also read [convex/README.md](convex/README.md). Repository-specific agent workflows live under [.agents/skills](.agents/skills).
+- [Agent guide](AGENTS.md) — operating rules and repository structure.
+- [Wiki home](docs/wiki/README.md) — current status and durable documentation.
+- [System definition](docs/wiki/product/system-definition.md) — scope, invariants, and non-goals.
+- [Implementation backlog](docs/wiki/product/implementation-backlog.md) — the nine implemented source phases and hosted cutover boundary.
+- [Deployment](docs/wiki/guides/deployment.md) — migration, Convex, Vercel, rollback, and smoke checks.
+- [Backend contract](convex/README.md) — tables, modules, source ownership, and server rules.

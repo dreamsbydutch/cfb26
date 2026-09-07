@@ -1,10 +1,12 @@
-# Michigan player data interpretation report
+# Michigan player data interpretation report (legacy migration evidence)
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
+**Historical, not current behavior:** this report describes the retired pre-v2 dataset so migration counts and provenance remain auditable. The proprietary source file, tables, parser, and UI are removed from the current source contract. Do not use this page as an ingestion or presentation guide.
+
 ## Bottom line
 
-**Current hosted data (verified 2026-08-22):** the Michigan data is a person-centered roster lifecycle ledger plus season participation history. Its 4,005 documents describe 428 canonical players across start seasons 2015–2027 and 921 Michigan player-season records from 2015–2025.
+**Historical hosted snapshot (verified 2026-08-22):** the Michigan data was a person-centered roster lifecycle ledger plus season participation history. Its 4,005 documents described 428 canonical players across start seasons 2015–2027 and 921 Michigan player-season records from 2015–2025.
 
 `SnapCounts.json` is the tracked source for the hosted `seasonalPlayerStats` table. The import preserves every row, links 708 rows to canonical player IDs, and retains 213 rows under 113 source-only names where the lifecycle database has no safe canonical match.
 
