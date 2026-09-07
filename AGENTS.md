@@ -4,11 +4,11 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: all nine backend/source phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented. `/` is Matrix-first, with the Workbench retained as its overview alternative plus roster intelligence, player quick views, and four-player comparison; the broader Michigan feature replacement remains in review. `/games` covers complete-field schedules and Power rankings, Résumé, quadrants/SOS, playoff projection, team profiles, matchups, and the blind ballot; `/admin/roster` covers owner lifecycle, season, game, identity, import, backup, rollover, rule, and health workflows.
+- Product status: all nine phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented in source. `/` is the Michigan Matrix, with route-backed Overview, Movement, Alumni, player intelligence, and four-player comparison. `/games` leads the route-backed National Games, Power, Résumé, Playoff, Teams, Simulator, Blind Ballot, and Methodology areas. `/admin/roster` leads the desktop Owner Dashboard, Roster, Season, Data, and Operations workflows.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
-- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Both hosted deployments run the checked-in 41-table Michigan/national/NFL/operations contract after the backed-up 2026-09-07 cutover. Four retired physical table names remain visible but empty. No web deployment was part of that operation.
+- Convex environments: development is `adjoining-opossum-710`; production is `doting-chipmunk-7`. Both hosted deployments still run the 41-table contract from the backed-up 2026-09-07 cutover. Source now defines 43 tables by adding Michigan data revisions and owner audit events; that delta and its manifest-retirement migration are not hosted until separately authorized. Four retired physical table names remain visible but empty. No web deployment was part of the cutover.
 - Canonical branch: `main`; remote: `origin`.
 
 Do not present placeholders, sample data, or proposed roadmap items as finished product behavior. The wiki labels facts as **Current**, **Planned**, or **Undecided**.

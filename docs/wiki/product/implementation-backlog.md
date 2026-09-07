@@ -21,17 +21,17 @@ Material import, merge, delete, rollover, and migration work additionally requir
 
 ## Phase map
 
-| Phase | Outcome                                     | Source status                                           |
-| ----: | ------------------------------------------- | ------------------------------------------------------- |
-|     1 | New schema and controlled migration         | Implemented; hosted cutover complete                    |
-|     2 | Unified CFBD team/game layer                | Implemented                                             |
-|     3 | Complete Michigan roster administration     | Implemented                                             |
-|     4 | Michigan player-game tracking and grades    | Implemented                                             |
-|     5 | Predictive ratings and frozen forecasts     | Implemented                                             |
-|     6 | Résumé, schedule, playoff, and ballot tools | Implemented                                             |
-|     7 | Draft and Michigan-alumni NFL tracking      | Implemented                                             |
-|     8 | Operational hardening                       | Implemented; cutover verified, restore drill pending    |
-|     9 | Final UI redesign                           | Replacement prototypes active; direction pending review |
+| Phase | Outcome                                     | Source status                                        |
+| ----: | ------------------------------------------- | ---------------------------------------------------- |
+|     1 | New schema and controlled migration         | Implemented; hosted cutover complete                 |
+|     2 | Unified CFBD team/game layer                | Implemented                                          |
+|     3 | Complete Michigan roster administration     | Implemented                                          |
+|     4 | Michigan player-game tracking and grades    | Implemented                                          |
+|     5 | Predictive ratings and frozen forecasts     | Implemented                                          |
+|     6 | Résumé, schedule, playoff, and ballot tools | Implemented                                          |
+|     7 | Draft and Michigan-alumni NFL tracking      | Implemented                                          |
+|     8 | Operational hardening                       | Implemented; cutover verified, restore drill pending |
+|     9 | Final UI redesign                           | Implemented in source; deployment pending            |
 
 ## Phase 1 — Schema and controlled migration
 

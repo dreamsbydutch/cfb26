@@ -22,7 +22,7 @@ TanStack Start owns routing and rendering. Convex owns validation, transactions,
 ### Public exploration
 
 1. `/` requests one bounded Michigan season dashboard and only fetches profiles/comparisons/grade/NFL detail needed by the selected view.
-2. `/games` requests one season/week edition dashboard; Résumé/SOS/playoff/team/matchup/ballot detail is loaded for its active tab.
+2. `/games` and `/national/*` request one season/week edition dashboard; Résumé/SOS/playoff/team/matchup/ballot detail is rendered on its canonical route.
 3. All evidence is normalized server-side. Historical views select stored edition cutoffs rather than recomputing with future facts.
 
 ### Owner workflow
@@ -30,8 +30,9 @@ TanStack Start owns routing and rendering. Convex owns validation, transactions,
 1. `/admin/roster` exchanges `CFB26_ADMIN_KEY` for a random token. Only its hash, expiry, and revocation state are stored server-side.
 2. The UI sends the token to bounded owner queries and mutations.
 3. Player lifecycle, annual records, games, grades, identities, and gaps write transactionally.
-4. Imports and rollovers require a dry run/preview; import, rollover, merge, and delete require a verified backup manifest.
-5. Reactive public reads receive committed changes without a separate data copy.
+4. Imports and rollovers require a dry run/preview; import, rollover, merge, and delete require a manifest for the current Michigan data revision.
+5. Every consequential Michigan mutation advances that revision and appends a durable owner audit event in the same transaction.
+6. Reactive public reads receive committed changes without a separate data copy.
 
 ### Source synchronization
 
@@ -42,7 +43,7 @@ TanStack Start owns routing and rendering. Convex owns validation, transactions,
 
 ## Build/deployment
 
-`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 41 tables and matches both recorded Convex deployments after the 2026-09-07 backed-up cutover. That operation deployed only Convex; it did not run a Vercel/web release. Future schema/data changes still follow the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
+`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 43 tables; the two additions hold Michigan revision and owner audit state. Both recorded deployments still run the 41-table contract from the 2026-09-07 backed-up cutover. The source delta and web release remain separately authorized operations under the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
 
 ## Deliberate boundaries
 

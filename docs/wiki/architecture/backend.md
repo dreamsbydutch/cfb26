@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 41 tables and 103 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 43 tables and 104 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -17,7 +17,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 | National college    | programs, aliases, historical affiliations/venues, compact games from 2000, rolling five-year detailed features, season context, drafts, and external polls           |
 | Derived CFB26       | immutable edition metadata/snapshots, frozen forecasts, deterministic playoff projections, and one owner ballot per season/week                                       |
 | Michigan alumni NFL | confirmed nflverse identities, weekly roster states, games, phase snaps, conventional statistics, and season summaries                                                |
-| Operations          | owner sessions, backup manifests, operation runs, and overwrite-oriented sync state                                                                                   |
+| Operations          | owner sessions, revision-bound backup manifests, operation runs, owner audit events, Michigan revision state, and overwrite-oriented sync state                       |
 
 Owner facts and corrections are mutable current values. Historical games, official editions, frozen forecasts, submitted ballots, Michigan Player Games, and alumni NFL history are retained. Raw API responses and import payloads are not stored.
 
@@ -27,7 +27,7 @@ Owner facts and corrections are mutable current values. Historical games, offici
 CFBD ──────> validated adapter ──> bounded sync batches ──> national tables
                                                         └─> Power/Résumé editions
 nflverse ──> CSV adapter ───────> confirmed alumni only ─> NFL history
-owner ─────> 12-hour session ───> transactional mutations > Michigan tables
+owner ─────> 12-hour session ───> transactional mutations > Michigan tables + revision/audit
 public UI <────────────────────── bounded indexed queries <─┘
 ```
 
@@ -40,7 +40,9 @@ Sync state is set to running before an external request and succeeded/failed aft
 - `0` snaps means confirmed no participation; `null` means unknown. A grade with explicit zero snaps is rejected.
 - Season grade summaries weight only grades with known positive snaps. Unknown-snap grades remain separate coverage.
 - Provider identities are never guessed. Ambiguous source records enter the owner queue.
-- Material import, rollover, merge, and delete require an existing backup manifest and run transactionally.
+- Consequential Michigan owner writes advance one monotonic data revision and append an actor/session/action/target/result audit event in the same transaction.
+- Material import, rollover, merge, and delete require a backup manifest matching the current revision and run transactionally.
+- Version-3 backup fingerprints include the Michigan revision. The offline restore preparer remains compatible with version 2.
 - Official editions, frozen forecasts, and submitted ballots are not overwritten.
 - National reads and syncs are bounded; growing tables use indexes and batch sizes.
 
@@ -48,7 +50,7 @@ Sync state is set to running before an external request and succeeded/failed aft
 
 The source authority is CFBD for national college facts, nflverse for Michigan-alumni NFL performance, the owner for Michigan-specific facts/corrections, and CFB26 for derived outputs. OpenSheet and PFF paths are absent.
 
-The 41-table source model was synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` on 2026-09-07. The backed-up migration reconciled Michigan v2 counts with zero unresolved identities and passed representative public-read smoke checks. Four retired physical table names remain visible but empty. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md).
+The 41-table model was synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` on 2026-09-07. The backed-up migration reconciled Michigan v2 counts with zero unresolved identities and passed representative public-read smoke checks. Source now adds two tables plus a stateful migration that audits and removes unversioned server-side backup manifests; this 43-table delta is not hosted until separately authorized. Downloaded backups are untouched. Four retired physical table names remain visible but empty. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md).
 
 ## Development loop
 

@@ -32,7 +32,7 @@ For user-facing changes, inspect at least:
 - Console/server output for new errors.
 - Live Convex behavior when the feature reads or writes data.
 
-The current smoke surface includes `/`: all six roster views, search, one player drawer, and narrow/wide layouts. Rating changes additionally require `/games` at narrow and wide widths, pre-Week-7 Power-only behavior, post-Week-7 Power/Résumé comparison, edition metadata, and one matchup at each venue mode.
+The current smoke surface includes `/`, `/michigan/overview`, one player route, comparison, global search, and narrow/wide public layouts. National changes additionally require `/games`, `/national/power`, pre-Week-7 `/national/resume`, one team profile, methodology metadata, and one simulator matchup at each venue mode. Owner changes require the sub-1024 boundary plus Dashboard, Roster/player, Season grid, Data, and Operations at desktop width.
 
 ## Diff hygiene
 

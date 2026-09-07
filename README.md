@@ -2,9 +2,9 @@
 
 `cfb26` is the source repository for DbyD CFB, a Michigan-first college football intelligence system built with React, TanStack Start, and Convex. The checked-in application covers Michigan player lifecycles, season rosters, game participation and DbyD Player Grades; national programs, schedules, ratings, résumés, playoff projections, and matchups; an identity-blind all-FBS owner ballot; and Michigan-alumni NFL tracking.
 
-The public app is read-only. `/admin/roster` is a private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
+The public app is read-only. `/` opens the Michigan Matrix and `/games` opens National Games; their companion views use canonical routes rather than an in-page prototype switcher. `/admin/roster` is a desktop-only, private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, audit, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
 
-The 41-table source contract was promoted to development and production through a backed-up, exact-target cutover on 2026-09-07. The operation did not deploy the web application. See [Deployment](docs/wiki/guides/deployment.md) and the [cutover record](docs/wiki/operations/convex-v2-cutover-2026-09-07.md).
+The 41-table contract was promoted to development and production through a backed-up, exact-target cutover on 2026-09-07. Current source defines 43 tables by adding Michigan data revision and owner audit state; those additions and the new web application remain undeployed until separately authorized. See [Deployment](docs/wiki/guides/deployment.md) and the [cutover record](docs/wiki/operations/convex-v2-cutover-2026-09-07.md).
 
 ## Quick start
 
@@ -27,7 +27,7 @@ npx convex env set CFB26_ADMIN_KEY
 
 Never place that value in source, shell arguments, or a `VITE_*` variable. Confirm the exact deployment before any Convex command.
 
-Material import, rollover, merge, or deletion requires an owner-generated Michigan backup manifest. Prepare a downloaded backup for a controlled restore with:
+Material import, rollover, merge, or deletion requires an owner-generated manifest for the current Michigan data revision. New downloads use backup schema version 3; the restore preparer also accepts earlier version-2 downloads.
 
 ```bash
 npm run restore:prepare -- path/to/backup.json path/to/new-restore-directory

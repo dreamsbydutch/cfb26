@@ -14,7 +14,7 @@
 | Vercel project    | `cfb`                          |
 | Production URL    | `https://cfb-hazel.vercel.app` |
 
-The 41-table source contract was deployed to development and production during the backed-up 2026-09-07 v2 cutover. Michigan data was migrated and reconciled; four retired physical table names remain visible but empty. The operation did not deploy the web application. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md). Do not repeat or extend the procedure without reconfirming the exact target and obtaining an immediate export.
+The 41-table contract was deployed to development and production during the backed-up 2026-09-07 v2 cutover. Michigan data was migrated and reconciled; four retired physical table names remain visible but empty. Current source adds Michigan revision and owner-audit tables plus a manifest-retirement migration, but that 43-table delta and the web UI are not yet hosted. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md). Do not extend the deployment without reconfirming the exact target and obtaining an immediate export.
 
 ## Migration rehearsal
 
@@ -29,7 +29,7 @@ PFF rows are counted in the report but intentionally have no target dataset. The
 
 ## Backup and restore
 
-The owner UI exports v2 Michigan datasets, computes a SHA-256 fingerprint over `{ schemaVersion, datasets }`, creates a server-side manifest, and downloads the fingerprinted envelope. Material imports, rollovers, merges, and deletes require that manifest.
+The owner UI exports version-3 Michigan datasets, computes a SHA-256 fingerprint over `{ dataRevision, datasets, schemaVersion }`, creates a server-side manifest for that exact revision, and downloads the fingerprinted envelope. Material imports, rollovers, merges, and deletes reject stale or pre-revision manifests. The preparer remains compatible with previously downloaded version-2 envelopes.
 
 Prepare a backup without writing a deployment:
 
@@ -37,13 +37,13 @@ Prepare a backup without writing a deployment:
 npm run restore:prepare -- path/to/cfb26-michigan.json path/to/new-restore-directory
 ```
 
-The command rejects a modified envelope, unexpected/missing datasets, or an existing output directory. It emits ordered JSONL and `restore-manifest.json`. Restore only to a confirmed target after exporting its current state. Use the Convex CLI import mode appropriate to the installed CLI and rehearse replace behavior on development; inspect `npx convex import --help` rather than assuming production flags. After import, reconcile every manifest count, sampled relationship, Player Game summary, and profile before reopening owner writes.
+The command rejects a modified envelope, a version-3 envelope without an integer data revision, unexpected/missing datasets, or an existing output directory. It emits ordered JSONL and `restore-manifest.json`. Restore only to a confirmed target after exporting its current state. Use the Convex CLI import mode appropriate to the installed CLI and rehearse replace behavior on development; inspect `npx convex import --help` rather than assuming production flags. After import, reconcile every manifest count, sampled relationship, Player Game summary, and profile before reopening owner writes.
 
 ## Development-first release
 
 1. Confirm the commit, development deployment, and intended data operation.
 2. Run `npm run check` and inspect the full diff for secrets/generated edits.
-3. Complete the migration rehearsal and verified target export when schema/data changes require it.
+3. Complete the migration rehearsal and verified target export when schema/data changes require it. For the revision cutover, deploy optional `backupManifests.dataRevision`, run `migrations:run` to audit/remove old server manifests, verify no unversioned manifests remain, then tighten only in a later reviewed source change.
 4. Set `CFBD_API_KEY` and a unique `CFB26_ADMIN_KEY` in the development Convex environment through interactive secret input.
 5. Run `npx convex dev --once` only after the target is confirmed.
 6. Verify public reads, owner session rejection/expiry, one reversible owner workflow, source staleness, official publication readiness, and data counts.

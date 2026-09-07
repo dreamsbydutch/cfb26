@@ -2,15 +2,15 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-This page inventories source interfaces synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` during the 2026-09-07 backed-up cutover. Web deployment remains a separate release boundary.
+This page inventories the current source interfaces. Development `adjoining-opossum-710` and production `doting-chipmunk-7` still hold the 41-table backend synchronized during the 2026-09-07 backed-up cutover; the 43-table revision/audit delta and final-form web UI remain separate, undeployed release boundaries.
 
 ## Web routes
 
-| Route           | Contract                                                                                                                                                                                                                                                                                                                                                             |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`             | In-review DbyD CFB Michigan front door defaulting to the Roster Matrix (`variant=C`), with Workbench (`variant=B`) as the overview alternative and Command (`variant=A`) retained for comparison. All share football-ordered position rooms, season/search filtering, movement evidence, player quick views, and a persistent comparison tray capped at four people. |
-| `/games`        | Public national workspace with Games, complete-field Power, Résumé, Playoff, Teams, Simulator, and Blind Ballot tabs. Schedule ranks use the same season-specific field shown on Power, and each ranking row exposes its components and evidence basis. Ballot identities remain hidden until owner submission.                                                      |
-| `/admin/roster` | No-index private owner workspace. A password creates a revocable 12-hour session; lifecycle, annual season, Player Game, identity, draft/NFL, import, backup, rollover, rules/champions, repair, and health operations validate server-side.                                                                                                                         |
+| Route family                       | Contract                                                                                                                                                                                                                                                                                                   |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`, `/michigan/*`                 | Matrix-first Michigan context with football-ordered rooms and usage lanes. Canonical routes expose Overview/readiness, Movement, Alumni, player intelligence, and four-player comparison. Season/preset/comparison state is URL-visible or persistent as appropriate. `/michigan/matrix` redirects to `/`. |
+| `/games`, `/national/*`            | Games, continuous complete-field Power, Résumé, deterministic Playoff, Teams/program profiles, Simulator, Blind Ballot, and Methodology. Schedule ranks come from the selected edition; Power rows expose components, basis, sample, sources, and coverage. `/national/games` redirects to `/games`.       |
+| `/admin/roster`, `/admin/roster/*` | No-index desktop Owner Dashboard, Roster/player editor, Season/grid and Player Games, Data/import/identity, and isolated Operations routes. A password creates a revocable 12-hour session; all access validates server-side, and narrow layouts expose status/sign-out without mutation controls.         |
 
 All routes include responsive navigation, semantic controls, visible focus treatment, and explicit loading/error/empty states.
 
@@ -18,7 +18,7 @@ All routes include responsive navigation, semantic controls, visible focus treat
 
 | Family               | Principal exports                                                                                                                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Players              | `players.search`, `players.getProfile`, `players.compare`, `players.listNflAlumni`                                                                                                                       |
+| Players              | `players.search`, bounded `players.searchCatalog`, `players.getProfile`, `players.compare`, `players.listNflAlumni`                                                                                      |
 | Michigan rosters     | `rosters.getSeasonDashboard`, `rosters.list`, `rosters.listMovements`                                                                                                                                    |
 | Michigan games       | `seasonalStats.listBySeason`, `seasonalStats.listGame`                                                                                                                                                   |
 | National games/teams | `games.listSeasonWeek`, `games.listProgramGames`, `games.listMatchup`, `games.getGame`; `teamData.listPrograms`, `teamData.getProgramProfile`, season recruiting/standings/draft/history and sync health |
@@ -36,13 +36,16 @@ The owner contract includes:
 
 - create Person, enroll/decommit prospect, start/close stints, and overwrite Player Seasons;
 - add repeatable evaluations, draft outcomes, nflverse identities, and weekly NFL gap records;
-- dry-run/apply roster and Player Game imports, with a verified backup before apply;
+- dry-run/apply roster and Player Game imports, with blocking-error abort, explicit preview acknowledgement, and a current-revision backup before apply;
 - preview/apply season rollover;
-- export paginated Michigan datasets and create a fingerprinted backup manifest;
-- merge duplicate people or delete an erroneous person transactionally;
+- export paginated Michigan datasets and create a version-3 fingerprint/manifest bound to the Michigan data revision;
+- preview affected records, then merge duplicate people or delete an erroneous person transactionally;
 - set season rules and actual conference champions;
 - resolve provider identities without heuristic matching; and
-- view source, identity, operation, backup, eligibility, and publication health.
+- stage and review multi-player Season edits before one validated transaction;
+- view source, identity, operation, revision, audit, backup, eligibility, and publication health.
+
+Every consequential Michigan owner mutation advances `michiganDataRevisions` and inserts an `ownerAuditEvents` record with actor/session, action, target, timestamps, result, warnings, and backup reference where applicable. Import, rollover, merge, and delete reject a manifest whose revision no longer matches. `migrations.retireUnversionedBackupManifests` audits and deletes only old server-side manifests; downloaded files remain unchanged.
 
 `seasonalStats.upsertPlayerGame` enforces the zero/null/grade invariant and Michigan roster/game identity. A person/game pair is unique.
 
@@ -66,7 +69,7 @@ Direct CFBD requests supply national programs, games, features, recruiting/talen
 
 - `npm run migration:plan -- <legacy-export.json>` creates a no-write audit.
 - `npm run migration:prepare -- <legacy-export.json> <new-directory> [season]` creates non-overwriting target JSONL plus an audit report.
-- `npm run restore:prepare -- <backup.json> <new-directory>` verifies a v2 backup fingerprint and prepares ordered JSONL without writing Convex.
+- `npm run restore:prepare -- <backup.json> <new-directory>` verifies a version-2 or revision-bound version-3 backup fingerprint and prepares ordered JSONL without writing Convex.
 - `npm run check` runs offline tests, type/lint, documentation links, and the production build.
 
 The exact hosted cutover sequence lives in [Deployment](../guides/deployment.md).

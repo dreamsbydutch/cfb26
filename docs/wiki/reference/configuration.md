@@ -37,32 +37,33 @@ The known deployment URLs are recorded in [Deployment](../guides/deployment.md).
 
 ## Package scripts
 
-| Script                                                   | Expansion                       | Notes                                                                                         |
-| -------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| `npm run dev`                                            | `convex dev --start "vite dev"` | Requires/establishes Convex CLI configuration, then serves Vite.                              |
-| `npm run dev:web`                                        | `vite dev`                      | Starts the browser app without pushing Convex code.                                           |
-| `npm run typecheck`                                      | `tsc --noEmit`                  | Checks root includes: `src`, `convex`, and Vite config.                                       |
-| `npm run lint`                                           | typecheck, then ESLint          | Uses TanStack and Convex recommended rules.                                                   |
-| `npm run build`                                          | typecheck, then `vite build`    | Produces client and SSR/server bundles.                                                       |
-| `npm run start`                                          | `vite preview`                  | Previews a prebuilt app locally; runtime environment must be present.                         |
-| `npm run docs:check`                                     | local Node link checker         | Scans maintained Markdown and ignores generated/vendor/build trees.                           |
-| `npm test`                                               | Node test runner                | Runs all offline behavior tests; network access and secrets are not required.                 |
-| `npm run test:cfbd`                                      | Node test runner                | Runs the CFBD client, season-audit, and health-probe tests only.                              |
-| `npm run cfbd:probe -- '<json>'`                         | `convex run cfbdHealth:probe`   | Calls the deployed internal canary; requires a selected deployment and CFBD key.              |
-| `npm run migration:plan -- <legacy.json>`                | no-write migration audit        | Reports preserved people/seasons/draft, intentional PFF deletion, and unresolved identities.  |
-| `npm run migration:prepare -- <legacy.json> <directory>` | migration preparation           | Writes non-overwriting target JSONL and a fingerprinted audit report without touching Convex. |
-| `npm run restore:prepare -- <backup.json> <directory>`   | restore preparation             | Verifies the v2 backup fingerprint and writes ordered JSONL without touching Convex.          |
-| `npm run preview:find -- <owner/repo> <sha>`             | GitHub deployment lookup        | Resolves the direct Vercel preview URL for an exact commit SHA.                               |
-| `npm run check`                                          | tests, lint, docs, Vite build   | Standard full local gate.                                                                     |
-| `npm run format`                                         | `prettier --write .`            | Mutates files; inspect the resulting diff.                                                    |
+| Script                                                   | Expansion                       | Notes                                                                                            |
+| -------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `npm run dev`                                            | `convex dev --start "vite dev"` | Requires/establishes Convex CLI configuration, then serves Vite.                                 |
+| `npm run dev:web`                                        | `vite dev`                      | Starts the browser app without pushing Convex code.                                              |
+| `npm run typecheck`                                      | `tsc --noEmit`                  | Checks root includes: `src`, `convex`, and Vite config.                                          |
+| `npm run lint`                                           | typecheck, then ESLint          | Uses TanStack and Convex recommended rules.                                                      |
+| `npm run build`                                          | typecheck, then `vite build`    | Produces client and SSR/server bundles.                                                          |
+| `npm run start`                                          | `vite preview`                  | Previews a prebuilt app locally; runtime environment must be present.                            |
+| `npm run docs:check`                                     | local Node link checker         | Scans maintained Markdown and ignores generated/vendor/build trees.                              |
+| `npm test`                                               | Node test runner                | Runs all offline behavior tests; network access and secrets are not required.                    |
+| `npm run test:cfbd`                                      | Node test runner                | Runs the CFBD client, season-audit, and health-probe tests only.                                 |
+| `npm run cfbd:probe -- '<json>'`                         | `convex run cfbdHealth:probe`   | Calls the deployed internal canary; requires a selected deployment and CFBD key.                 |
+| `npm run migration:plan -- <legacy.json>`                | no-write migration audit        | Reports preserved people/seasons/draft, intentional PFF deletion, and unresolved identities.     |
+| `npm run migration:prepare -- <legacy.json> <directory>` | migration preparation           | Writes non-overwriting target JSONL and a fingerprinted audit report without touching Convex.    |
+| `npm run restore:prepare -- <backup.json> <directory>`   | restore preparation             | Verifies a v2 or revision-bound v3 fingerprint and writes ordered JSONL without touching Convex. |
+| `npm run preview:find -- <owner/repo> <sha>`             | GitHub deployment lookup        | Resolves the direct Vercel preview URL for an exact commit SHA.                                  |
+| `npm run check`                                          | tests, lint, docs, Vite build   | Standard full local gate.                                                                        |
+| `npm run format`                                         | `prettier --write .`            | Mutates files; inspect the resulting diff.                                                       |
 
 ## Core dependencies
 
 | Concern                   | Packages                                                                                |
 | ------------------------- | --------------------------------------------------------------------------------------- |
-| UI/runtime                | `react`, `react-dom`                                                                    |
+| UI/runtime                | `react`, `react-dom`, `lucide-react`, `fuse.js`, bundled Inter/Barlow font packages     |
 | Full-stack routing        | `@tanstack/react-start`, `@tanstack/react-router`                                       |
 | Query/cache bridge        | `@tanstack/react-query`, `@tanstack/react-router-with-query`, `@convex-dev/react-query` |
+| Convex migrations         | `@convex-dev/migrations`                                                                |
 | Backend/client            | `convex`                                                                                |
 | Styling/build             | `tailwindcss`, `@tailwindcss/vite`, `vite`, `nitro`, `@vitejs/plugin-react`             |
 | Type/lint/format          | TypeScript 6/7 aliases, TanStack ESLint config, Convex ESLint plugin, Prettier          |

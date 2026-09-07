@@ -30,28 +30,32 @@
 
 ## `src/`
 
-| Path                          | Role                                                                                                       |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `src/router.tsx`              | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
-| `src/routes/__root.tsx`       | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
-| `src/routes/index.tsx`        | `/` route definition, client-rendering policy, and route-level states.                                     |
-| `src/routes/games.tsx`        | `/games` route definition, metadata, client-rendering policy, and route-level states.                      |
-| `src/routes/admin.roster.tsx` | `/admin/roster` route definition, no-index metadata, and client-rendering policy.                          |
-| `src/components/`             | Shared Michigan-first application shell, navigation, metrics, tabs, and states.                            |
-| `src/features/landscape/`     | Games, Power, Résumé/SOS, playoff, team profiles, simulator, and blind ballot.                             |
-| `src/features/roster/`        | Public roster intelligence/profiles/alumni and private owner workflows.                                    |
-| `src/routeTree.gen.ts`        | Generated file-route registry; do not edit.                                                                |
-| `src/styles/app.css`          | Tailwind import and global base CSS.                                                                       |
+| Path                        | Role                                                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `src/router.tsx`            | Creates TanStack Router, React Query, Convex client/provider, preload/cache policies, and fallback errors. |
+| `src/routes/__root.tsx`     | HTML shell, title/viewport, global stylesheet, icons/manifest, route outlet, and framework scripts.        |
+| `src/routes/index.tsx`      | Canonical `/` Michigan Matrix route definition and route-level states.                                     |
+| `src/routes/michigan.*.tsx` | Michigan Overview, Movement, Alumni, player, comparison, and Matrix redirect routes.                       |
+| `src/routes/games.tsx`      | Canonical `/games` National Games route definition and states.                                             |
+| `src/routes/national.*.tsx` | Power, Résumé, Playoff, Teams/program, Simulator, Ballot, Methodology, and Games redirect routes.          |
+| `src/routes/admin.roster*`  | Desktop Owner Dashboard, Roster/player, Season, Data, and Operations routes with no-index metadata.        |
+| `src/components/`           | Shared public context shell, fuzzy search, responsive navigation, metrics, surfaces, and states.           |
+| `src/features/michigan/`    | Matrix, Overview/readiness, Movement, player intelligence, comparison, and alumni.                         |
+| `src/features/landscape/`   | Games, Power, Résumé/SOS, playoff, team profiles, simulator, ballot, and methodology.                      |
+| `src/features/roster/`      | Shared Michigan reads and private owner workflows.                                                         |
+| `src/routeTree.gen.ts`      | Generated file-route registry; do not edit.                                                                |
+| `src/styles/app.css`        | Tailwind import and global base CSS.                                                                       |
 
 ## `convex/`
 
 | Path                        | Role                                                                                                                      |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `convex/schema.ts`          | Declares the 41-table Michigan, national, derived-output, NFL, and operations model with 103 indexes.                     |
-| `convex/playerDomain.ts`    | Pure position-room, player-game, grade-band, and phase-summary invariants.                                                |
-| `convex/players.ts`         | Player search, profile, comparison, and Michigan-alumni NFL reads.                                                        |
+| `convex/schema.ts`          | Declares the 43-table Michigan, national, derived-output, NFL, revision, and audit model with 104 indexes.                |
+| `convex/playerDomain.ts`    | Pure position-room, player-game, grade-band, phase-summary, and all-phase overall-grade invariants.                       |
+| `convex/players.ts`         | Fuzzy-search catalog source, player profile/overall grade, comparison, and Michigan-alumni NFL reads.                     |
 | `convex/rosters.ts`         | Season dashboard, roster, scholarship/eligibility, returning-production, and movement reads.                              |
-| `convex/rosterAdmin.ts`     | Session-protected lifecycle, season, NFL-gap, import, rollover, backup, rules, identity, merge, delete, and health flows. |
+| `convex/rosterAdmin.ts`     | Session-protected lifecycle, batch season, NFL-gap, import, revisioned backup, audit, identity, repair, and health flows. |
+| `convex/migrations.ts`      | Stateful manifest-retirement migration for the Michigan revision cutover.                                                 |
 | `convex/seasonalStats.ts`   | Michigan Player Game writes/imports and public phase-grade summaries.                                                     |
 | `convex/nflverse.ts`        | Pure nflverse CSV parsing, status normalization, and conventional-stat extraction.                                        |
 | `convex/migrationV2.ts`     | Pure legacy audit and target-document preparation with explicit PFF deletion.                                             |
