@@ -173,41 +173,26 @@ function Games({
       </div>
       <section className="app-card overflow-hidden p-0">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1080px] border-collapse text-sm">
             <caption className="sr-only">
               National games grouped by kickoff time
             </caption>
             <thead className="app-label bg-black/15">
               <tr>
-                <th className="min-w-52 px-4 py-3" scope="col">
-                  Away
-                </th>
-                <th className="min-w-52 px-4 py-3" scope="col">
-                  Home
-                </th>
-                <th className="min-w-64 px-4 py-3" scope="col">
-                  Game details
-                </th>
                 <th
-                  className={`px-4 py-3 text-right ${lens === 'quality' ? 'app-accent-text bg-white/[0.035]' : ''}`}
+                  className="w-1/4 min-w-60 px-5 py-3 text-right"
                   scope="col"
                 >
-                  Quality
+                  Away team
+                </th>
+                <th className="w-1/2 min-w-[560px] px-4 py-3 text-center" scope="col">
+                  Matchup · sorted by {lens}
                 </th>
                 <th
-                  className={`px-4 py-3 text-right ${lens === 'playoff' ? 'app-accent-text bg-white/[0.035]' : ''}`}
+                  className="w-1/4 min-w-60 px-5 py-3 text-left"
                   scope="col"
                 >
-                  Playoff
-                </th>
-                <th
-                  className={`px-4 py-3 text-right ${lens === 'michigan' ? 'michigan-accent bg-white/[0.035]' : ''}`}
-                  scope="col"
-                >
-                  Michigan
-                </th>
-                <th className="whitespace-nowrap px-4 py-3 text-right" scope="col">
-                  Home margin
+                  Home team
                 </th>
               </tr>
             </thead>
@@ -216,7 +201,7 @@ function Games({
               return (
                 <tbody key={startTime}>
                   <tr className="app-ranking-header border-y border-white/10">
-                    <th className="px-4 py-2.5" colSpan={7} scope="rowgroup">
+                    <th className="px-4 py-2.5" colSpan={3} scope="rowgroup">
                       <div className="flex items-center gap-3">
                         <time
                           className="font-display app-accent-text text-lg font-extrabold uppercase tracking-wide"
@@ -250,65 +235,62 @@ function Games({
                         key={game._id}
                         className={`border-b border-white/[0.065] hover:bg-white/[0.025] ${highlightsMichigan ? 'michigan-highlight' : ''}`}
                       >
-                        <td className="px-4 py-2.5">
+                        <td className="px-5 py-3 text-right align-middle">
                           <ScheduleTeam
+                            align="right"
                             name={game.awaySourceName}
                             rank={game.awayRank}
                             rating={game.awayRating}
                           />
                         </td>
-                        <td className="px-4 py-2.5">
-                          <ScheduleTeam
-                            name={game.homeSourceName}
-                            rank={game.homeRank}
-                            rating={game.homeRating}
-                          />
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span className="block text-white/65">
+                        <td className="px-4 py-3 align-middle">
+                          <div className="grid grid-cols-[1fr_1fr_auto_1fr_1fr] items-center gap-2">
+                            <GameMetric
+                              active={lens === 'quality'}
+                              label="Quality"
+                              value={game.matchupQuality}
+                            />
+                            <GameMetric
+                              active={lens === 'playoff'}
+                              label="Playoff"
+                              value={game.playoffImportance}
+                            />
+                            <span className="font-display app-accent-text grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-black/20 text-xs font-extrabold">
+                              {game.neutralSite ? 'VS' : 'AT'}
+                            </span>
+                            <GameMetric
+                              active={lens === 'michigan'}
+                              label="Michigan"
+                              tone="michigan"
+                              value={game.michiganImportance}
+                            />
+                            <GameMetric
+                              label="Home margin"
+                              value={`${game.projectedMargin > 0 ? '+' : ''}${game.projectedMargin.toFixed(1)}`}
+                            />
+                          </div>
+                          <p className="mt-1.5 text-center text-[10px] leading-4 text-white/35">
                             Week {game.week} ·{' '}
                             {game.conferenceGame
-                              ? 'Conference'
-                              : 'Nonconference'}
-                          </span>
-                          <span className="mt-0.5 block text-xs text-white/40">
+                              ? 'Conference game'
+                              : 'Nonconference'}{' '}
+                            ·{' '}
                             {game.neutralSite
                               ? 'Neutral site'
                               : (game.venue ?? 'Venue TBD')}
                             {game.tvOutlets?.length
                               ? ` · ${game.tvOutlets.join(', ')}`
                               : ''}
-                          </span>
-                        </td>
-                        <td
-                          className={`px-4 py-2.5 text-right ${lens === 'quality' ? 'bg-white/[0.035]' : ''}`}
-                        >
-                          <b className="font-display text-lg tabular-nums">
-                            {game.matchupQuality}
-                          </b>
-                        </td>
-                        <td
-                          className={`px-4 py-2.5 text-right ${lens === 'playoff' ? 'bg-white/[0.035]' : ''}`}
-                        >
-                          <b className="font-display text-lg tabular-nums">
-                            {game.playoffImportance}
-                          </b>
-                        </td>
-                        <td
-                          className={`px-4 py-2.5 text-right ${lens === 'michigan' ? 'bg-white/[0.035]' : ''}`}
-                        >
-                          <b className="font-display text-lg tabular-nums">
-                            {game.michiganImportance}
-                          </b>
-                          <span className="mt-0.5 block whitespace-nowrap text-[10px] text-white/35">
+                            {' · '}
                             {game.michiganRelation}
-                          </span>
+                          </p>
                         </td>
-                        <td className="px-4 py-2.5 text-right">
-                          <b className="font-display text-lg tabular-nums">
-                            {game.projectedMargin > 0 ? '+' : ''}
-                            {game.projectedMargin.toFixed(1)}
-                          </b>
+                        <td className="px-5 py-3 text-left align-middle">
+                          <ScheduleTeam
+                            name={game.homeSourceName}
+                            rank={game.homeRank}
+                            rating={game.homeRating}
+                          />
                         </td>
                       </tr>
                     )
@@ -323,33 +305,65 @@ function Games({
   )
 }
 
+function GameMetric({
+  active = false,
+  label,
+  tone = 'default',
+  value,
+}: {
+  active?: boolean
+  label: string
+  tone?: 'default' | 'michigan'
+  value: number | string
+}) {
+  return (
+    <div
+      className={`rounded-lg px-2 py-1 text-center ${active ? 'bg-white/[0.045]' : ''}`}
+    >
+      <b
+        className={`font-display block text-lg leading-none tabular-nums ${tone === 'michigan' ? 'michigan-accent' : active ? 'app-accent-text' : 'text-white'}`}
+      >
+        {value}
+      </b>
+      <span className="mt-1 block whitespace-nowrap text-[9px] font-bold uppercase tracking-wide text-white/35">
+        {label}
+      </span>
+    </div>
+  )
+}
+
 function ScheduleTeam({
+  align,
   name,
   rank,
   rating,
 }: {
+  align?: 'right'
   name: string
   rank?: number
   rating: number
 }) {
   const highlightsMichigan = isMichiganProgram(name)
   return (
-    <div>
+    <div className={align === 'right' ? 'text-right' : ''}>
       <div
-        className={`font-display text-base font-extrabold ${highlightsMichigan ? 'michigan-accent' : 'text-white'}`}
+        className={`font-display text-xl font-extrabold leading-tight ${highlightsMichigan ? 'michigan-accent' : 'text-white'}`}
       >
         {rank !== undefined ? (
           <span
-            className={`mr-1.5 text-xs ${highlightsMichigan ? 'michigan-accent' : 'app-accent-text'}`}
+            className={`mr-1.5 align-middle text-sm ${highlightsMichigan ? 'michigan-accent' : 'app-accent-text'}`}
           >
             #{rank}
           </span>
         ) : null}
         {name}
       </div>
-      <div className="mt-0.5 text-xs text-white/40">
-        Power {rating > 0 ? '+' : ''}
-        {rating.toFixed(1)}
+      <div className="mt-1 text-xs font-bold uppercase tracking-wide text-white/35">
+        Power{' '}
+        <span className="text-sm tracking-normal text-white/70 tabular-nums">
+          {rating > 0 ? '+' : ''}
+          {rating.toFixed(1)}
+        </span>
       </div>
     </div>
   )
