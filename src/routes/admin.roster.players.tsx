@@ -1,13 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Outlet, createFileRoute } from '@tanstack/react-router'
 import {
-  RosterAdmin,
   RosterAdminError,
   RosterAdminLoading,
 } from '~/features/roster/RosterAdmin'
 
 export const Route = createFileRoute('/admin/roster/players')({
   ssr: false,
-  component: () => <RosterAdmin view="roster" />,
+  component: Outlet,
   pendingComponent: RosterAdminLoading,
   errorComponent: RosterAdminError,
   head: () => ({

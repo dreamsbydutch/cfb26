@@ -25,12 +25,14 @@ import { Route as NationalPowerRouteImport } from './routes/national.power'
 import { Route as NationalResumeRouteImport } from './routes/national.resume'
 import { Route as NationalSimulatorRouteImport } from './routes/national.simulator'
 import { Route as NationalTeamsRouteImport } from './routes/national.teams'
+import { Route as AdminRosterIndexRouteImport } from './routes/admin.roster.index'
 import { Route as AdminRosterDataRouteImport } from './routes/admin.roster.data'
 import { Route as AdminRosterOperationsRouteImport } from './routes/admin.roster.operations'
 import { Route as AdminRosterPlayersRouteImport } from './routes/admin.roster.players'
 import { Route as AdminRosterSeasonRouteImport } from './routes/admin.roster.season'
 import { Route as MichiganPlayersPlayerIdRouteImport } from './routes/michigan.players.$playerId'
 import { Route as NationalTeamsProgramKeyRouteImport } from './routes/national.teams.$programKey'
+import { Route as AdminRosterPlayersIndexRouteImport } from './routes/admin.roster.players.index'
 import { Route as AdminRosterPlayersPlayerIdRouteImport } from './routes/admin.roster.players.$playerId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -113,6 +115,11 @@ const NationalTeamsRoute = NationalTeamsRouteImport.update({
   path: '/national/teams',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRosterIndexRoute = AdminRosterIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRosterRoute,
+} as any)
 const AdminRosterDataRoute = AdminRosterDataRouteImport.update({
   id: '/data',
   path: '/data',
@@ -142,6 +149,11 @@ const NationalTeamsProgramKeyRoute = NationalTeamsProgramKeyRouteImport.update({
   id: '/$programKey',
   path: '/$programKey',
   getParentRoute: () => NationalTeamsRoute,
+} as any)
+const AdminRosterPlayersIndexRoute = AdminRosterPlayersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRosterPlayersRoute,
 } as any)
 const AdminRosterPlayersPlayerIdRoute =
   AdminRosterPlayersPlayerIdRouteImport.update({
@@ -173,12 +185,13 @@ export interface FileRoutesByFullPath {
   '/admin/roster/season': typeof AdminRosterSeasonRoute
   '/michigan/players/$playerId': typeof MichiganPlayersPlayerIdRoute
   '/national/teams/$programKey': typeof NationalTeamsProgramKeyRoute
+  '/admin/roster/': typeof AdminRosterIndexRoute
   '/admin/roster/players/$playerId': typeof AdminRosterPlayersPlayerIdRoute
+  '/admin/roster/players/': typeof AdminRosterPlayersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/games': typeof GamesRoute
-  '/admin/roster': typeof AdminRosterRouteWithChildren
   '/michigan/alumni': typeof MichiganAlumniRoute
   '/michigan/compare': typeof MichiganCompareRoute
   '/michigan/matrix': typeof MichiganMatrixRoute
@@ -194,11 +207,12 @@ export interface FileRoutesByTo {
   '/national/teams': typeof NationalTeamsRouteWithChildren
   '/admin/roster/data': typeof AdminRosterDataRoute
   '/admin/roster/operations': typeof AdminRosterOperationsRoute
-  '/admin/roster/players': typeof AdminRosterPlayersRouteWithChildren
   '/admin/roster/season': typeof AdminRosterSeasonRoute
   '/michigan/players/$playerId': typeof MichiganPlayersPlayerIdRoute
   '/national/teams/$programKey': typeof NationalTeamsProgramKeyRoute
+  '/admin/roster': typeof AdminRosterIndexRoute
   '/admin/roster/players/$playerId': typeof AdminRosterPlayersPlayerIdRoute
+  '/admin/roster/players': typeof AdminRosterPlayersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -224,7 +238,9 @@ export interface FileRoutesById {
   '/admin/roster/season': typeof AdminRosterSeasonRoute
   '/michigan/players/$playerId': typeof MichiganPlayersPlayerIdRoute
   '/national/teams/$programKey': typeof NationalTeamsProgramKeyRoute
+  '/admin/roster/': typeof AdminRosterIndexRoute
   '/admin/roster/players/$playerId': typeof AdminRosterPlayersPlayerIdRoute
+  '/admin/roster/players/': typeof AdminRosterPlayersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -251,12 +267,13 @@ export interface FileRouteTypes {
     | '/admin/roster/season'
     | '/michigan/players/$playerId'
     | '/national/teams/$programKey'
+    | '/admin/roster/'
     | '/admin/roster/players/$playerId'
+    | '/admin/roster/players/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/games'
-    | '/admin/roster'
     | '/michigan/alumni'
     | '/michigan/compare'
     | '/michigan/matrix'
@@ -272,11 +289,12 @@ export interface FileRouteTypes {
     | '/national/teams'
     | '/admin/roster/data'
     | '/admin/roster/operations'
-    | '/admin/roster/players'
     | '/admin/roster/season'
     | '/michigan/players/$playerId'
     | '/national/teams/$programKey'
+    | '/admin/roster'
     | '/admin/roster/players/$playerId'
+    | '/admin/roster/players'
   id:
     | '__root__'
     | '/'
@@ -301,7 +319,9 @@ export interface FileRouteTypes {
     | '/admin/roster/season'
     | '/michigan/players/$playerId'
     | '/national/teams/$programKey'
+    | '/admin/roster/'
     | '/admin/roster/players/$playerId'
+    | '/admin/roster/players/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -438,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NationalTeamsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/roster/': {
+      id: '/admin/roster/'
+      path: '/'
+      fullPath: '/admin/roster/'
+      preLoaderRoute: typeof AdminRosterIndexRouteImport
+      parentRoute: typeof AdminRosterRoute
+    }
     '/admin/roster/data': {
       id: '/admin/roster/data'
       path: '/data'
@@ -480,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NationalTeamsProgramKeyRouteImport
       parentRoute: typeof NationalTeamsRoute
     }
+    '/admin/roster/players/': {
+      id: '/admin/roster/players/'
+      path: '/'
+      fullPath: '/admin/roster/players/'
+      preLoaderRoute: typeof AdminRosterPlayersIndexRouteImport
+      parentRoute: typeof AdminRosterPlayersRoute
+    }
     '/admin/roster/players/$playerId': {
       id: '/admin/roster/players/$playerId'
       path: '/$playerId'
@@ -492,10 +526,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminRosterPlayersRouteChildren {
   AdminRosterPlayersPlayerIdRoute: typeof AdminRosterPlayersPlayerIdRoute
+  AdminRosterPlayersIndexRoute: typeof AdminRosterPlayersIndexRoute
 }
 
 const AdminRosterPlayersRouteChildren: AdminRosterPlayersRouteChildren = {
   AdminRosterPlayersPlayerIdRoute: AdminRosterPlayersPlayerIdRoute,
+  AdminRosterPlayersIndexRoute: AdminRosterPlayersIndexRoute,
 }
 
 const AdminRosterPlayersRouteWithChildren =
@@ -506,6 +542,7 @@ interface AdminRosterRouteChildren {
   AdminRosterOperationsRoute: typeof AdminRosterOperationsRoute
   AdminRosterPlayersRoute: typeof AdminRosterPlayersRouteWithChildren
   AdminRosterSeasonRoute: typeof AdminRosterSeasonRoute
+  AdminRosterIndexRoute: typeof AdminRosterIndexRoute
 }
 
 const AdminRosterRouteChildren: AdminRosterRouteChildren = {
@@ -513,6 +550,7 @@ const AdminRosterRouteChildren: AdminRosterRouteChildren = {
   AdminRosterOperationsRoute: AdminRosterOperationsRoute,
   AdminRosterPlayersRoute: AdminRosterPlayersRouteWithChildren,
   AdminRosterSeasonRoute: AdminRosterSeasonRoute,
+  AdminRosterIndexRoute: AdminRosterIndexRoute,
 }
 
 const AdminRosterRouteWithChildren = AdminRosterRoute._addFileChildren(
