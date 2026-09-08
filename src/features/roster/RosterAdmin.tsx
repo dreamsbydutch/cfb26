@@ -51,6 +51,34 @@ type SeasonDashboard = NonNullable<
 >
 type DataHealth = FunctionReturnType<typeof api.rosterAdmin.getDataHealth>
 type ExportPage = FunctionReturnType<typeof api.rosterAdmin.exportMichiganPage>
+type SeasonStats = FunctionReturnType<typeof api.seasonalStats.listBySeason>
+type PlayerGameRecord = SeasonStats[number]['playerGames'][number]
+
+const OWNER_VIEW_COPY: Record<
+  AdminView,
+  { description: string; title: string }
+> = {
+  dashboard: {
+    description: 'Review roster health and the work that needs attention.',
+    title: 'Owner dashboard',
+  },
+  data: {
+    description: 'Import data, resolve identities, and review source health.',
+    title: 'Data',
+  },
+  operations: {
+    description: 'Run protected maintenance and season rollover workflows.',
+    title: 'Operations',
+  },
+  roster: {
+    description: 'Edit the selected season roster in one table.',
+    title: 'Roster',
+  },
+  season: {
+    description: 'Enter or update one player’s stats for each game.',
+    title: 'Player stats',
+  },
+}
 
 function initialToken() {
   return typeof window === 'undefined'
@@ -168,6 +196,7 @@ function AuthenticatedAdmin({
     return null
   }
   const data = roster.data
+  const viewCopy = OWNER_VIEW_COPY[view]
   return (
     <OwnerBoundary
       authenticated
@@ -176,11 +205,14 @@ function AuthenticatedAdmin({
       <OwnerShell active={view}>
         <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
           <div>
-            <p className="app-kicker">Authenticated owner workspace</p>
+            <p className="app-kicker">
+              Michigan · {data?.season ?? season} season
+            </p>
             <h1 className="app-title mt-2">
-              Record reality, then verify the system agrees.
+              {playerId && view === 'roster' ? 'Player record' : viewCopy.title}
             </h1>
-            <p className="mt-3 text-xs text-white/40">
+            <p className="mt-2 text-sm text-white/55">{viewCopy.description}</p>
+            <p className="mt-3 text-xs text-white/35">
               Session expires{' '}
               {session.data?.expiresAt
                 ? new Date(session.data.expiresAt).toLocaleString()
@@ -231,35 +263,66 @@ function AuthenticatedAdmin({
         {view === 'dashboard' && (
           <OwnerDashboard data={data ?? null} health={health.data} />
         )}
-        {view === 'roster' && (
-          <People
-            initialPlayerId={playerId}
-            token={token}
-            season={season}
-            data={data ?? null}
-            notify={setNotice}
-          />
-        )}
-        {view === 'season' && (
-          <div className="grid gap-6">
-            <SeasonGrid data={data ?? null} notify={setNotice} token={token} />
-            <PlayerSeasons
+        {view === 'roster' &&
+          (playerId ? (
+            <People
+              initialPlayerId={playerId}
               token={token}
               season={season}
               data={data ?? null}
               notify={setNotice}
             />
-            <PlayerGames
+          ) : (
+            <div className="grid gap-6">
+              <RosterTable
+                data={data ?? null}
+                notify={setNotice}
+                token={token}
+              />
+              <details className="app-card p-5">
+                <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.12em] text-white/65 hover:text-white">
+                  Add a player or manage advanced records
+                </summary>
+                <div className="mt-5 border-t border-white/10 pt-5">
+                  <People
+                    token={token}
+                    season={season}
+                    data={data ?? null}
+                    notify={setNotice}
+                  />
+                </div>
+              </details>
+            </div>
+          ))}
+        {view === 'season' && (
+          <div className="grid gap-6">
+            <PlayerStats
               token={token}
+              season={season}
               backupManifestId={
                 health.data?.backups.find(
                   (backup) => backup.dataRevision === health.data.revision,
                 )?._id ?? null
               }
               data={data ?? null}
+              gamesFailed={games.isError}
               games={games.data?.games ?? []}
+              gamesLoading={games.isPending}
               notify={setNotice}
             />
+            <details className="app-card p-5">
+              <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.12em] text-white/65 hover:text-white">
+                Advanced season fields
+              </summary>
+              <div className="mt-5 border-t border-white/10 pt-5">
+                <PlayerSeasons
+                  token={token}
+                  season={season}
+                  data={data ?? null}
+                  notify={setNotice}
+                />
+              </div>
+            </details>
           </div>
         )}
         {(view === 'data' || view === 'operations') && (
@@ -371,7 +434,7 @@ const OWNER_NAV: Array<{
     href: '/admin/roster/season',
     icon: CalendarRange,
     id: 'season',
-    label: 'Season',
+    label: 'Player Stats',
   },
   { href: '/admin/roster/data', icon: Database, id: 'data', label: 'Data' },
   {
@@ -956,14 +1019,17 @@ function People({
 type SeasonGridChange = {
   depthStatus: 'available' | 'limited' | 'out' | 'unknown'
   gamesPlayed: number
+  jerseyNumber: number | null
+  listedPosition: string
   playerSeasonId: Id<'playerSeasons'>
   role: 'starter' | 'rotation' | 'reserve' | 'unassigned'
   roomOrder: number | null
+  rosterStatus: 'active' | 'inactive' | 'departed'
   scholarshipStatus: 'scholarship' | 'walk_on' | 'exempt' | 'unknown'
   starts: number
 }
 
-function SeasonGrid({
+function RosterTable({
   data,
   notify,
   token,
@@ -976,9 +1042,11 @@ function SeasonGrid({
   const [changes, setChanges] = useState<
     Partial<Record<string, SeasonGridChange>>
   >({})
-  const [reviewing, setReviewing] = useState(false)
+  const [search, setSearch] = useState('')
+  const [saving, setSaving] = useState(false)
+  useEffect(() => setChanges({}), [data?.season])
   if (!data)
-    return <EmptyState>No roster is available for grid editing.</EmptyState>
+    return <EmptyState>No roster is available for this season.</EmptyState>
   const setField = <TKey extends keyof SeasonGridChange>(
     entry: SeasonDashboard['entries'][number],
     key: TKey,
@@ -988,9 +1056,12 @@ function SeasonGrid({
     const current = changes[id] ?? {
       depthStatus: entry.season.depthStatus,
       gamesPlayed: entry.season.gamesPlayed,
+      jerseyNumber: entry.season.jerseyNumber,
+      listedPosition: entry.season.listedPosition,
       playerSeasonId: entry.season._id,
       role: entry.season.role,
       roomOrder: entry.season.roomOrder,
+      rosterStatus: entry.season.rosterStatus,
       scholarshipStatus: entry.season.scholarshipStatus,
       starts: entry.season.starts,
     }
@@ -1002,46 +1073,110 @@ function SeasonGrid({
   const rows = Object.values(changes).filter(
     (row): row is SeasonGridChange => row !== undefined,
   )
+  const visibleEntries = data.entries.filter((entry) =>
+    entry.player?.displayName
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  )
+  const saveChanges = () => {
+    if (rows.some((row) => !row.listedPosition.trim())) {
+      notify({ kind: 'error', text: 'Every changed row needs a position.' })
+      return
+    }
+    setSaving(true)
+    void apply({ rows, sessionToken: token })
+      .then((result) => {
+        setChanges({})
+        notify(success(`${result.updated} roster rows saved.`))
+      })
+      .catch((error: unknown) => notify(failure(error)))
+      .finally(() => setSaving(false))
+  }
   return (
     <AdminCard
-      note="Stage depth, availability, scholarship, order, games, and starts across the roster; review every changed row before one validated transaction."
-      title="Season grid"
+      note="Edit the everyday roster fields directly. Use Player Stats for game-by-game performance."
+      title={`${data.season} Michigan roster`}
     >
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] border-collapse text-left text-sm">
-          <thead className="app-label">
-            <tr>
-              <th className="p-2">Player</th>
-              <th className="p-2">Role</th>
-              <th className="p-2">Availability</th>
-              <th className="p-2">Scholarship</th>
-              <th className="p-2">Order</th>
-              <th className="p-2">Games</th>
-              <th className="p-2">Starts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.entries
-              .filter((entry) => entry.player)
-              .map((entry) => {
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <label className="w-full max-w-sm text-xs font-black uppercase tracking-[0.12em]">
+          Find a player
+          <input
+            aria-label="Find a player"
+            className={inputClass}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by name"
+            type="search"
+            value={search}
+          />
+        </label>
+        <p className="text-xs text-white/40">
+          {visibleEntries.length} of {data.entries.length} players
+        </p>
+      </div>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          saveChanges()
+        }}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+            <thead className="app-label">
+              <tr>
+                <th className="p-2">Player</th>
+                <th className="p-2">#</th>
+                <th className="p-2">Position</th>
+                <th className="p-2">Role</th>
+                <th className="p-2">Roster</th>
+                <th className="p-2">Availability</th>
+                <th className="p-2">GP</th>
+                <th className="p-2">GS</th>
+                <th className="p-2 text-right">More</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleEntries.map((entry) => {
                 const row = changes[String(entry.season._id)]
+                const playerName = entry.player?.displayName ?? 'Unknown player'
                 return (
                   <tr
                     className={`border-t border-white/[0.07] ${row ? 'bg-[#ffcb05]/[0.045]' : ''}`}
                     key={entry.season._id}
                   >
                     <th className="p-2">
-                      <span className="block font-bold">
-                        {entry.player?.displayName}
+                      <span className="block font-bold text-white">
+                        {playerName}
                       </span>
                       <small className="text-white/35">
-                        {entry.season.listedPosition} ·{' '}
                         {entry.season.positionRoom}
                       </small>
                     </th>
                     <td className="p-2">
+                      <GridNumber
+                        label={`${playerName} jersey number`}
+                        max={99}
+                        onChange={(nextValue) =>
+                          setField(entry, 'jerseyNumber', nextValue)
+                        }
+                        value={row?.jerseyNumber ?? entry.season.jerseyNumber}
+                        width="w-16"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <GridText
+                        label={`${playerName} position`}
+                        maxLength={16}
+                        onChange={(nextValue) =>
+                          setField(entry, 'listedPosition', nextValue)
+                        }
+                        value={
+                          row?.listedPosition ?? entry.season.listedPosition
+                        }
+                      />
+                    </td>
+                    <td className="p-2">
                       <GridSelect
-                        value={row?.role ?? entry.season.role}
+                        label={`${playerName} role`}
                         onChange={(nextValue) =>
                           setField(
                             entry,
@@ -1055,11 +1190,26 @@ function SeasonGrid({
                           'reserve',
                           'unassigned',
                         ]}
+                        value={row?.role ?? entry.season.role}
                       />
                     </td>
                     <td className="p-2">
                       <GridSelect
-                        value={row?.depthStatus ?? entry.season.depthStatus}
+                        label={`${playerName} roster status`}
+                        onChange={(nextValue) =>
+                          setField(
+                            entry,
+                            'rosterStatus',
+                            nextValue as SeasonGridChange['rosterStatus'],
+                          )
+                        }
+                        options={['active', 'inactive', 'departed']}
+                        value={row?.rosterStatus ?? entry.season.rosterStatus}
+                      />
+                    </td>
+                    <td className="p-2">
+                      <GridSelect
+                        label={`${playerName} availability`}
                         onChange={(nextValue) =>
                           setField(
                             entry,
@@ -1068,156 +1218,142 @@ function SeasonGrid({
                           )
                         }
                         options={['available', 'limited', 'out', 'unknown']}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridSelect
-                        value={
-                          row?.scholarshipStatus ??
-                          entry.season.scholarshipStatus
-                        }
-                        onChange={(nextValue) =>
-                          setField(
-                            entry,
-                            'scholarshipStatus',
-                            nextValue as SeasonGridChange['scholarshipStatus'],
-                          )
-                        }
-                        options={[
-                          'scholarship',
-                          'walk_on',
-                          'exempt',
-                          'unknown',
-                        ]}
+                        value={row?.depthStatus ?? entry.season.depthStatus}
                       />
                     </td>
                     <td className="p-2">
                       <GridNumber
-                        value={row?.roomOrder ?? entry.season.roomOrder}
-                        onChange={(nextValue) =>
-                          setField(entry, 'roomOrder', nextValue)
-                        }
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridNumber
-                        value={row?.gamesPlayed ?? entry.season.gamesPlayed}
+                        label={`${playerName} games played`}
+                        max={30}
                         onChange={(nextValue) =>
                           setField(entry, 'gamesPlayed', nextValue ?? 0)
                         }
+                        value={row?.gamesPlayed ?? entry.season.gamesPlayed}
+                        width="w-16"
                       />
                     </td>
                     <td className="p-2">
                       <GridNumber
-                        value={row?.starts ?? entry.season.starts}
+                        label={`${playerName} starts`}
+                        max={row?.gamesPlayed ?? entry.season.gamesPlayed}
                         onChange={(nextValue) =>
                           setField(entry, 'starts', nextValue ?? 0)
                         }
+                        value={row?.starts ?? entry.season.starts}
+                        width="w-16"
                       />
+                    </td>
+                    <td className="p-2 text-right">
+                      {entry.player && (
+                        <Link
+                          className="text-xs font-bold text-[#ffcb05] hover:text-white"
+                          params={{ playerId: String(entry.player._id) }}
+                          to="/admin/roster/players/$playerId"
+                        >
+                          Player record
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 )
               })}
-          </tbody>
-        </table>
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
-        <button
-          className={primaryButton}
-          disabled={rows.length === 0}
-          onClick={() => setReviewing(true)}
-          type="button"
-        >
-          Review {rows.length} changes
-        </button>
-        <button
-          className={secondaryButton}
-          disabled={rows.length === 0}
-          onClick={() => {
-            setChanges({})
-            setReviewing(false)
-          }}
-          type="button"
-        >
-          Discard staged changes
-        </button>
-      </div>
-      {reviewing && (
-        <div className="mt-4 rounded-2xl border border-[#ffcb05]/20 bg-[#ffcb05]/[0.055] p-4">
-          <p className="app-kicker">Transaction review</p>
-          <p className="mt-2 text-sm text-white/55">
-            This will update exactly {rows.length} Player Season record
-            {rows.length === 1 ? '' : 's'}. Any invalid row aborts the entire
-            mutation.
-          </p>
-          <div className="mt-4 flex gap-3">
-            <button
-              className={primaryButton}
-              onClick={() =>
-                void apply({ rows, sessionToken: token })
-                  .then((result) => {
-                    setChanges({})
-                    setReviewing(false)
-                    notify(
-                      success(
-                        `${result.updated} Player Seasons saved in one transaction.`,
-                      ),
-                    )
-                  })
-                  .catch((error: unknown) => notify(failure(error)))
-              }
-              type="button"
-            >
-              Commit transaction
-            </button>
-            <button
-              className={secondaryButton}
-              onClick={() => setReviewing(false)}
-              type="button"
-            >
-              Keep editing
-            </button>
-          </div>
+            </tbody>
+          </table>
         </div>
-      )}
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+          <button
+            className={primaryButton}
+            disabled={rows.length === 0 || saving}
+          >
+            {saving ? 'Saving…' : `Save ${rows.length} changed rows`}
+          </button>
+          <button
+            className={secondaryButton}
+            disabled={rows.length === 0 || saving}
+            onClick={() => setChanges({})}
+            type="button"
+          >
+            Discard changes
+          </button>
+          <p aria-live="polite" className="text-xs text-white/40">
+            {rows.length === 0
+              ? 'No unsaved roster changes.'
+              : `${rows.length} row${rows.length === 1 ? '' : 's'} ready to save.`}
+          </p>
+        </div>
+      </form>
     </AdminCard>
   )
 }
 
+function GridText({
+  label,
+  maxLength,
+  onChange,
+  value: selectedValue,
+}: {
+  label: string
+  maxLength?: number
+  onChange: (value: string) => void
+  value: string
+}) {
+  return (
+    <input
+      aria-label={label}
+      className="app-control h-9 w-24 bg-[#0c1b2a] px-2 text-xs font-bold uppercase text-white"
+      maxLength={maxLength}
+      onChange={(event) => onChange(event.target.value)}
+      type="text"
+      value={selectedValue}
+    />
+  )
+}
+
 function GridSelect({
+  label,
   onChange,
   options,
   value: selectedValue,
 }: {
+  label: string
   onChange: (value: string) => void
   options: Array<string>
   value: string
 }) {
   return (
     <select
-      aria-label="Grid value"
+      aria-label={label}
       className="app-control min-h-9 bg-[#0c1b2a] px-2 text-xs text-white"
       onChange={(event) => onChange(event.target.value)}
       value={selectedValue}
     >
       {options.map((option) => (
-        <option key={option}>{option.replaceAll('_', ' ')}</option>
+        <option key={option} value={option}>
+          {option.replaceAll('_', ' ')}
+        </option>
       ))}
     </select>
   )
 }
 
 function GridNumber({
+  label,
+  max,
   onChange,
   value: selectedValue,
+  width = 'w-20',
 }: {
+  label: string
+  max?: number
   onChange: (value: number | null) => void
   value: number | null
+  width?: string
 }) {
   return (
     <input
-      aria-label="Grid number"
-      className="app-control h-9 w-20 bg-[#0c1b2a] px-2 text-xs text-white"
+      aria-label={label}
+      className={`app-control h-9 ${width} bg-[#0c1b2a] px-2 text-xs text-white`}
+      max={max}
       min={0}
       onChange={(event) =>
         onChange(event.target.value === '' ? null : Number(event.target.value))
@@ -1417,12 +1553,15 @@ function PlayerSeasons({
   )
 }
 
-function PlayerGames({
+function PlayerStats({
   token,
   backupManifestId,
   data,
   games,
+  gamesFailed,
+  gamesLoading,
   notify,
+  season,
 }: {
   token: string
   backupManifestId: Id<'backupManifests'> | null
@@ -1433,178 +1572,529 @@ function PlayerGames({
     homeSourceName: string
     week: number
   }>
+  gamesFailed: boolean
+  gamesLoading: boolean
   notify: (notice: Notice) => void
+  season: number
+}) {
+  const seasonStats = useQuery(
+    convexQuery(api.seasonalStats.listBySeason, {
+      programKey: 'michigan',
+      season,
+    }),
+  )
+  const [selectedPlayerId, setSelectedPlayerId] = useState('')
+  const [selectedGameId, setSelectedGameId] = useState('')
+  useEffect(() => {
+    setSelectedPlayerId('')
+    setSelectedGameId('')
+  }, [season])
+
+  if (!data)
+    return (
+      <EmptyState>
+        No Michigan players are available for this season.
+      </EmptyState>
+    )
+  if (seasonStats.isPending || gamesLoading) {
+    return <LoadingState label="Loading saved player stats and games" />
+  }
+  if (seasonStats.isError || gamesFailed) {
+    return (
+      <ErrorState>
+        Player stats or the Michigan schedule could not be loaded.
+      </ErrorState>
+    )
+  }
+
+  const selectedEntry = data.entries.find(
+    (entry) => entry.player?._id === selectedPlayerId,
+  )
+  const selectedStats = seasonStats.data.find(
+    (summary) => summary.player?._id === selectedPlayerId,
+  )
+  const recordByGameId = new Map(
+    selectedStats?.playerGames.map((record) => [String(record.gameId), record]),
+  )
+  const selectedGame = games.find((game) => String(game._id) === selectedGameId)
+  const selectedRecord = selectedGameId
+    ? recordByGameId.get(selectedGameId)
+    : undefined
+
+  return (
+    <div className="grid gap-6">
+      <AdminCard
+        note="Choose a player, then enter or update one game. Saved games build the season totals."
+        title={`${season} player stats`}
+      >
+        <div className="grid gap-6 xl:grid-cols-[minmax(20rem,0.85fr)_minmax(32rem,1.15fr)]">
+          <section>
+            <p className="app-kicker">1 · Choose a player</p>
+            <label className="mt-3 block text-xs font-black uppercase tracking-[0.12em]">
+              Player
+              <select
+                className={inputClass}
+                onChange={(event) => {
+                  setSelectedPlayerId(event.target.value)
+                  setSelectedGameId('')
+                }}
+                value={selectedPlayerId}
+              >
+                <option value="">Choose a player</option>
+                {data.entries.map(
+                  (entry) =>
+                    entry.player && (
+                      <option key={entry.player._id} value={entry.player._id}>
+                        {entry.player.displayName} · #
+                        {entry.season.jerseyNumber ?? '—'}{' '}
+                        {entry.season.listedPosition}
+                      </option>
+                    ),
+                )}
+              </select>
+            </label>
+
+            {selectedEntry && (
+              <div className="mt-6">
+                <p className="app-kicker">2 · Choose a game</p>
+                {games.length === 0 ? (
+                  <p className="mt-3 text-sm text-white/45">
+                    No Michigan games are available for {season}.
+                  </p>
+                ) : (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
+                    <table className="w-full border-collapse text-left text-sm">
+                      <thead className="app-label bg-white/[0.035]">
+                        <tr>
+                          <th className="px-3 py-2">Game</th>
+                          <th className="px-3 py-2">Status</th>
+                          <th className="px-3 py-2 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {games.map((game) => {
+                          const record = recordByGameId.get(String(game._id))
+                          const isSelected = String(game._id) === selectedGameId
+                          return (
+                            <tr
+                              className={`border-t border-white/[0.07] ${isSelected ? 'bg-[#ffcb05]/[0.07]' : ''}`}
+                              key={game._id}
+                            >
+                              <th className="px-3 py-2 font-bold">
+                                <span className="block text-white">
+                                  Week {game.week}
+                                </span>
+                                <small className="text-white/35">
+                                  {game.awaySourceName} at {game.homeSourceName}
+                                </small>
+                              </th>
+                              <td className="px-3 py-2 text-xs text-white/50">
+                                {record
+                                  ? `Saved ${new Date(record.updatedAt).toLocaleDateString()}`
+                                  : 'Not entered'}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <button
+                                  aria-pressed={isSelected}
+                                  className="text-xs font-black uppercase tracking-[0.08em] text-[#ffcb05] hover:text-white"
+                                  onClick={() =>
+                                    setSelectedGameId(String(game._id))
+                                  }
+                                  type="button"
+                                >
+                                  {record ? 'Edit stats' : 'Enter stats'}
+                                </button>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          <section className="border-t border-white/10 pt-6 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
+            <p className="app-kicker">3 · Enter or update stats</p>
+            {!selectedEntry?.player ? (
+              <p className="mt-4 text-sm text-white/45">
+                Choose a player to see the season schedule.
+              </p>
+            ) : !selectedGame ? (
+              <p className="mt-4 text-sm text-white/45">
+                Choose a game to open the stat editor.
+              </p>
+            ) : (
+              <PlayerGameForm
+                game={selectedGame}
+                key={`${selectedEntry.player._id}:${selectedGame._id}:${selectedRecord?.updatedAt ?? 'new'}`}
+                notify={notify}
+                playerId={selectedEntry.player._id}
+                playerName={selectedEntry.player.displayName}
+                record={selectedRecord}
+                token={token}
+              />
+            )}
+          </section>
+        </div>
+      </AdminCard>
+
+      <details className="app-card p-5">
+        <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.12em] text-white/65 hover:text-white">
+          Advanced: bulk import player game records
+        </summary>
+        <div className="mt-5 border-t border-white/10 pt-5">
+          <PlayerGameBulkImport
+            backupManifestId={backupManifestId}
+            notify={notify}
+            token={token}
+          />
+        </div>
+      </details>
+    </div>
+  )
+}
+
+type StatisticDraft = { category: string; id: number; value: string }
+
+function PlayerGameForm({
+  game,
+  notify,
+  playerId,
+  playerName,
+  record,
+  token,
+}: {
+  game: {
+    _id: Id<'collegeGames'>
+    awaySourceName: string
+    homeSourceName: string
+    week: number
+  }
+  notify: (notice: Notice) => void
+  playerId: Id<'players'>
+  playerName: string
+  record: PlayerGameRecord | undefined
+  token: string
 }) {
   const upsert = useMutation(api.seasonalStats.upsertPlayerGame)
+  const [saving, setSaving] = useState(false)
+  const [statistics, setStatistics] = useState<Array<StatisticDraft>>(() =>
+    (record?.statistics ?? []).map((statistic, index) => ({
+      category: statistic.category,
+      id: index,
+      value: String(statistic.value),
+    })),
+  )
+  const phaseRows = [
+    { key: 'offense', label: 'Offense', value: record?.offense },
+    { key: 'defense', label: 'Defense', value: record?.defense },
+    {
+      key: 'specialTeams',
+      label: 'Special teams',
+      value: record?.specialTeams,
+    },
+  ] as const
+
+  return (
+    <form
+      className="mt-3"
+      onSubmit={(event) => {
+        event.preventDefault()
+        const form = new FormData(event.currentTarget)
+        const enteredStatistics = statistics.filter(
+          (statistic) => statistic.category.trim() || statistic.value.trim(),
+        )
+        if (
+          enteredStatistics.some(
+            (statistic) =>
+              !statistic.category.trim() || !statistic.value.trim(),
+          )
+        ) {
+          notify({
+            kind: 'error',
+            text: 'Each statistic needs both a name and a value.',
+          })
+          return
+        }
+        const parsedStatistics = enteredStatistics.map((statistic) => ({
+          category: statistic.category.trim(),
+          value: Number(statistic.value),
+        }))
+        if (
+          parsedStatistics.some(
+            (statistic) => !Number.isFinite(statistic.value),
+          )
+        ) {
+          notify({ kind: 'error', text: 'Statistic values must be numbers.' })
+          return
+        }
+        const phase = (prefix: string) => ({
+          grade: nullableNumber(form, `${prefix}Grade`),
+          snaps: nullableNumber(form, `${prefix}Snaps`),
+        })
+        setSaving(true)
+        void upsert({
+          dataQuality: 'owner_verified',
+          defense: phase('defense'),
+          gameId: game._id,
+          offense: phase('offense'),
+          playerId,
+          sessionToken: token,
+          sourceLinks: [],
+          specialTeams: phase('specialTeams'),
+          statistics: parsedStatistics,
+        })
+          .then(() =>
+            notify(
+              success(
+                `${playerName} · Week ${game.week} stats ${record ? 'updated' : 'saved'}.`,
+              ),
+            ),
+          )
+          .catch((error: unknown) => notify(failure(error)))
+          .finally(() => setSaving(false))
+      }}
+    >
+      <div className="rounded-xl bg-white/[0.035] p-4">
+        <h3 className="font-display text-xl font-extrabold uppercase text-white">
+          {playerName}
+        </h3>
+        <p className="mt-1 text-sm text-white/50">
+          Week {game.week} · {game.awaySourceName} at {game.homeSourceName}
+        </p>
+        <p className="mt-2 text-xs font-bold text-[#ffcb05]">
+          {record
+            ? `Updating saved stats from ${new Date(record.updatedAt).toLocaleString()}`
+            : 'No stats entered yet for this game.'}
+        </p>
+      </div>
+
+      <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full border-collapse text-left text-sm">
+          <thead className="app-label bg-white/[0.035]">
+            <tr>
+              <th className="px-3 py-2">Phase</th>
+              <th className="px-3 py-2">Snaps</th>
+              <th className="px-3 py-2">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {phaseRows.map((phase) => (
+              <tr className="border-t border-white/[0.07]" key={phase.key}>
+                <th className="px-3 py-2 font-bold text-white">
+                  {phase.label}
+                </th>
+                <td className="px-3 py-2">
+                  <input
+                    aria-label={`${phase.label} snaps`}
+                    className="app-control h-10 w-full min-w-20 bg-[#0c1b2a] px-3 text-sm text-white"
+                    defaultValue={phase.value?.snaps ?? ''}
+                    min={0}
+                    name={`${phase.key}Snaps`}
+                    type="number"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <input
+                    aria-label={`${phase.label} grade`}
+                    className="app-control h-10 w-full min-w-20 bg-[#0c1b2a] px-3 text-sm text-white"
+                    defaultValue={phase.value?.grade ?? ''}
+                    max={100}
+                    min={0}
+                    name={`${phase.key}Grade`}
+                    step="0.1"
+                    type="number"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-white/35">
+        Leave a field blank when it is unknown. Zero snaps means the player did
+        not participate in that phase and cannot have a grade.
+      </p>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-black uppercase tracking-[0.1em] text-white">
+            Game statistics
+          </p>
+          <p className="mt-1 text-xs text-white/40">
+            Add only the categories that apply, such as tackles, receptions, or
+            passing yards.
+          </p>
+        </div>
+        <button
+          className={secondaryButton}
+          onClick={() =>
+            setStatistics((current) => [
+              ...current,
+              {
+                category: '',
+                id: Math.max(-1, ...current.map((row) => row.id)) + 1,
+                value: '',
+              },
+            ])
+          }
+          type="button"
+        >
+          Add statistic
+        </button>
+      </div>
+      {statistics.length === 0 ? (
+        <p className="mt-3 rounded-xl border border-dashed border-white/10 p-4 text-sm text-white/35">
+          No conventional statistics added.
+        </p>
+      ) : (
+        <div className="mt-3 grid gap-2">
+          {statistics.map((statistic, index) => (
+            <div
+              className="grid grid-cols-[minmax(0,1fr)_8rem_auto] items-center gap-2"
+              key={statistic.id}
+            >
+              <input
+                aria-label={`Statistic ${index + 1} name`}
+                className="app-control h-10 bg-[#0c1b2a] px-3 text-sm text-white"
+                onChange={(event) =>
+                  setStatistics((current) =>
+                    current.map((row) =>
+                      row.id === statistic.id
+                        ? { ...row, category: event.target.value }
+                        : row,
+                    ),
+                  )
+                }
+                placeholder="Statistic name"
+                value={statistic.category}
+              />
+              <input
+                aria-label={`Statistic ${index + 1} value`}
+                className="app-control h-10 bg-[#0c1b2a] px-3 text-sm text-white"
+                onChange={(event) =>
+                  setStatistics((current) =>
+                    current.map((row) =>
+                      row.id === statistic.id
+                        ? { ...row, value: event.target.value }
+                        : row,
+                    ),
+                  )
+                }
+                placeholder="Value"
+                step="any"
+                type="number"
+                value={statistic.value}
+              />
+              <button
+                aria-label={`Remove statistic ${index + 1}`}
+                className="min-h-10 px-2 text-xs font-bold text-white/45 hover:text-white"
+                onClick={() =>
+                  setStatistics((current) =>
+                    current.filter((row) => row.id !== statistic.id),
+                  )
+                }
+                type="button"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button className={`${primaryButton} mt-6`} disabled={saving}>
+        {saving ? 'Saving…' : record ? 'Update game stats' : 'Save game stats'}
+      </button>
+    </form>
+  )
+}
+
+function PlayerGameBulkImport({
+  token,
+  backupManifestId,
+  notify,
+}: {
+  token: string
+  backupManifestId: Id<'backupManifests'> | null
+  notify: (notice: Notice) => void
+}) {
   const applyImport = useMutation(api.seasonalStats.applyImport)
   const client = useConvex()
   const [importText, setImportText] = useState('[]')
   const [importPreview, setImportPreview] = useState('')
-  if (!data)
-    return <EmptyState>No Michigan Player Seasons are available.</EmptyState>
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
-      <AdminCard
-        title="Michigan Player Game"
-        note="Blank means unknown. Explicit zero means no snaps and rejects a grade. Grades are CFB26-authored on a 0–100 scale."
-      >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault()
-            const form = new FormData(event.currentTarget)
-            const phase = (prefix: string) => ({
-              grade: nullableNumber(form, `${prefix}Grade`),
-              snaps: nullableNumber(form, `${prefix}Snaps`),
-            })
-            let statistics: Array<{ category: string; value: number }> = []
+    <div>
+      <p className="mb-4 text-sm leading-6 text-white/50">
+        Paste normalized JSON, inspect the no-write validation, then apply with
+        the latest verified Michigan backup.
+      </p>
+      <textarea
+        value={importText}
+        onChange={(event) => {
+          setImportText(event.target.value)
+          setImportPreview('')
+        }}
+        rows={12}
+        className={inputClass}
+        aria-label="Player Game import JSON"
+      />
+      <div className="mt-3 flex gap-3">
+        <button
+          type="button"
+          className={secondaryButton}
+          onClick={() => {
             try {
-              statistics = JSON.parse(
-                value(form, 'statistics') || '[]',
-              ) as typeof statistics
-            } catch {
-              notify({ kind: 'error', text: 'Statistics must be valid JSON.' })
-              return
-            }
-            void upsert({
-              dataQuality: 'owner_verified',
-              defense: phase('defense'),
-              gameId: value(form, 'gameId') as Id<'collegeGames'>,
-              offense: phase('offense'),
-              playerId: value(form, 'playerId') as Id<'players'>,
-              sessionToken: token,
-              sourceLinks: [],
-              specialTeams: phase('specialTeams'),
-              statistics,
-            })
-              .then(() => notify(success('Player Game saved.')))
-              .catch((error: unknown) => notify(failure(error)))
-          }}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          <label className="sm:col-span-2 text-xs font-black uppercase tracking-[0.12em]">
-            Player
-            <select name="playerId" className={inputClass} required>
-              <option value="">Choose a player</option>
-              {data.entries.map(
-                (entry) =>
-                  entry.player && (
-                    <option key={entry.player._id} value={entry.player._id}>
-                      {entry.player.displayName}
-                    </option>
-                  ),
-              )}
-            </select>
-          </label>
-          <label className="sm:col-span-2 text-xs font-black uppercase tracking-[0.12em]">
-            Game
-            <select name="gameId" className={inputClass} required>
-              <option value="">Choose a game</option>
-              {games.map((game) => (
-                <option key={game._id} value={game._id}>
-                  W{game.week} · {game.awaySourceName} at {game.homeSourceName}
-                </option>
-              ))}
-            </select>
-          </label>
-          {(['offense', 'defense', 'specialTeams'] as const).map((phase) => (
-            <div key={phase} className="contents">
-              <Field
-                label={`${phase} snaps`}
-                name={`${phase}Snaps`}
-                type="number"
-              />
-              <Field
-                label={`${phase} grade`}
-                name={`${phase}Grade`}
-                type="number"
-                step="0.1"
-              />
-            </div>
-          ))}
-          <label className="sm:col-span-2 text-xs font-black uppercase tracking-[0.12em]">
-            Conventional statistics JSON
-            <textarea
-              name="statistics"
-              rows={3}
-              defaultValue="[]"
-              className={inputClass}
-            />
-          </label>
-          <div className="self-end">
-            <button className={primaryButton}>Save Player Game</button>
-          </div>
-        </form>
-      </AdminCard>
-      <AdminCard
-        title="Player Game bulk import"
-        note="Paste normalized JSON, inspect the no-write validation, then apply with the latest verified Michigan backup."
-      >
-        <textarea
-          value={importText}
-          onChange={(event) => {
-            setImportText(event.target.value)
-            setImportPreview('')
-          }}
-          rows={12}
-          className={inputClass}
-          aria-label="Player Game import JSON"
-        />
-        <div className="mt-3 flex gap-3">
-          <button
-            type="button"
-            className={secondaryButton}
-            onClick={() => {
-              try {
-                const rows = JSON.parse(importText) as Array<never>
-                void client
-                  .query(api.seasonalStats.previewImport, {
-                    rows,
-                    sessionToken: token,
-                  })
-                  .then((result) =>
-                    setImportPreview(JSON.stringify(result, null, 2)),
-                  )
-                  .catch((error: unknown) => notify(failure(error)))
-              } catch {
-                notify({ kind: 'error', text: 'Import must be valid JSON.' })
-              }
-            }}
-          >
-            Dry run
-          </button>
-          <button
-            type="button"
-            disabled={!backupManifestId || !importPreview}
-            className={primaryButton}
-            onClick={() => {
-              if (!backupManifestId) return
-              try {
-                const rows = JSON.parse(importText) as Array<never>
-                void applyImport({
-                  backupManifestId,
+              const rows = JSON.parse(importText) as Array<never>
+              void client
+                .query(api.seasonalStats.previewImport, {
                   rows,
                   sessionToken: token,
                 })
-                  .then((result) =>
-                    notify(
-                      success(`${result.upserted} Player Games imported.`),
-                    ),
-                  )
-                  .catch((error: unknown) => notify(failure(error)))
-              } catch {
-                notify({ kind: 'error', text: 'Import must be valid JSON.' })
-              }
-            }}
-          >
-            Apply import
-          </button>
-        </div>
-        {importPreview && (
-          <pre className="mt-4 max-h-72 overflow-auto bg-slate-950 p-3 text-xs text-emerald-300">
-            {importPreview}
-          </pre>
-        )}
-      </AdminCard>
+                .then((result) =>
+                  setImportPreview(JSON.stringify(result, null, 2)),
+                )
+                .catch((error: unknown) => notify(failure(error)))
+            } catch {
+              notify({ kind: 'error', text: 'Import must be valid JSON.' })
+            }
+          }}
+        >
+          Dry run
+        </button>
+        <button
+          type="button"
+          disabled={!backupManifestId || !importPreview}
+          className={primaryButton}
+          onClick={() => {
+            if (!backupManifestId) return
+            try {
+              const rows = JSON.parse(importText) as Array<never>
+              void applyImport({
+                backupManifestId,
+                rows,
+                sessionToken: token,
+              })
+                .then((result) =>
+                  notify(success(`${result.upserted} Player Games imported.`)),
+                )
+                .catch((error: unknown) => notify(failure(error)))
+            } catch {
+              notify({ kind: 'error', text: 'Import must be valid JSON.' })
+            }
+          }}
+        >
+          Apply import
+        </button>
+      </div>
+      {importPreview && (
+        <pre className="mt-4 max-h-72 overflow-auto bg-slate-950 p-3 text-xs text-emerald-300">
+          {importPreview}
+        </pre>
+      )}
     </div>
   )
 }

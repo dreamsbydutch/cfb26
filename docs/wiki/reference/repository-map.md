@@ -38,7 +38,7 @@
 | `src/routes/michigan.*.tsx` | Michigan Overview, Movement, Alumni, player, comparison, and Matrix redirect routes.                       |
 | `src/routes/games.tsx`      | Canonical `/games` National Games route definition and states.                                             |
 | `src/routes/national.*.tsx` | Power, Résumé, Playoff, Teams/program, Simulator, Ballot, Methodology, and Games redirect routes.          |
-| `src/routes/admin.roster*`  | Desktop Owner Dashboard, Roster/player, Season, Data, and Operations routes with no-index metadata.        |
+| `src/routes/admin.roster*`  | Desktop Owner Dashboard, Roster/player, Player Stats, Data, and Operations routes with no-index metadata.  |
 | `src/components/`           | Shared public context shell, fuzzy search, responsive navigation, metrics, surfaces, and states.           |
 | `src/features/michigan/`    | Matrix, Overview/readiness, Movement, player intelligence, comparison, and alumni.                         |
 | `src/features/landscape/`   | Games, Power, Résumé/SOS, playoff, team profiles, simulator, ballot, and methodology.                      |

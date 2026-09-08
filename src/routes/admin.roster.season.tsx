@@ -12,7 +12,7 @@ export const Route = createFileRoute('/admin/roster/season')({
   errorComponent: RosterAdminError,
   head: () => ({
     meta: [
-      { title: 'Owner Season | DbyD CFB' },
+      { title: 'Owner Player Stats | DbyD CFB' },
       { name: 'robots', content: 'noindex, nofollow' },
     ],
   }),

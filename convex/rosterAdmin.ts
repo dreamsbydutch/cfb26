@@ -43,6 +43,11 @@ const playerRole = v.union(
   v.literal('reserve'),
   v.literal('unassigned'),
 )
+const rosterStatus = v.union(
+  v.literal('active'),
+  v.literal('inactive'),
+  v.literal('departed'),
+)
 const evaluationKind = v.union(
   v.literal('recruiting'),
   v.literal('transfer'),
@@ -78,11 +83,7 @@ const playerSeasonInput = {
   listedPosition: v.string(),
   roomOrder: nullableNumber,
   role: playerRole,
-  rosterStatus: v.union(
-    v.literal('active'),
-    v.literal('inactive'),
-    v.literal('departed'),
-  ),
+  rosterStatus,
   scholarshipStatus,
   season: v.number(),
   sourceLinks: v.array(sourceLink),
@@ -626,9 +627,12 @@ export const applySeasonGrid = mutation({
       v.object({
         depthStatus,
         gamesPlayed: v.number(),
+        jerseyNumber: nullableNumber,
+        listedPosition: v.string(),
         playerSeasonId: v.id('playerSeasons'),
         role: playerRole,
         roomOrder: nullableNumber,
+        rosterStatus,
         scholarshipStatus,
         starts: v.number(),
       }),
@@ -659,11 +663,20 @@ export const applySeasonGrid = mutation({
       }
       const gamesPlayed = wholeNumber(row.gamesPlayed, 'Games played', 0, 30)
       const starts = wholeNumber(row.starts, 'Starts', 0, gamesPlayed)
+      const listedPosition = requiredText(
+        row.listedPosition,
+        'Position',
+        16,
+      ).toUpperCase()
       await ctx.db.patch('playerSeasons', row.playerSeasonId, {
         depthStatus: row.depthStatus,
         gamesPlayed,
+        jerseyNumber: optionalWholeNumber(row.jerseyNumber, 'Jersey', 0, 99),
+        listedPosition,
+        positionRoom: derivePositionRoom(listedPosition),
         role: row.role,
         roomOrder: optionalWholeNumber(row.roomOrder, 'Room order', 1, 200),
+        rosterStatus: row.rosterStatus,
         scholarshipStatus: row.scholarshipStatus,
         starts,
       })

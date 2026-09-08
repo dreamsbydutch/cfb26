@@ -4,7 +4,7 @@ This is the canonical operating guide for agents working in `cfb26`. Keep it sho
 
 ## Repository state
 
-- Product status: all nine phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented in source. `/` is the Michigan Matrix, with route-backed Overview, Movement, Alumni, player intelligence, and four-player comparison. `/games` leads the route-backed National Games, Power, Résumé, Playoff, Teams, Simulator, Blind Ballot, and Methodology areas. `/admin/roster` leads the desktop Owner Dashboard, Roster, Season, Data, and Operations workflows.
+- Product status: all nine phases of the Michigan-first [system definition](docs/wiki/product/system-definition.md) are implemented in source. `/` is the Michigan Matrix, with route-backed Overview, Movement, Alumni, player intelligence, and four-player comparison. `/games` leads the route-backed National Games, Power, Résumé, Playoff, Teams, Simulator, Blind Ballot, and Methodology areas. `/admin/roster` leads the desktop Owner Dashboard, inline-editable Roster, Player Stats, Data, and Operations workflows.
 - Stack: React 19, TanStack Start/Router, Vite, Nitro, Tailwind CSS 4, React Query, and Convex.
 - Runtime: Node.js 22.12 or newer and npm.
 - Deployment shape: the web app builds for Vercel; `vercel.json` deploys Convex before the web build.
