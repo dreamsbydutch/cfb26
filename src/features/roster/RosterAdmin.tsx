@@ -23,11 +23,16 @@ import {
   LoadingState,
   Metric,
 } from '~/components/AppShell'
+import {
+  findActiveCommitment,
+  parseOwnerSeason,
+} from '~/features/roster/adminWorkflow'
 
 export type AdminView =
   'dashboard' | 'data' | 'operations' | 'roster' | 'season'
 type Notice = { kind: 'error' | 'success'; text: string } | null
 const CURRENT_SEASON = new Date().getFullYear()
+const OWNER_SEASON_KEY = 'cfb26-owner-season'
 const SESSION_KEY = 'cfb26-owner-session'
 const DATASETS = [
   'players',
@@ -84,6 +89,15 @@ function initialToken() {
   return typeof window === 'undefined'
     ? ''
     : (window.localStorage.getItem(SESSION_KEY) ?? '')
+}
+
+function initialOwnerSeason() {
+  return typeof window === 'undefined'
+    ? CURRENT_SEASON
+    : parseOwnerSeason(
+        window.localStorage.getItem(OWNER_SEASON_KEY),
+        CURRENT_SEASON,
+      )
 }
 
 export function RosterAdmin({
@@ -167,7 +181,7 @@ function AuthenticatedAdmin({
   onExpire: () => void
 }) {
   const dirty = useOwnerDirtyState()
-  const [season, setSeason] = useState(CURRENT_SEASON)
+  const [season, setSeason] = useState(initialOwnerSeason)
   const [notice, setNotice] = useState<Notice>(null)
   const session = useQuery(
     convexQuery(api.rosterAdmin.sessionStatus, { sessionToken: token }),
@@ -228,7 +242,14 @@ function AuthenticatedAdmin({
             Season
             <select
               value={season}
-              onChange={(event) => setSeason(Number(event.target.value))}
+              onChange={(event) => {
+                const nextSeason = Number(event.target.value)
+                window.localStorage.setItem(
+                  OWNER_SEASON_KEY,
+                  String(nextSeason),
+                )
+                setSeason(nextSeason)
+              }}
               className="app-control bg-[#0c1b2a] px-3 py-2 text-sm text-white"
             >
               <option>{CURRENT_SEASON + 1}</option>
@@ -651,6 +672,10 @@ function People({
   const selectedEntry = data?.entries.find(
     (entry) => entry.player?._id === playerId,
   )
+  const activeCommitment = findActiveCommitment(
+    data?.commitments ?? [],
+    playerId,
+  )
   const visiblePeople = lifecyclePeople.filter((player) =>
     player?.displayName
       .toLowerCase()
@@ -776,40 +801,49 @@ function People({
             </select>
           </label>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              disabled={!playerId}
-              className={secondaryButton}
-              onClick={() =>
-                void setCommitment({
-                  playerId: playerId as Id<'players'>,
-                  season,
-                  sessionToken: token,
-                  status: 'enrolled',
-                })
-                  .then(() => notify(success('Prospect enrolled.')))
-                  .catch((error: unknown) => notify(failure(error)))
-              }
-            >
-              Enroll prospect
-            </button>
-            <button
-              type="button"
-              disabled={!playerId}
-              className={secondaryButton}
-              onClick={() =>
-                void setCommitment({
-                  playerId: playerId as Id<'players'>,
-                  season,
-                  sessionToken: token,
-                  status: 'decommitted',
-                })
-                  .then(() => notify(success('Decommitment recorded.')))
-                  .catch((error: unknown) => notify(failure(error)))
-              }
-            >
-              Record decommitment
-            </button>
+            {activeCommitment ? (
+              <>
+                <button
+                  type="button"
+                  className={secondaryButton}
+                  onClick={() =>
+                    void setCommitment({
+                      playerId: activeCommitment.commitment.playerId,
+                      season: activeCommitment.commitment.season,
+                      sessionToken: token,
+                      status: 'enrolled',
+                    })
+                      .then(() => notify(success('Prospect enrolled.')))
+                      .catch((error: unknown) => notify(failure(error)))
+                  }
+                >
+                  Enroll prospect
+                </button>
+                <button
+                  type="button"
+                  className={secondaryButton}
+                  onClick={() =>
+                    void setCommitment({
+                      playerId: activeCommitment.commitment.playerId,
+                      season: activeCommitment.commitment.season,
+                      sessionToken: token,
+                      status: 'decommitted',
+                    })
+                      .then(() => notify(success('Decommitment recorded.')))
+                      .catch((error: unknown) => notify(failure(error)))
+                  }
+                >
+                  Record decommitment
+                </button>
+              </>
+            ) : (
+              playerId && (
+                <p className="sm:col-span-2 rounded-xl border border-white/10 bg-white/[0.025] p-3 text-xs leading-5 text-white/45">
+                  This person has no active commitment in {season}. Enrollment
+                  and decommitment actions only appear for active commitments.
+                </p>
+              )
+            )}
             <button
               type="button"
               disabled={!playerId}
