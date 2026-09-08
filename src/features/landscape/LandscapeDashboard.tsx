@@ -163,7 +163,7 @@ function Games({
               onClick={() => setLens(option)}
               className={`${pillClass} ${lens === option ? 'app-filter-active' : 'text-white/45'}`}
             >
-              {option}
+              {option[0].toUpperCase() + option.slice(1)}
             </button>
           ))}
         </div>
@@ -171,120 +171,183 @@ function Games({
           Schedule badges use the complete {data.ratingCount}-team Power field.
         </p>
       </div>
-      <div className="grid gap-7">
-        {windows.map(([startTime, games]) => (
-          <section key={startTime}>
-            <div className="mb-3 flex items-center gap-3">
-              <time className="font-display text-xl font-extrabold uppercase tracking-wide">
-                {new Date(startTime).toLocaleString([], {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                })}
-              </time>
-              <span className="h-px flex-1 bg-white/10" />
-              <span className="text-xs text-white/35">
-                {games.length} games
-              </span>
-            </div>
-            <div className="grid gap-3 lg:grid-cols-2">
-              {games.map((game) => (
-                <article
-                  key={game._id}
-                  className={`app-card relative overflow-hidden p-5 ${isMichiganProgram(game.awaySourceName) || isMichiganProgram(game.homeSourceName) ? 'michigan-highlight' : ''}`}
+      <section className="app-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+            <caption className="sr-only">
+              National games grouped by kickoff time
+            </caption>
+            <thead className="app-label bg-black/15">
+              <tr>
+                <th className="min-w-52 px-4 py-3" scope="col">
+                  Away
+                </th>
+                <th className="min-w-52 px-4 py-3" scope="col">
+                  Home
+                </th>
+                <th className="min-w-64 px-4 py-3" scope="col">
+                  Game details
+                </th>
+                <th
+                  className={`px-4 py-3 text-right ${lens === 'quality' ? 'app-accent-text bg-white/[0.035]' : ''}`}
+                  scope="col"
                 >
-                  <div
-                    className={`absolute inset-y-3 left-0 w-1 rounded-r-full ${isMichiganProgram(game.awaySourceName) || isMichiganProgram(game.homeSourceName) ? 'michigan-marker' : 'app-list-marker'}`}
-                  />
-                  <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
-                    <span>
-                      Week {game.week} ·{' '}
-                      {game.conferenceGame ? 'Conference' : 'Nonconference'}
-                    </span>
-                    <span>{new Date(game.startTime).toLocaleDateString()}</span>
-                  </div>
-                  <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                    <Team
-                      name={game.awaySourceName}
-                      rank={game.awayRank}
-                      rating={game.awayRating}
-                    />
-                    <div className="text-center text-xs font-black text-white/25">
-                      AT
-                    </div>
-                    <Team
-                      name={game.homeSourceName}
-                      rank={game.homeRank}
-                      rating={game.homeRating}
-                      align="right"
-                    />
-                  </div>
-                  <div className="mt-5 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 text-center text-xs text-white/40">
-                    <div>
-                      <b className="font-display block text-xl text-white">
-                        {game.matchupQuality}
-                      </b>
-                      quality
-                    </div>
-                    <div>
-                      <b className="font-display block text-xl text-white">
-                        {game.playoffImportance}
-                      </b>
-                      playoff
-                    </div>
-                    <div>
-                      <b className="font-display block text-xl text-white">
-                        {game.projectedMargin > 0 ? '+' : ''}
-                        {game.projectedMargin.toFixed(1)}
-                      </b>
-                      home margin
-                    </div>
-                  </div>
-                  <p className="mt-4 text-xs text-white/40">
-                    {game.michiganRelation} ·{' '}
-                    {game.neutralSite
-                      ? 'Neutral site'
-                      : (game.venue ?? 'Venue TBD')}
-                    {game.tvOutlets?.length
-                      ? ` · ${game.tvOutlets.join(', ')}`
-                      : ''}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+                  Quality
+                </th>
+                <th
+                  className={`px-4 py-3 text-right ${lens === 'playoff' ? 'app-accent-text bg-white/[0.035]' : ''}`}
+                  scope="col"
+                >
+                  Playoff
+                </th>
+                <th
+                  className={`px-4 py-3 text-right ${lens === 'michigan' ? 'michigan-accent bg-white/[0.035]' : ''}`}
+                  scope="col"
+                >
+                  Michigan
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-right" scope="col">
+                  Home margin
+                </th>
+              </tr>
+            </thead>
+            {windows.map(([startTime, games]) => {
+              const kickoff = new Date(startTime)
+              return (
+                <tbody key={startTime}>
+                  <tr className="app-ranking-header border-y border-white/10">
+                    <th className="px-4 py-2.5" colSpan={7} scope="rowgroup">
+                      <div className="flex items-center gap-3">
+                        <time
+                          className="font-display app-accent-text text-lg font-extrabold uppercase tracking-wide"
+                          dateTime={kickoff.toISOString()}
+                        >
+                          {kickoff.toLocaleTimeString([], {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </time>
+                        <span className="text-xs font-bold text-white/50">
+                          {kickoff.toLocaleDateString([], {
+                            weekday: 'long',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                        <span className="h-px flex-1 bg-white/10" />
+                        <span className="text-xs font-normal text-white/35">
+                          {games.length} {games.length === 1 ? 'game' : 'games'}
+                        </span>
+                      </div>
+                    </th>
+                  </tr>
+                  {games.map((game) => {
+                    const highlightsMichigan =
+                      isMichiganProgram(game.awaySourceName) ||
+                      isMichiganProgram(game.homeSourceName)
+                    return (
+                      <tr
+                        key={game._id}
+                        className={`border-b border-white/[0.065] hover:bg-white/[0.025] ${highlightsMichigan ? 'michigan-highlight' : ''}`}
+                      >
+                        <td className="px-4 py-2.5">
+                          <ScheduleTeam
+                            name={game.awaySourceName}
+                            rank={game.awayRank}
+                            rating={game.awayRating}
+                          />
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <ScheduleTeam
+                            name={game.homeSourceName}
+                            rank={game.homeRank}
+                            rating={game.homeRating}
+                          />
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className="block text-white/65">
+                            Week {game.week} ·{' '}
+                            {game.conferenceGame
+                              ? 'Conference'
+                              : 'Nonconference'}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-white/40">
+                            {game.neutralSite
+                              ? 'Neutral site'
+                              : (game.venue ?? 'Venue TBD')}
+                            {game.tvOutlets?.length
+                              ? ` · ${game.tvOutlets.join(', ')}`
+                              : ''}
+                          </span>
+                        </td>
+                        <td
+                          className={`px-4 py-2.5 text-right ${lens === 'quality' ? 'bg-white/[0.035]' : ''}`}
+                        >
+                          <b className="font-display text-lg tabular-nums">
+                            {game.matchupQuality}
+                          </b>
+                        </td>
+                        <td
+                          className={`px-4 py-2.5 text-right ${lens === 'playoff' ? 'bg-white/[0.035]' : ''}`}
+                        >
+                          <b className="font-display text-lg tabular-nums">
+                            {game.playoffImportance}
+                          </b>
+                        </td>
+                        <td
+                          className={`px-4 py-2.5 text-right ${lens === 'michigan' ? 'bg-white/[0.035]' : ''}`}
+                        >
+                          <b className="font-display text-lg tabular-nums">
+                            {game.michiganImportance}
+                          </b>
+                          <span className="mt-0.5 block whitespace-nowrap text-[10px] text-white/35">
+                            {game.michiganRelation}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right">
+                          <b className="font-display text-lg tabular-nums">
+                            {game.projectedMargin > 0 ? '+' : ''}
+                            {game.projectedMargin.toFixed(1)}
+                          </b>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              )
+            })}
+          </table>
+        </div>
+      </section>
     </>
   )
 }
 
-function Team({
-  align,
+function ScheduleTeam({
   name,
   rank,
   rating,
 }: {
-  align?: 'right'
   name: string
   rank?: number
   rating: number
 }) {
   const highlightsMichigan = isMichiganProgram(name)
   return (
-    <div className={align === 'right' ? 'text-right' : ''}>
+    <div>
       <div
-        className={`font-display text-xl font-extrabold ${highlightsMichigan ? 'michigan-accent' : 'text-white'}`}
+        className={`font-display text-base font-extrabold ${highlightsMichigan ? 'michigan-accent' : 'text-white'}`}
       >
-        {rank ? (
+        {rank !== undefined ? (
           <span
-            className={`mr-1 text-sm ${highlightsMichigan ? 'michigan-accent' : 'app-accent-text'}`}
+            className={`mr-1.5 text-xs ${highlightsMichigan ? 'michigan-accent' : 'app-accent-text'}`}
           >
             #{rank}
           </span>
         ) : null}
         {name}
       </div>
-      <div className="mt-1 text-xs text-white/40">
+      <div className="mt-0.5 text-xs text-white/40">
         Power {rating > 0 ? '+' : ''}
         {rating.toFixed(1)}
       </div>
