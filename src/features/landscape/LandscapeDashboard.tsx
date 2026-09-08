@@ -315,11 +315,10 @@ function Power({
     .map((row) => ({
       highlight: isMichiganProgram(row.sourceProgramName),
       label: row.sourceProgramName,
-      primary: row.power.toFixed(1),
+      primary: signed(row.power),
       rank: row.powerRank ?? 999,
       secondary: `${row.conference ?? 'Independent'} · ${rankingBasisLabel(row.rankingBasis, row.sourceSeason)}`,
       details: [
-        { label: 'Neutral Power', value: signed(row.power) },
         { label: 'Offense', value: signed(row.offense) },
         { label: 'Defense', value: signed(row.defense) },
         {
@@ -328,6 +327,7 @@ function Power({
             ? signed(row.specialTeams)
             : 'Not separated',
         },
+        { label: 'Home field', value: signed(row.homeFieldAdvantage) },
         {
           label: 'Prior weight',
           value: `${Math.round(row.priorWeight * 100)}%`,
@@ -366,7 +366,17 @@ function Power({
         </select>
       </div>
       <RankingTable
+        detailHeadings={[
+          'Offense',
+          'Defense',
+          'Special teams',
+          'Home field',
+          'Prior weight',
+          'Evidence',
+        ]}
         heading={`DbyD CFB Power · ${rows.length} of ${data.ratingCount} teams`}
+        noteHeading="Sources & coverage"
+        primaryHeading="Power"
         rows={rows}
       />
     </div>
@@ -393,6 +403,7 @@ function Resume({
     <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
       <RankingTable
         heading="CFB26 Résumé"
+        primaryHeading="Résumé"
         rows={merit.rankings.map(({ program, snapshot }) => ({
           highlight:
             program?.key === 'michigan' ||
@@ -954,10 +965,16 @@ function Ballot({ season, week }: { season: number; week: number }) {
 }
 
 function RankingTable({
+  detailHeadings = [],
   heading,
+  noteHeading,
+  primaryHeading,
   rows,
 }: {
+  detailHeadings?: Array<string>
   heading: string
+  noteHeading?: string
+  primaryHeading: string
   rows: Array<{
     label: string
     primary: string
@@ -973,53 +990,80 @@ function RankingTable({
       <h2 className="app-ranking-header font-display border-b border-white/10 px-5 py-4 text-2xl font-extrabold text-white">
         {heading}
       </h2>
-      <div className="divide-y divide-white/[0.07]">
-        {rows.map((row) => (
-          <article
-            key={`${row.rank}:${row.label}`}
-            className={`px-5 py-3 ${row.highlight ? 'michigan-highlight' : ''}`}
-          >
-            <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
-              <b
-                className={`font-display text-2xl ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
+      <div className="overflow-x-auto">
+        <table
+          className={`w-full border-collapse text-left text-sm ${detailHeadings.length > 0 ? 'min-w-[1180px]' : 'min-w-[620px]'}`}
+        >
+          <thead className="app-label bg-black/15">
+            <tr>
+              <th className="w-16 px-4 py-3" scope="col">
+                Rank
+              </th>
+              <th className="min-w-52 px-4 py-3" scope="col">
+                Team
+              </th>
+              <th className="px-4 py-3 text-right" scope="col">
+                {primaryHeading}
+              </th>
+              {detailHeadings.map((detailHeading) => (
+                <th
+                  className="whitespace-nowrap px-4 py-3 text-right"
+                  key={detailHeading}
+                  scope="col"
+                >
+                  {detailHeading}
+                </th>
+              ))}
+              {noteHeading && (
+                <th className="min-w-64 px-4 py-3" scope="col">
+                  {noteHeading}
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={`${row.rank}:${row.label}`}
+                className={`border-t border-white/[0.07] hover:bg-white/[0.025] ${row.highlight ? 'michigan-highlight' : ''}`}
               >
-                {row.rank}
-              </b>
-              <div>
-                <b className={row.highlight ? 'michigan-accent' : undefined}>
-                  {row.label}
-                </b>
-                <div className="text-xs text-white/40">{row.secondary}</div>
-              </div>
-              <b className="text-lg">{row.primary}</b>
-            </div>
-            {row.details && (
-              <details className="group ml-12 mt-2 rounded-xl bg-black/15 px-3 py-2 text-xs">
-                <summary className="app-accent-text cursor-pointer font-black uppercase tracking-[0.08em] marker:text-current">
-                  Why this rank
-                </summary>
-                <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {row.details.map((detail) => (
-                    <div
-                      key={detail.label}
-                      className="rounded-lg bg-white/[0.04] p-2"
-                    >
-                      <dt className="text-[10px] font-bold uppercase tracking-wide text-white/35">
-                        {detail.label}
-                      </dt>
-                      <dd className="mt-1 font-black text-white">
-                        {detail.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                {row.note && (
-                  <p className="mt-3 leading-5 text-white/40">{row.note}</p>
+                <td
+                  className={`font-display px-4 py-3 text-2xl font-extrabold tabular-nums ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
+                >
+                  {row.rank}
+                </td>
+                <th className="px-4 py-3" scope="row">
+                  <span
+                    className={`block ${row.highlight ? 'michigan-accent' : ''}`}
+                  >
+                    {row.label}
+                  </span>
+                  <span className="mt-0.5 block text-xs font-normal text-white/40">
+                    {row.secondary}
+                  </span>
+                </th>
+                <td className="px-4 py-3 text-right text-lg font-extrabold tabular-nums">
+                  {row.primary}
+                </td>
+                {detailHeadings.map((detailHeading) => (
+                  <td
+                    className="whitespace-nowrap px-4 py-3 text-right font-bold tabular-nums text-white/70"
+                    key={detailHeading}
+                  >
+                    {row.details?.find(
+                      (detail) => detail.label === detailHeading,
+                    )?.value ?? '—'}
+                  </td>
+                ))}
+                {noteHeading && (
+                  <td className="px-4 py-3 text-xs leading-5 text-white/40">
+                    {row.note ?? '—'}
+                  </td>
                 )}
-              </details>
-            )}
-          </article>
-        ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   )
