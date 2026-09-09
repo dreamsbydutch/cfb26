@@ -326,7 +326,7 @@ export function PageHero({
       </div>
       <div className="lg:text-right">
         {summary && (
-          <p className="m-0 text-sm leading-6 text-white/55">{summary}</p>
+          <p className="app-muted m-0 text-sm leading-6">{summary}</p>
         )}
         {actions && (
           <div className="mt-4 flex flex-wrap justify-start gap-2 lg:justify-end">
@@ -362,12 +362,10 @@ export function Metric({
   return (
     <div className="app-card min-w-0 p-4">
       <div className="app-label">{label}</div>
-      <div className="font-display mt-1 text-3xl font-extrabold tabular-nums text-white">
+      <div className="font-display mt-1 text-3xl font-extrabold tabular-nums">
         {value}
       </div>
-      {note && (
-        <div className="mt-1 truncate text-xs text-white/40">{note}</div>
-      )}
+      {note && <div className="app-muted mt-1 truncate text-xs">{note}</div>}
     </div>
   )
 }
@@ -382,7 +380,7 @@ export function EmptyState({
   return (
     <div className="app-card border-dashed p-8 text-center">
       <h2 className="m-0 text-2xl font-bold">{title}</h2>
-      <div className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/50">
+      <div className="app-muted mx-auto mt-2 max-w-xl text-sm leading-6">
         {children}
       </div>
     </div>
@@ -396,10 +394,10 @@ export function LoadingState({
 }) {
   return (
     <div className="app-card animate-pulse p-8" aria-live="polite">
-      <div className="h-3 w-28 rounded-full bg-white/10" />
-      <div className="mt-4 h-10 max-w-xl rounded-xl bg-white/10" />
-      <div className="mt-3 h-24 rounded-xl bg-white/5" />
-      <p className="mt-4 text-sm text-white/45">{label}…</p>
+      <div className="app-skeleton h-3 w-28 rounded-full" />
+      <div className="app-skeleton mt-4 h-10 max-w-xl rounded-xl" />
+      <div className="app-skeleton mt-3 h-24 rounded-xl opacity-70" />
+      <p className="app-muted mt-4 text-sm">{label}…</p>
     </div>
   )
 }
@@ -407,11 +405,11 @@ export function LoadingState({
 export function ErrorState({ children }: { children: ReactNode }) {
   return (
     <div className="app-card border-red-400/25 p-8">
-      <p className="app-kicker text-red-300">Connection exception</p>
+      <p className="app-kicker text-red-700">Connection exception</p>
       <h2 className="mt-2 text-3xl font-bold">
         This view could not be loaded.
       </h2>
-      <p className="mt-2 text-sm text-white/50">{children}</p>
+      <p className="app-muted mt-2 text-sm">{children}</p>
     </div>
   )
 }
@@ -424,10 +422,10 @@ export function StatusPill({
   tone?: 'danger' | 'maize' | 'neutral' | 'success'
 }) {
   const tones = {
-    danger: 'border-red-300/25 bg-red-400/10 text-red-200',
-    maize: 'border-[#ffcb05]/25 bg-[#ffcb05]/10 text-[#ffe16a]',
+    danger: 'border-red-200 bg-red-50 text-red-700',
+    maize: 'border-[#ffcb05]/45 bg-[#ffcb05]/20 text-[#00274c]',
     neutral: 'border-white/10 bg-white/5 text-white/60',
-    success: 'border-emerald-300/20 bg-emerald-400/10 text-emerald-200',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   }
   return (
     <span

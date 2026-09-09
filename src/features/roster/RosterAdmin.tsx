@@ -400,7 +400,7 @@ function OwnerBoundary({
   onSignOut?: () => void
 }) {
   return (
-    <div className="min-h-screen">
+    <div className="owner-workspace min-h-screen">
       <div className="hidden lg:block">{children}</div>
       <main className="grid min-h-screen place-items-center px-6 py-12 lg:hidden">
         <section className="app-card max-w-lg p-7 text-center">
@@ -581,7 +581,7 @@ function OwnerDashboard({
           note="Items disappear only when the underlying condition is fixed."
         >
           {actions.length === 0 ? (
-            <p className="m-0 text-sm text-emerald-200">
+            <p className="m-0 text-sm text-emerald-700">
               No owner action is required.
             </p>
           ) : (
@@ -591,7 +591,7 @@ function OwnerDashboard({
                   className="rounded-xl bg-amber-300/[0.07] p-3"
                   key={action.id}
                 >
-                  <strong className="text-sm text-amber-100">
+                  <strong className="text-sm text-amber-900">
                     {action.label}
                   </strong>
                   <p className="m-0 mt-1 text-xs text-white/40">
@@ -2410,7 +2410,7 @@ function Operations({
               {preview}
             </pre>
             {previewHasErrors && (
-              <p className="mt-2 text-xs font-bold text-red-200">
+              <p className="mt-2 text-xs font-bold text-red-700">
                 Blocking errors abort the entire import. Correct them and run
                 validation again.
               </p>

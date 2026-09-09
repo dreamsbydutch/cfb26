@@ -12,7 +12,7 @@ This page inventories the current source interfaces. Development `adjoining-opos
 | `/games`, `/national/*`            | Games, continuous complete-field Power, Résumé, deterministic Playoff, Teams/program profiles, Simulator, Blind Ballot, and Methodology. Schedule ranks come from the selected edition; Power rows expose components, basis, sample, sources, and coverage. `/national/games` redirects to `/games`.                                                                                                                                       |
 | `/admin/roster`, `/admin/roster/*` | No-index desktop Owner Dashboard, inline-editable Roster/player editor, guided Player Stats entry, Data/import/identity, and isolated Operations routes. Saved game stats are preloaded for in-season updates; advanced lifecycle, annual fields, and bulk import remain secondary. A password creates a revocable 12-hour session; all access validates server-side, and narrow layouts expose status/sign-out without mutation controls. |
 
-All routes include responsive navigation, semantic controls, visible focus treatment, and explicit loading/error/empty states. Michigan and Owner retain the navy-and-maize presentation; National uses a charcoal grayscale system and reserves the Michigan colors for Michigan programs and matchups inside national lists.
+All routes include responsive navigation, semantic controls, visible focus treatment, and explicit loading/error/empty states. All three workspaces use white foundations. Michigan uses navy structure with maize highlights; National and Owner use graphite and grayscale accents, with Michigan colors reserved for Michigan programs and matchups inside national lists.
 
 ## Public Convex reads
 

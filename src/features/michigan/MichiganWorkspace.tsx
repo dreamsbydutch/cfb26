@@ -257,16 +257,16 @@ export function MichiganMatrix() {
               <Surface className="mb-5 flex items-start gap-3 border-amber-300/20 bg-amber-300/[0.055] p-4">
                 <CircleAlert
                   aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-amber-200"
+                  className="mt-0.5 shrink-0 text-amber-700"
                   size={18}
                 />
                 <div>
-                  <p className="m-0 text-sm font-bold text-amber-100">
+                  <p className="m-0 text-sm font-bold text-amber-900">
                     {dashboard.data.warnings.length} roster exception
                     {dashboard.data.warnings.length === 1 ? '' : 's'} affect
                     this view
                   </p>
-                  <p className="m-0 mt-1 text-xs text-amber-100/55">
+                  <p className="m-0 mt-1 text-xs text-amber-800">
                     {dashboard.data.warnings.slice(0, 2).join(' ')}
                   </p>
                 </div>
@@ -411,7 +411,7 @@ function PlayerTile({
           {entry.season.starts} starts / {entry.season.gamesPlayed} games
         </span>
         {entry.season.depthStatus !== 'available' && (
-          <span className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wider text-amber-200">
+          <span className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wider text-amber-700">
             {humanize(entry.season.depthStatus)}
           </span>
         )}

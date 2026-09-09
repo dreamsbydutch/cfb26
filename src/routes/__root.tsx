@@ -28,6 +28,10 @@ export const Route = createRootRouteWithContext<{
         content:
           'Michigan-first college football roster, player, game, rating, résumé, playoff, and alumni intelligence.',
       },
+      {
+        name: 'theme-color',
+        content: '#FFFFFF',
+      },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
@@ -48,7 +52,7 @@ export const Route = createRootRouteWithContext<{
         sizes: '16x16',
         href: '/favicon-16x16.png',
       },
-      { rel: 'manifest', href: '/site.webmanifest', color: '#00274C' },
+      { rel: 'manifest', href: '/site.webmanifest', color: '#FFFFFF' },
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
