@@ -184,7 +184,7 @@ function responseError(endpoint: string, status: number) {
     return new CfbdClientError({
       endpoint,
       kind: 'authentication',
-      message: `CFBD ${endpoint} rejected the configured credentials.`,
+      message: `CFBD ${endpoint} rejected the configured credentials (HTTP ${status}). Check the CFBD API key and subscription access.`,
       retryable: false,
       status,
     })
@@ -193,7 +193,7 @@ function responseError(endpoint: string, status: number) {
     return new CfbdClientError({
       endpoint,
       kind: 'rate_limit',
-      message: `CFBD ${endpoint} exceeded the current request limit.`,
+      message: `CFBD ${endpoint} exceeded the current request limit (HTTP ${status}). Wait for the provider limit to reset before retrying.`,
       retryable: true,
       status,
     })
@@ -229,10 +229,68 @@ function contractError(endpoint: string, detail: string) {
   })
 }
 
+// Only include bounded football identifiers, never whole provider payloads.
+function describeValue(value: unknown): string {
+  if (value === undefined) return 'missing'
+  if (value === null) return 'null'
+  if (typeof value === 'string') {
+    return `string ${JSON.stringify(value.length > 100 ? `${value.slice(0, 100)}…` : value)}`
+  }
+  if (Array.isArray(value)) return `array (${value.length} items)`
+  if (typeof value === 'object') return 'object'
+  return `${typeof value} ${String(value)}`
+}
+
+function recordContext(value: unknown) {
+  if (!isRow(value)) return describeValue(value)
+  return [
+    'id',
+    'collegeAthleteId',
+    'name',
+    'playerName',
+    'firstName',
+    'lastName',
+    'collegeTeam',
+    'nflTeam',
+    'overall',
+    'year',
+    'season',
+    'week',
+    'team',
+    'teamId',
+    'school',
+    'homeTeam',
+    'awayTeam',
+    'category',
+    'statName',
+  ]
+    .flatMap((field) => {
+      const item = value[field]
+      if (typeof item !== 'string' && typeof item !== 'number') return []
+      return [
+        `${field}=${typeof item === 'string' ? describeValue(item).slice(7) : item}`,
+      ]
+    })
+    .join(', ')
+}
+
+function fieldError(
+  row: CfbdRow,
+  field: string,
+  endpoint: string,
+  expected: string,
+) {
+  const context = recordContext(row)
+  return contractError(
+    endpoint,
+    `invalid ${field}: expected ${expected}; received ${describeValue(row[field])}${context ? `; ${context}` : ''}`,
+  )
+}
+
 function requiredBoolean(row: CfbdRow, field: string, endpoint: string) {
   const value = row[field]
   if (typeof value !== 'boolean') {
-    throw contractError(endpoint, `invalid ${field}`)
+    throw fieldError(row, field, endpoint, 'boolean')
   }
   return value
 }
@@ -240,7 +298,7 @@ function requiredBoolean(row: CfbdRow, field: string, endpoint: string) {
 function requiredNumber(row: CfbdRow, field: string, endpoint: string) {
   const value = row[field]
   if (typeof value !== 'number' || !Number.isFinite(value)) {
-    throw contractError(endpoint, `invalid ${field}`)
+    throw fieldError(row, field, endpoint, 'finite number')
   }
   return value
 }
@@ -249,7 +307,7 @@ function optionalNumber(row: CfbdRow, field: string, endpoint: string) {
   const value = row[field]
   if (value === null || value === undefined) return null
   if (typeof value !== 'number' || !Number.isFinite(value)) {
-    throw contractError(endpoint, `invalid ${field}`)
+    throw fieldError(row, field, endpoint, 'finite number or null')
   }
   return value
 }
@@ -258,7 +316,7 @@ function nullableString(row: CfbdRow, field: string, endpoint: string) {
   const value = row[field]
   if (value === null || value === undefined) return null
   if (typeof value !== 'string') {
-    throw contractError(endpoint, `invalid ${field}`)
+    throw fieldError(row, field, endpoint, 'string or null')
   }
   return value
 }
@@ -266,7 +324,7 @@ function nullableString(row: CfbdRow, field: string, endpoint: string) {
 function requiredString(row: CfbdRow, field: string, endpoint: string) {
   const value = row[field]
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw contractError(endpoint, `invalid ${field}`)
+    throw fieldError(row, field, endpoint, 'non-empty string')
   }
   return value
 }
@@ -303,10 +361,10 @@ function parseTeamGameStatsTeam(
   if (!isRow(value)) throw contractError(endpoint, 'non-object team row')
   const rawHomeAway = requiredString(value, 'homeAway', endpoint)
   if (rawHomeAway !== 'home' && rawHomeAway !== 'away') {
-    throw contractError(endpoint, 'invalid homeAway')
+    throw fieldError(value, 'homeAway', endpoint, '"home" or "away"')
   }
   if (!Array.isArray(value.stats)) {
-    throw contractError(endpoint, 'invalid stats')
+    throw fieldError(value, 'stats', endpoint, 'array of statistics')
   }
   const stats = value.stats.map((stat) => {
     if (!isRow(stat)) throw contractError(endpoint, 'non-object stat row')
@@ -329,7 +387,7 @@ function parseTeamGameStats(value: unknown): CfbdTeamGameStats {
   const endpoint = '/games/teams'
   if (!isRow(value)) throw contractError(endpoint, 'non-object row')
   if (!Array.isArray(value.teams) || value.teams.length !== 2) {
-    throw contractError(endpoint, 'game does not contain exactly two teams')
+    throw fieldError(value, 'teams', endpoint, 'array of exactly two teams')
   }
   return {
     ...value,
@@ -343,7 +401,7 @@ function parseTeamGameStats(value: unknown): CfbdTeamGameStats {
 
 function requiredRow(row: CfbdRow, field: string, endpoint: string) {
   const value = row[field]
-  if (!isRow(value)) throw contractError(endpoint, `invalid ${field}`)
+  if (!isRow(value)) throw fieldError(row, field, endpoint, 'object')
   return value
 }
 
@@ -376,7 +434,7 @@ function parseDraftPick(value: unknown): CfbdDraftPick {
     nflTeam: requiredString(value, 'nflTeam', endpoint),
     overall: requiredNumber(value, 'overall', endpoint),
     pick: requiredNumber(value, 'pick', endpoint),
-    playerName: requiredString(value, 'playerName', endpoint),
+    playerName: requiredString(value, 'name', endpoint),
     position: requiredString(value, 'position', endpoint),
     round: requiredNumber(value, 'round', endpoint),
     year: requiredNumber(value, 'year', endpoint),
@@ -387,7 +445,7 @@ function parseRankingWeek(value: unknown): CfbdRankingWeek {
   const endpoint = '/rankings'
   if (!isRow(value)) throw contractError(endpoint, 'non-object row')
   if (!Array.isArray(value.polls) || value.polls.some((poll) => !isRow(poll))) {
-    throw contractError(endpoint, 'invalid polls')
+    throw fieldError(value, 'polls', endpoint, 'array of poll objects')
   }
   return {
     ...value,
@@ -402,7 +460,7 @@ function parseSeasonStat(value: unknown): CfbdSeasonStat {
   if (!isRow(value)) throw contractError(endpoint, 'non-object row')
   const statValue = value.statValue
   if (typeof statValue !== 'string' && typeof statValue !== 'number') {
-    throw contractError(endpoint, 'invalid statValue')
+    throw fieldError(value, 'statValue', endpoint, 'string or number')
   }
   return {
     ...value,
@@ -522,7 +580,7 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
         throw new CfbdClientError({
           endpoint,
           kind: 'network',
-          message: `CFBD ${endpoint} could not be reached.`,
+          message: `CFBD ${endpoint} could not be reached after ${attempt} attempts. Check provider availability and network access before retrying.`,
           retryable: true,
         })
       }
@@ -532,6 +590,7 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
           await sleep(250 * 2 ** (attempt - 1))
           continue
         }
+        error.message += ` Request stopped after ${attempt} attempt(s).`
         throw error
       }
       const contentType = response.headers.get('content-type')?.toLowerCase()
@@ -559,6 +618,36 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
     throw new Error('Unreachable CFBD request state.')
   }
 
+  async function requestParsedRows<T>(
+    endpoint: string,
+    signal: AbortSignal | undefined,
+    parse: (value: unknown) => T,
+  ): Promise<Array<T>> {
+    const values = await requestRows(endpoint, signal)
+    return values.map((value, index) => {
+      try {
+        return parse(value)
+      } catch (error) {
+        if (!(error instanceof CfbdClientError)) throw error
+        const context = recordContext(value)
+        const detail = error.message.replace(
+          `CFBD ${error.endpoint} contract violation: `,
+          '',
+        )
+        const message = `CFBD ${endpoint} contract violation at record ${index + 1} of ${values.length}${context && !detail.includes(context) ? ` (${context})` : ''}: ${detail} Check the source record and field mapping before retrying.`
+        throw new CfbdClientError({
+          endpoint,
+          kind: error.kind,
+          message: options.apiKey
+            ? message.split(options.apiKey).join('<REDACTED>')
+            : message,
+          retryable: error.retryable,
+          status: error.status,
+        })
+      }
+    })
+  }
+
   return {
     async getAdvancedSeasonStats(args) {
       const query = new URLSearchParams({
@@ -567,27 +656,32 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
         excludeGarbageTime: 'true',
         classification: args.classification,
       })
-      return (
-        await requestRows(
-          `/stats/season/advanced?${query.toString()}`,
-          args.signal,
-        )
-      ).map(parseAdvancedSeasonStat)
+      return requestParsedRows(
+        `/stats/season/advanced?${query.toString()}`,
+        args.signal,
+        parseAdvancedSeasonStat,
+      )
     },
     async getCoachTenures(args) {
-      return (
-        await requestRows(`/coaches/tenures?year=${args.season}`, args.signal)
-      ).map(parseCoachTenure)
+      return requestParsedRows(
+        `/coaches/tenures?year=${args.season}`,
+        args.signal,
+        parseCoachTenure,
+      )
     },
     async getDraftPicks(args) {
-      return (
-        await requestRows(`/draft/picks?year=${args.season}`, args.signal)
-      ).map(parseDraftPick)
+      return requestParsedRows(
+        `/draft/picks?year=${args.season}`,
+        args.signal,
+        parseDraftPick,
+      )
     },
     async getFbsTeams(args) {
-      return (
-        await requestRows(`/teams/fbs?year=${args.season}`, args.signal)
-      ).map(parseFbsTeam)
+      return requestParsedRows(
+        `/teams/fbs?year=${args.season}`,
+        args.signal,
+        parseFbsTeam,
+      )
     },
     async getGames(args) {
       const query = new URLSearchParams({
@@ -597,17 +691,21 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
       query.set('seasonType', args.seasonType)
       query.set('classification', args.classification)
       const endpoint = `/games?${query.toString()}`
-      return (await requestRows(endpoint, args.signal)).map(parseGame)
+      return requestParsedRows(endpoint, args.signal, parseGame)
     },
     async getRecruitingTeams(args) {
-      return (
-        await requestRows(`/recruiting/teams?year=${args.season}`, args.signal)
-      ).map(parseRecruitingTeam)
+      return requestParsedRows(
+        `/recruiting/teams?year=${args.season}`,
+        args.signal,
+        parseRecruitingTeam,
+      )
     },
     async getReturningProduction(args) {
-      return (
-        await requestRows(`/player/returning?year=${args.season}`, args.signal)
-      ).map(parseReturningProduction)
+      return requestParsedRows(
+        `/player/returning?year=${args.season}`,
+        args.signal,
+        parseReturningProduction,
+      )
     },
     async getSeasonStats(args) {
       const query = new URLSearchParams({
@@ -615,14 +713,18 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
         endWeek: String(args.endWeek),
         classification: args.classification,
       })
-      return (
-        await requestRows(`/stats/season?${query.toString()}`, args.signal)
-      ).map(parseSeasonStat)
+      return requestParsedRows(
+        `/stats/season?${query.toString()}`,
+        args.signal,
+        parseSeasonStat,
+      )
     },
     async getTalent(args) {
-      return (
-        await requestRows(`/talent?year=${args.season}`, args.signal)
-      ).map(parseTalent)
+      return requestParsedRows(
+        `/talent?year=${args.season}`,
+        args.signal,
+        parseTalent,
+      )
     },
     async getTeamGameStats(args) {
       const query = new URLSearchParams({
@@ -632,20 +734,24 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
         classification: args.classification,
       })
       const endpoint = `/games/teams?${query.toString()}`
-      return (await requestRows(endpoint, args.signal)).map(parseTeamGameStats)
+      return requestParsedRows(endpoint, args.signal, parseTeamGameStats)
     },
     async getTransfers(args) {
-      return (
-        await requestRows(`/player/portal?year=${args.season}`, args.signal)
-      ).map(parseTransfer)
+      return requestParsedRows(
+        `/player/portal?year=${args.season}`,
+        args.signal,
+        parseTransfer,
+      )
     },
     async getRankings(args) {
-      return (
-        await requestRows(`/rankings?year=${args.season}`, args.signal)
-      ).map(parseRankingWeek)
+      return requestParsedRows(
+        `/rankings?year=${args.season}`,
+        args.signal,
+        parseRankingWeek,
+      )
     },
     async getVenues(args) {
-      return (await requestRows('/venues', args?.signal)).map(parseVenue)
+      return requestParsedRows('/venues', args?.signal, parseVenue)
     },
   }
 }

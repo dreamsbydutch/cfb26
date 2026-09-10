@@ -63,6 +63,8 @@ Every consequential Michigan owner mutation advances `michiganDataRevisions` and
 
 ## Data-source and retention contract
 
+**Current source:** CFBD validation failures include the request path and season/week parameters, one-based response record number, available football identifiers (such as player name, team, ID, and overall draft pick), and the failing field's expected type and bounded received value. Missing, null, and empty strings are distinguished. These messages flow into sync health and the owner action queue; HTTP failures include status and attempt count. Diagnostics omit whole payloads and redact the configured API key. Draft picks map CFBD's `name` into the application's `playerName`. Previously stored failures keep their old message until another sync updates the state; these improvements require a backend deployment to appear in hosted syncs.
+
 Direct CFBD requests supply national programs, games, features, recruiting/talent/returning context, draft selections, and polls. Direct nflverse release files supply confirmed Michigan alumni only. Source failures retain good data and report staleness. Detailed national team-game features are pruned outside the rolling five-year window; compact games and frozen outputs remain.
 
 ## Operational commands

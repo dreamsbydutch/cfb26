@@ -3,6 +3,115 @@ import test from 'node:test'
 
 import { CfbdClientError, createCfbdClient } from '../convex/cfbdClient.ts'
 
+const draftPick = {
+  name: 'Example Player',
+  collegeTeam: 'Michigan',
+  nflTeam: 'Detroit Lions',
+  overall: 12,
+  pick: 12,
+  round: 1,
+  year: 2025,
+  position: 'QB',
+}
+
+test('diagnostics bound field values, omit unrelated payloads, and redact the configured key', async () => {
+  const client = createCfbdClient({
+    apiKey: 'test-private-key',
+    fetchImpl: async () =>
+      Response.json([
+        {
+          ...draftPick,
+          name: 'test-private-key',
+          round: 'x'.repeat(10000),
+          authorization: 'private-payload',
+        },
+      ]),
+  })
+  await assert.rejects(
+    () => client.getDraftPicks({ season: 2025 }),
+    (error) => {
+      assert.ok(error.message.includes('<REDACTED>'))
+      assert.ok(!error.message.includes('test-private-key'))
+      assert.ok(!error.message.includes('private-payload'))
+      assert.ok(error.message.length < 1500)
+      return true
+    },
+  )
+})
+
+test('non-object records report their position and received type', async () => {
+  const client = createCfbdClient({
+    apiKey: 'test-token',
+    fetchImpl: async () => Response.json([draftPick, null]),
+  })
+  await assert.rejects(
+    () => client.getDraftPicks({ season: 2025 }),
+    (error) => {
+      assert.ok(error.message.includes('record 2 of 2 (null)'), error.message)
+      return true
+    },
+  )
+})
+
+test('draft names map from the provider name field', async () => {
+  const client = createCfbdClient({
+    apiKey: 'test-token',
+    fetchImpl: async () => Response.json([draftPick]),
+  })
+  assert.equal(
+    (await client.getDraftPicks({ season: 2025 }))[0].playerName,
+    draftPick.name,
+  )
+})
+
+test('contract errors identify the request, record, and invalid value', async () => {
+  const client = createCfbdClient({
+    apiKey: 'test-token',
+    fetchImpl: async () =>
+      Response.json([draftPick, { ...draftPick, round: 'one' }]),
+  })
+  await assert.rejects(
+    () => client.getDraftPicks({ season: 2025 }),
+    (error) => {
+      assert.equal(error.kind, 'contract')
+      assert.equal(error.endpoint, '/draft/picks?year=2025')
+      for (const detail of [
+        'record 2',
+        'Example Player',
+        'Michigan',
+        'overall=12',
+        'invalid round',
+        'expected finite number',
+        'received string "one"',
+      ]) {
+        assert.ok(error.message.includes(detail), error.message)
+      }
+      return true
+    },
+  )
+})
+
+test('missing names still identify the draft selection and distinguish missing from null', async () => {
+  for (const [name, expected] of [
+    [undefined, 'missing'],
+    [null, 'null'],
+    ['', 'string ""'],
+  ]) {
+    const client = createCfbdClient({
+      apiKey: 'test-token',
+      fetchImpl: async () => Response.json([{ ...draftPick, name }]),
+    })
+    await assert.rejects(
+      () => client.getDraftPicks({ season: 2025 }),
+      (error) => {
+        assert.ok(error.message.includes(`received ${expected}`), error.message)
+        assert.ok(error.message.includes('overall=12'), error.message)
+        return true
+      },
+    )
+  }
+})
+
 test('CFBD client returns validated games from the requested season and week', async () => {
   const requests = []
   const client = createCfbdClient({
@@ -135,7 +244,10 @@ test('CFBD client reports response contract drift as a structured error', async 
     (error) => {
       assert.ok(error instanceof CfbdClientError)
       assert.equal(error.kind, 'contract')
-      assert.equal(error.endpoint, '/games')
+      assert.equal(
+        error.endpoint,
+        '/games?year=2024&seasonType=both&classification=fbs',
+      )
       return true
     },
   )
