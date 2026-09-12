@@ -82,7 +82,7 @@ export function LandscapeDashboard({
           eyebrow={`${season} · Week ${week} · National`}
           title={VIEW_TITLES[view]}
         />
-        <ContextBar>
+        <ContextBar sticky={false}>
           <div className="flex gap-3">
             <select
               value={season}
@@ -1032,21 +1032,24 @@ function RankingTable({
         {heading}
       </h2>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[540px] border-collapse text-left text-sm">
+        <table className="w-full border-collapse text-left text-sm sm:min-w-[540px]">
           <thead className="app-label bg-black/15">
             <tr>
-              <th className="w-16 px-4 py-3" scope="col">
+              <th className="w-12 px-3 py-3 sm:w-16 sm:px-4" scope="col">
                 Rank
               </th>
-              <th className="min-w-52 px-4 py-3" scope="col">
+              <th className="px-2 py-3 sm:min-w-52 sm:px-4" scope="col">
                 Team
               </th>
-              <th className="px-4 py-3 text-right" scope="col">
+              <th
+                className="whitespace-nowrap px-3 py-3 text-right sm:px-4"
+                scope="col"
+              >
                 {primaryHeading}
               </th>
               {detailHeadings.map((detailHeading) => (
                 <th
-                  className="whitespace-nowrap px-4 py-3 text-right"
+                  className="hidden whitespace-nowrap px-4 py-3 text-right sm:table-cell"
                   key={detailHeading}
                   scope="col"
                 >
@@ -1062,11 +1065,11 @@ function RankingTable({
                 className={`border-t border-white/[0.07] hover:bg-white/[0.025] ${row.highlight ? 'michigan-highlight' : ''}`}
               >
                 <td
-                  className={`font-display px-4 py-3 text-2xl font-extrabold tabular-nums ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
+                  className={`font-display px-3 py-3 text-2xl font-extrabold tabular-nums sm:px-4 ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
                 >
                   {row.rank}
                 </td>
-                <th className="px-4 py-3" scope="row">
+                <th className="min-w-0 px-2 py-3 sm:px-4" scope="row">
                   <span
                     className={`block ${row.highlight ? 'michigan-accent' : ''}`}
                   >
@@ -1075,13 +1078,27 @@ function RankingTable({
                   <span className="mt-0.5 block text-xs font-normal text-white/40">
                     {row.secondary}
                   </span>
+                  {detailHeadings.length > 0 && (
+                    <span className="mt-1.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] font-normal text-white/55 sm:hidden">
+                      {detailHeadings.map((detailHeading) => (
+                        <span key={detailHeading} className="whitespace-nowrap">
+                          {detailHeading}{' '}
+                          <b className="font-bold text-white/75">
+                            {row.details?.find(
+                              (detail) => detail.label === detailHeading,
+                            )?.value ?? 'â€”'}
+                          </b>
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </th>
-                <td className="px-4 py-3 text-right text-lg font-extrabold tabular-nums">
+                <td className="whitespace-nowrap px-3 py-3 text-right text-lg font-extrabold tabular-nums sm:px-4">
                   {row.primary}
                 </td>
                 {detailHeadings.map((detailHeading) => (
                   <td
-                    className="whitespace-nowrap px-4 py-3 text-right font-bold tabular-nums text-white/70"
+                    className="hidden whitespace-nowrap px-4 py-3 text-right font-bold tabular-nums text-white/70 sm:table-cell"
                     key={detailHeading}
                   >
                     {row.details?.find(

@@ -446,9 +446,17 @@ export function StatusPill({
   )
 }
 
-export function ContextBar({ children }: { children: ReactNode }) {
+export function ContextBar({
+  children,
+  sticky = true,
+}: {
+  children: ReactNode
+  sticky?: boolean
+}) {
   return (
-    <div className="app-card sticky top-[4.5rem] z-20 mb-6 flex flex-wrap items-center gap-3 p-3 backdrop-blur-xl lg:top-[7.5rem]">
+    <div
+      className={`app-card mb-6 flex flex-wrap items-center gap-3 p-3 ${sticky ? 'sticky top-[4.5rem] z-20 backdrop-blur-xl lg:top-[7.5rem]' : ''}`}
+    >
       {children}
     </div>
   )

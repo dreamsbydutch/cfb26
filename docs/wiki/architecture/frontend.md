@@ -29,6 +29,8 @@ Pages lead with their name, controls, and data. Repeated introductions, source p
 
 Controls are semantic, keyboard reachable, visibly focused, and sized for touch. Public navigation becomes a bottom context bar on narrow screens; Matrix rooms collapse into accordions. The global search dialog is focus-contained and opens with Ctrl/Cmd-K. Every query surface accounts for loading, error, empty, unavailable, or stale data. No visual treatment changes domain null semantics.
 
+National season and week controls scroll with the page. On narrow screens, ranking tables keep rank, team, and the primary rating visible while placing component values beneath the team; wider screens retain the full column layout.
+
 ## Data-access rules
 
 - Use generated `api` references through `convexQuery`, `useMutation`, or direct `useConvex` calls for paginated operations.

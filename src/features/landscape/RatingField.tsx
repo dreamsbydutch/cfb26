@@ -117,10 +117,10 @@ export function RatingField({
                           'Performance credit',
                           'Season strength',
                         ]),
-                  ].map((label) => (
+                  ].map((label, index) => (
                     <th
                       scope="col"
-                      className="whitespace-nowrap border-b p-3"
+                      className={`whitespace-nowrap border-b p-3 ${index >= 3 ? 'hidden sm:table-cell' : ''}`}
                       key={label}
                     >
                       {label}
@@ -136,10 +136,10 @@ export function RatingField({
                       row.programKey === 'michigan' ? 'michigan-accent' : ''
                     }
                   >
-                    <td className="p-3">
+                    <td className="px-2 py-3 sm:p-3">
                       {isProgram ? row.programRank : row.resumeRank}
                     </td>
-                    <th scope="row" className="p-3">
+                    <th scope="row" className="min-w-0 px-2 py-3 sm:p-3">
                       <Link
                         to="/national/teams/$programKey"
                         params={{ programKey: row.programKey }}
@@ -153,34 +153,70 @@ export function RatingField({
                           ? ' · Transitioning'
                           : ''}
                       </div>
+                      <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] font-normal sm:hidden">
+                        {(isProgram
+                          ? [
+                              ['Results', row.programResults?.toFixed(1)],
+                              [
+                                'Acquisition',
+                                row.programAcquisition?.toFixed(1),
+                              ],
+                              [
+                                'Development',
+                                row.programDevelopment?.toFixed(1),
+                              ],
+                            ]
+                          : [
+                              ['Wins', String(row.actualWins)],
+                              [
+                                'Results credit',
+                                row.scheduleComponent?.toFixed(2),
+                              ],
+                              [
+                                'Performance credit',
+                                row.dominanceComponent?.toFixed(2),
+                              ],
+                              [
+                                'Season strength',
+                                row.seasonStrength?.toFixed(1),
+                              ],
+                            ]
+                        ).map(([label, value]) => (
+                          <span className="whitespace-nowrap" key={label}>
+                            {label} <b>{value ?? 'â€”'}</b>
+                          </span>
+                        ))}
+                      </div>
                     </th>
-                    <td className="p-3 font-bold">
+                    <td className="whitespace-nowrap px-2 py-3 text-right font-bold sm:p-3 sm:text-left">
                       {(isProgram ? row.programRating : row.resume)?.toFixed(
                         2,
                       ) ?? '—'}
                     </td>
                     {isProgram ? (
                       <>
-                        <td className="p-3">
+                        <td className="hidden p-3 sm:table-cell">
                           {row.programResults?.toFixed(1) ?? '—'}
                         </td>
-                        <td className="p-3">
+                        <td className="hidden p-3 sm:table-cell">
                           {row.programAcquisition?.toFixed(1) ?? '—'}
                         </td>
-                        <td className="p-3">
+                        <td className="hidden p-3 sm:table-cell">
                           {row.programDevelopment?.toFixed(1) ?? '—'}
                         </td>
                       </>
                     ) : (
                       <>
-                        <td className="p-3">{row.actualWins}</td>
-                        <td className="p-3">
+                        <td className="hidden p-3 sm:table-cell">
+                          {row.actualWins}
+                        </td>
+                        <td className="hidden p-3 sm:table-cell">
                           {row.scheduleComponent?.toFixed(2)}
                         </td>
-                        <td className="p-3">
+                        <td className="hidden p-3 sm:table-cell">
                           {row.dominanceComponent?.toFixed(2)}
                         </td>
-                        <td className="p-3">
+                        <td className="hidden p-3 sm:table-cell">
                           {row.seasonStrength?.toFixed(1) ?? '—'}
                         </td>
                       </>
