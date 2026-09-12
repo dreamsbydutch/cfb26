@@ -112,7 +112,7 @@ export function RatingField({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">
-                {title} ratings and supporting evidence
+                {title} ratings and components
               </caption>
               <thead>
                 <tr>
@@ -121,7 +121,7 @@ export function RatingField({
                     'Program',
                     'Rating',
                     ...(isProgram
-                      ? ['Results', 'Acquisition', 'Development', 'Coverage']
+                      ? ['Results', 'Acquisition', 'Development']
                       : [
                           'Wins',
                           'Results credit',
@@ -176,18 +176,10 @@ export function RatingField({
                           {row.programResults?.toFixed(1) ?? '—'}
                         </td>
                         <td className="p-3">
-                          {row.programAcquisition?.toFixed(1) ?? 'Not covered'}
+                          {row.programAcquisition?.toFixed(1) ?? '—'}
                         </td>
                         <td className="p-3">
-                          {row.programDevelopment?.toFixed(1) ?? 'Not covered'}
-                        </td>
-                        <td className="p-3">
-                          {row.programCoverage ?? 0}% ·{' '}
-                          {row.programSeasons ?? 0} seasons
-                          <div className="text-xs">
-                            Uncertainty index {row.programUncertainty ?? '—'};
-                            higher means less evidence
-                          </div>
+                          {row.programDevelopment?.toFixed(1) ?? '—'}
                         </td>
                       </>
                     ) : (
@@ -201,7 +193,6 @@ export function RatingField({
                         </td>
                         <td className="p-3">
                           {row.seasonStrength?.toFixed(1) ?? '—'}
-                          {row.limitedSample ? ' · Limited sample' : ''}
                         </td>
                       </>
                     )}

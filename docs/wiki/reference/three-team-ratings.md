@@ -4,6 +4,8 @@
 
 **Current source:** independent Program, Power, and Résumé edition fields, publication controls, and complete-field views. This page owns the numerical contract under [ADR 0013](../decisions/0013-three-independent-team-ratings.md). Source availability and model promotion limits below are material parts of the contract.
 
+Ranking tables show football ratings rather than model diagnostics. Power shows rank, team/conference, Power, offense, and defense; special teams appears only when the selected edition has a separately rated special-teams component. Program shows its rating plus results, acquisition, and development. Résumé shows its rating, wins, results credit, performance credit, and season strength. Prior weights, source notes, coverage, uncertainty, and sample-size explanations remain outside table columns; the backend retains them for validation and methodology.
+
 ## Program
 
 `cfb26-program-v2` is a 0–100 index with components for competitive results (70%), acquisition (20%), and development (10%). These are explicit initial policy weights, not learned forecasting coefficients. Version 2 uses subdivision-adjusted season strength; component weights are unchanged.

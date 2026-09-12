@@ -408,18 +408,11 @@ function Power({
     enabled: view !== 'current',
   })
   const ratingRows =
-    view === 'current'
-      ? data.ratings
-      : (field.data?.rows ?? []).map((row) => ({
-          ...row,
-          rankingBasis: 'weekly_edition' as const,
-          sourceSeason: data.season,
-          confidence: undefined,
-          signalCount: undefined,
-        }))
+    view === 'current' ? data.ratings : (field.data?.rows ?? [])
   const conferences = [
     ...new Set(ratingRows.map((row) => row.conference).filter(Boolean)),
   ].sort()
+  const showSpecialTeams = ratingRows.some((row) => row.specialTeamsAvailable)
   const rows = ratingRows
     .filter(
       (row) =>
@@ -435,29 +428,15 @@ function Power({
       label: row.sourceProgramName,
       primary: signed(row.power),
       rank: row.powerRank ?? 999,
-      secondary: `${row.conference ?? 'Independent'} · ${rankingBasisLabel(row.rankingBasis, row.sourceSeason)}`,
+      secondary: row.conference ?? 'Independent',
       details: [
         { label: 'Offense', value: signed(row.offense) },
         { label: 'Defense', value: signed(row.defense) },
         {
           label: 'Special teams',
-          value: row.specialTeamsAvailable
-            ? signed(row.specialTeams)
-            : 'Not separated',
-        },
-        { label: 'Home field', value: signed(row.homeFieldAdvantage) },
-        {
-          label: 'Prior weight',
-          value: `${Math.round(row.priorWeight * 100)}%`,
-        },
-        {
-          label: 'Evidence',
-          value: row.limitedSample
-            ? `Limited sample · ${row.gamesPlayed} games`
-            : `${row.gamesPlayed} games`,
+          value: row.specialTeamsAvailable ? signed(row.specialTeams) : '—',
         },
       ],
-      note: `Sources: ${row.dataSources.map(sourceLabel).join(', ')}${row.confidence === undefined ? '' : ` · coverage confidence ${row.confidence}%`}${row.signalCount === undefined ? '' : ` · ${row.signalCount} signals`}`,
     }))
   return (
     <div>
@@ -519,13 +498,9 @@ function Power({
         detailHeadings={[
           'Offense',
           'Defense',
-          'Special teams',
-          'Home field',
-          'Prior weight',
-          'Evidence',
+          ...(showSpecialTeams ? ['Special teams'] : []),
         ]}
         heading={`DbyD CFB Power · ${rows.length} of ${ratingRows.length} teams`}
-        noteHeading="Sources & coverage"
         primaryHeading="Power"
         rows={rows}
       />
@@ -1042,13 +1017,11 @@ function Ballot({ season, week }: { season: number; week: number }) {
 function RankingTable({
   detailHeadings = [],
   heading,
-  noteHeading,
   primaryHeading,
   rows,
 }: {
   detailHeadings?: Array<string>
   heading: string
-  noteHeading?: string
   primaryHeading: string
   rows: Array<{
     label: string
@@ -1057,7 +1030,6 @@ function RankingTable({
     secondary: string
     details?: Array<{ label: string; value: string }>
     highlight?: boolean
-    note?: string
   }>
 }) {
   return (
@@ -1066,9 +1038,7 @@ function RankingTable({
         {heading}
       </h2>
       <div className="overflow-x-auto">
-        <table
-          className={`w-full border-collapse text-left text-sm ${detailHeadings.length > 0 ? 'min-w-[1180px]' : 'min-w-[620px]'}`}
-        >
+        <table className="w-full min-w-[540px] border-collapse text-left text-sm">
           <thead className="app-label bg-black/15">
             <tr>
               <th className="w-16 px-4 py-3" scope="col">
@@ -1089,11 +1059,6 @@ function RankingTable({
                   {detailHeading}
                 </th>
               ))}
-              {noteHeading && (
-                <th className="min-w-64 px-4 py-3" scope="col">
-                  {noteHeading}
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
@@ -1130,11 +1095,6 @@ function RankingTable({
                     )?.value ?? '—'}
                   </td>
                 ))}
-                {noteHeading && (
-                  <td className="px-4 py-3 text-xs leading-5 text-white/40">
-                    {row.note ?? '—'}
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>
@@ -1318,21 +1278,6 @@ function isMichiganProgram(name: string) {
 
 function signed(value: number) {
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
-}
-
-function sourceLabel(source: string) {
-  return source.replaceAll('_', ' ')
-}
-
-function rankingBasisLabel(basis: string, sourceSeason: number | null) {
-  if (basis === 'weekly_edition') return 'weekly edition'
-  if (basis === 'season_composite') return 'season composite'
-  if (basis === 'current_season_elo') return 'current-season Elo fallback'
-  if (basis === 'prior_season_composite')
-    return `${sourceSeason ?? 'prior'} composite carryover`
-  if (basis === 'prior_season_elo')
-    return `${sourceSeason ?? 'prior'} Elo carryover`
-  return 'neutral baseline · no current or prior rating'
 }
 
 function rankingModeLabel(
