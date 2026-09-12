@@ -325,21 +325,25 @@ export function PageHero({
   title: string
 }) {
   return (
-    <header className="mb-7 grid gap-5 border-b border-white/10 pb-7 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,34rem)] lg:items-end">
+    <header
+      className={`mb-7 grid gap-5 border-b border-white/10 pb-7 ${summary || actions ? 'lg:grid-cols-[minmax(0,1fr)_minmax(18rem,34rem)] lg:items-end' : ''}`}
+    >
       <div>
         <p className="app-kicker mb-3">{eyebrow}</p>
         <h1 className="app-title text-balance">{title}</h1>
       </div>
-      <div className="lg:text-right">
-        {summary && (
-          <p className="app-muted m-0 text-sm leading-6">{summary}</p>
-        )}
-        {actions && (
-          <div className="mt-4 flex flex-wrap justify-start gap-2 lg:justify-end">
-            {actions}
-          </div>
-        )}
-      </div>
+      {(summary || actions) && (
+        <div className="lg:text-right">
+          {summary && (
+            <p className="app-muted m-0 text-sm leading-6">{summary}</p>
+          )}
+          {actions && (
+            <div className="mt-4 flex flex-wrap justify-start gap-2 lg:justify-end">
+              {actions}
+            </div>
+          )}
+        </div>
+      )}
     </header>
   )
 }

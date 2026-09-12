@@ -59,30 +59,12 @@ type ExportPage = FunctionReturnType<typeof api.rosterAdmin.exportMichiganPage>
 type SeasonStats = FunctionReturnType<typeof api.seasonalStats.listBySeason>
 type PlayerGameRecord = SeasonStats[number]['playerGames'][number]
 
-const OWNER_VIEW_COPY: Record<
-  AdminView,
-  { description: string; title: string }
-> = {
-  dashboard: {
-    description: 'Review roster health and the work that needs attention.',
-    title: 'Owner dashboard',
-  },
-  data: {
-    description: 'Import data, resolve identities, and review source health.',
-    title: 'Data',
-  },
-  operations: {
-    description: 'Run protected maintenance and season rollover workflows.',
-    title: 'Operations',
-  },
-  roster: {
-    description: 'Edit the selected season roster in one table.',
-    title: 'Roster',
-  },
-  season: {
-    description: 'Enter or update one player’s stats for each game.',
-    title: 'Player stats',
-  },
+const OWNER_VIEW_TITLES: Record<AdminView, string> = {
+  dashboard: 'Owner dashboard',
+  data: 'Data',
+  operations: 'Operations',
+  roster: 'Roster',
+  season: 'Player stats',
 }
 
 function initialToken() {
@@ -136,10 +118,6 @@ export function RosterAdmin({
             <h1 className="font-display mt-3 text-4xl font-extrabold uppercase text-white">
               Owner sign in
             </h1>
-            <p className="mt-3 text-sm leading-6 text-white/50">
-              The password is exchanged for a revocable 12-hour session. It is
-              never stored in the browser.
-            </p>
             <label className="mt-6 block text-xs font-black uppercase tracking-[0.12em]">
               Owner password
               <input
@@ -210,7 +188,7 @@ function AuthenticatedAdmin({
     return null
   }
   const data = roster.data
-  const viewCopy = OWNER_VIEW_COPY[view]
+  const viewTitle = OWNER_VIEW_TITLES[view]
   return (
     <OwnerBoundary
       authenticated
@@ -223,9 +201,8 @@ function AuthenticatedAdmin({
               Michigan · {data?.season ?? season} season
             </p>
             <h1 className="app-title mt-2">
-              {playerId && view === 'roster' ? 'Player record' : viewCopy.title}
+              {playerId && view === 'roster' ? 'Player record' : viewTitle}
             </h1>
-            <p className="mt-2 text-sm text-white/55">{viewCopy.description}</p>
             <p className="mt-3 text-xs text-white/35">
               Session expires{' '}
               {session.data?.expiresAt
@@ -412,10 +389,8 @@ function OwnerBoundary({
             Desktop required
           </h1>
           <p className="mt-3 text-sm leading-6 text-white/50">
-            Editing and destructive workflows are available at 1024px and wider.
-            {authenticated
-              ? ' Your owner session is active.'
-              : ' Sign in from a desktop-sized window.'}
+            Open the owner workspace in a desktop-sized window.
+            {authenticated ? ' Your owner session is active.' : ''}
           </p>
           {authenticated && onSignOut && (
             <button
@@ -576,10 +551,7 @@ function OwnerDashboard({
         />
       </div>
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <AdminCard
-          title="Action queue"
-          note="Items disappear only when the underlying condition is fixed."
-        >
+        <AdminCard title="Action queue">
           {actions.length === 0 ? (
             <p className="m-0 text-sm text-emerald-700">
               No owner action is required.
@@ -602,10 +574,7 @@ function OwnerDashboard({
             </div>
           )}
         </AdminCard>
-        <AdminCard
-          title="Recent activity"
-          note="Durable owner audit events, newest first."
-        >
+        <AdminCard title="Recent activity">
           {(health?.audit.length ?? 0) === 0 ? (
             <p className="m-0 text-sm text-white/40">
               No recorded owner activity.
@@ -683,10 +652,7 @@ function People({
   )
   return (
     <div className="grid gap-6">
-      <AdminCard
-        title="Player directory"
-        note="Search the Michigan person record, then open its dedicated lifecycle editor."
-      >
+      <AdminCard title="Player directory">
         <input
           aria-label="Search player directory"
           className={inputClass}
@@ -719,10 +685,7 @@ function People({
         </Link>
       )}
       <div className="grid gap-6 xl:grid-cols-2">
-        <AdminCard
-          title="Create a person"
-          note="Commitment and enrollment remain separate. Only these five facts are required."
-        >
+        <AdminCard title="Create a person">
           <form
             onSubmit={(event) => {
               event.preventDefault()
@@ -780,7 +743,6 @@ function People({
         <AdminCard
           className={initialPlayerId ? '' : 'hidden'}
           title="Lifecycle"
-          note="Enroll or decommit prospects, open another Michigan stint, and record a final departure without collapsing the person's history."
         >
           <label className="block text-xs font-black uppercase tracking-[0.12em]">
             Person
@@ -891,7 +853,6 @@ function People({
         <AdminCard
           className={initialPlayerId ? '' : 'hidden'}
           title="Evaluation event"
-          note="Recruiting, transfer, draft, and owner evaluations are dated, repeatable evidence."
         >
           <form
             className="grid gap-4 sm:grid-cols-2"
@@ -952,7 +913,6 @@ function People({
         <AdminCard
           className={initialPlayerId ? '' : 'hidden'}
           title="Draft and NFL gap fill"
-          note="Link the Michigan person to nflverse, record entry outcomes, and fill an individual weekly roster gap."
         >
           <form
             className="grid gap-4 sm:grid-cols-2"
@@ -1041,8 +1001,7 @@ function People({
             </button>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            {programs.data?.length ?? 0} national programs are available for
-            transfer identity context.
+            {programs.data?.length ?? 0} national programs
           </p>
         </AdminCard>
       </div>
@@ -1127,10 +1086,7 @@ function RosterTable({
       .finally(() => setSaving(false))
   }
   return (
-    <AdminCard
-      note="Edit the everyday roster fields directly. Use Player Stats for game-by-game performance."
-      title={`${data.season} Michigan roster`}
-    >
+    <AdminCard title={`${data.season} Michigan roster`}>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <label className="w-full max-w-sm text-xs font-black uppercase tracking-[0.12em]">
           Find a player
@@ -1416,10 +1372,7 @@ function PlayerSeasons({
   )
   if (!data) return <EmptyState>No roster is available for editing.</EmptyState>
   return (
-    <AdminCard
-      title="Season record, depth and eligibility"
-      note="Every annual value is explicit. Unknown scholarship and availability states remain visible."
-    >
+    <AdminCard title="Season record, depth and eligibility">
       <form
         onSubmit={(event) => {
           event.preventDefault()
@@ -1657,10 +1610,7 @@ function PlayerStats({
 
   return (
     <div className="grid gap-6">
-      <AdminCard
-        note="Choose a player, then enter or update one game. Saved games build the season totals."
-        title={`${season} player stats`}
-      >
+      <AdminCard title={`${season} player stats`}>
         <div className="grid gap-6 xl:grid-cols-[minmax(20rem,0.85fr)_minmax(32rem,1.15fr)]">
           <section>
             <p className="app-kicker">1 · Choose a player</p>
@@ -1949,18 +1899,13 @@ function PlayerGameForm({
         </table>
       </div>
       <p className="mt-2 text-xs leading-5 text-white/35">
-        Leave a field blank when it is unknown. Zero snaps means the player did
-        not participate in that phase and cannot have a grade.
+        Blank = unknown. Zero snaps = no participation; leave grade blank.
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-black uppercase tracking-[0.1em] text-white">
             Game statistics
-          </p>
-          <p className="mt-1 text-xs text-white/40">
-            Add only the categories that apply, such as tackles, receptions, or
-            passing yards.
           </p>
         </div>
         <button
@@ -2063,8 +2008,7 @@ function PlayerGameBulkImport({
   return (
     <div>
       <p className="mb-4 text-sm leading-6 text-white/50">
-        Paste normalized JSON, inspect the no-write validation, then apply with
-        the latest verified Michigan backup.
+        Paste JSON and validate before importing. A current backup is required.
       </p>
       <textarea
         value={importText}
@@ -2434,7 +2378,6 @@ function Operations({
       <AdminCard
         className={mode === 'data' ? '' : 'hidden'}
         title="Source health"
-        note="Failures retain the last valid data. Core failures block official publication; enrichment failures remain visible."
       >
         <div className="divide-y divide-slate-200">
           {(health?.sync ?? []).map((row) => (
@@ -2458,7 +2401,6 @@ function Operations({
       <AdminCard
         className={mode === 'data' ? '' : 'hidden'}
         title="Identity queue"
-        note="Provider records remain unresolved until the owner confirms a canonical person; the system never guesses."
       >
         {(health?.unresolved ?? []).length === 0 ? (
           <p className="text-sm text-slate-500">No unresolved identities.</p>
@@ -2512,7 +2454,6 @@ function Operations({
       <AdminCard
         className={mode === 'operations' ? '' : 'hidden'}
         title="Season rules & champion facts"
-        note="Eligibility, roster limits, and playoff qualification use the actual rule set for each season."
       >
         <form
           className="grid gap-4 sm:grid-cols-2"
@@ -2734,15 +2675,19 @@ function AdminCard({
 }: {
   children: React.ReactNode
   className?: string
-  note: string
+  note?: string
   title: string
 }) {
   return (
     <section className={`app-card p-5 ${className}`}>
-      <h2 className="font-display text-2xl font-extrabold text-white">
+      <h2
+        className={`font-display text-2xl font-extrabold text-white ${note ? '' : 'mb-5'}`}
+      >
         {title}
       </h2>
-      <p className="mt-1 mb-5 text-sm leading-6 text-white/45">{note}</p>
+      {note && (
+        <p className="mt-1 mb-5 text-sm leading-6 text-white/45">{note}</p>
+      )}
       {children}
     </section>
   )

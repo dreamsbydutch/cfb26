@@ -6,6 +6,8 @@
 
 Ranking tables show football ratings rather than model diagnostics. Power shows rank, team/conference, Power, offense, and defense; special teams appears only when the selected edition has a separately rated special-teams component. Program shows its rating plus results, acquisition, and development. Résumé shows its rating, wins, results credit, performance credit, and season strength. Prior weights, source notes, coverage, uncertainty, and sample-size explanations remain outside table columns; the backend retains them for validation and methodology.
 
+Ranking pages use short page titles and publication timestamps. Repeated model introductions, version identifiers, and evidence/limitations footers are omitted from the browsing views; Methodology retains the model explanations and coverage limits. The Week 7 opening message and unavailable-edition states remain visible when relevant.
+
 ## Program
 
 `cfb26-program-v2` is a 0–100 index with components for competitive results (70%), acquisition (20%), and development (10%). These are explicit initial policy weights, not learned forecasting coefficients. Version 2 uses subdivision-adjusted season strength; component weights are unchanged.

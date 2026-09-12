@@ -132,8 +132,7 @@ export function MichiganMatrix() {
       <PageFrame>
         <PageHero
           eyebrow={`${season} Michigan · Personnel matrix`}
-          title="See the whole roster as a football staff would."
-          summary="Rooms run in football order. Lanes describe current usage; starts and games break ties inside each lane."
+          title="Michigan roster"
           actions={<SeasonSelect season={season} onChange={setSeason} />}
         />
         {dashboard.isLoading ? (
@@ -454,8 +453,7 @@ export function MichiganOverview() {
         <PageHero
           actions={<SeasonSelect onChange={setSeason} season={season} />}
           eyebrow={`${season} Michigan · Overview`}
-          summary="Roster readiness is measured against the DbyD roster template. Role counts describe usage; they do not change the room target."
-          title="Construction first. Performance with its sample attached."
+          title="Overview"
         />
         {dashboard.isLoading ? (
           <LoadingState label="Reading roster construction" />
@@ -494,11 +492,6 @@ export function MichiganOverview() {
                   <p className="app-kicker">DbyD roster template</p>
                   <h2 className="mt-1 text-2xl font-bold">Room readiness</h2>
                 </div>
-                <p className="m-0 max-w-lg text-xs leading-5 text-white/40">
-                  Baseline: QB 5, Backs 8, Receivers 20, OL 18, DL 17, LB 14,
-                  Secondary 18, Specialists 5. Targets scale from 105 to the
-                  selected season&apos;s roster limit.
-                </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {readiness.map((item) => (
@@ -720,8 +713,7 @@ export function MichiganMovement() {
         <PageHero
           actions={<SeasonSelect onChange={setSeason} season={season} />}
           eyebrow={`${season} Michigan · Movement`}
-          summary="Every roster arrival and departure remains attached to a person, season, and source record."
-          title="Follow the roster ledger, not the rumor cycle."
+          title="Roster movement"
         />
         {movements.isLoading ? (
           <LoadingState label="Reading movement history" />
@@ -772,11 +764,7 @@ export function MichiganAlumni() {
   return (
     <PublicShell active="alumni" context="michigan">
       <PageFrame>
-        <PageHero
-          eyebrow="Michigan · NFL alumni"
-          summary="Current NFL identity and weekly status are kept distinct from Michigan career evidence."
-          title="Track where Michigan careers went next."
-        />
+        <PageHero eyebrow="Michigan · NFL alumni" title="NFL alumni" />
         {alumni.isLoading ? (
           <LoadingState label="Loading NFL alumni" />
         ) : alumni.data?.length ? (
@@ -794,9 +782,6 @@ export function MichiganAlumni() {
                 <p className="m-0 mt-2 text-sm text-white/50">
                   {row.latestWeek?.team ?? 'No current weekly team'} ·{' '}
                   {humanize(row.latestWeek?.status ?? row.identity.entryPath)}
-                </p>
-                <p className="m-0 mt-4 text-xs text-white/35">
-                  NFL seasons tracked: {row.seasons.length}
                 </p>
               </Surface>
             ))}
@@ -1003,8 +988,7 @@ export function MichiganCompare() {
         <PageHero
           actions={<SeasonSelect onChange={setSeason} season={season} />}
           eyebrow={`${season} Michigan · Comparison`}
-          summary="Players are columns and evidence is rows. The comparison presents context without declaring a winner."
-          title="Put up to four careers on the same evidence grid."
+          title="Compare players"
         />
         {playerIds.length === 0 ? (
           <EmptyState title="Comparison tray is empty">

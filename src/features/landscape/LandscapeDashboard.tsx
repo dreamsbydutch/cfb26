@@ -32,6 +32,17 @@ export type LandscapeView =
   | 'teams'
 type Program = FunctionReturnType<typeof api.teamData.listPrograms>[number]
 const CURRENT_SEASON = new Date().getFullYear()
+const VIEW_TITLES: Record<LandscapeView, string> = {
+  ballot: 'Blind ballot',
+  games: 'Games',
+  methodology: 'Methodology',
+  playoff: 'Playoff',
+  power: 'Power rankings',
+  program: 'Program rankings',
+  resume: 'Résumé rankings',
+  simulator: 'Simulator',
+  teams: 'Teams',
+}
 
 export function LandscapeDashboard({
   programKey,
@@ -69,8 +80,7 @@ export function LandscapeDashboard({
       <PageFrame>
         <PageHero
           eyebrow={`${season} · Week ${week} · National`}
-          summary="Program measures sustained competitive health. Power predicts neutral-field strength today. Résumé rewards this season’s achievement."
-          title="Three ratings. Three football questions."
+          title={VIEW_TITLES[view]}
         />
         <ContextBar>
           <div className="flex gap-3">
@@ -106,14 +116,14 @@ export function LandscapeDashboard({
           </div>
           <div className="ml-auto text-right text-xs text-white/40">
             {data?.edition
-              ? `${data.edition.editionType} edition · ${data.edition.modelVersion} · ${new Date(data.edition.generatedAt).toLocaleString()}`
+              ? `Updated ${new Date(data.edition.generatedAt).toLocaleString()}`
               : data
-                ? `Complete fallback field · ${data.ratingCount} FBS teams`
-                : 'Loading ranking basis'}
+                ? 'Fallback ratings'
+                : 'Loading…'}
           </div>
         </ContextBar>
         {dashboard.isLoading ? (
-          <LoadingState label="Building the selected national edition" />
+          <LoadingState label="Loading" />
         ) : dashboard.isError || !data ? (
           <EmptyState>
             No national edition is available for this selection.
@@ -190,9 +200,6 @@ function Games({
             </button>
           ))}
         </div>
-        <p className="text-xs text-white/40">
-          Schedule badges use the complete {data.ratingCount}-team Power field.
-        </p>
       </div>
       <section className="app-card overflow-hidden p-0">
         <div className="overflow-x-auto">
@@ -440,12 +447,6 @@ function Power({
     }))
   return (
     <div>
-      <p className="mb-4 text-sm leading-6">
-        Neutral-field strength under normal conditions. The current model uses
-        game results and historical carryover; national injury and coaching
-        adjustments are not yet covered consistently. Small rating gaps are
-        uncertain, especially early in the season.
-      </p>
       <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
         <input
           aria-label="Search Power rankings"
@@ -490,8 +491,7 @@ function Power({
           </EmptyState>
         ) : (
           <p className="mb-3 text-sm">
-            {field.data.edition.modelVersion} ·{' '}
-            {new Date(field.data.edition.cutoffAt).toLocaleString()}
+            Updated {new Date(field.data.edition.cutoffAt).toLocaleString()}
           </p>
         ))}
       <RankingTable
@@ -551,9 +551,6 @@ function Playoff({
             <h2 className="font-display mt-4 text-2xl font-extrabold text-white">
               {entry.program?.name ?? 'Unknown program'}
             </h2>
-            <p className="mt-2 text-sm leading-5 text-white/45">
-              {entry.explanation}
-            </p>
           </article>
         ))}
       </div>
@@ -732,8 +729,7 @@ export function ProgramProfile({
             })}
           </div>
           <p className="mt-4 text-xs text-white/40">
-            {completed.length} completed games · {data.affiliations.length}{' '}
-            retained affiliation editions ·{' '}
+            {completed.length} completed games ·{' '}
             {data.venues[0]?.venue?.name ?? 'Venue unavailable'}
           </p>
         </Surface>
@@ -907,9 +903,7 @@ function Ballot({ season, week }: { season: number; week: number }) {
               : 'Revealed ballot'}
           </b>
           <p className="text-xs text-white/40">
-            Rank achievement: wins, schedule, and dominance. Identity stays
-            hidden until submission; every move autosaves. Drag, use Arrow keys,
-            or enter a rank.
+            Drag, use arrow keys, or enter a rank. Changes autosave.
           </p>
         </div>
         {data.status === 'draft' && (
@@ -1190,13 +1184,10 @@ function Methodology({
           <p className="app-kicker">Evaluation and limits</p>
           <h2 className="mt-2 text-3xl font-bold">What earns promotion</h2>
           <p className="mt-3 text-sm leading-6 text-white/55">
-            Rolling held-out seasons evaluate margin mean absolute error and
-            Brier score as co-primary objectives; calibration error is reported
-            separately. A challenger must improve both aggregate objectives in
-            most comparable seasons without a material single-season or
-            calibration regression. The repository does not yet hold historical
-            weekly as-of forecasts, so no accuracy improvement beyond the
-            checked-in baseline is claimed.
+            Models are compared on held-out seasons using margin error, win
+            probabilities, and calibration. Promotion requires improvement
+            across seasons without material regressions. Historical results are
+            retrospective reconstructions, not original pregame forecasts.
           </p>
         </Surface>
       </div>
@@ -1252,11 +1243,20 @@ function Methodology({
         <Surface className="p-5">
           <p className="app-kicker">Publication universe</p>
           <p className="mt-3 text-sm leading-6 text-white/50">
-            The selected season&apos;s FBS schedule defines the field. Ranks run
-            continuously from 1 through that field size—138 today when 138 teams
-            are present, fewer in older seasons, and more if membership expands.
+            The selected season&apos;s FBS directory defines the field, with the
+            schedule as a fallback. Every member receives a rank.
           </p>
         </Surface>
+        {!!edition?.coverageWarnings?.length && (
+          <Surface className="p-5">
+            <h2 className="text-xl font-bold">Data limitations</h2>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6">
+              {edition.coverageWarnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </Surface>
+        )}
       </aside>
     </div>
   )
@@ -1379,7 +1379,7 @@ const pillClass =
 const primaryButton =
   'app-primary-button min-h-11 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.12em] shadow-[0_6px_18px_var(--app-accent-shadow)] disabled:opacity-40'
 export function LandscapeLoading() {
-  return <LoadingState label="Building the selected national edition" />
+  return <LoadingState label="Loading" />
 }
 export function LandscapeError() {
   return (

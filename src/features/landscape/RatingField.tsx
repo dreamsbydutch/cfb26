@@ -48,11 +48,6 @@ export function RatingField({
   return (
     <Surface className="p-4 sm:p-6">
       <h2 className="font-display text-3xl font-bold">{title}</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6">
-        {isProgram
-          ? 'Sustained competitive results, talent acquisition, and development. Recent seasons carry the most weight; brand recognition earns no points.'
-          : 'What teams have earned this season. Wins lead, dominance matters, and opponent quality comes from this season alone.'}
-      </p>
       <div className="my-5 flex flex-wrap gap-3">
         <input
           className="app-input min-w-0 flex-1 rounded-lg border p-2"
@@ -85,15 +80,13 @@ export function RatingField({
         </select>
       </div>
       {result.isPending ? (
-        <LoadingState label="Loading rating evidence" />
+        <LoadingState label="Loading rankings" />
       ) : result.isError ? (
         <ErrorState>Ratings could not load: {result.error.message}</ErrorState>
       ) : !data ? (
         <EmptyState>No published edition exists for this selection.</EmptyState>
       ) : !isProgram && !data.edition.resumeVisible ? (
-        <EmptyState title="Résumé opens entering Week 7">
-          Completed games through Week 6 establish the first public edition.
-        </EmptyState>
+        <EmptyState>Résumé opens in Week 7.</EmptyState>
       ) : isProgram && !data.edition.programModelVersion ? (
         <EmptyState>
           This historical edition predates the Program rating. Its original
@@ -102,12 +95,8 @@ export function RatingField({
       ) : (
         <>
           <p className="mb-3 text-sm">
-            {rows.length} of {data.rows.length} FBS teams ·{' '}
-            {isProgram
-              ? data.edition.programModelVersion
-              : data.edition.resumeModelVersion}{' '}
-            · {new Date(data.edition.cutoffAt).toLocaleString()} ·{' '}
-            {(data.edition.rankingStage ?? 'in_season').replace('_', ' ')}
+            {rows.length} of {data.rows.length} FBS teams · Updated{' '}
+            {new Date(data.edition.cutoffAt).toLocaleString()}
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -204,21 +193,6 @@ export function RatingField({
           {rows.length === 0 && (
             <EmptyState>No teams match these filters.</EmptyState>
           )}
-          <p className="mt-4 text-xs">
-            Small rating differences do not imply a meaningful strength gap.
-            Missing evidence increases uncertainty; it is not a poor-performance
-            observation.
-          </p>
-          <details className="mt-4 text-sm">
-            <summary className="cursor-pointer font-semibold">
-              Evidence and limitations
-            </summary>
-            <ul className="mt-2 list-disc pl-5">
-              {data.edition.coverageWarnings?.map((warning) => (
-                <li key={warning}>{warning}</li>
-              ))}
-            </ul>
-          </details>
         </>
       )}
     </Surface>
