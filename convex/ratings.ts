@@ -12,6 +12,7 @@ import { resolveProgram } from './programIdentity'
 import { buildFallbackPowerField } from './ratingFallback'
 import { calibrateMargin } from './ratingBacktest'
 import { publicationWeek } from './ratingCalendar'
+import { historicalPowerPrior, rememberPowerSeason } from './powerHistory'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import schema from './schema'
 import {
@@ -22,6 +23,7 @@ import {
 import { buildMatchupProjection, buildSeasonRatings } from './ratingModel'
 import {
   POWER_MODEL_VERSION,
+  RESUME_MODEL_VERSION,
   buildPowerRatingEdition,
   buildResumeRatingEdition,
   projectPowerMatchup,
@@ -33,6 +35,7 @@ import {
   moveBallotEntry,
 } from './rankingTools'
 import { requireOwnerSession } from './rosterAdmin'
+import type { PowerHistory } from './powerHistory'
 import type { ProgramSeasonEvidence } from './programRating'
 import type { Doc, Id } from './_generated/dataModel'
 import type { QueryCtx } from './_generated/server'
@@ -819,7 +822,7 @@ export const ratingSourceVersion = internalQuery({
           .unique(),
       ),
     )
-    return `${PROGRAM_MODEL_VERSION}:resume-v2:${states.map((row) => `${row?.source}:${row?.completedAt ?? 0}:${row?.status ?? 'missing'}`).join('|')}`
+    return `${POWER_MODEL_VERSION}:${PROGRAM_MODEL_VERSION}:${RESUME_MODEL_VERSION}:${states.map((row) => `${row?.source}:${row?.completedAt ?? 0}:${row?.status ?? 'missing'}`).join('|')}`
   },
 })
 
@@ -1196,7 +1199,7 @@ export const buildRatingEdition = internalAction({
     const confirmedMembers = new Map(
       currentEvidence.members.map((row) => [row.teamId, row]),
     )
-    let priorByTeam = new Map<string, PowerTeamRating>()
+    const history: PowerHistory = new Map()
     let powerEdition: PowerRatingEdition | undefined
 
     for (const modelSeason of data.seasons) {
@@ -1237,23 +1240,16 @@ export const buildRatingEdition = internalAction({
         ([teamId, detail]) => {
           const program = programById.get(teamId)
           if (!program) return []
-          const prior = priorByTeam.get(teamId)
           return [
             {
               ...detail,
               id: teamId,
               name: program.name,
-              prior:
-                prior === undefined
-                  ? undefined
-                  : {
-                      defense: prior.defense,
-                      effectiveGames: Math.min(prior.gamesPlayed, 8),
-                      offense: prior.offense,
-                      power: prior.power,
-                      sources: ['multi_season_performance'],
-                      specialTeams: prior.specialTeams,
-                    },
+              prior: historicalPowerPrior(
+                { id: teamId, ...detail },
+                modelSeason,
+                history,
+              ),
             },
           ]
         },
@@ -1293,9 +1289,7 @@ export const buildRatingEdition = internalAction({
         teams,
         week: modelSeason === season ? week : 30,
       })
-      priorByTeam = new Map(
-        powerEdition.ratings.map((rating) => [rating.teamId, rating]),
-      )
+      rememberPowerSeason(history, modelSeason, powerEdition.ratings)
     }
     if (!powerEdition || powerEdition.season !== season) {
       throw new Error('Unable to build the requested Power Rating edition.')
@@ -1336,6 +1330,7 @@ export const buildRatingEdition = internalAction({
     })
     const programEvidence: Array<ProgramSeasonEvidence> = []
     const coverageWarnings = [
+      'FCS schedules are incomplete in the FBS feed; subdivision estimates and population priors regularize thin history.',
       'National coaching, transfer retention, and injury coverage are not verified; Power remains a results-based baseline.',
       'Game-control enrichment is unavailable; Résumé uses capped final margins.',
       ...(confirmedMembers.size === 0
@@ -2224,7 +2219,7 @@ export const getMatchup = query({
           calibration,
           cutoffAt: edition.cutoffAt,
           leagueAveragePoints: edition.leagueAveragePoints,
-          modelVersion: POWER_MODEL_VERSION,
+          modelVersion: edition.modelVersion,
           ratings: [powerRatingA, powerRatingB],
           season,
           week: edition.week,

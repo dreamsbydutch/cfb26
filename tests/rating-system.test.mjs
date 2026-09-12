@@ -53,7 +53,7 @@ test('Power Rating measures neutral strength in points and keeps FCS opponents h
   const beta = edition.ratings.find((rating) => rating.teamId === 'beta')
   const delta = edition.ratings.find((rating) => rating.teamId === 'delta')
 
-  assert.equal(edition.modelVersion, 'cfb26-power-v1')
+  assert.equal(edition.modelVersion, 'cfb26-power-v2')
   assert.ok(alpha.power > beta.power)
   assert.equal(alpha.rank, 1)
   assert.equal(delta.published, false)

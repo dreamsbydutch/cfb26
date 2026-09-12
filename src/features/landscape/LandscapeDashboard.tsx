@@ -1195,11 +1195,15 @@ function Methodology({
               challengers require held-out validation.
             </li>
             <li>
-              Up to four prior seasons fade recursively as games accumulate.
+              Up to four prior seasons inform the starting estimate, with less
+              prior weight when a team moves from FCS to FBS. Missing imported
+              seasons preserve history, with older evidence moving toward its
+              subdivision average.
             </li>
             <li>
-              FCS teams participate in adjustment with stronger shrinkage but
-              are not published.
+              FCS opponents are estimated against the subdivision strength
+              observed in cross-division games. Thin-history teams start
+              cautiously; no team or conference receives a rank ceiling.
             </li>
           </ul>
         </Surface>

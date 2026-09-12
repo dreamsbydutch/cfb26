@@ -1,8 +1,8 @@
 import { calibrateMargin } from './ratingBacktest.ts'
 import type { LogisticMarginCalibration } from './ratingBacktest.ts'
 
-export const POWER_MODEL_VERSION = 'cfb26-power-v1'
-export const RESUME_MODEL_VERSION = 'cfb26-resume-v2'
+export const POWER_MODEL_VERSION = 'cfb26-power-v2'
+export const RESUME_MODEL_VERSION = 'cfb26-resume-v3'
 export const RESUME_REFERENCE_POWER = 14
 export const RESUME_DOMINANCE_WEIGHT = 0.3
 
@@ -66,7 +66,7 @@ export type PowerRatingEdition = {
   calibration?: LogisticMarginCalibration
   cutoffAt: number
   leagueAveragePoints: number
-  modelVersion: typeof POWER_MODEL_VERSION
+  modelVersion: string
   ratings: Array<PowerTeamRating>
   season: number
   week: number
@@ -156,6 +156,8 @@ function sourceSet(
 }
 
 export function buildPowerRatingEdition(input: {
+  /** False only when reconstructing the retired model for comparison. */
+  divisionAdjustment?: boolean
   calibration?: LogisticMarginCalibration
   cutoffAt: number
   games: ReadonlyArray<PowerRatingGame>
@@ -272,6 +274,47 @@ export function buildPowerRatingEdition(input: {
   let leagueAveragePoints =
     observations.length > 0 ? mean(observations.map((row) => row.score)) : 28
 
+  // Estimate the subdivision location from cross-division games. Individual
+  // sparse FCS opponents shrink toward this population, never toward FBS zero.
+  // All evidence is already filtered to this edition's season and cutoff.
+  const crossDivision = games.filter(
+    (game) =>
+      (teams.get(game.homeTeamId)?.classification === 'fcs') !==
+      (teams.get(game.awayTeamId)?.classification === 'fcs'),
+  )
+  const subdivisionBaseline = (ratings: ReadonlyMap<string, number>) => {
+    if (input.divisionAdjustment === false) return 0
+    if (crossDivision.length === 0) {
+      const priors = input.teams.filter(
+        (team) =>
+          team.classification === 'fcs' && team.prior?.power !== undefined,
+      )
+      return priors.length
+        ? mean(priors.map((team) => team.prior?.power ?? 0))
+        : 0
+    }
+    let numerator = 0
+    let denominator = 0
+    for (const game of crossDivision) {
+      const fcsHome = teams.get(game.homeTeamId)?.classification === 'fcs'
+      const score = robustScores(game)
+      const margin = score.home - score.away
+      const venue = game.neutralSite
+        ? 0
+        : (homeField.get(game.homeTeamId) ?? 2.5)
+      const opponent =
+        ratings.get(fcsHome ? game.awayTeamId : game.homeTeamId) ?? 0
+      const weight = game.evidenceWeight ?? 1
+      numerator +=
+        weight * (opponent + (fcsHome ? margin - venue : -margin + venue))
+      denominator += weight
+    }
+    return numerator / denominator
+  }
+  const initialBaseline = subdivisionBaseline(
+    new Map(input.teams.map((team) => [team.id, team.prior?.power ?? 0])),
+  )
+
   for (let iteration = 0; iteration < 60; iteration += 1) {
     const residualWeight = (observation: ScoreObservation) => {
       const prediction =
@@ -306,7 +349,10 @@ export function buildPowerRatingEdition(input: {
       const priorWeight = (team.prior?.effectiveGames ?? 0) * fcsMultiplier
       const unitRidge = 1.5 * fcsMultiplier
 
-      let numerator = priorValue(team, 'offense') * priorWeight
+      const unitBaseline =
+        team.classification === 'fcs' ? initialBaseline / 2 : 0
+      let numerator =
+        priorValue(team, 'offense') * priorWeight + unitBaseline * unitRidge
       let denominator = priorWeight + unitRidge
       for (const observation of own) {
         const weight = residualWeight(observation)
@@ -320,7 +366,8 @@ export function buildPowerRatingEdition(input: {
       }
       offense.set(team.id, numerator / denominator)
 
-      numerator = priorValue(team, 'defense') * priorWeight
+      numerator =
+        priorValue(team, 'defense') * priorWeight + unitBaseline * unitRidge
       denominator = priorWeight + unitRidge
       for (const observation of against) {
         const weight = residualWeight(observation)
@@ -377,10 +424,13 @@ export function buildPowerRatingEdition(input: {
     input.teams.map((team) => [team.id, team.prior?.power ?? 0]),
   )
   for (let iteration = 0; iteration < 60; iteration += 1) {
+    const fcsBaseline = subdivisionBaseline(power)
     for (const team of input.teams) {
       const fcsMultiplier = team.classification === 'fcs' ? 2.5 : 1
       const priorWeight = (team.prior?.effectiveGames ?? 0) * fcsMultiplier
-      let numerator = (team.prior?.power ?? 0) * priorWeight
+      let numerator =
+        (team.prior?.power ?? 0) * priorWeight +
+        (team.classification === 'fcs' ? fcsBaseline * 1.5 * fcsMultiplier : 0)
       let denominator = priorWeight + 1.5 * fcsMultiplier
       for (const game of gamesByTeam.get(team.id) ?? []) {
         const score = robustScores(game)
@@ -478,7 +528,10 @@ export function buildPowerRatingEdition(input: {
     calibration: input.calibration,
     cutoffAt: input.cutoffAt,
     leagueAveragePoints: round(leagueAveragePoints),
-    modelVersion: POWER_MODEL_VERSION,
+    modelVersion:
+      input.divisionAdjustment === false
+        ? 'cfb26-power-v1'
+        : POWER_MODEL_VERSION,
     ratings: [...ranked, ...ratings.filter((rating) => !rating.published)],
     season: input.season,
     week: input.week,

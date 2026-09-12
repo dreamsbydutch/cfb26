@@ -1,6 +1,8 @@
 import { buildPowerRatingEdition, projectPowerMatchup } from './ratingSystem.ts'
 import { chooseChampion, evaluateForecasts } from './ratingBacktest.ts'
 import { publicationWeek } from './ratingCalendar.ts'
+import { historicalPowerPrior, rememberPowerSeason } from './powerHistory.ts'
+import type { PowerHistory } from './powerHistory.ts'
 import type {
   PowerRatingGame,
   PowerRatingTeam,
@@ -15,6 +17,8 @@ export type PowerPolicy = {
   seasonRetention: number
   halfLifeDays: number | null
   turnoverSensitive: boolean
+  divisionAdjustment?: boolean
+  transitionPriorGames?: number
 }
 
 export const POWER_POLICIES: ReadonlyArray<PowerPolicy> = [
@@ -25,6 +29,16 @@ export const POWER_POLICIES: ReadonlyArray<PowerPolicy> = [
     seasonRetention: 1,
     halfLifeDays: null,
     turnoverSensitive: false,
+  },
+  {
+    version: 'cfb26-power-v2',
+    historySeasons: 5,
+    priorGames: 8,
+    seasonRetention: 1,
+    halfLifeDays: null,
+    turnoverSensitive: false,
+    divisionAdjustment: true,
+    transitionPriorGames: 2,
   },
   {
     version: 'power-transition-4',
@@ -105,6 +119,7 @@ export function fitHistoricalPower(
       throw new Error('Invalid timestamped personnel evidence.')
   }
   let previous = new Map<string, PowerTeamRating>()
+  const history: PowerHistory = new Map()
   let edition: ReturnType<typeof buildPowerRatingEdition> | undefined
   for (
     let season = input.season - input.policy.historySeasons + 1;
@@ -117,6 +132,7 @@ export function fitHistoricalPower(
     if (cached) {
       edition = cached
       previous = new Map(cached.ratings.map((row) => [row.teamId, row]))
+      rememberPowerSeason(history, season, cached.ratings)
       continue
     }
     const cutoffAt = Math.min(
@@ -166,23 +182,35 @@ export function fitHistoricalPower(
         return {
           ...team,
           classification: classifications.get(team.id) ?? team.classification,
-          prior: prior
-            ? {
-                power: prior.power * input.policy.seasonRetention,
-                offense: prior.offense * input.policy.seasonRetention,
-                defense: prior.defense * input.policy.seasonRetention,
-                effectiveGames:
-                  Math.min(prior.gamesPlayed, input.policy.priorGames) *
-                  retention,
-                sources: [
-                  'multi_season_performance',
-                  ...(personnel ? ['verified_personnel'] : []),
-                ],
-              }
-            : undefined,
+          prior: input.policy.divisionAdjustment
+            ? historicalPowerPrior(
+                {
+                  ...team,
+                  classification:
+                    classifications.get(team.id) ?? team.classification,
+                },
+                season,
+                history,
+                input.policy.transitionPriorGames,
+              )
+            : prior
+              ? {
+                  power: prior.power * input.policy.seasonRetention,
+                  offense: prior.offense * input.policy.seasonRetention,
+                  defense: prior.defense * input.policy.seasonRetention,
+                  effectiveGames:
+                    Math.min(prior.gamesPlayed, input.policy.priorGames) *
+                    retention,
+                  sources: [
+                    'multi_season_performance',
+                    ...(personnel ? ['verified_personnel'] : []),
+                  ],
+                }
+              : undefined,
         }
       })
     edition = buildPowerRatingEdition({
+      divisionAdjustment: input.policy.divisionAdjustment ?? false,
       teams,
       season,
       cutoffAt,
@@ -199,6 +227,7 @@ export function fitHistoricalPower(
       })),
     })
     previous = new Map(edition.ratings.map((row) => [row.teamId, row]))
+    rememberPowerSeason(history, season, edition.ratings)
     if (season < input.season) historyCache?.set(cacheKey, edition)
   }
   if (!edition) throw new Error('Historical Power needs at least one season.')
@@ -211,8 +240,9 @@ export function evaluatePowerPolicies(input: {
   games: ReadonlyArray<PowerRatingGame>
   testSeasons: ReadonlyArray<number>
   onProgress?: (version: string) => void
+  policies?: ReadonlyArray<PowerPolicy>
 }) {
-  const reports = POWER_POLICIES.map((policy) => {
+  const reports = (input.policies ?? POWER_POLICIES).map((policy) => {
     input.onProgress?.(policy.version)
     const historyCache = new Map<
       string,

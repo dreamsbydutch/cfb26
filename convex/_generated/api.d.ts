@@ -20,6 +20,7 @@ import type * as migrations from "../migrations.js";
 import type * as nflverse from "../nflverse.js";
 import type * as playerDomain from "../playerDomain.js";
 import type * as players from "../players.js";
+import type * as powerHistory from "../powerHistory.js";
 import type * as powerResearch from "../powerResearch.js";
 import type * as programIdentity from "../programIdentity.js";
 import type * as programRating from "../programRating.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   nflverse: typeof nflverse;
   playerDomain: typeof playerDomain;
   players: typeof players;
+  powerHistory: typeof powerHistory;
   powerResearch: typeof powerResearch;
   programIdentity: typeof programIdentity;
   programRating: typeof programRating;

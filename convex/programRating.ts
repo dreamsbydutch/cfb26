@@ -1,6 +1,6 @@
 import type { PowerTeamRating } from './ratingSystem.ts'
 
-export const PROGRAM_MODEL_VERSION = 'cfb26-program-v1'
+export const PROGRAM_MODEL_VERSION = 'cfb26-program-v2'
 
 export type ProgramSeasonEvidence = {
   teamId: string

@@ -1,0 +1,284 @@
+{
+  "date": "2026-09-12",
+  "source": "adjoining-opossum-710 retained game export",
+  "inputSha256": "2309f48187dae103ccbb520b149ae64f43dde859861fbcca18594e2a2c077775",
+  "reconstruction": true,
+  "heldOutSeasons": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2025
+  ],
+  "champion": "cfb26-power-v2",
+  "decisions": {
+    "cfb26-power-v2": {
+      "accepted": true,
+      "reasons": []
+    }
+  },
+  "policies": [
+    {
+      "modelVersion": "cfb26-power-v1",
+      "overall": {
+        "count": 6843,
+        "marginMae": 14.977159,
+        "brier": 0.185198,
+        "expectedCalibrationError": 0.029387,
+        "winnerAccuracy": 0.717083
+      },
+      "bySeason": {
+        "2017": {
+          "count": 874,
+          "marginMae": 14.937071,
+          "brier": 0.18296,
+          "expectedCalibrationError": 0.030765,
+          "winnerAccuracy": 0.716247
+        },
+        "2018": {
+          "count": 884,
+          "marginMae": 15.359163,
+          "brier": 0.177592,
+          "expectedCalibrationError": 0.032088,
+          "winnerAccuracy": 0.725113
+        },
+        "2019": {
+          "count": 888,
+          "marginMae": 14.932095,
+          "brier": 0.174389,
+          "expectedCalibrationError": 0.05046,
+          "winnerAccuracy": 0.740991
+        },
+        "2020": {
+          "count": 570,
+          "marginMae": 14.160175,
+          "brier": 0.190303,
+          "expectedCalibrationError": 0.03763,
+          "winnerAccuracy": 0.708772
+        },
+        "2021": {
+          "count": 887,
+          "marginMae": 15.422097,
+          "brier": 0.19236,
+          "expectedCalibrationError": 0.047556,
+          "winnerAccuracy": 0.700113
+        },
+        "2022": {
+          "count": 896,
+          "marginMae": 14.954241,
+          "brier": 0.199453,
+          "expectedCalibrationError": 0.06259,
+          "winnerAccuracy": 0.694196
+        },
+        "2023": {
+          "count": 910,
+          "marginMae": 14.696264,
+          "brier": 0.183751,
+          "expectedCalibrationError": 0.038933,
+          "winnerAccuracy": 0.716484
+        },
+        "2025": {
+          "count": 934,
+          "marginMae": 15.067666,
+          "brier": 0.182589,
+          "expectedCalibrationError": 0.032994,
+          "winnerAccuracy": 0.731263
+        }
+      },
+      "bySubdivision": {
+        "fbs_vs_fbs": {
+          "count": 6002,
+          "marginMae": 13.398234,
+          "brier": 0.18745,
+          "expectedCalibrationError": 0.034553,
+          "winnerAccuracy": 0.712762
+        },
+        "includes_fcs": {
+          "count": 841,
+          "marginMae": 26.245541,
+          "brier": 0.169128,
+          "expectedCalibrationError": 0.295321,
+          "winnerAccuracy": 0.747919
+        }
+      },
+      "byWeekRange": {
+        "weeks_1_4": {
+          "count": 2202,
+          "marginMae": 18.17852,
+          "brier": 0.172303,
+          "expectedCalibrationError": 0.085701,
+          "winnerAccuracy": 0.742961
+        },
+        "weeks_5_8": {
+          "count": 1689,
+          "marginMae": 13.311604,
+          "brier": 0.195237,
+          "expectedCalibrationError": 0.045973,
+          "winnerAccuracy": 0.705743
+        },
+        "weeks_9_12": {
+          "count": 1824,
+          "marginMae": 13.427138,
+          "brier": 0.181204,
+          "expectedCalibrationError": 0.036504,
+          "winnerAccuracy": 0.716009
+        },
+        "weeks_13_plus": {
+          "count": 815,
+          "marginMae": 13.528221,
+          "brier": 0.180976,
+          "expectedCalibrationError": 0.032492,
+          "winnerAccuracy": 0.736196
+        },
+        "postseason": {
+          "count": 313,
+          "marginMae": 14.248243,
+          "brier": 0.25602,
+          "expectedCalibrationError": 0.109199,
+          "winnerAccuracy": 0.552716
+        }
+      },
+      "transitionEarlySeason": {
+        "count": 24,
+        "marginMae": 20.558333,
+        "brier": 0.170228,
+        "expectedCalibrationError": 0.172546,
+        "winnerAccuracy": 0.708333
+      }
+    },
+    {
+      "modelVersion": "cfb26-power-v2",
+      "overall": {
+        "count": 6843,
+        "marginMae": 13.64897,
+        "brier": 0.169163,
+        "expectedCalibrationError": 0.017349,
+        "winnerAccuracy": 0.74368
+      },
+      "bySeason": {
+        "2017": {
+          "count": 874,
+          "marginMae": 13.94405,
+          "brier": 0.169931,
+          "expectedCalibrationError": 0.027062,
+          "winnerAccuracy": 0.742563
+        },
+        "2018": {
+          "count": 884,
+          "marginMae": 13.950452,
+          "brier": 0.159695,
+          "expectedCalibrationError": 0.02526,
+          "winnerAccuracy": 0.751131
+        },
+        "2019": {
+          "count": 888,
+          "marginMae": 13.532995,
+          "brier": 0.154601,
+          "expectedCalibrationError": 0.027551,
+          "winnerAccuracy": 0.772523
+        },
+        "2020": {
+          "count": 570,
+          "marginMae": 13.583158,
+          "brier": 0.183424,
+          "expectedCalibrationError": 0.041057,
+          "winnerAccuracy": 0.721053
+        },
+        "2021": {
+          "count": 887,
+          "marginMae": 14.028636,
+          "brier": 0.175442,
+          "expectedCalibrationError": 0.039863,
+          "winnerAccuracy": 0.72717
+        },
+        "2022": {
+          "count": 896,
+          "marginMae": 13.482366,
+          "brier": 0.184272,
+          "expectedCalibrationError": 0.047258,
+          "winnerAccuracy": 0.717634
+        },
+        "2023": {
+          "count": 910,
+          "marginMae": 13.353626,
+          "brier": 0.166487,
+          "expectedCalibrationError": 0.028992,
+          "winnerAccuracy": 0.752747
+        },
+        "2025": {
+          "count": 934,
+          "marginMae": 13.324946,
+          "brier": 0.164696,
+          "expectedCalibrationError": 0.032404,
+          "winnerAccuracy": 0.755889
+        }
+      },
+      "bySubdivision": {
+        "fbs_vs_fbs": {
+          "count": 6002,
+          "marginMae": 13.398867,
+          "brier": 0.185553,
+          "expectedCalibrationError": 0.019011,
+          "winnerAccuracy": 0.715928
+        },
+        "includes_fcs": {
+          "count": 841,
+          "marginMae": 15.433888,
+          "brier": 0.052196,
+          "expectedCalibrationError": 0.009178,
+          "winnerAccuracy": 0.941736
+        }
+      },
+      "byWeekRange": {
+        "weeks_1_4": {
+          "count": 2202,
+          "marginMae": 14.658765,
+          "brier": 0.133337,
+          "expectedCalibrationError": 0.014013,
+          "winnerAccuracy": 0.810173
+        },
+        "weeks_5_8": {
+          "count": 1689,
+          "marginMae": 13.009473,
+          "brier": 0.188196,
+          "expectedCalibrationError": 0.027431,
+          "winnerAccuracy": 0.71048
+        },
+        "weeks_9_12": {
+          "count": 1824,
+          "marginMae": 13.096107,
+          "brier": 0.176528,
+          "expectedCalibrationError": 0.02553,
+          "winnerAccuracy": 0.724781
+        },
+        "weeks_13_plus": {
+          "count": 815,
+          "marginMae": 13.270552,
+          "brier": 0.17839,
+          "expectedCalibrationError": 0.043601,
+          "winnerAccuracy": 0.739877
+        },
+        "postseason": {
+          "count": 313,
+          "marginMae": 14.202875,
+          "brier": 0.251555,
+          "expectedCalibrationError": 0.082562,
+          "winnerAccuracy": 0.57508
+        }
+      },
+      "transitionEarlySeason": {
+        "count": 24,
+        "marginMae": 20.5625,
+        "brier": 0.234179,
+        "expectedCalibrationError": 0.283133,
+        "winnerAccuracy": 0.708333
+      }
+    }
+  ],
+  "transitionCohortDefinition": "Weeks 1-4 in a program's first observed FBS season after 2013, within held-out seasons. Schedule-derived membership; not an eligibility designation.",
+  "transitionPriorGames": 2,
+  "selectionNotes": "Eight-, four-, and two-game transition weights were screened on the same held-out data. Two was retained, then the zero-evidence FCS initialization defect was corrected and the final model reevaluated. This is model-selection evidence, not an untouched prospective test."
+}
