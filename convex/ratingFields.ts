@@ -1,6 +1,8 @@
 import { v } from 'convex/values'
 
 export const programSnapshotFields = {
+  recordDifficulty: v.optional(v.number()),
+  recordProbability: v.optional(v.number()),
   programRating: v.optional(v.number()),
   programRank: v.optional(v.number()),
   programResults: v.optional(v.number()),

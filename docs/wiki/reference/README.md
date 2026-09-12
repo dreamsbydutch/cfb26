@@ -10,4 +10,6 @@
 
 - [Three team ratings](three-team-ratings.md) — Program, Power, Résumé, publication, coverage, and research contracts.
 
+- [Rating improvement research sources](rating-improvement-sources-2026-09-12.md) — verified data options and unproven candidates for the next rating experiments.
+
 [Back to wiki home](../README.md)

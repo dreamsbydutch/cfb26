@@ -14,6 +14,62 @@ const draftPick = {
   position: 'QB',
 }
 
+test('game evidence requests include both season types and validate drive scores', async () => {
+  const urls = []
+  const drive = {
+    id: 'drive-1',
+    gameId: 10,
+    isHomeOffense: true,
+    startPeriod: 1,
+    endPeriod: 1,
+    startOffenseScore: 0,
+    startDefenseScore: 0,
+    endOffenseScore: 7,
+    endDefenseScore: 0,
+    plays: 8,
+    driveResult: 'TD',
+  }
+  const client = createCfbdClient({
+    apiKey: 'test-token',
+    fetchImpl: async (url) => {
+      urls.push(new URL(url))
+      return Response.json(
+        String(url).includes('/drives')
+          ? [drive]
+          : [
+              {
+                gameId: 10,
+                season: 2025,
+                week: 2,
+                team: 'A',
+                opponent: 'B',
+                offense: {},
+                defense: {},
+              },
+            ],
+      )
+    },
+  })
+  assert.equal(
+    (await client.getAdvancedGameStats({ season: 2025 }))[0].gameId,
+    10,
+  )
+  assert.deepEqual(await client.getDrives({ season: 2025, week: 2 }), [drive])
+  assert.equal(urls[0].searchParams.get('excludeGarbageTime'), 'true')
+  assert.equal(urls[0].searchParams.get('seasonType'), 'both')
+  assert.equal(urls[1].searchParams.get('classification'), 'fbs')
+  assert.equal(urls[1].searchParams.get('week'), '2')
+  const broken = createCfbdClient({
+    apiKey: 'test-token',
+    fetchImpl: async () => Response.json([{ ...drive, endOffenseScore: null }]),
+  })
+  await assert.rejects(
+    () => broken.getDrives({ season: 2025 }),
+    (error) =>
+      error.kind === 'contract' && error.message.includes('endOffenseScore'),
+  )
+})
+
 test('diagnostics bound field values, omit unrelated payloads, and redact the configured key', async () => {
   const client = createCfbdClient({
     apiKey: 'test-private-key',

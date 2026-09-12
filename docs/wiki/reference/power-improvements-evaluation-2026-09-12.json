@@ -1,0 +1,3766 @@
+{
+  "sourceSha256": "cbac332de84e464befb722e61530a9b4cce839324defd0d6af4eabbd5dd652fc",
+  "reconstructedEvidence": true,
+  "reconstructedPersonnel": true,
+  "testSeasons": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "initialCalibrationSeasons": [
+    2017
+  ],
+  "publishedModel": "cfb26-power-v4",
+  "selectedCandidate": "efficiency-continuity-calibrated",
+  "decisions": {
+    "v3-fbs-feed-calibrated": {
+      "accepted": true,
+      "reasons": []
+    },
+    "full-fcs": {
+      "accepted": true,
+      "reasons": []
+    },
+    "full-fcs-calibrated": {
+      "accepted": true,
+      "reasons": []
+    },
+    "fixed-home": {
+      "accepted": true,
+      "reasons": []
+    },
+    "fixed-home-calibrated": {
+      "accepted": true,
+      "reasons": []
+    },
+    "efficiency-20": {
+      "accepted": true,
+      "reasons": []
+    },
+    "efficiency-20-calibrated": {
+      "accepted": true,
+      "reasons": []
+    },
+    "efficiency-continuity": {
+      "accepted": true,
+      "reasons": []
+    },
+    "efficiency-continuity-calibrated": {
+      "accepted": true,
+      "reasons": []
+    },
+    "efficiency-only": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Aggregate Brier score did not improve.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons."
+      ]
+    },
+    "efficiency-only-calibrated": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate Brier score did not improve.",
+        "Held-out 2020 regressed materially.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons."
+      ]
+    }
+  },
+  "candidates": [
+    {
+      "policy": {
+        "version": "v3-fbs-feed",
+        "historySeasons": 5,
+        "transitionPriorGames": 2,
+        "priorGames": 4,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "efficiencyWeight": 0,
+        "offensiveContinuity": false
+      },
+      "fullFcs": false,
+      "raw": {
+        "modelVersion": "v3-fbs-feed",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.055306,
+              "count": 1792,
+              "expectedCalibrationError": 0.010004,
+              "marginMae": 14.905357,
+              "winnerAccuracy": 0.939732
+            },
+            "strong": {
+              "brier": 0.160554,
+              "count": 1913,
+              "expectedCalibrationError": 0.030594,
+              "marginMae": 13.093361,
+              "winnerAccuracy": 0.793518
+            },
+            "toss_up": {
+              "brier": 0.247558,
+              "count": 1450,
+              "expectedCalibrationError": 0.016951,
+              "marginMae": 12.915862,
+              "winnerAccuracy": 0.542069
+            },
+            "moderate": {
+              "brier": 0.222843,
+              "count": 1733,
+              "expectedCalibrationError": 0.040237,
+              "marginMae": 12.811714,
+              "winnerAccuracy": 0.654934
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.04676,
+              "count": 864,
+              "expectedCalibrationError": 0.006745,
+              "marginMae": 15.22419,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.184428,
+              "count": 6024,
+              "expectedCalibrationError": 0.023592,
+              "marginMae": 13.203021,
+              "winnerAccuracy": 0.714641
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.162983,
+              "count": 6402,
+              "expectedCalibrationError": 0.019212,
+              "marginMae": 13.461496,
+              "winnerAccuracy": 0.751953
+            },
+            "neutral": {
+              "brier": 0.222172,
+              "count": 486,
+              "expectedCalibrationError": 0.069578,
+              "marginMae": 13.391358,
+              "winnerAccuracy": 0.635802
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.130076,
+              "count": 2221,
+              "expectedCalibrationError": 0.018041,
+              "marginMae": 14.657181,
+              "winnerAccuracy": 0.812697
+            },
+            "weeks_5_8": {
+              "brier": 0.189003,
+              "count": 1677,
+              "expectedCalibrationError": 0.035056,
+              "marginMae": 12.74347,
+              "winnerAccuracy": 0.705426
+            },
+            "weeks_9_12": {
+              "brier": 0.174905,
+              "count": 1793,
+              "expectedCalibrationError": 0.028892,
+              "marginMae": 12.910095,
+              "winnerAccuracy": 0.725042
+            },
+            "weeks_13_plus": {
+              "brier": 0.176667,
+              "count": 878,
+              "expectedCalibrationError": 0.052653,
+              "marginMae": 12.867654,
+              "winnerAccuracy": 0.72779
+            },
+            "postseason": {
+              "brier": 0.240811,
+              "count": 319,
+              "expectedCalibrationError": 0.09836,
+              "marginMae": 13.538245,
+              "winnerAccuracy": 0.61442
+            }
+          },
+          "overall": {
+            "brier": 0.16716,
+            "count": 6888,
+            "expectedCalibrationError": 0.020863,
+            "marginMae": 13.456548,
+            "winnerAccuracy": 0.743757
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.158568,
+            "count": 884,
+            "expectedCalibrationError": 0.019433,
+            "marginMae": 13.838462,
+            "winnerAccuracy": 0.761312,
+            "season": 2018
+          },
+          {
+            "brier": 0.153202,
+            "count": 888,
+            "expectedCalibrationError": 0.025774,
+            "marginMae": 13.417793,
+            "winnerAccuracy": 0.766892,
+            "season": 2019
+          },
+          {
+            "brier": 0.179247,
+            "count": 570,
+            "expectedCalibrationError": 0.030089,
+            "marginMae": 13.360175,
+            "winnerAccuracy": 0.729825,
+            "season": 2020
+          },
+          {
+            "brier": 0.172989,
+            "count": 887,
+            "expectedCalibrationError": 0.043425,
+            "marginMae": 13.894476,
+            "winnerAccuracy": 0.732807,
+            "season": 2021
+          },
+          {
+            "brier": 0.180869,
+            "count": 896,
+            "expectedCalibrationError": 0.052227,
+            "marginMae": 13.381138,
+            "winnerAccuracy": 0.717634,
+            "season": 2022
+          },
+          {
+            "brier": 0.162448,
+            "count": 910,
+            "expectedCalibrationError": 0.037296,
+            "marginMae": 13.196264,
+            "winnerAccuracy": 0.76044,
+            "season": 2023
+          },
+          {
+            "brier": 0.174405,
+            "count": 919,
+            "expectedCalibrationError": 0.039122,
+            "marginMae": 13.517628,
+            "winnerAccuracy": 0.722524,
+            "season": 2024
+          },
+          {
+            "brier": 0.159958,
+            "count": 934,
+            "expectedCalibrationError": 0.033233,
+            "marginMae": 13.040685,
+            "winnerAccuracy": 0.753747,
+            "season": 2025
+          }
+        ]
+      },
+      "calibrated": {
+        "modelVersion": "v3-fbs-feed-calibrated",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.069355,
+              "count": 2463,
+              "expectedCalibrationError": 0.009546,
+              "marginMae": 13.573319,
+              "winnerAccuracy": 0.922452
+            },
+            "moderate": {
+              "brier": 0.238176,
+              "count": 1451,
+              "expectedCalibrationError": 0.029236,
+              "marginMae": 12.81375,
+              "winnerAccuracy": 0.608546
+            },
+            "strong": {
+              "brier": 0.190432,
+              "count": 1864,
+              "expectedCalibrationError": 0.022461,
+              "marginMae": 13.011125,
+              "winnerAccuracy": 0.743562
+            },
+            "toss_up": {
+              "brier": 0.249647,
+              "count": 1110,
+              "expectedCalibrationError": 0.014987,
+              "marginMae": 13.004279,
+              "winnerAccuracy": 0.526126
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.046354,
+              "count": 864,
+              "expectedCalibrationError": 0.013079,
+              "marginMae": 14.18128,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.184003,
+              "count": 6024,
+              "expectedCalibrationError": 0.012714,
+              "marginMae": 13.024352,
+              "winnerAccuracy": 0.714973
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.162629,
+              "count": 6402,
+              "expectedCalibrationError": 0.009675,
+              "marginMae": 13.155924,
+              "winnerAccuracy": 0.752421
+            },
+            "neutral": {
+              "brier": 0.220859,
+              "count": 486,
+              "expectedCalibrationError": 0.072927,
+              "marginMae": 13.347932,
+              "winnerAccuracy": 0.633745
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.130022,
+              "count": 2221,
+              "expectedCalibrationError": 0.018041,
+              "marginMae": 13.958872,
+              "winnerAccuracy": 0.815398
+            },
+            "weeks_5_8": {
+              "brier": 0.188457,
+              "count": 1677,
+              "expectedCalibrationError": 0.024576,
+              "marginMae": 12.725832,
+              "winnerAccuracy": 0.703637
+            },
+            "weeks_9_12": {
+              "brier": 0.174429,
+              "count": 1793,
+              "expectedCalibrationError": 0.024593,
+              "marginMae": 12.777604,
+              "winnerAccuracy": 0.726157
+            },
+            "weeks_13_plus": {
+              "brier": 0.176181,
+              "count": 878,
+              "expectedCalibrationError": 0.039717,
+              "marginMae": 12.641651,
+              "winnerAccuracy": 0.725513
+            },
+            "postseason": {
+              "brier": 0.238964,
+              "count": 319,
+              "expectedCalibrationError": 0.092952,
+              "marginMae": 13.660921,
+              "winnerAccuracy": 0.611285
+            }
+          },
+          "overall": {
+            "brier": 0.166737,
+            "count": 6888,
+            "expectedCalibrationError": 0.010872,
+            "marginMae": 13.169472,
+            "winnerAccuracy": 0.744048
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.158201,
+            "count": 884,
+            "expectedCalibrationError": 0.023341,
+            "marginMae": 13.470249,
+            "winnerAccuracy": 0.765837,
+            "season": 2018
+          },
+          {
+            "brier": 0.153308,
+            "count": 888,
+            "expectedCalibrationError": 0.025777,
+            "marginMae": 13.000089,
+            "winnerAccuracy": 0.768018,
+            "season": 2019
+          },
+          {
+            "brier": 0.178727,
+            "count": 570,
+            "expectedCalibrationError": 0.029973,
+            "marginMae": 13.243825,
+            "winnerAccuracy": 0.722807,
+            "season": 2020
+          },
+          {
+            "brier": 0.172715,
+            "count": 887,
+            "expectedCalibrationError": 0.032701,
+            "marginMae": 13.676215,
+            "winnerAccuracy": 0.73168,
+            "season": 2021
+          },
+          {
+            "brier": 0.179641,
+            "count": 896,
+            "expectedCalibrationError": 0.042865,
+            "marginMae": 13.228751,
+            "winnerAccuracy": 0.71317,
+            "season": 2022
+          },
+          {
+            "brier": 0.162368,
+            "count": 910,
+            "expectedCalibrationError": 0.031686,
+            "marginMae": 13.043334,
+            "winnerAccuracy": 0.761538,
+            "season": 2023
+          },
+          {
+            "brier": 0.173248,
+            "count": 919,
+            "expectedCalibrationError": 0.036615,
+            "marginMae": 13.292965,
+            "winnerAccuracy": 0.723613,
+            "season": 2024
+          },
+          {
+            "brier": 0.160063,
+            "count": 934,
+            "expectedCalibrationError": 0.040248,
+            "marginMae": 12.463737,
+            "winnerAccuracy": 0.75803,
+            "season": 2025
+          }
+        ]
+      },
+      "fits": [
+        {
+          "season": 2018,
+          "scale": 1.2786090050191377,
+          "homeOffset": -0.28005488939146134,
+          "probability": {
+            "fitCount": 874,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1097755254,
+            "trainingSeasons": [
+              2017
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017
+          ]
+        },
+        {
+          "season": 2019,
+          "scale": 1.2859788520259343,
+          "homeOffset": -0.4309879583422087,
+          "probability": {
+            "fitCount": 1758,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1118157717,
+            "trainingSeasons": [
+              2017,
+              2018
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018
+          ]
+        },
+        {
+          "season": 2020,
+          "scale": 1.2947470192004067,
+          "homeOffset": -0.3767722765136725,
+          "probability": {
+            "fitCount": 2646,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1132818959,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019
+          ]
+        },
+        {
+          "season": 2021,
+          "scale": 1.2930305398292683,
+          "homeOffset": -0.6756446619383615,
+          "probability": {
+            "fitCount": 3216,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1124813474,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020
+          ]
+        },
+        {
+          "season": 2022,
+          "scale": 1.282761571134784,
+          "homeOffset": -0.7020555834490071,
+          "probability": {
+            "fitCount": 4103,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1100140328,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021
+          ]
+        },
+        {
+          "season": 2023,
+          "scale": 1.2746571612018978,
+          "homeOffset": -0.6697123587537901,
+          "probability": {
+            "fitCount": 4999,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1074956027,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022
+          ]
+        },
+        {
+          "season": 2024,
+          "scale": 1.2759743712658211,
+          "homeOffset": -0.6503831947143333,
+          "probability": {
+            "fitCount": 5909,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1088239554,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ]
+        },
+        {
+          "season": 2025,
+          "scale": 1.2794362751137325,
+          "homeOffset": -0.5297897812838276,
+          "probability": {
+            "fitCount": 6828,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1080884519,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024
+          ]
+        }
+      ],
+      "finalCalibration": {
+        "scale": 1.2931646801637238,
+        "homeOffset": -0.48887437544648743,
+        "probability": {
+          "fitCount": 7762,
+          "intercept": 0,
+          "maximumProbability": 0.99,
+          "minimumProbability": 0.01,
+          "slope": 0.1084275974,
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "version": "logistic-margin-v1"
+        },
+        "trainingSeasons": [
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      }
+    },
+    {
+      "policy": {
+        "version": "full-fcs",
+        "historySeasons": 5,
+        "transitionPriorGames": 2,
+        "priorGames": 4,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "efficiencyWeight": 0,
+        "offensiveContinuity": false
+      },
+      "fullFcs": true,
+      "raw": {
+        "modelVersion": "full-fcs",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.051856,
+              "count": 1750,
+              "expectedCalibrationError": 0.007141,
+              "marginMae": 14.599086,
+              "winnerAccuracy": 0.943429
+            },
+            "strong": {
+              "brier": 0.156611,
+              "count": 1970,
+              "expectedCalibrationError": 0.023548,
+              "marginMae": 13.042843,
+              "winnerAccuracy": 0.800508
+            },
+            "toss_up": {
+              "brier": 0.248387,
+              "count": 1434,
+              "expectedCalibrationError": 0.026694,
+              "marginMae": 12.790237,
+              "winnerAccuracy": 0.539749
+            },
+            "moderate": {
+              "brier": 0.226044,
+              "count": 1734,
+              "expectedCalibrationError": 0.036491,
+              "marginMae": 12.872664,
+              "winnerAccuracy": 0.649942
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044804,
+              "count": 864,
+              "expectedCalibrationError": 0.020166,
+              "marginMae": 14.488889,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.184048,
+              "count": 6024,
+              "expectedCalibrationError": 0.022684,
+              "marginMae": 13.17842,
+              "winnerAccuracy": 0.715637
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.162372,
+              "count": 6402,
+              "expectedCalibrationError": 0.01707,
+              "marginMae": 13.3413,
+              "winnerAccuracy": 0.753515
+            },
+            "neutral": {
+              "brier": 0.222038,
+              "count": 486,
+              "expectedCalibrationError": 0.063692,
+              "marginMae": 13.362551,
+              "winnerAccuracy": 0.627572
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.128321,
+              "count": 2221,
+              "expectedCalibrationError": 0.015876,
+              "marginMae": 14.387843,
+              "winnerAccuracy": 0.813597
+            },
+            "weeks_5_8": {
+              "brier": 0.188588,
+              "count": 1677,
+              "expectedCalibrationError": 0.03247,
+              "marginMae": 12.686166,
+              "winnerAccuracy": 0.714371
+            },
+            "weeks_9_12": {
+              "brier": 0.175143,
+              "count": 1793,
+              "expectedCalibrationError": 0.033235,
+              "marginMae": 12.866146,
+              "winnerAccuracy": 0.722811
+            },
+            "weeks_13_plus": {
+              "brier": 0.176826,
+              "count": 878,
+              "expectedCalibrationError": 0.054833,
+              "marginMae": 12.853872,
+              "winnerAccuracy": 0.723235
+            },
+            "postseason": {
+              "brier": 0.240972,
+              "count": 319,
+              "expectedCalibrationError": 0.082196,
+              "marginMae": 13.543574,
+              "winnerAccuracy": 0.605016
+            }
+          },
+          "overall": {
+            "brier": 0.166582,
+            "count": 6888,
+            "expectedCalibrationError": 0.019413,
+            "marginMae": 13.342799,
+            "winnerAccuracy": 0.744628
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.158164,
+            "count": 884,
+            "expectedCalibrationError": 0.023711,
+            "marginMae": 13.6819,
+            "winnerAccuracy": 0.757919,
+            "season": 2018
+          },
+          {
+            "brier": 0.152406,
+            "count": 888,
+            "expectedCalibrationError": 0.029563,
+            "marginMae": 13.316329,
+            "winnerAccuracy": 0.77027,
+            "season": 2019
+          },
+          {
+            "brier": 0.17929,
+            "count": 570,
+            "expectedCalibrationError": 0.029023,
+            "marginMae": 13.353333,
+            "winnerAccuracy": 0.72807,
+            "season": 2020
+          },
+          {
+            "brier": 0.172863,
+            "count": 887,
+            "expectedCalibrationError": 0.037725,
+            "marginMae": 13.803833,
+            "winnerAccuracy": 0.733935,
+            "season": 2021
+          },
+          {
+            "brier": 0.179716,
+            "count": 896,
+            "expectedCalibrationError": 0.050197,
+            "marginMae": 13.206473,
+            "winnerAccuracy": 0.723214,
+            "season": 2022
+          },
+          {
+            "brier": 0.161226,
+            "count": 910,
+            "expectedCalibrationError": 0.029806,
+            "marginMae": 13.035604,
+            "winnerAccuracy": 0.761538,
+            "season": 2023
+          },
+          {
+            "brier": 0.173693,
+            "count": 919,
+            "expectedCalibrationError": 0.047959,
+            "marginMae": 13.363765,
+            "winnerAccuracy": 0.720348,
+            "season": 2024
+          },
+          {
+            "brier": 0.159931,
+            "count": 934,
+            "expectedCalibrationError": 0.039453,
+            "marginMae": 13.012206,
+            "winnerAccuracy": 0.755889,
+            "season": 2025
+          }
+        ]
+      },
+      "calibrated": {
+        "modelVersion": "full-fcs-calibrated",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.06664,
+              "count": 2459,
+              "expectedCalibrationError": 0.011227,
+              "marginMae": 13.184759,
+              "winnerAccuracy": 0.92558
+            },
+            "strong": {
+              "brier": 0.190756,
+              "count": 1841,
+              "expectedCalibrationError": 0.024585,
+              "marginMae": 13.12717,
+              "winnerAccuracy": 0.743618
+            },
+            "moderate": {
+              "brier": 0.237855,
+              "count": 1471,
+              "expectedCalibrationError": 0.03613,
+              "marginMae": 12.884569,
+              "winnerAccuracy": 0.611829
+            },
+            "toss_up": {
+              "brier": 0.250558,
+              "count": 1117,
+              "expectedCalibrationError": 0.025388,
+              "marginMae": 12.714577,
+              "winnerAccuracy": 0.515667
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044328,
+              "count": 864,
+              "expectedCalibrationError": 0.016952,
+              "marginMae": 13.29265,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.183684,
+              "count": 6024,
+              "expectedCalibrationError": 0.014163,
+              "marginMae": 12.991198,
+              "winnerAccuracy": 0.714309
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.162052,
+              "count": 6402,
+              "expectedCalibrationError": 0.01071,
+              "marginMae": 13.007714,
+              "winnerAccuracy": 0.752265
+            },
+            "neutral": {
+              "brier": 0.220893,
+              "count": 486,
+              "expectedCalibrationError": 0.058533,
+              "marginMae": 13.309544,
+              "winnerAccuracy": 0.627572
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.128187,
+              "count": 2221,
+              "expectedCalibrationError": 0.014735,
+              "marginMae": 13.606504,
+              "winnerAccuracy": 0.814048
+            },
+            "weeks_5_8": {
+              "brier": 0.188249,
+              "count": 1677,
+              "expectedCalibrationError": 0.028299,
+              "marginMae": 12.645175,
+              "winnerAccuracy": 0.707812
+            },
+            "weeks_9_12": {
+              "brier": 0.174702,
+              "count": 1793,
+              "expectedCalibrationError": 0.021704,
+              "marginMae": 12.726692,
+              "winnerAccuracy": 0.727273
+            },
+            "weeks_13_plus": {
+              "brier": 0.176332,
+              "count": 878,
+              "expectedCalibrationError": 0.055717,
+              "marginMae": 12.690598,
+              "winnerAccuracy": 0.71754
+            },
+            "postseason": {
+              "brier": 0.239348,
+              "count": 319,
+              "expectedCalibrationError": 0.077859,
+              "marginMae": 13.656794,
+              "winnerAccuracy": 0.601881
+            }
+          },
+          "overall": {
+            "brier": 0.166203,
+            "count": 6888,
+            "expectedCalibrationError": 0.012581,
+            "marginMae": 13.029011,
+            "winnerAccuracy": 0.743467
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.157756,
+            "count": 884,
+            "expectedCalibrationError": 0.021978,
+            "marginMae": 13.251783,
+            "winnerAccuracy": 0.760181,
+            "season": 2018
+          },
+          {
+            "brier": 0.152699,
+            "count": 888,
+            "expectedCalibrationError": 0.030014,
+            "marginMae": 12.907616,
+            "winnerAccuracy": 0.769144,
+            "season": 2019
+          },
+          {
+            "brier": 0.178862,
+            "count": 570,
+            "expectedCalibrationError": 0.030139,
+            "marginMae": 13.286907,
+            "winnerAccuracy": 0.722807,
+            "season": 2020
+          },
+          {
+            "brier": 0.172621,
+            "count": 887,
+            "expectedCalibrationError": 0.034374,
+            "marginMae": 13.539712,
+            "winnerAccuracy": 0.73168,
+            "season": 2021
+          },
+          {
+            "brier": 0.178566,
+            "count": 896,
+            "expectedCalibrationError": 0.04963,
+            "marginMae": 12.990936,
+            "winnerAccuracy": 0.715402,
+            "season": 2022
+          },
+          {
+            "brier": 0.161072,
+            "count": 910,
+            "expectedCalibrationError": 0.027447,
+            "marginMae": 12.85647,
+            "winnerAccuracy": 0.761538,
+            "season": 2023
+          },
+          {
+            "brier": 0.172659,
+            "count": 919,
+            "expectedCalibrationError": 0.043724,
+            "marginMae": 13.075019,
+            "winnerAccuracy": 0.721436,
+            "season": 2024
+          },
+          {
+            "brier": 0.160006,
+            "count": 934,
+            "expectedCalibrationError": 0.030238,
+            "marginMae": 12.450553,
+            "winnerAccuracy": 0.75803,
+            "season": 2025
+          }
+        ]
+      },
+      "fits": [
+        {
+          "season": 2018,
+          "scale": 1.2764172043635158,
+          "homeOffset": -0.33140614437953386,
+          "probability": {
+            "fitCount": 874,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1120134877,
+            "trainingSeasons": [
+              2017
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017
+          ]
+        },
+        {
+          "season": 2019,
+          "scale": 1.2950804296118066,
+          "homeOffset": -0.5315265231338517,
+          "probability": {
+            "fitCount": 1758,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1132079201,
+            "trainingSeasons": [
+              2017,
+              2018
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018
+          ]
+        },
+        {
+          "season": 2020,
+          "scale": 1.3037306996953026,
+          "homeOffset": -0.46539246504752363,
+          "probability": {
+            "fitCount": 2646,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1144662707,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019
+          ]
+        },
+        {
+          "season": 2021,
+          "scale": 1.2986366343884979,
+          "homeOffset": -0.7446850934758245,
+          "probability": {
+            "fitCount": 3216,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.113554098,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020
+          ]
+        },
+        {
+          "season": 2022,
+          "scale": 1.2911437136405188,
+          "homeOffset": -0.7816715970382466,
+          "probability": {
+            "fitCount": 4103,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1108228778,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021
+          ]
+        },
+        {
+          "season": 2023,
+          "scale": 1.286737924070755,
+          "homeOffset": -0.7706492547348246,
+          "probability": {
+            "fitCount": 4999,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1082646891,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022
+          ]
+        },
+        {
+          "season": 2024,
+          "scale": 1.2872269567181873,
+          "homeOffset": -0.748336890148428,
+          "probability": {
+            "fitCount": 5909,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1098094228,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ]
+        },
+        {
+          "season": 2025,
+          "scale": 1.2906267239423146,
+          "homeOffset": -0.6270197311323991,
+          "probability": {
+            "fitCount": 6828,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1090643209,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024
+          ]
+        }
+      ],
+      "finalCalibration": {
+        "scale": 1.3013457101654506,
+        "homeOffset": -0.5679272547510481,
+        "probability": {
+          "fitCount": 7762,
+          "intercept": 0,
+          "maximumProbability": 0.99,
+          "minimumProbability": 0.01,
+          "slope": 0.1095310971,
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "version": "logistic-margin-v1"
+        },
+        "trainingSeasons": [
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      }
+    },
+    {
+      "policy": {
+        "version": "fixed-home",
+        "historySeasons": 5,
+        "transitionPriorGames": 2,
+        "priorGames": 4,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0,
+        "offensiveContinuity": false
+      },
+      "fullFcs": true,
+      "raw": {
+        "modelVersion": "fixed-home",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.05003,
+              "count": 1774,
+              "expectedCalibrationError": 0.00366,
+              "marginMae": 14.531003,
+              "winnerAccuracy": 0.945885
+            },
+            "strong": {
+              "brier": 0.154324,
+              "count": 1899,
+              "expectedCalibrationError": 0.018142,
+              "marginMae": 13.172354,
+              "winnerAccuracy": 0.806214
+            },
+            "toss_up": {
+              "brier": 0.250118,
+              "count": 1434,
+              "expectedCalibrationError": 0.030664,
+              "marginMae": 12.634937,
+              "winnerAccuracy": 0.527197
+            },
+            "moderate": {
+              "brier": 0.225745,
+              "count": 1781,
+              "expectedCalibrationError": 0.025246,
+              "marginMae": 12.726839,
+              "winnerAccuracy": 0.655811
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044523,
+              "count": 864,
+              "expectedCalibrationError": 0.018183,
+              "marginMae": 14.429514,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.183278,
+              "count": 6024,
+              "expectedCalibrationError": 0.021669,
+              "marginMae": 13.132503,
+              "winnerAccuracy": 0.716301
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.161644,
+              "count": 6402,
+              "expectedCalibrationError": 0.014535,
+              "marginMae": 13.29294,
+              "winnerAccuracy": 0.755545
+            },
+            "neutral": {
+              "brier": 0.221582,
+              "count": 486,
+              "expectedCalibrationError": 0.080516,
+              "marginMae": 13.324897,
+              "winnerAccuracy": 0.609053
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.12789,
+              "count": 2221,
+              "expectedCalibrationError": 0.018591,
+              "marginMae": 14.3362,
+              "winnerAccuracy": 0.811796
+            },
+            "weeks_5_8": {
+              "brier": 0.187492,
+              "count": 1677,
+              "expectedCalibrationError": 0.030933,
+              "marginMae": 12.624389,
+              "winnerAccuracy": 0.715564
+            },
+            "weeks_9_12": {
+              "brier": 0.174838,
+              "count": 1793,
+              "expectedCalibrationError": 0.021757,
+              "marginMae": 12.832906,
+              "winnerAccuracy": 0.730061
+            },
+            "weeks_13_plus": {
+              "brier": 0.175483,
+              "count": 878,
+              "expectedCalibrationError": 0.047827,
+              "marginMae": 12.810137,
+              "winnerAccuracy": 0.724374
+            },
+            "postseason": {
+              "brier": 0.239844,
+              "count": 319,
+              "expectedCalibrationError": 0.088115,
+              "marginMae": 13.50721,
+              "winnerAccuracy": 0.579937
+            }
+          },
+          "overall": {
+            "brier": 0.165874,
+            "count": 6888,
+            "expectedCalibrationError": 0.018531,
+            "marginMae": 13.295195,
+            "winnerAccuracy": 0.745209
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.157205,
+            "count": 884,
+            "expectedCalibrationError": 0.021299,
+            "marginMae": 13.637217,
+            "winnerAccuracy": 0.75905,
+            "season": 2018
+          },
+          {
+            "brier": 0.152365,
+            "count": 888,
+            "expectedCalibrationError": 0.036441,
+            "marginMae": 13.254505,
+            "winnerAccuracy": 0.771396,
+            "season": 2019
+          },
+          {
+            "brier": 0.17861,
+            "count": 570,
+            "expectedCalibrationError": 0.032259,
+            "marginMae": 13.321754,
+            "winnerAccuracy": 0.733333,
+            "season": 2020
+          },
+          {
+            "brier": 0.17197,
+            "count": 887,
+            "expectedCalibrationError": 0.031604,
+            "marginMae": 13.724126,
+            "winnerAccuracy": 0.733935,
+            "season": 2021
+          },
+          {
+            "brier": 0.179732,
+            "count": 896,
+            "expectedCalibrationError": 0.049536,
+            "marginMae": 13.213058,
+            "winnerAccuracy": 0.71875,
+            "season": 2022
+          },
+          {
+            "brier": 0.160533,
+            "count": 910,
+            "expectedCalibrationError": 0.025656,
+            "marginMae": 13.007582,
+            "winnerAccuracy": 0.76044,
+            "season": 2023
+          },
+          {
+            "brier": 0.172359,
+            "count": 919,
+            "expectedCalibrationError": 0.043332,
+            "marginMae": 13.255604,
+            "winnerAccuracy": 0.722524,
+            "season": 2024
+          },
+          {
+            "brier": 0.158886,
+            "count": 934,
+            "expectedCalibrationError": 0.034345,
+            "marginMae": 12.984582,
+            "winnerAccuracy": 0.75803,
+            "season": 2025
+          }
+        ]
+      },
+      "calibrated": {
+        "modelVersion": "fixed-home-calibrated",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.066825,
+              "count": 2459,
+              "expectedCalibrationError": 0.010503,
+              "marginMae": 13.221393,
+              "winnerAccuracy": 0.92558
+            },
+            "strong": {
+              "brier": 0.191532,
+              "count": 1837,
+              "expectedCalibrationError": 0.020692,
+              "marginMae": 12.827208,
+              "winnerAccuracy": 0.739249
+            },
+            "moderate": {
+              "brier": 0.234583,
+              "count": 1493,
+              "expectedCalibrationError": 0.023838,
+              "marginMae": 13.14437,
+              "winnerAccuracy": 0.620228
+            },
+            "toss_up": {
+              "brier": 0.249863,
+              "count": 1099,
+              "expectedCalibrationError": 0.023667,
+              "marginMae": 12.453695,
+              "winnerAccuracy": 0.517743
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044017,
+              "count": 864,
+              "expectedCalibrationError": 0.020334,
+              "marginMae": 13.273199,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.183095,
+              "count": 6024,
+              "expectedCalibrationError": 0.015549,
+              "marginMae": 12.934611,
+              "winnerAccuracy": 0.715637
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.161493,
+              "count": 6402,
+              "expectedCalibrationError": 0.012247,
+              "marginMae": 12.955122,
+              "winnerAccuracy": 0.75492
+            },
+            "neutral": {
+              "brier": 0.220407,
+              "count": 486,
+              "expectedCalibrationError": 0.0749,
+              "marginMae": 13.266358,
+              "winnerAccuracy": 0.609053
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.127831,
+              "count": 2221,
+              "expectedCalibrationError": 0.019655,
+              "marginMae": 13.567956,
+              "winnerAccuracy": 0.814948
+            },
+            "weeks_5_8": {
+              "brier": 0.187293,
+              "count": 1677,
+              "expectedCalibrationError": 0.031106,
+              "marginMae": 12.578938,
+              "winnerAccuracy": 0.712582
+            },
+            "weeks_9_12": {
+              "brier": 0.174624,
+              "count": 1793,
+              "expectedCalibrationError": 0.028007,
+              "marginMae": 12.675102,
+              "winnerAccuracy": 0.727273
+            },
+            "weeks_13_plus": {
+              "brier": 0.175265,
+              "count": 878,
+              "expectedCalibrationError": 0.035897,
+              "marginMae": 12.630721,
+              "winnerAccuracy": 0.722096
+            },
+            "postseason": {
+              "brier": 0.23828,
+              "count": 319,
+              "expectedCalibrationError": 0.0731,
+              "marginMae": 13.606902,
+              "winnerAccuracy": 0.583072
+            }
+          },
+          "overall": {
+            "brier": 0.16565,
+            "count": 6888,
+            "expectedCalibrationError": 0.012796,
+            "marginMae": 12.977082,
+            "winnerAccuracy": 0.744628
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.156983,
+            "count": 884,
+            "expectedCalibrationError": 0.028376,
+            "marginMae": 13.166873,
+            "winnerAccuracy": 0.763575,
+            "season": 2018
+          },
+          {
+            "brier": 0.15277,
+            "count": 888,
+            "expectedCalibrationError": 0.031191,
+            "marginMae": 12.811371,
+            "winnerAccuracy": 0.77027,
+            "season": 2019
+          },
+          {
+            "brier": 0.178155,
+            "count": 570,
+            "expectedCalibrationError": 0.032854,
+            "marginMae": 13.248227,
+            "winnerAccuracy": 0.72807,
+            "season": 2020
+          },
+          {
+            "brier": 0.171819,
+            "count": 887,
+            "expectedCalibrationError": 0.03346,
+            "marginMae": 13.438062,
+            "winnerAccuracy": 0.730552,
+            "season": 2021
+          },
+          {
+            "brier": 0.178793,
+            "count": 896,
+            "expectedCalibrationError": 0.043645,
+            "marginMae": 13.01243,
+            "winnerAccuracy": 0.719866,
+            "season": 2022
+          },
+          {
+            "brier": 0.16047,
+            "count": 910,
+            "expectedCalibrationError": 0.022162,
+            "marginMae": 12.849234,
+            "winnerAccuracy": 0.762637,
+            "season": 2023
+          },
+          {
+            "brier": 0.17151,
+            "count": 919,
+            "expectedCalibrationError": 0.050851,
+            "marginMae": 12.982459,
+            "winnerAccuracy": 0.714908,
+            "season": 2024
+          },
+          {
+            "brier": 0.159282,
+            "count": 934,
+            "expectedCalibrationError": 0.042154,
+            "marginMae": 12.437108,
+            "winnerAccuracy": 0.761242,
+            "season": 2025
+          }
+        ]
+      },
+      "fits": [
+        {
+          "season": 2018,
+          "scale": 1.2839900065549836,
+          "homeOffset": -0.44534669712965114,
+          "probability": {
+            "fitCount": 874,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.110484062,
+            "trainingSeasons": [
+              2017
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017
+          ]
+        },
+        {
+          "season": 2019,
+          "scale": 1.2936123362913223,
+          "homeOffset": -0.45811144158273676,
+          "probability": {
+            "fitCount": 1758,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1127463775,
+            "trainingSeasons": [
+              2017,
+              2018
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018
+          ]
+        },
+        {
+          "season": 2020,
+          "scale": 1.30182796255924,
+          "homeOffset": -0.3335621307397702,
+          "probability": {
+            "fitCount": 2646,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1141571243,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019
+          ]
+        },
+        {
+          "season": 2021,
+          "scale": 1.2989190005358882,
+          "homeOffset": -0.6873338197149452,
+          "probability": {
+            "fitCount": 3216,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1132275301,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020
+          ]
+        },
+        {
+          "season": 2022,
+          "scale": 1.2922130017321725,
+          "homeOffset": -0.729007058083698,
+          "probability": {
+            "fitCount": 4103,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1106713531,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021
+          ]
+        },
+        {
+          "season": 2023,
+          "scale": 1.286539181951201,
+          "homeOffset": -0.6764388994180422,
+          "probability": {
+            "fitCount": 4999,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1081317876,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022
+          ]
+        },
+        {
+          "season": 2024,
+          "scale": 1.2871106276216722,
+          "homeOffset": -0.6520435599617433,
+          "probability": {
+            "fitCount": 5909,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1097011705,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ]
+        },
+        {
+          "season": 2025,
+          "scale": 1.2898524035190042,
+          "homeOffset": -0.5112322837936983,
+          "probability": {
+            "fitCount": 6828,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1091579697,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024
+          ]
+        }
+      ],
+      "finalCalibration": {
+        "scale": 1.2989857288543294,
+        "homeOffset": -0.4057170836597229,
+        "probability": {
+          "fitCount": 7762,
+          "intercept": 0,
+          "maximumProbability": 0.99,
+          "minimumProbability": 0.01,
+          "slope": 0.1097740375,
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "version": "logistic-margin-v1"
+        },
+        "trainingSeasons": [
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      }
+    },
+    {
+      "policy": {
+        "version": "efficiency-20",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": false,
+        "fixedHomeField": 2.5
+      },
+      "fullFcs": true,
+      "raw": {
+        "modelVersion": "efficiency-20",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.048817,
+              "count": 1720,
+              "expectedCalibrationError": 0.001986,
+              "marginMae": 14.6975,
+              "winnerAccuracy": 0.947093
+            },
+            "strong": {
+              "brier": 0.152146,
+              "count": 1919,
+              "expectedCalibrationError": 0.014695,
+              "marginMae": 13.110005,
+              "winnerAccuracy": 0.809276
+            },
+            "toss_up": {
+              "brier": 0.248615,
+              "count": 1461,
+              "expectedCalibrationError": 0.030714,
+              "marginMae": 12.486995,
+              "winnerAccuracy": 0.527721
+            },
+            "moderate": {
+              "brier": 0.224443,
+              "count": 1788,
+              "expectedCalibrationError": 0.023768,
+              "marginMae": 12.845638,
+              "winnerAccuracy": 0.65604
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044527,
+              "count": 864,
+              "expectedCalibrationError": 0.017418,
+              "marginMae": 14.493056,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.182934,
+              "count": 6024,
+              "expectedCalibrationError": 0.020011,
+              "marginMae": 13.135342,
+              "winnerAccuracy": 0.715139
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.161314,
+              "count": 6402,
+              "expectedCalibrationError": 0.013201,
+              "marginMae": 13.304577,
+              "winnerAccuracy": 0.754296
+            },
+            "neutral": {
+              "brier": 0.221667,
+              "count": 486,
+              "expectedCalibrationError": 0.081522,
+              "marginMae": 13.319753,
+              "winnerAccuracy": 0.611111
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.128013,
+              "count": 2221,
+              "expectedCalibrationError": 0.022948,
+              "marginMae": 14.383701,
+              "winnerAccuracy": 0.813147
+            },
+            "weeks_5_8": {
+              "brier": 0.186761,
+              "count": 1677,
+              "expectedCalibrationError": 0.025282,
+              "marginMae": 12.591115,
+              "winnerAccuracy": 0.711389
+            },
+            "weeks_9_12": {
+              "brier": 0.174077,
+              "count": 1793,
+              "expectedCalibrationError": 0.022583,
+              "marginMae": 12.837368,
+              "winnerAccuracy": 0.726157
+            },
+            "weeks_13_plus": {
+              "brier": 0.175688,
+              "count": 878,
+              "expectedCalibrationError": 0.044972,
+              "marginMae": 12.828929,
+              "winnerAccuracy": 0.728929
+            },
+            "postseason": {
+              "brier": 0.240053,
+              "count": 319,
+              "expectedCalibrationError": 0.080716,
+              "marginMae": 13.500313,
+              "winnerAccuracy": 0.579937
+            }
+          },
+          "overall": {
+            "brier": 0.165573,
+            "count": 6888,
+            "expectedCalibrationError": 0.017275,
+            "marginMae": 13.305648,
+            "winnerAccuracy": 0.744193
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.156942,
+            "count": 884,
+            "expectedCalibrationError": 0.025372,
+            "marginMae": 13.646946,
+            "winnerAccuracy": 0.762443,
+            "season": 2018
+          },
+          {
+            "brier": 0.151295,
+            "count": 888,
+            "expectedCalibrationError": 0.025411,
+            "marginMae": 13.274662,
+            "winnerAccuracy": 0.771396,
+            "season": 2019
+          },
+          {
+            "brier": 0.178181,
+            "count": 570,
+            "expectedCalibrationError": 0.026259,
+            "marginMae": 13.343158,
+            "winnerAccuracy": 0.72807,
+            "season": 2020
+          },
+          {
+            "brier": 0.171747,
+            "count": 887,
+            "expectedCalibrationError": 0.036809,
+            "marginMae": 13.712063,
+            "winnerAccuracy": 0.730552,
+            "season": 2021
+          },
+          {
+            "brier": 0.178929,
+            "count": 896,
+            "expectedCalibrationError": 0.051755,
+            "marginMae": 13.231362,
+            "winnerAccuracy": 0.716518,
+            "season": 2022
+          },
+          {
+            "brier": 0.160604,
+            "count": 910,
+            "expectedCalibrationError": 0.030979,
+            "marginMae": 12.994176,
+            "winnerAccuracy": 0.759341,
+            "season": 2023
+          },
+          {
+            "brier": 0.171849,
+            "count": 919,
+            "expectedCalibrationError": 0.043551,
+            "marginMae": 13.252557,
+            "winnerAccuracy": 0.723613,
+            "season": 2024
+          },
+          {
+            "brier": 0.15961,
+            "count": 934,
+            "expectedCalibrationError": 0.035279,
+            "marginMae": 13.030193,
+            "winnerAccuracy": 0.755889,
+            "season": 2025
+          }
+        ]
+      },
+      "calibrated": {
+        "modelVersion": "efficiency-20-calibrated",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.068352,
+              "count": 2479,
+              "expectedCalibrationError": 0.006646,
+              "marginMae": 13.168917,
+              "winnerAccuracy": 0.923356
+            },
+            "strong": {
+              "brier": 0.190269,
+              "count": 1815,
+              "expectedCalibrationError": 0.014007,
+              "marginMae": 12.890219,
+              "winnerAccuracy": 0.742149
+            },
+            "toss_up": {
+              "brier": 0.250013,
+              "count": 1103,
+              "expectedCalibrationError": 0.025103,
+              "marginMae": 12.513219,
+              "winnerAccuracy": 0.517679
+            },
+            "moderate": {
+              "brier": 0.234205,
+              "count": 1491,
+              "expectedCalibrationError": 0.023353,
+              "marginMae": 12.977074,
+              "winnerAccuracy": 0.62106
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044028,
+              "count": 864,
+              "expectedCalibrationError": 0.013653,
+              "marginMae": 13.269929,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.182886,
+              "count": 6024,
+              "expectedCalibrationError": 0.014171,
+              "marginMae": 12.902917,
+              "winnerAccuracy": 0.716301
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.161254,
+              "count": 6402,
+              "expectedCalibrationError": 0.01145,
+              "marginMae": 12.926271,
+              "winnerAccuracy": 0.755545
+            },
+            "neutral": {
+              "brier": 0.220981,
+              "count": 486,
+              "expectedCalibrationError": 0.078389,
+              "marginMae": 13.247738,
+              "winnerAccuracy": 0.609053
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.1279,
+              "count": 2221,
+              "expectedCalibrationError": 0.021524,
+              "marginMae": 13.554819,
+              "winnerAccuracy": 0.813597
+            },
+            "weeks_5_8": {
+              "brier": 0.186845,
+              "count": 1677,
+              "expectedCalibrationError": 0.026789,
+              "marginMae": 12.51685,
+              "winnerAccuracy": 0.706619
+            },
+            "weeks_9_12": {
+              "brier": 0.173974,
+              "count": 1793,
+              "expectedCalibrationError": 0.016767,
+              "marginMae": 12.650438,
+              "winnerAccuracy": 0.733408
+            },
+            "weeks_13_plus": {
+              "brier": 0.175543,
+              "count": 878,
+              "expectedCalibrationError": 0.03966,
+              "marginMae": 12.61457,
+              "winnerAccuracy": 0.731207
+            },
+            "postseason": {
+              "brier": 0.239122,
+              "count": 319,
+              "expectedCalibrationError": 0.082058,
+              "marginMae": 13.600479,
+              "winnerAccuracy": 0.576803
+            }
+          },
+          "overall": {
+            "brier": 0.165468,
+            "count": 6888,
+            "expectedCalibrationError": 0.012495,
+            "marginMae": 12.948953,
+            "winnerAccuracy": 0.745209
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.15683,
+            "count": 884,
+            "expectedCalibrationError": 0.0259,
+            "marginMae": 13.12835,
+            "winnerAccuracy": 0.763575,
+            "season": 2018
+          },
+          {
+            "brier": 0.151801,
+            "count": 888,
+            "expectedCalibrationError": 0.028412,
+            "marginMae": 12.790724,
+            "winnerAccuracy": 0.773649,
+            "season": 2019
+          },
+          {
+            "brier": 0.177834,
+            "count": 570,
+            "expectedCalibrationError": 0.028971,
+            "marginMae": 13.245578,
+            "winnerAccuracy": 0.72807,
+            "season": 2020
+          },
+          {
+            "brier": 0.171814,
+            "count": 887,
+            "expectedCalibrationError": 0.033941,
+            "marginMae": 13.388499,
+            "winnerAccuracy": 0.732807,
+            "season": 2021
+          },
+          {
+            "brier": 0.178332,
+            "count": 896,
+            "expectedCalibrationError": 0.04499,
+            "marginMae": 13.006408,
+            "winnerAccuracy": 0.717634,
+            "season": 2022
+          },
+          {
+            "brier": 0.160516,
+            "count": 910,
+            "expectedCalibrationError": 0.019138,
+            "marginMae": 12.803266,
+            "winnerAccuracy": 0.759341,
+            "season": 2023
+          },
+          {
+            "brier": 0.171214,
+            "count": 919,
+            "expectedCalibrationError": 0.041658,
+            "marginMae": 12.937827,
+            "winnerAccuracy": 0.720348,
+            "season": 2024
+          },
+          {
+            "brier": 0.159897,
+            "count": 934,
+            "expectedCalibrationError": 0.036614,
+            "marginMae": 12.428921,
+            "winnerAccuracy": 0.760171,
+            "season": 2025
+          }
+        ]
+      },
+      "fits": [
+        {
+          "season": 2018,
+          "scale": 1.316102987727407,
+          "homeOffset": -0.5493344905180535,
+          "probability": {
+            "fitCount": 874,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1116526914,
+            "trainingSeasons": [
+              2017
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017
+          ]
+        },
+        {
+          "season": 2019,
+          "scale": 1.3256783548490307,
+          "homeOffset": -0.5795829287533162,
+          "probability": {
+            "fitCount": 1758,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1137122963,
+            "trainingSeasons": [
+              2017,
+              2018
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018
+          ]
+        },
+        {
+          "season": 2020,
+          "scale": 1.33124150002925,
+          "homeOffset": -0.4461639969895459,
+          "probability": {
+            "fitCount": 2646,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1153579794,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019
+          ]
+        },
+        {
+          "season": 2021,
+          "scale": 1.328114026608442,
+          "homeOffset": -0.7988116439453091,
+          "probability": {
+            "fitCount": 3216,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1143177179,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020
+          ]
+        },
+        {
+          "season": 2022,
+          "scale": 1.3206153072268296,
+          "homeOffset": -0.8440613381097896,
+          "probability": {
+            "fitCount": 4103,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.111442636,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021
+          ]
+        },
+        {
+          "season": 2023,
+          "scale": 1.313892926791974,
+          "homeOffset": -0.7925885526954832,
+          "probability": {
+            "fitCount": 4999,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1088471669,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022
+          ]
+        },
+        {
+          "season": 2024,
+          "scale": 1.3135097407739835,
+          "homeOffset": -0.7679369107543944,
+          "probability": {
+            "fitCount": 5909,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1103537693,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ]
+        },
+        {
+          "season": 2025,
+          "scale": 1.3153457831530961,
+          "homeOffset": -0.621732212051132,
+          "probability": {
+            "fitCount": 6828,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1097359102,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024
+          ]
+        }
+      ],
+      "finalCalibration": {
+        "scale": 1.3235605071991794,
+        "homeOffset": -0.5138399294245706,
+        "probability": {
+          "fitCount": 7762,
+          "intercept": 0,
+          "maximumProbability": 0.99,
+          "minimumProbability": 0.01,
+          "slope": 0.110261944,
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "version": "logistic-margin-v1"
+        },
+        "trainingSeasons": [
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      }
+    },
+    {
+      "policy": {
+        "version": "efficiency-continuity",
+        "historySeasons": 5,
+        "transitionPriorGames": 2,
+        "priorGames": 4,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true
+      },
+      "fullFcs": true,
+      "raw": {
+        "modelVersion": "efficiency-continuity",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.050616,
+              "count": 1722,
+              "expectedCalibrationError": 0.003452,
+              "marginMae": 14.720441,
+              "winnerAccuracy": 0.944832
+            },
+            "strong": {
+              "brier": 0.15159,
+              "count": 1916,
+              "expectedCalibrationError": 0.014745,
+              "marginMae": 13.184812,
+              "winnerAccuracy": 0.808977
+            },
+            "toss_up": {
+              "brier": 0.248542,
+              "count": 1456,
+              "expectedCalibrationError": 0.023083,
+              "marginMae": 12.402198,
+              "winnerAccuracy": 0.535027
+            },
+            "moderate": {
+              "brier": 0.222403,
+              "count": 1794,
+              "expectedCalibrationError": 0.020181,
+              "marginMae": 12.791527,
+              "winnerAccuracy": 0.65942
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044536,
+              "count": 864,
+              "expectedCalibrationError": 0.01945,
+              "marginMae": 14.50463,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.182602,
+              "count": 6024,
+              "expectedCalibrationError": 0.017657,
+              "marginMae": 13.128204,
+              "winnerAccuracy": 0.717297
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.161027,
+              "count": 6402,
+              "expectedCalibrationError": 0.011101,
+              "marginMae": 13.299672,
+              "winnerAccuracy": 0.756326
+            },
+            "neutral": {
+              "brier": 0.221356,
+              "count": 486,
+              "expectedCalibrationError": 0.080134,
+              "marginMae": 13.316461,
+              "winnerAccuracy": 0.611111
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.127927,
+              "count": 2221,
+              "expectedCalibrationError": 0.021956,
+              "marginMae": 14.412832,
+              "winnerAccuracy": 0.811346
+            },
+            "weeks_5_8": {
+              "brier": 0.186378,
+              "count": 1677,
+              "expectedCalibrationError": 0.022943,
+              "marginMae": 12.583065,
+              "winnerAccuracy": 0.715564
+            },
+            "weeks_9_12": {
+              "brier": 0.173636,
+              "count": 1793,
+              "expectedCalibrationError": 0.020942,
+              "marginMae": 12.80435,
+              "winnerAccuracy": 0.730619
+            },
+            "weeks_13_plus": {
+              "brier": 0.175404,
+              "count": 878,
+              "expectedCalibrationError": 0.039743,
+              "marginMae": 12.803986,
+              "winnerAccuracy": 0.731207
+            },
+            "postseason": {
+              "brier": 0.239688,
+              "count": 319,
+              "expectedCalibrationError": 0.085562,
+              "marginMae": 13.490596,
+              "winnerAccuracy": 0.579937
+            }
+          },
+          "overall": {
+            "brier": 0.165284,
+            "count": 6888,
+            "expectedCalibrationError": 0.0151,
+            "marginMae": 13.300857,
+            "winnerAccuracy": 0.74608
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.15708,
+            "count": 884,
+            "expectedCalibrationError": 0.023685,
+            "marginMae": 13.650566,
+            "winnerAccuracy": 0.762443,
+            "season": 2018
+          },
+          {
+            "brier": 0.150975,
+            "count": 888,
+            "expectedCalibrationError": 0.023752,
+            "marginMae": 13.268694,
+            "winnerAccuracy": 0.772523,
+            "season": 2019
+          },
+          {
+            "brier": 0.178001,
+            "count": 570,
+            "expectedCalibrationError": 0.028949,
+            "marginMae": 13.333158,
+            "winnerAccuracy": 0.731579,
+            "season": 2020
+          },
+          {
+            "brier": 0.171625,
+            "count": 887,
+            "expectedCalibrationError": 0.038139,
+            "marginMae": 13.705299,
+            "winnerAccuracy": 0.730552,
+            "season": 2021
+          },
+          {
+            "brier": 0.178476,
+            "count": 896,
+            "expectedCalibrationError": 0.047587,
+            "marginMae": 13.224777,
+            "winnerAccuracy": 0.720982,
+            "season": 2022
+          },
+          {
+            "brier": 0.160403,
+            "count": 910,
+            "expectedCalibrationError": 0.032581,
+            "marginMae": 13.001648,
+            "winnerAccuracy": 0.759341,
+            "season": 2023
+          },
+          {
+            "brier": 0.171101,
+            "count": 919,
+            "expectedCalibrationError": 0.039054,
+            "marginMae": 13.23765,
+            "winnerAccuracy": 0.725789,
+            "season": 2024
+          },
+          {
+            "brier": 0.159246,
+            "count": 934,
+            "expectedCalibrationError": 0.039194,
+            "marginMae": 13.02334,
+            "winnerAccuracy": 0.760171,
+            "season": 2025
+          }
+        ]
+      },
+      "calibrated": {
+        "modelVersion": "efficiency-continuity-calibrated",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.068838,
+              "count": 2480,
+              "expectedCalibrationError": 0.005792,
+              "marginMae": 13.232203,
+              "winnerAccuracy": 0.922581
+            },
+            "strong": {
+              "brier": 0.188768,
+              "count": 1818,
+              "expectedCalibrationError": 0.012844,
+              "marginMae": 12.789685,
+              "winnerAccuracy": 0.744774
+            },
+            "toss_up": {
+              "brier": 0.249298,
+              "count": 1096,
+              "expectedCalibrationError": 0.021478,
+              "marginMae": 12.408459,
+              "winnerAccuracy": 0.520985
+            },
+            "moderate": {
+              "brier": 0.234663,
+              "count": 1494,
+              "expectedCalibrationError": 0.026142,
+              "marginMae": 13.01985,
+              "winnerAccuracy": 0.617805
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044031,
+              "count": 864,
+              "expectedCalibrationError": 0.015038,
+              "marginMae": 13.263553,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.182549,
+              "count": 6024,
+              "expectedCalibrationError": 0.016262,
+              "marginMae": 12.891622,
+              "winnerAccuracy": 0.716799
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.160957,
+              "count": 6402,
+              "expectedCalibrationError": 0.012234,
+              "marginMae": 12.915421,
+              "winnerAccuracy": 0.755701
+            },
+            "neutral": {
+              "brier": 0.220717,
+              "count": 486,
+              "expectedCalibrationError": 0.073654,
+              "marginMae": 13.239334,
+              "winnerAccuracy": 0.613169
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.127801,
+              "count": 2221,
+              "expectedCalibrationError": 0.022938,
+              "marginMae": 13.565602,
+              "winnerAccuracy": 0.813147
+            },
+            "weeks_5_8": {
+              "brier": 0.186479,
+              "count": 1677,
+              "expectedCalibrationError": 0.029427,
+              "marginMae": 12.504573,
+              "winnerAccuracy": 0.709004
+            },
+            "weeks_9_12": {
+              "brier": 0.173509,
+              "count": 1793,
+              "expectedCalibrationError": 0.020816,
+              "marginMae": 12.61496,
+              "winnerAccuracy": 0.735081
+            },
+            "weeks_13_plus": {
+              "brier": 0.17525,
+              "count": 878,
+              "expectedCalibrationError": 0.034472,
+              "marginMae": 12.604522,
+              "winnerAccuracy": 0.724374
+            },
+            "postseason": {
+              "brier": 0.238794,
+              "count": 319,
+              "expectedCalibrationError": 0.072656,
+              "marginMae": 13.586442,
+              "winnerAccuracy": 0.586207
+            }
+          },
+          "overall": {
+            "brier": 0.165174,
+            "count": 6888,
+            "expectedCalibrationError": 0.014125,
+            "marginMae": 12.938275,
+            "winnerAccuracy": 0.745645
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.156977,
+            "count": 884,
+            "expectedCalibrationError": 0.018385,
+            "marginMae": 13.136109,
+            "winnerAccuracy": 0.763575,
+            "season": 2018
+          },
+          {
+            "brier": 0.151505,
+            "count": 888,
+            "expectedCalibrationError": 0.034028,
+            "marginMae": 12.775151,
+            "winnerAccuracy": 0.773649,
+            "season": 2019
+          },
+          {
+            "brier": 0.177727,
+            "count": 570,
+            "expectedCalibrationError": 0.033489,
+            "marginMae": 13.231149,
+            "winnerAccuracy": 0.72807,
+            "season": 2020
+          },
+          {
+            "brier": 0.171656,
+            "count": 887,
+            "expectedCalibrationError": 0.032217,
+            "marginMae": 13.37289,
+            "winnerAccuracy": 0.735062,
+            "season": 2021
+          },
+          {
+            "brier": 0.177895,
+            "count": 896,
+            "expectedCalibrationError": 0.048292,
+            "marginMae": 12.992237,
+            "winnerAccuracy": 0.71875,
+            "season": 2022
+          },
+          {
+            "brier": 0.160249,
+            "count": 910,
+            "expectedCalibrationError": 0.024229,
+            "marginMae": 12.813124,
+            "winnerAccuracy": 0.762637,
+            "season": 2023
+          },
+          {
+            "brier": 0.170483,
+            "count": 919,
+            "expectedCalibrationError": 0.041032,
+            "marginMae": 12.903719,
+            "winnerAccuracy": 0.720348,
+            "season": 2024
+          },
+          {
+            "brier": 0.15948,
+            "count": 934,
+            "expectedCalibrationError": 0.042024,
+            "marginMae": 12.418813,
+            "winnerAccuracy": 0.756959,
+            "season": 2025
+          }
+        ]
+      },
+      "fits": [
+        {
+          "season": 2018,
+          "scale": 1.3170845562032656,
+          "homeOffset": -0.547105567881035,
+          "probability": {
+            "fitCount": 874,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1121005283,
+            "trainingSeasons": [
+              2017
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017
+          ]
+        },
+        {
+          "season": 2019,
+          "scale": 1.3257745661845277,
+          "homeOffset": -0.5695330155959767,
+          "probability": {
+            "fitCount": 1758,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.113795359,
+            "trainingSeasons": [
+              2017,
+              2018
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018
+          ]
+        },
+        {
+          "season": 2020,
+          "scale": 1.3316112833262677,
+          "homeOffset": -0.43527151758908866,
+          "probability": {
+            "fitCount": 2646,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1155008422,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019
+          ]
+        },
+        {
+          "season": 2021,
+          "scale": 1.3289438915438185,
+          "homeOffset": -0.792698289161698,
+          "probability": {
+            "fitCount": 3216,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1144545359,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020
+          ]
+        },
+        {
+          "season": 2022,
+          "scale": 1.3223754461565493,
+          "homeOffset": -0.8423002685155349,
+          "probability": {
+            "fitCount": 4103,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1115616117,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021
+          ]
+        },
+        {
+          "season": 2023,
+          "scale": 1.3161077046823966,
+          "homeOffset": -0.7932674735251929,
+          "probability": {
+            "fitCount": 4999,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1090122268,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022
+          ]
+        },
+        {
+          "season": 2024,
+          "scale": 1.3155711926604676,
+          "homeOffset": -0.7672330101705899,
+          "probability": {
+            "fitCount": 5909,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1105473587,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ]
+        },
+        {
+          "season": 2025,
+          "scale": 1.3175947971091868,
+          "homeOffset": -0.6217013932113151,
+          "probability": {
+            "fitCount": 6828,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1099697237,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024
+          ]
+        }
+      ],
+      "finalCalibration": {
+        "scale": 1.3254784288297201,
+        "homeOffset": -0.5104597525965537,
+        "probability": {
+          "fitCount": 7762,
+          "intercept": 0,
+          "maximumProbability": 0.99,
+          "minimumProbability": 0.01,
+          "slope": 0.1105217041,
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "version": "logistic-margin-v1"
+        },
+        "trainingSeasons": [
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      }
+    },
+    {
+      "policy": {
+        "version": "efficiency-only",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "efficiencyWeight": 1,
+        "offensiveContinuity": false,
+        "fixedHomeField": 2.5
+      },
+      "fullFcs": true,
+      "raw": {
+        "modelVersion": "efficiency-only",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.04993,
+              "count": 1608,
+              "expectedCalibrationError": 0.003541,
+              "marginMae": 15.046393,
+              "winnerAccuracy": 0.945274
+            },
+            "strong": {
+              "brier": 0.158113,
+              "count": 1958,
+              "expectedCalibrationError": 0.022954,
+              "marginMae": 13.556486,
+              "winnerAccuracy": 0.798774
+            },
+            "toss_up": {
+              "brier": 0.246474,
+              "count": 1561,
+              "expectedCalibrationError": 0.018502,
+              "marginMae": 12.598911,
+              "winnerAccuracy": 0.549648
+            },
+            "moderate": {
+              "brier": 0.220948,
+              "count": 1761,
+              "expectedCalibrationError": 0.015295,
+              "marginMae": 12.835662,
+              "winnerAccuracy": 0.664963
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044692,
+              "count": 864,
+              "expectedCalibrationError": 0.01857,
+              "marginMae": 14.814815,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.186768,
+              "count": 6024,
+              "expectedCalibrationError": 0.01731,
+              "marginMae": 13.314857,
+              "winnerAccuracy": 0.712981
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.164556,
+              "count": 6402,
+              "expectedCalibrationError": 0.012278,
+              "marginMae": 13.509466,
+              "winnerAccuracy": 0.752265
+            },
+            "neutral": {
+              "brier": 0.226785,
+              "count": 486,
+              "expectedCalibrationError": 0.07477,
+              "marginMae": 13.417901,
+              "winnerAccuracy": 0.611111
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.131207,
+              "count": 2221,
+              "expectedCalibrationError": 0.020638,
+              "marginMae": 14.69158,
+              "winnerAccuracy": 0.809545
+            },
+            "weeks_5_8": {
+              "brier": 0.189061,
+              "count": 1677,
+              "expectedCalibrationError": 0.026497,
+              "marginMae": 12.6322,
+              "winnerAccuracy": 0.707215
+            },
+            "weeks_9_12": {
+              "brier": 0.176724,
+              "count": 1793,
+              "expectedCalibrationError": 0.019355,
+              "marginMae": 13.031065,
+              "winnerAccuracy": 0.733408
+            },
+            "weeks_13_plus": {
+              "brier": 0.182157,
+              "count": 878,
+              "expectedCalibrationError": 0.031915,
+              "marginMae": 13.088497,
+              "winnerAccuracy": 0.71754
+            },
+            "postseason": {
+              "brier": 0.245894,
+              "count": 319,
+              "expectedCalibrationError": 0.084692,
+              "marginMae": 13.59906,
+              "winnerAccuracy": 0.576803
+            }
+          },
+          "overall": {
+            "brier": 0.168947,
+            "count": 6888,
+            "expectedCalibrationError": 0.014641,
+            "marginMae": 13.503005,
+            "winnerAccuracy": 0.742305
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.16124,
+            "count": 884,
+            "expectedCalibrationError": 0.023015,
+            "marginMae": 13.888688,
+            "winnerAccuracy": 0.763575,
+            "season": 2018
+          },
+          {
+            "brier": 0.151795,
+            "count": 888,
+            "expectedCalibrationError": 0.040076,
+            "marginMae": 13.498986,
+            "winnerAccuracy": 0.774775,
+            "season": 2019
+          },
+          {
+            "brier": 0.182246,
+            "count": 570,
+            "expectedCalibrationError": 0.04291,
+            "marginMae": 13.647544,
+            "winnerAccuracy": 0.712281,
+            "season": 2020
+          },
+          {
+            "brier": 0.175287,
+            "count": 887,
+            "expectedCalibrationError": 0.039633,
+            "marginMae": 13.820406,
+            "winnerAccuracy": 0.722661,
+            "season": 2021
+          },
+          {
+            "brier": 0.179586,
+            "count": 896,
+            "expectedCalibrationError": 0.051166,
+            "marginMae": 13.414286,
+            "winnerAccuracy": 0.717634,
+            "season": 2022
+          },
+          {
+            "brier": 0.165524,
+            "count": 910,
+            "expectedCalibrationError": 0.044271,
+            "marginMae": 13.128571,
+            "winnerAccuracy": 0.750549,
+            "season": 2023
+          },
+          {
+            "brier": 0.174109,
+            "count": 919,
+            "expectedCalibrationError": 0.042878,
+            "marginMae": 13.377802,
+            "winnerAccuracy": 0.732318,
+            "season": 2024
+          },
+          {
+            "brier": 0.166463,
+            "count": 934,
+            "expectedCalibrationError": 0.040212,
+            "marginMae": 13.325268,
+            "winnerAccuracy": 0.753747,
+            "season": 2025
+          }
+        ]
+      },
+      "calibrated": {
+        "modelVersion": "efficiency-only-calibrated",
+        "evaluation": {
+          "byFavoriteStrength": {
+            "heavy": {
+              "brier": 0.076315,
+              "count": 2474,
+              "expectedCalibrationError": 0.007596,
+              "marginMae": 13.468891,
+              "winnerAccuracy": 0.912288
+            },
+            "strong": {
+              "brier": 0.195364,
+              "count": 1850,
+              "expectedCalibrationError": 0.027034,
+              "marginMae": 13.269943,
+              "winnerAccuracy": 0.731351
+            },
+            "toss_up": {
+              "brier": 0.246952,
+              "count": 1140,
+              "expectedCalibrationError": 0.005508,
+              "marginMae": 12.455232,
+              "winnerAccuracy": 0.542982
+            },
+            "moderate": {
+              "brier": 0.232822,
+              "count": 1424,
+              "expectedCalibrationError": 0.029415,
+              "marginMae": 12.703108,
+              "winnerAccuracy": 0.624298
+            }
+          },
+          "bySubdivision": {
+            "includes_fcs": {
+              "brier": 0.044339,
+              "count": 864,
+              "expectedCalibrationError": 0.013189,
+              "marginMae": 13.371004,
+              "winnerAccuracy": 0.946759
+            },
+            "fbs_vs_fbs": {
+              "brier": 0.18675,
+              "count": 6024,
+              "expectedCalibrationError": 0.013644,
+              "marginMae": 13.048983,
+              "winnerAccuracy": 0.713811
+            }
+          },
+          "byVenue": {
+            "home": {
+              "brier": 0.1645,
+              "count": 6402,
+              "expectedCalibrationError": 0.010102,
+              "marginMae": 13.066341,
+              "winnerAccuracy": 0.753202
+            },
+            "neutral": {
+              "brier": 0.226663,
+              "count": 486,
+              "expectedCalibrationError": 0.076796,
+              "marginMae": 13.392818,
+              "winnerAccuracy": 0.609053
+            }
+          },
+          "byWeekRange": {
+            "weeks_1_4": {
+              "brier": 0.131014,
+              "count": 2221,
+              "expectedCalibrationError": 0.017566,
+              "marginMae": 13.732055,
+              "winnerAccuracy": 0.809995
+            },
+            "weeks_5_8": {
+              "brier": 0.189442,
+              "count": 1677,
+              "expectedCalibrationError": 0.028807,
+              "marginMae": 12.512604,
+              "winnerAccuracy": 0.710793
+            },
+            "weeks_9_12": {
+              "brier": 0.176494,
+              "count": 1793,
+              "expectedCalibrationError": 0.017794,
+              "marginMae": 12.811855,
+              "winnerAccuracy": 0.733965
+            },
+            "weeks_13_plus": {
+              "brier": 0.182014,
+              "count": 878,
+              "expectedCalibrationError": 0.026064,
+              "marginMae": 12.866004,
+              "winnerAccuracy": 0.715262
+            },
+            "postseason": {
+              "brier": 0.245614,
+              "count": 319,
+              "expectedCalibrationError": 0.087623,
+              "marginMae": 13.821581,
+              "winnerAccuracy": 0.573668
+            }
+          },
+          "overall": {
+            "brier": 0.168886,
+            "count": 6888,
+            "expectedCalibrationError": 0.01174,
+            "marginMae": 13.089376,
+            "winnerAccuracy": 0.743031
+          }
+        },
+        "folds": [
+          {
+            "brier": 0.16119,
+            "count": 884,
+            "expectedCalibrationError": 0.021599,
+            "marginMae": 13.26321,
+            "winnerAccuracy": 0.762443,
+            "season": 2018
+          },
+          {
+            "brier": 0.152182,
+            "count": 888,
+            "expectedCalibrationError": 0.034694,
+            "marginMae": 12.933882,
+            "winnerAccuracy": 0.777027,
+            "season": 2019
+          },
+          {
+            "brier": 0.182148,
+            "count": 570,
+            "expectedCalibrationError": 0.048253,
+            "marginMae": 13.549316,
+            "winnerAccuracy": 0.710526,
+            "season": 2020
+          },
+          {
+            "brier": 0.175565,
+            "count": 887,
+            "expectedCalibrationError": 0.034675,
+            "marginMae": 13.364012,
+            "winnerAccuracy": 0.728298,
+            "season": 2021
+          },
+          {
+            "brier": 0.179241,
+            "count": 896,
+            "expectedCalibrationError": 0.037214,
+            "marginMae": 13.185096,
+            "winnerAccuracy": 0.71875,
+            "season": 2022
+          },
+          {
+            "brier": 0.165117,
+            "count": 910,
+            "expectedCalibrationError": 0.043433,
+            "marginMae": 12.915292,
+            "winnerAccuracy": 0.751648,
+            "season": 2023
+          },
+          {
+            "brier": 0.173783,
+            "count": 919,
+            "expectedCalibrationError": 0.040362,
+            "marginMae": 12.988713,
+            "winnerAccuracy": 0.734494,
+            "season": 2024
+          },
+          {
+            "brier": 0.166537,
+            "count": 934,
+            "expectedCalibrationError": 0.034641,
+            "marginMae": 12.708008,
+            "winnerAccuracy": 0.749465,
+            "season": 2025
+          }
+        ]
+      },
+      "fits": [
+        {
+          "season": 2018,
+          "scale": 1.390852419515038,
+          "homeOffset": -0.6287119220584978,
+          "probability": {
+            "fitCount": 874,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1131285578,
+            "trainingSeasons": [
+              2017
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017
+          ]
+        },
+        {
+          "season": 2019,
+          "scale": 1.4003941512530145,
+          "homeOffset": -0.722041350438535,
+          "probability": {
+            "fitCount": 1758,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1135546831,
+            "trainingSeasons": [
+              2017,
+              2018
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018
+          ]
+        },
+        {
+          "season": 2020,
+          "scale": 1.3967526711439633,
+          "homeOffset": -0.5630280148919348,
+          "probability": {
+            "fitCount": 2646,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1158450215,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019
+          ]
+        },
+        {
+          "season": 2021,
+          "scale": 1.3907474873459418,
+          "homeOffset": -0.9155207256099075,
+          "probability": {
+            "fitCount": 3216,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1143987396,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020
+          ]
+        },
+        {
+          "season": 2022,
+          "scale": 1.381361370092799,
+          "homeOffset": -0.9808401411969471,
+          "probability": {
+            "fitCount": 4103,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1104046697,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021
+          ]
+        },
+        {
+          "season": 2023,
+          "scale": 1.3716312093788179,
+          "homeOffset": -0.9366240317280198,
+          "probability": {
+            "fitCount": 4999,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1079317115,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022
+          ]
+        },
+        {
+          "season": 2024,
+          "scale": 1.3665790242883766,
+          "homeOffset": -0.905613522651164,
+          "probability": {
+            "fitCount": 5909,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.1089638374,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ]
+        },
+        {
+          "season": 2025,
+          "scale": 1.362806673533092,
+          "homeOffset": -0.7232850664035566,
+          "probability": {
+            "fitCount": 6828,
+            "intercept": 0,
+            "maximumProbability": 0.99,
+            "minimumProbability": 0.01,
+            "slope": 0.107888308,
+            "trainingSeasons": [
+              2017,
+              2018,
+              2019,
+              2020,
+              2021,
+              2022,
+              2023,
+              2024
+            ],
+            "version": "logistic-margin-v1"
+          },
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024
+          ]
+        }
+      ],
+      "finalCalibration": {
+        "scale": 1.3670133576351438,
+        "homeOffset": -0.6002711280587121,
+        "probability": {
+          "fitCount": 7762,
+          "intercept": 0,
+          "maximumProbability": 0.99,
+          "minimumProbability": 0.01,
+          "slope": 0.1078753299,
+          "trainingSeasons": [
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "version": "logistic-margin-v1"
+        },
+        "trainingSeasons": [
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      }
+    }
+  ]
+}

@@ -403,19 +403,7 @@ function Power({
 }) {
   const [search, setSearch] = useState('')
   const [conference, setConference] = useState('all')
-  const [view, setView] = useState<
-    'current' | 'weekly' | 'selection' | 'final'
-  >('current')
-  const field = useQuery({
-    ...convexQuery(api.ratings.getRatingField, {
-      season: data.season,
-      week: data.week,
-      view,
-    }),
-    enabled: view !== 'current',
-  })
-  const ratingRows =
-    view === 'current' ? data.ratings : (field.data?.rows ?? [])
+  const ratingRows = data.ratings
   const conferences = [
     ...new Set(ratingRows.map((row) => row.conference).filter(Boolean)),
   ].sort()
@@ -447,7 +435,7 @@ function Power({
     }))
   return (
     <div>
-      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
         <input
           aria-label="Search Power rankings"
           className={controlClass}
@@ -468,32 +456,7 @@ function Power({
             </option>
           ))}
         </select>
-        <select
-          className={controlClass}
-          aria-label="Power publication"
-          value={view}
-          onChange={(event) => setView(event.target.value as typeof view)}
-        >
-          <option value="current">Current edition</option>
-          <option value="weekly">Frozen weekly</option>
-          <option value="selection">Selection day</option>
-          <option value="final">Final postseason</option>
-        </select>
       </div>
-      {view !== 'current' &&
-        (field.isPending ? (
-          <LoadingState label="Loading Power edition" />
-        ) : field.isError ? (
-          <ErrorState>{field.error.message}</ErrorState>
-        ) : !field.data ? (
-          <EmptyState>
-            No published Power edition exists for this selection.
-          </EmptyState>
-        ) : (
-          <p className="mb-3 text-sm">
-            Updated {new Date(field.data.edition.cutoffAt).toLocaleString()}
-          </p>
-        ))}
       <RankingTable
         detailHeadings={[
           'Offense',
@@ -1131,8 +1094,9 @@ function Methodology({
             Ten seasons of evidence, with the recent five carrying most weight.
             Competitive results contribute 70%, talent acquisition 20%, and
             development 10%. Partial seasons contribute in proportion to games
-            played. Brand recognition earns no points. Missing evidence remains
-            visible and increases uncertainty.
+            played. Older seasons fade smoothly. Talent and recruiting use
+            comparable percentile scales; development also considers prior
+            roster talent. Brand recognition earns no points.
           </p>
           <Link
             to="/national/program"
@@ -1160,7 +1124,8 @@ function Methodology({
             </li>
             <li>
               Capped game margins keep full weight even when the result is a
-              surprise. Offense and defense estimates retain robust weighting.
+              surprise. Where available, competitive per-play efficiency
+              supplies 20% of the game margin signal.
             </li>
             <li>
               The active baseline weights current-season games equally; recency
@@ -1169,13 +1134,18 @@ function Methodology({
             <li>
               Up to four prior seasons inform a four-game starting weight,
               reduced to two when a team moves from FCS to FBS. Missing imported
-              seasons preserve history, with older evidence moving toward its
-              subdivision average.
+              seasons preserve history. Verified offensive roster turnover
+              reduces confidence in that starting estimate.
             </li>
             <li>
               FCS opponents are estimated against the subdivision strength
               observed in cross-division games. Thin-history teams start
-              cautiously; no team or conference receives a rank ceiling.
+              cautiously, with FCS schedules included. No team or conference
+              receives a rank ceiling.
+            </li>
+            <li>
+              Home-field value uses a stable base. Point margins and win
+              probabilities are calibrated using earlier-season forecasts.
             </li>
           </ul>
         </Surface>
@@ -1193,9 +1163,10 @@ function Methodology({
           </div>
           <p className="mt-4 text-sm leading-6 text-white/50">
             Provisional rows remain hidden until entering Week 7. Losses never
-            earn positive game credit; blowout rewards diminish. Teams with
-            fewer than five games remain ranked afterward and carry a
-            limited-sample flag.
+            earn positive game credit; blowout rewards diminish. Competitive
+            points per drive limit cosmetic scoring where coverage permits. Near
+            ties also consider how unlikely the complete record would be for the
+            reference contender.
           </p>
         </Surface>
         <Surface className="p-5 sm:p-6">

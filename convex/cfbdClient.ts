@@ -64,6 +64,24 @@ export type CfbdAdvancedSeasonStat = CfbdRow & {
   season: number
   team: string
 }
+export type CfbdAdvancedGameStat = CfbdAdvancedSeasonStat & {
+  gameId: number
+  opponent: string
+  week: number
+}
+export type CfbdDrive = {
+  id: string
+  gameId: number
+  isHomeOffense: boolean
+  startPeriod: number
+  endPeriod: number
+  startOffenseScore: number
+  startDefenseScore: number
+  endOffenseScore: number
+  endDefenseScore: number
+  plays: number
+  driveResult: string
+}
 export type CfbdRecruitingTeam = CfbdRow & {
   points: number
   rank: number
@@ -125,6 +143,12 @@ export type GetSeasonStatsArgs = {
 export type GetSeasonArgs = { season: number; signal?: AbortSignal }
 
 export type CfbdClient = {
+  getAdvancedGameStats: (
+    args: GetSeasonArgs & { week?: number },
+  ) => Promise<Array<CfbdAdvancedGameStat>>
+  getDrives: (
+    args: GetSeasonArgs & { week?: number },
+  ) => Promise<Array<CfbdDrive>>
   getAdvancedSeasonStats: (
     args: GetSeasonStatsArgs,
   ) => Promise<Array<CfbdAdvancedSeasonStat>>
@@ -483,6 +507,41 @@ function parseAdvancedSeasonStat(value: unknown): CfbdAdvancedSeasonStat {
   }
 }
 
+function parseAdvancedGameStat(value: unknown): CfbdAdvancedGameStat {
+  const endpoint = '/stats/game/advanced'
+  if (!isRow(value)) throw contractError(endpoint, 'non-object row')
+  return {
+    ...value,
+    gameId: requiredNumber(value, 'gameId', endpoint),
+    season: requiredNumber(value, 'season', endpoint),
+    team: requiredString(value, 'team', endpoint),
+    opponent: requiredString(value, 'opponent', endpoint),
+    week: requiredNumber(value, 'week', endpoint),
+    offense: requiredRow(value, 'offense', endpoint),
+    defense: requiredRow(value, 'defense', endpoint),
+  }
+}
+function parseDrive(value: unknown): CfbdDrive {
+  const endpoint = '/drives'
+  if (!isRow(value)) throw contractError(endpoint, 'non-object row')
+  const number = (key: string) => requiredNumber(value, key, endpoint)
+  if (typeof value.id !== 'string' || typeof value.isHomeOffense !== 'boolean')
+    throw contractError(endpoint, 'invalid drive identity')
+  return {
+    id: value.id,
+    gameId: number('gameId'),
+    isHomeOffense: value.isHomeOffense,
+    startPeriod: number('startPeriod'),
+    endPeriod: number('endPeriod'),
+    startOffenseScore: number('startOffenseScore'),
+    startDefenseScore: number('startDefenseScore'),
+    endOffenseScore: number('endOffenseScore'),
+    endDefenseScore: number('endDefenseScore'),
+    plays: number('plays'),
+    driveResult: requiredString(value, 'driveResult', endpoint),
+  }
+}
+
 function parseRecruitingTeam(value: unknown): CfbdRecruitingTeam {
   const endpoint = '/recruiting/teams'
   if (!isRow(value)) throw contractError(endpoint, 'non-object row')
@@ -649,6 +708,28 @@ export function createCfbdClient(options: CfbdClientOptions): CfbdClient {
   }
 
   return {
+    async getAdvancedGameStats(args) {
+      const query = new URLSearchParams({
+        year: String(args.season),
+        excludeGarbageTime: 'true',
+        seasonType: 'both',
+      })
+      if (args.week !== undefined) query.set('week', String(args.week))
+      return requestParsedRows(
+        `/stats/game/advanced?${query}`,
+        args.signal,
+        parseAdvancedGameStat,
+      )
+    },
+    async getDrives(args) {
+      const query = new URLSearchParams({
+        year: String(args.season),
+        classification: 'fbs',
+        seasonType: 'both',
+      })
+      if (args.week !== undefined) query.set('week', String(args.week))
+      return requestParsedRows(`/drives?${query}`, args.signal, parseDrive)
+    },
     async getAdvancedSeasonStats(args) {
       const query = new URLSearchParams({
         year: String(args.season),

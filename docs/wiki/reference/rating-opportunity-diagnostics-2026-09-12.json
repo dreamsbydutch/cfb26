@@ -1,0 +1,265 @@
+{
+  "source": "cfb26-power-v3 reconstructed forecasts, full-result-4-1 report",
+  "sourceGameDataSha256": "2309f48187dae103ccbb520b149ae64f43dde859861fbcca18594e2a2c077775",
+  "probabilityCalibration": {
+    "note": "Exploratory diagnostic only. Prior-season-only calibration has seven evaluation seasons, not the eight required for promotion.",
+    "baseline": {
+      "count": 5969,
+      "mae": 13.447144,
+      "brier": 0.166044,
+      "ece": 0.018567,
+      "accuracy": 0.747026
+    },
+    "learnedCalibration": {
+      "count": 5969,
+      "mae": 13.447144,
+      "brier": 0.165776,
+      "ece": 0.011289,
+      "accuracy": 0.746524
+    },
+    "byWeekRange": {
+      "weeks_1_4": {
+        "count": 2202,
+        "mae": 14.523479,
+        "brier": 0.131101,
+        "ece": 0.019183,
+        "accuracy": 0.811989
+      },
+      "weeks_5_8": {
+        "count": 1689,
+        "mae": 12.941208,
+        "brier": 0.186244,
+        "ece": 0.031529,
+        "accuracy": 0.711664
+      },
+      "weeks_9_12": {
+        "count": 1824,
+        "mae": 12.831798,
+        "brier": 0.172633,
+        "ece": 0.031109,
+        "accuracy": 0.725877
+      },
+      "weeks_13_plus": {
+        "count": 815,
+        "mae": 12.97411,
+        "brier": 0.173962,
+        "ece": 0.050292,
+        "accuracy": 0.73865
+      },
+      "postseason": {
+        "count": 313,
+        "mae": 13.953994,
+        "brier": 0.242654,
+        "ece": 0.108736,
+        "accuracy": 0.623003
+      }
+    },
+    "byFavoriteStrength": {
+      "moderate": {
+        "count": 1705,
+        "mae": 12.903167,
+        "brier": 0.22448,
+        "ece": 0.040782,
+        "accuracy": 0.649853
+      },
+      "heavy": {
+        "count": 1799,
+        "mae": 14.818788,
+        "brier": 0.05537,
+        "ece": 0.010159,
+        "accuracy": 0.939967
+      },
+      "toss_up": {
+        "count": 1422,
+        "mae": 12.865823,
+        "brier": 0.24718,
+        "ece": 0.013307,
+        "accuracy": 0.546414
+      },
+      "strong": {
+        "count": 1917,
+        "mae": 13.161711,
+        "brier": 0.157551,
+        "ece": 0.023129,
+        "accuracy": 0.80073
+      }
+    },
+    "byVenue": {
+      "home": {
+        "count": 6374,
+        "mae": 13.465391,
+        "brier": 0.162177,
+        "ece": 0.019076,
+        "accuracy": 0.753216
+      },
+      "neutral": {
+        "count": 469,
+        "mae": 13.553731,
+        "brier": 0.217798,
+        "ece": 0.071375,
+        "accuracy": 0.660981
+      }
+    },
+    "signedBias": 1.2185737249744262
+  },
+  "marginScale": {
+    "note": "Exploratory prior-season-only point-scale plus venue-bias correction; seven evaluation seasons; no deployment or promotion.",
+    "fits": [
+      {
+        "season": 2018,
+        "slope": 1.2786090050191377,
+        "home": -0.28005488939146134
+      },
+      {
+        "season": 2019,
+        "slope": 1.2859788520259343,
+        "home": -0.4309879583422087
+      },
+      {
+        "season": 2020,
+        "slope": 1.2947470192004067,
+        "home": -0.3767722765136725
+      },
+      {
+        "season": 2021,
+        "slope": 1.2930305398292683,
+        "home": -0.6756446619383615
+      },
+      {
+        "season": 2022,
+        "slope": 1.282761571134784,
+        "home": -0.7020555834490071
+      },
+      {
+        "season": 2023,
+        "slope": 1.2746571612018978,
+        "home": -0.6697123587537901
+      },
+      {
+        "season": 2025,
+        "slope": 1.2759743712658211,
+        "home": -0.6503831947143333
+      }
+    ],
+    "baseline": {
+      "overall": {
+        "brier": 0.166044,
+        "count": 5969,
+        "expectedCalibrationError": 0.018567,
+        "marginMae": 13.447144,
+        "winnerAccuracy": 0.747026
+      },
+      "bySeason": {
+        "2018": {
+          "brier": 0.158568,
+          "count": 884,
+          "expectedCalibrationError": 0.019433,
+          "marginMae": 13.838462,
+          "winnerAccuracy": 0.761312
+        },
+        "2019": {
+          "brier": 0.153202,
+          "count": 888,
+          "expectedCalibrationError": 0.025774,
+          "marginMae": 13.417793,
+          "winnerAccuracy": 0.766892
+        },
+        "2020": {
+          "brier": 0.179247,
+          "count": 570,
+          "expectedCalibrationError": 0.030089,
+          "marginMae": 13.360175,
+          "winnerAccuracy": 0.729825
+        },
+        "2021": {
+          "brier": 0.172989,
+          "count": 887,
+          "expectedCalibrationError": 0.043425,
+          "marginMae": 13.894476,
+          "winnerAccuracy": 0.732807
+        },
+        "2022": {
+          "brier": 0.180869,
+          "count": 896,
+          "expectedCalibrationError": 0.052227,
+          "marginMae": 13.381138,
+          "winnerAccuracy": 0.717634
+        },
+        "2023": {
+          "brier": 0.162448,
+          "count": 910,
+          "expectedCalibrationError": 0.037296,
+          "marginMae": 13.196264,
+          "winnerAccuracy": 0.76044
+        },
+        "2025": {
+          "brier": 0.159958,
+          "count": 934,
+          "expectedCalibrationError": 0.033233,
+          "marginMae": 13.040685,
+          "winnerAccuracy": 0.753747
+        }
+      }
+    },
+    "candidate": {
+      "overall": {
+        "brier": 0.169001,
+        "count": 5969,
+        "expectedCalibrationError": 0.052693,
+        "marginMae": 13.15203,
+        "winnerAccuracy": 0.747361
+      },
+      "bySeason": {
+        "2018": {
+          "brier": 0.161345,
+          "count": 884,
+          "expectedCalibrationError": 0.053017,
+          "marginMae": 13.470249,
+          "winnerAccuracy": 0.765837
+        },
+        "2019": {
+          "brier": 0.155886,
+          "count": 888,
+          "expectedCalibrationError": 0.050415,
+          "marginMae": 13.000089,
+          "winnerAccuracy": 0.768018
+        },
+        "2020": {
+          "brier": 0.183257,
+          "count": 570,
+          "expectedCalibrationError": 0.072496,
+          "marginMae": 13.243825,
+          "winnerAccuracy": 0.722807
+        },
+        "2021": {
+          "brier": 0.177028,
+          "count": 887,
+          "expectedCalibrationError": 0.06948,
+          "marginMae": 13.676215,
+          "winnerAccuracy": 0.73168
+        },
+        "2022": {
+          "brier": 0.185722,
+          "count": 896,
+          "expectedCalibrationError": 0.086205,
+          "marginMae": 13.228751,
+          "winnerAccuracy": 0.71317
+        },
+        "2023": {
+          "brier": 0.164175,
+          "count": 910,
+          "expectedCalibrationError": 0.044832,
+          "marginMae": 13.043334,
+          "winnerAccuracy": 0.761538
+        },
+        "2025": {
+          "brier": 0.161054,
+          "count": 934,
+          "expectedCalibrationError": 0.033065,
+          "marginMae": 12.473777,
+          "winnerAccuracy": 0.759101
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import type { PowerTeamRating } from './ratingSystem.ts'
 
-export const PROGRAM_MODEL_VERSION = 'cfb26-program-v2'
+export const PROGRAM_MODEL_VERSION = 'cfb26-program-v3'
 
 export type ProgramSeasonEvidence = {
   teamId: string
@@ -26,7 +26,64 @@ export type ProgramRating = {
 
 export function programSeasonWeight(age: number) {
   if (!Number.isInteger(age) || age < 0 || age > 9) return 0
-  return [1, 0.85, 0.7, 0.55, 0.4, 0.15, 0.12, 0.09, 0.06, 0.03][age]
+  // Smooth aging; the newest five seasons retain roughly 82% of decade weight.
+  return 0.74 ** age
+}
+
+/** Normalize sources independently before selecting a fallback: their raw units differ. */
+export function acquisitionPercentiles(
+  profiles: ReadonlyArray<{
+    teamId: string
+    talent: number | null
+    recruitingPoints: number | null
+  }>,
+  field: ReadonlySet<string>,
+) {
+  const values = (key: 'talent' | 'recruitingPoints') =>
+    new Map(
+      profiles
+        .filter(
+          (row) =>
+            field.has(row.teamId) &&
+            row[key] !== null &&
+            Number.isFinite(row[key]),
+        )
+        .map((row) => [row.teamId, row[key]!] as const),
+    )
+  const talent = values('talent'),
+    recruiting = values('recruitingPoints')
+  // A tiny observed cohort is not a credible national percentile distribution.
+  const normalize = (source: Map<string, number>) =>
+    source.size >= Math.max(1, field.size * 0.8)
+      ? evidencePercentiles(source)
+      : new Map<string, number>()
+  const t = normalize(talent),
+    r = normalize(recruiting)
+  return new Map(
+    [...field].flatMap((id) => {
+      const value = t.get(id) ?? r.get(id)
+      return value === undefined ? [] : [[id, value] as const]
+    }),
+  )
+}
+
+/** Preserve NFL output; bounded value-added cannot replace absolute production. */
+export function developmentWithConversion(
+  output: number,
+  cohortTalent?: number,
+) {
+  if (!Number.isFinite(output) || output < 0 || output > 100)
+    throw new Error('Draft output must be a percentile.')
+  if (cohortTalent === undefined) return output
+  if (!Number.isFinite(cohortTalent) || cohortTalent < 0 || cohortTalent > 100)
+    throw new Error('Cohort talent must be a percentile.')
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      output + 0.2 * Math.max(-25, Math.min(25, output - cohortTalent)),
+    ),
+  )
 }
 
 /** Midrank percentiles preserve ties; coverage gates belong to the source adapter. */

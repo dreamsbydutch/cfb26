@@ -71,6 +71,8 @@ const programRowValidator = v.object({
   sourceVenueId: v.optional(v.number()),
 })
 const profileRowValidator = v.object({
+  passingUsage: v.optional(v.number()),
+  receivingUsage: v.optional(v.number()),
   averageRecruitRating: nullableNumber,
   conference: optionalString,
   programName: v.string(),
@@ -199,6 +201,8 @@ function buildProfiles(
     recruitingRank: number | null
     returningPpa: number | null
     returningUsage: number | null
+    passingUsage?: number
+    receivingUsage?: number
     season: number
     talent: number | null
   }
@@ -243,6 +247,16 @@ function buildProfiles(
     const profile = ensure(row.team)
     profile.returningPpa = row.percentPPA
     profile.returningUsage = row.usage
+    const passing = numberAt(row, 'passingUsage'),
+      receiving = numberAt(row, 'receivingUsage')
+    profile.passingUsage =
+      passing !== undefined && passing >= 0 && passing <= 1
+        ? passing
+        : undefined
+    profile.receivingUsage =
+      receiving !== undefined && receiving >= 0 && receiving <= 1
+        ? receiving
+        : undefined
   }
   return [...profiles.values()]
 }

@@ -21,6 +21,8 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 Owner facts and corrections are mutable current values. Historical games, official editions, frozen forecasts, submitted ballots, Michigan Player Games, and alumni NFL history are retained. Raw API responses and import payloads are not stored.
 
+College games optionally retain compact competitive per-play and drive aggregates with observation timestamps, plus sourced cancellation evidence. Season profiles optionally retain passing/receiving returning usage. `ratingEvidence` validates season-wide CFBD advanced-game and drive feeds and writes batches of at most 40 games. Its daily 11:27 UTC action refreshes FCS schedules first, then evidence, before the 11:47 ratings job. Full raw drives are discarded after aggregation. Failed enrichment preserves the last valid inputs; edition fingerprints include its sync vintage. Public schedules and evaluation targets exclude FCS-only games.
+
 ## Execution flow
 
 ```text

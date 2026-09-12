@@ -17,6 +17,38 @@ export const POWER_CARRYOVER: Readonly<PowerCarryover> = {
   seasonRetention: 1,
 }
 
+/** Offensive continuity changes confidence, not a fabricated defensive roster estimate. */
+export function offensiveReturningShare(profile?: {
+  passingUsage?: number
+  receivingUsage?: number
+  returningUsage: number | null
+}): number | undefined {
+  if (!profile) return undefined
+  const value =
+    profile.passingUsage !== undefined && profile.receivingUsage !== undefined
+      ? (profile.passingUsage + profile.receivingUsage) / 2
+      : profile.returningUsage
+  return value !== null && Number.isFinite(value) && value >= 0 && value <= 1
+    ? value
+    : undefined
+}
+
+export function withOffensiveContinuity(
+  prior: NonNullable<PowerRatingTeam['prior']>,
+  share?: number,
+) {
+  if (share === undefined) return prior
+  if (!Number.isFinite(share) || share < 0 || share > 1)
+    throw new Error('Continuity must be a share.')
+  return {
+    ...prior,
+    effectiveGames: prior.effectiveGames * (0.75 + 0.25 * share),
+    offenseEffectiveGames: prior.effectiveGames * (0.5 + 0.5 * share),
+    defenseEffectiveGames: prior.effectiveGames,
+    sources: [...prior.sources, 'verified_offensive_continuity'],
+  }
+}
+
 /** Missing FBS-feed seasons are gaps in observation, not a reset of the program. */
 export function historicalPowerPrior(
   team: Pick<PowerRatingTeam, 'id' | 'classification'>,

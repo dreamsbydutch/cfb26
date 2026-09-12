@@ -1,12 +1,20 @@
 import { calibrateMargin } from './ratingBacktest.ts'
+import {
+  competitiveMargin,
+  efficiencyMargin,
+  recordDifficulty,
+} from './gameEvidence.ts'
 import type { LogisticMarginCalibration } from './ratingBacktest.ts'
+import type { GameEvidence } from './gameEvidence.ts'
 
-export const POWER_MODEL_VERSION = 'cfb26-power-v3'
+export const POWER_MODEL_VERSION = 'cfb26-power-v4'
 export const POWER_FIT_POLICY = {
   modelVersion: POWER_MODEL_VERSION,
   fullWeightResults: true,
+  fixedHomeField: 2.5,
+  efficiencyWeight: 0.2,
 } as const
-export const RESUME_MODEL_VERSION = 'cfb26-resume-v3'
+export const RESUME_MODEL_VERSION = 'cfb26-resume-v4'
 export const RESUME_REFERENCE_POWER = 14
 export const RESUME_DOMINANCE_WEIGHT = 0.3
 
@@ -20,6 +28,8 @@ export type PowerRatingTeam = {
   prior?: {
     defense?: number
     effectiveGames: number
+    offenseEffectiveGames?: number
+    defenseEffectiveGames?: number
     offense?: number
     power?: number
     sources: Array<string>
@@ -28,6 +38,7 @@ export type PowerRatingTeam = {
 }
 
 export type PowerRatingGame = {
+  ratingEvidence?: GameEvidence
   seasonType?: 'regular' | 'postseason'
   homeClassification?: RatingClassification
   awayClassification?: RatingClassification
@@ -77,6 +88,8 @@ export type PowerRatingEdition = {
 }
 
 export type ResumeTeamRating = {
+  recordDifficulty?: number
+  recordProbability?: number
   actualWins: number
   disagreementReasons: Array<
     | 'dominance'
@@ -164,6 +177,9 @@ export function buildPowerRatingEdition(input: {
   divisionAdjustment?: boolean
   /** Predictive fits can retain capped results at full weight despite prior surprise. */
   fullWeightResults?: boolean
+  fixedHomeField?: number
+  efficiencyWeight?: number
+  evidenceCutoffAt?: number
   modelVersion?: string
   calibration?: LogisticMarginCalibration
   cutoffAt: number
@@ -172,6 +188,20 @@ export function buildPowerRatingEdition(input: {
   teams: ReadonlyArray<PowerRatingTeam>
   week: number
 }): PowerRatingEdition {
+  if (
+    input.fixedHomeField !== undefined &&
+    (!Number.isFinite(input.fixedHomeField) ||
+      input.fixedHomeField < 0 ||
+      input.fixedHomeField > 8)
+  )
+    throw new Error('Invalid home-field policy.')
+  if (
+    input.efficiencyWeight !== undefined &&
+    (!Number.isFinite(input.efficiencyWeight) ||
+      input.efficiencyWeight < 0 ||
+      input.efficiencyWeight > 1)
+  )
+    throw new Error('Invalid efficiency blend.')
   const teams = new Map(input.teams.map((team) => [team.id, team]))
   if (teams.size !== input.teams.length) {
     throw new Error('Power Rating team identifiers must be unique.')
@@ -268,7 +298,7 @@ export function buildPowerRatingEdition(input: {
   for (const team of input.teams) {
     offense.set(team.id, priorValue(team, 'offense'))
     defense.set(team.id, priorValue(team, 'defense'))
-    homeField.set(team.id, 2.5)
+    homeField.set(team.id, input.fixedHomeField ?? 2.5)
     const values = specialValues.get(team.id) ?? []
     const prior = team.prior?.specialTeams ?? 0
     const priorWeight = (team.prior?.effectiveGames ?? 0) + 16
@@ -353,7 +383,9 @@ export function buildPowerRatingEdition(input: {
       const own = observationsByTeam.get(team.id) ?? []
       const against = observationsAgainst.get(team.id) ?? []
       const fcsMultiplier = team.classification === 'fcs' ? 2.5 : 1
-      const priorWeight = (team.prior?.effectiveGames ?? 0) * fcsMultiplier
+      const priorWeight =
+        (team.prior?.offenseEffectiveGames ?? team.prior?.effectiveGames ?? 0) *
+        fcsMultiplier
       const unitRidge = 1.5 * fcsMultiplier
 
       const unitBaseline =
@@ -373,9 +405,13 @@ export function buildPowerRatingEdition(input: {
       }
       offense.set(team.id, numerator / denominator)
 
+      const defensePriorWeight =
+        (team.prior?.defenseEffectiveGames ?? team.prior?.effectiveGames ?? 0) *
+        fcsMultiplier
       numerator =
-        priorValue(team, 'defense') * priorWeight + unitBaseline * unitRidge
-      denominator = priorWeight + unitRidge
+        priorValue(team, 'defense') * defensePriorWeight +
+        unitBaseline * unitRidge
+      denominator = defensePriorWeight + unitRidge
       for (const observation of against) {
         const weight = residualWeight(observation)
         numerator +=
@@ -401,7 +437,10 @@ export function buildPowerRatingEdition(input: {
             (defense.get(observation.opponentId) ?? 0))
         denominator += weight
       }
-      homeField.set(team.id, clamp(numerator / denominator, 0, 8))
+      homeField.set(
+        team.id,
+        input.fixedHomeField ?? clamp(numerator / denominator, 0, 8),
+      )
     }
 
     const publishedTeams = input.teams.filter(
@@ -441,7 +480,17 @@ export function buildPowerRatingEdition(input: {
       let denominator = priorWeight + 1.5 * fcsMultiplier
       for (const game of gamesByTeam.get(team.id) ?? []) {
         const score = robustScores(game)
-        const homeMargin = score.home - score.away
+        const observedMargin = score.home - score.away
+        const efficiency =
+          game.ratingEvidence &&
+          game.ratingEvidence.observedAt <
+            (input.evidenceCutoffAt ?? input.cutoffAt)
+            ? efficiencyMargin(game.ratingEvidence)
+            : undefined
+        const blend =
+          efficiency === undefined ? 0 : (input.efficiencyWeight ?? 0)
+        const homeMargin =
+          (1 - blend) * observedMargin + blend * (efficiency ?? observedMargin)
         const homeAdvantage = game.neutralSite
           ? 0
           : (homeField.get(game.homeTeamId) ?? 2.5)
@@ -474,7 +523,10 @@ export function buildPowerRatingEdition(input: {
             (power.get(game.awayTeamId) ?? 0))
         denominator += game.evidenceWeight ?? 1
       }
-      homeField.set(team.id, clamp(numerator / denominator, 0, 8))
+      homeField.set(
+        team.id,
+        input.fixedHomeField ?? clamp(numerator / denominator, 0, 8),
+      )
     }
     const publishedTeams = input.teams.filter(
       (team) => team.classification !== 'fcs',
@@ -750,6 +802,7 @@ export function buildResumeRatingEdition(input: {
     ]),
   )
 
+  const recordProbabilities = new Map<string, Array<number>>()
   for (const game of input.games) {
     if (
       !game.completed ||
@@ -782,8 +835,25 @@ export function buildResumeRatingEdition(input: {
       const expectedMargin =
         referencePower - opponent.power + perspective.venueMargin
       const expectedProbability = marginProbability(expectedMargin, undefined)
+      const probabilities = recordProbabilities.get(perspective.teamId) ?? []
+      probabilities.push(expectedProbability)
+      recordProbabilities.set(perspective.teamId, probabilities)
+      const control =
+        game.ratingEvidence &&
+        game.ratingEvidence.observedAt < input.powerEdition.cutoffAt
+          ? competitiveMargin(game.ratingEvidence)
+          : undefined
+      const ownControl =
+        control === undefined
+          ? undefined
+          : control * (perspective.teamId === game.homeTeamId ? 1 : -1)
+      const performanceMargin =
+        ownControl === undefined
+          ? perspective.actualMargin
+          : Math.sign(perspective.actualMargin) *
+            Math.max(0, Math.sign(perspective.actualMargin) * ownControl)
       const dominanceMargin = clamp(
-        perspective.actualMargin,
+        performanceMargin,
         perspective.overtimePeriods > 0 ? -7 : -21,
         perspective.overtimePeriods > 0 ? 7 : 21,
       )
@@ -836,7 +906,15 @@ export function buildResumeRatingEdition(input: {
       if (accumulator.power.priorWeight >= 0.25) {
         disagreementReasons.push('roster_prior')
       }
+      const record = Number.isInteger(accumulator.actualWins)
+        ? recordDifficulty(
+            recordProbabilities.get(accumulator.power.teamId) ?? [],
+            accumulator.actualWins,
+          )
+        : undefined
       return {
+        recordDifficulty: record?.difficulty,
+        recordProbability: record?.probability,
         actualWins: round(accumulator.actualWins, 3),
         disagreementReasons,
         dominanceComponent: round(dominanceComponent, 3),
@@ -888,6 +966,7 @@ export function buildResumeRatingEdition(input: {
     group.sort(
       (a, b) =>
         (records.get(b.teamId) ?? 0) - (records.get(a.teamId) ?? 0) ||
+        (b.recordDifficulty ?? 0) - (a.recordDifficulty ?? 0) ||
         a.expectedWins - b.expectedWins ||
         b.actualWins - a.actualWins ||
         a.teamId.localeCompare(b.teamId),

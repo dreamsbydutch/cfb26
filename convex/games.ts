@@ -7,6 +7,7 @@ import {
   query,
 } from './_generated/server'
 import { resolveProgram } from './programIdentity'
+import { cancellationEvidence } from './gameStatus'
 import type { ActionCtx } from './_generated/server'
 
 const CFBD_BASE_URL = 'https://api.collegefootballdata.com'
@@ -435,6 +436,9 @@ export const upsertGamesBatch = internalMutation({
         .unique()
       const document = {
         ...fields,
+        ratingEvidence: existing?.ratingEvidence,
+        canceled: Boolean(cancellationEvidence(row)),
+        cancellationSource: cancellationEvidence(row),
         awayProgramId,
         awaySourceName: awayName,
         homeProgramId,
@@ -445,6 +449,67 @@ export const upsertGamesBatch = internalMutation({
       }
       if (existing) await ctx.db.replace('collegeGames', existing._id, document)
       else await ctx.db.insert('collegeGames', document)
+    }
+  },
+})
+
+/** Import connected FCS evidence without admitting lower-division opponents as FCS. */
+export const syncFcsSeason = internalAction({
+  args: { season: v.number() },
+  returns: v.object({ games: v.number() }),
+  handler: async (ctx, args): Promise<{ games: number }> => {
+    if (
+      !Number.isInteger(args.season) ||
+      args.season < 2000 ||
+      args.season > new Date().getUTCFullYear()
+    )
+      throw new Error('Invalid season.')
+    const key = env.CFBD_API_KEY
+    if (!key) throw new Error('CFBD is not configured.')
+    const startedAt = Date.now()
+    await ctx.runMutation(internal.teamData.beginSync, {
+      source: 'rating_inputs',
+      startedAt,
+    })
+    try {
+      const rows = parseGames(
+        sourceRows(
+          await fetchCfbd(
+            key,
+            `/games?year=${args.season}&seasonType=both&classification=fcs`,
+          ),
+          '/games',
+        ),
+      ).filter(
+        (row) =>
+          ['fbs', 'fcs'].includes(row.homeClassification ?? '') &&
+          ['fbs', 'fcs'].includes(row.awayClassification ?? ''),
+      )
+      if (!rows.length)
+        throw new Error('FCS feed is empty; retaining existing evidence.')
+      for (let offset = 0; offset < rows.length; offset += BATCH_SIZE)
+        await ctx.runMutation(internal.games.upsertGamesBatch, {
+          rows: rows.slice(offset, offset + BATCH_SIZE),
+          sourceUpdatedAt: startedAt,
+        })
+      await ctx.runMutation(internal.teamData.completeSync, {
+        source: 'rating_inputs',
+        completedAt: Date.now(),
+        fetchedRows: rows.length,
+        acceptedRows: rows.length,
+        rejectedRows: 0,
+      })
+      return { games: rows.length }
+    } catch (error) {
+      await ctx.runMutation(internal.teamData.failSync, {
+        source: 'rating_inputs',
+        completedAt: Date.now(),
+        error:
+          error instanceof Error
+            ? error.message
+            : 'FCS synchronization failed.',
+      })
+      throw error
     }
   },
 })

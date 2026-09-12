@@ -24,6 +24,12 @@ crons.daily(
 )
 
 crons.daily(
+  'refresh opponent schedules and competitive game evidence',
+  { hourUTC: 11, minuteUTC: 27 },
+  internal.ratingEvidence.syncCurrentSeason,
+)
+
+crons.daily(
   'refresh CFB26 Power and Resume ratings',
   { hourUTC: 11, minuteUTC: 47 },
   internal.ratings.refreshCurrentPowerRatings,

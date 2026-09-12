@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
+import { gameEvidenceValidator } from './evidenceFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -488,6 +489,8 @@ export default defineSchema({
     .index('by_programId_and_season', ['programId', 'season']),
 
   teamSeasonProfiles: defineTable({
+    passingUsage: v.optional(v.number()),
+    receivingUsage: v.optional(v.number()),
     averageRecruitRating: nullableNumber,
     conference: v.optional(v.string()),
     programId: v.id('programs'),
@@ -543,6 +546,9 @@ export default defineSchema({
     .index('by_programId_and_year', ['programId', 'year']),
 
   collegeGames: defineTable({
+    ratingEvidence: v.optional(gameEvidenceValidator),
+    canceled: v.optional(v.boolean()),
+    cancellationSource: v.optional(v.string()),
     attendance: v.optional(v.number()),
     awayClassification: v.optional(v.string()),
     awayConference: v.optional(v.string()),

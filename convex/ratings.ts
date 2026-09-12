@@ -12,16 +12,24 @@ import { resolveProgram } from './programIdentity'
 import { buildFallbackPowerField } from './ratingFallback'
 import { calibrateMargin } from './ratingBacktest'
 import { publicationWeek } from './ratingCalendar'
+import { cancellationEvidence, isFbsGame, isResolvedGame } from './gameStatus'
+import { gameEvidenceValidator } from './evidenceFields'
 import {
   POWER_CARRYOVER,
   historicalPowerPrior,
+  offensiveReturningShare,
   rememberPowerSeason,
+  withOffensiveContinuity,
 } from './powerHistory'
+import { calibratePowerEdition } from './powerCalibration'
+import { POWER_RELEASE_CALIBRATION } from './powerRelease'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import schema from './schema'
 import {
   PROGRAM_MODEL_VERSION,
+  acquisitionPercentiles,
   buildProgramRatings,
+  developmentWithConversion,
   evidencePercentiles,
 } from './programRating'
 import { buildMatchupProjection, buildSeasonRatings } from './ratingModel'
@@ -58,11 +66,12 @@ const BATCH_SIZE = 50
 const DAY_MS = 24 * 60 * 60 * 1000
 const HOME_FIELD_ADVANTAGE = 55
 const COMPOSITE_BATCH_SIZE = 40
-const MAX_MODEL_ROWS = 250
+const MAX_MODEL_ROWS = 600
 const MAX_PROGRAM_ROWS = 1_000
 
 type SourceRow = Record<string, unknown>
 type PowerModelData = {
+  profiles: Array<Doc<'teamSeasonProfiles'>>
   games: Array<Doc<'collegeGames'>>
   programs: Array<Doc<'programs'>>
   seasons: Array<number>
@@ -416,6 +425,8 @@ export const getRatingField = query({
             ? row
             : {
                 ...row,
+                recordDifficulty: undefined,
+                recordProbability: undefined,
                 resume: undefined,
                 resumeRank: undefined,
                 dominanceComponent: undefined,
@@ -652,11 +663,20 @@ export const refreshCurrentSeason = internalAction({
 
 export const loadPowerModelData = internalQuery({
   args: { season: v.number() },
+  returns: v.object({
+    games: v.array(schema.doc('collegeGames')),
+    profiles: v.array(schema.doc('teamSeasonProfiles')),
+    programs: v.array(schema.doc('programs')),
+    seasons: v.array(v.number()),
+  }),
   handler: async (ctx, args) => {
     const season = Math.floor(args.season)
     const seasons = Array.from({ length: 5 }, (_, index) => season - 4 + index)
-    const [programs, gamesBySeason] = await Promise.all([
-      ctx.db.query('programs').withIndex('by_key').take(MAX_PROGRAM_ROWS),
+    const [programs, gamesBySeason, profilesBySeason] = await Promise.all([
+      ctx.db
+        .query('programs')
+        .withIndex('by_key')
+        .take(MAX_PROGRAM_ROWS + 1),
       Promise.all(
         seasons.map((modelSeason) =>
           ctx.db
@@ -664,11 +684,32 @@ export const loadPowerModelData = internalQuery({
             .withIndex('by_season_and_startTime', (q) =>
               q.eq('season', modelSeason),
             )
-            .take(2_000),
+            .take(2_001),
+        ),
+      ),
+      Promise.all(
+        seasons.map((modelSeason) =>
+          ctx.db
+            .query('teamSeasonProfiles')
+            .withIndex('by_season_and_recruitingRank', (q) =>
+              q.eq('season', modelSeason),
+            )
+            .take(601),
         ),
       ),
     ])
-    return { games: gamesBySeason.flat(), programs, seasons }
+    if (
+      programs.length > MAX_PROGRAM_ROWS ||
+      gamesBySeason.some((games) => games.length > 2000) ||
+      profilesBySeason.some((profiles) => profiles.length > 600)
+    )
+      throw new Error('Power source slice exceeds its bound.')
+    return {
+      games: gamesBySeason.flat(),
+      profiles: profilesBySeason.flat(),
+      programs,
+      seasons,
+    }
   },
 })
 
@@ -678,6 +719,7 @@ export const loadProgramSeasonEvidence = internalQuery({
     games: v.array(
       v.object({
         id: v.string(),
+        ratingEvidence: v.optional(gameEvidenceValidator),
         homeTeamId: v.string(),
         awayTeamId: v.string(),
         homeClassification: ratingClassificationValidator,
@@ -762,6 +804,11 @@ export const loadProgramSeasonEvidence = internalQuery({
           ? [
               {
                 id: String(game.sourceGameId),
+                ratingEvidence:
+                  game.ratingEvidence?.observedAt !== undefined &&
+                  game.ratingEvidence.observedAt < args.cutoffAt
+                    ? game.ratingEvidence
+                    : undefined,
                 homeTeamId: String(game.homeProgramId),
                 awayTeamId: String(game.awayProgramId),
                 homeClassification: normalizedClassification(
@@ -820,7 +867,9 @@ export const ratingSourceVersion = internalQuery({
   returns: v.string(),
   handler: async (ctx) => {
     const states = await Promise.all(
-      (['games', 'programs', 'recruiting', 'draft'] as const).map((source) =>
+      (
+        ['games', 'programs', 'recruiting', 'draft', 'rating_inputs'] as const
+      ).map((source) =>
         ctx.db
           .query('teamDataSyncState')
           .withIndex('by_source', (q) => q.eq('source', source))
@@ -1002,7 +1051,14 @@ export const storeDerivedEditionOutputs = internalMutation({
     for (const game of games) {
       const home = byProgram.get(String(game.homeProgramId))
       const away = byProgram.get(String(game.awayProgramId))
-      if (!home || !away || game.completed) continue
+      if (
+        !home ||
+        !away ||
+        !isFbsGame(game) ||
+        game.completed ||
+        cancellationEvidence(game)
+      )
+        continue
       const homeFieldEffect = game.neutralSite ? 0 : home.homeFieldAdvantage
       const expectedMargin =
         Math.round((home.power - away.power + homeFieldEffect) * 10) / 10
@@ -1250,11 +1306,21 @@ export const buildRatingEdition = internalAction({
               ...detail,
               id: teamId,
               name: program.name,
-              prior: historicalPowerPrior(
-                { id: teamId, ...detail },
-                modelSeason,
-                history,
-                POWER_CARRYOVER,
+              prior: withOffensiveContinuity(
+                historicalPowerPrior(
+                  { id: teamId, ...detail },
+                  modelSeason,
+                  history,
+                  POWER_CARRYOVER,
+                ),
+                offensiveReturningShare(
+                  data.profiles.find(
+                    (profile) =>
+                      String(profile.programId) === teamId &&
+                      profile.season === modelSeason &&
+                      profile.sourceUpdatedAt < args.cutoffAt,
+                  ),
+                ),
               ),
             },
           ]
@@ -1276,6 +1342,7 @@ export const buildRatingEdition = internalAction({
             homePoints: game.homePoints,
             homeTeamId: String(game.homeProgramId),
             id: String(game.sourceGameId),
+            ratingEvidence: game.ratingEvidence,
             kickoffAt: game.startTime,
             neutralSite: game.neutralSite,
             overtimePeriods: overtimePeriods(
@@ -1289,6 +1356,7 @@ export const buildRatingEdition = internalAction({
       })
       powerEdition = buildPowerRatingEdition({
         ...POWER_FIT_POLICY,
+        evidenceCutoffAt: args.cutoffAt,
         calibration: modelSeason === season ? args.calibration : undefined,
         cutoffAt: modelCutoff,
         games: modelGames,
@@ -1301,6 +1369,12 @@ export const buildRatingEdition = internalAction({
     if (!powerEdition || powerEdition.season !== season) {
       throw new Error('Unable to build the requested Power Rating edition.')
     }
+    // History remains in fitted units; only the final edition gets point-scale calibration.
+    if (season >= 2026)
+      powerEdition = calibratePowerEdition(
+        powerEdition,
+        POWER_RELEASE_CALIBRATION,
+      )
     const currentGames: Array<PowerRatingGame> = data.games.flatMap((game) => {
       if (
         game.season !== season ||
@@ -1319,6 +1393,7 @@ export const buildRatingEdition = internalAction({
           homePoints: game.homePoints,
           homeTeamId: String(game.homeProgramId),
           id: String(game.sourceGameId),
+          ratingEvidence: game.ratingEvidence,
           kickoffAt: game.startTime,
           neutralSite: game.neutralSite,
           overtimePeriods: overtimePeriods(
@@ -1337,9 +1412,9 @@ export const buildRatingEdition = internalAction({
     })
     const programEvidence: Array<ProgramSeasonEvidence> = []
     const coverageWarnings = [
-      'FCS schedules are incomplete in the FBS feed; subdivision estimates and population priors regularize thin history.',
-      'National coaching, transfer retention, and injury coverage are not verified; Power remains a results-based baseline.',
-      'Game-control enrichment is unavailable; Résumé uses capped final margins.',
+      'FCS opponent schedules are imported independently; missing game evidence falls back to capped scores and subdivision priors.',
+      'National coaching, incoming transfer production, defensive continuity, and injury coverage remain unverified.',
+      'Competitive drives require at least six qualifying possessions per side; other games retain capped final-margin performance.',
       ...(confirmedMembers.size === 0
         ? [
             'Membership is schedule-derived until the season FBS directory is synchronized.',
@@ -1347,6 +1422,7 @@ export const buildRatingEdition = internalAction({
         : []),
     ]
     let currentEarned: PowerRatingEdition | undefined
+    const talentBySeason = new Map<number, Map<string, number>>()
     for (
       let evidenceSeason = season - 9;
       evidenceSeason <= season;
@@ -1401,20 +1477,12 @@ export const buildRatingEdition = internalAction({
       const publishedIds = new Set(
         earned.ratings.filter((row) => row.published).map((row) => row.teamId),
       )
-      const acquisitionValues = new Map(
-        source.profiles
-          .filter((profile) => publishedIds.has(profile.teamId))
-          .flatMap((profile) => {
-            const value = profile.talent ?? profile.recruitingPoints
-            return value === null ? [] : [[profile.teamId, value] as const]
-          }),
+      const acquisition = acquisitionPercentiles(source.profiles, publishedIds)
+      const rosterTalent = acquisitionPercentiles(
+        source.profiles.map((row) => ({ ...row, recruitingPoints: null })),
+        publishedIds,
       )
-      const coveredAcquisition =
-        acquisitionValues.size >=
-        Math.max(1, earned.ratings.filter((row) => row.published).length * 0.8)
-      const acquisition = coveredAcquisition
-        ? evidencePercentiles(acquisitionValues)
-        : new Map<string, number>()
+      talentBySeason.set(evidenceSeason, rosterTalent)
       const draftValues = new Map<string, number>()
       // A broadly populated national draft establishes meaningful zero-pick observations.
       if (source.drafts.length >= 150) {
@@ -1436,7 +1504,23 @@ export const buildRatingEdition = internalAction({
           games: row.gamesPlayed,
           performance: 100 / (1 + Math.exp(-row.power / 10)),
           acquisition: acquisition.get(row.teamId),
-          development: development.get(row.teamId),
+          development: (() => {
+            const output = development.get(row.teamId)
+            if (output === undefined) return undefined
+            // Prior roster talent includes transfers present at that program, unlike signing classes.
+            const cohort = [1, 2, 3].map((age) =>
+              talentBySeason.get(evidenceSeason - age)?.get(row.teamId),
+            )
+            const known = cohort.filter(
+              (value): value is number => value !== undefined,
+            )
+            return developmentWithConversion(
+              output,
+              known.length === 3
+                ? known.reduce((a, b) => a + b, 0) / 3
+                : undefined,
+            )
+          })(),
         })
     }
     const programRatings = buildProgramRatings({
@@ -1500,7 +1584,11 @@ export const buildRatingEdition = internalAction({
           seasonStrength: currentEarned?.ratings.find(
             (row) => row.teamId === power.teamId,
           )?.power,
-          personnelCoverage: 'unavailable',
+          personnelCoverage: power.dataSources.includes(
+            'verified_offensive_continuity',
+          )
+            ? 'offensive_usage_only'
+            : 'unavailable',
           actualWins: resume?.actualWins,
           classification: power.classification,
           conference: power.conference,
@@ -1521,6 +1609,8 @@ export const buildRatingEdition = internalAction({
           published: power.published,
           rankDifference: resume?.rankDifference,
           resume: resume?.resume,
+          recordDifficulty: resume?.recordDifficulty,
+          recordProbability: resume?.recordProbability,
           resumeRank: resume?.resumeRank,
           scheduleComponent: resume?.scheduleComponent,
           sourceProgramName: power.name,
@@ -1547,7 +1637,10 @@ export const buildRatingEdition = internalAction({
             args.rankingStage ??
             (() => {
               const schedule = data.games.filter(
-                (game) => game.season === season,
+                (game) =>
+                  game.season === season &&
+                  (game.homeClassification === 'fbs' ||
+                    game.awayClassification === 'fbs'),
               )
               const regular = schedule.filter(
                 (game) => game.seasonType === 'regular',
@@ -1558,29 +1651,38 @@ export const buildRatingEdition = internalAction({
               if (
                 postseason.length > 0 &&
                 schedule.every(
-                  (game) => game.completed && game.startTime < args.cutoffAt,
+                  (game) =>
+                    isResolvedGame(game) && game.startTime < args.cutoffAt,
                 )
               )
                 return 'final' as const
               if (
                 regular.length > 0 &&
                 regular.every(
-                  (game) => game.completed && game.startTime < args.cutoffAt,
+                  (game) =>
+                    isResolvedGame(game) && game.startTime < args.cutoffAt,
                 ) &&
                 postseason.length > 0 &&
-                postseason.every((game) => game.startTime >= args.cutoffAt)
+                postseason.every(
+                  (game) =>
+                    cancellationEvidence(game) ||
+                    game.startTime >= args.cutoffAt,
+                )
               )
                 return 'selection' as const
               return 'in_season' as const
             })(),
           coverageWarnings,
-          calibrationFitCount: args.calibration?.fitCount,
-          calibrationIntercept: args.calibration?.intercept,
-          calibrationMaximumProbability: args.calibration?.maximumProbability,
-          calibrationMinimumProbability: args.calibration?.minimumProbability,
-          calibrationSlope: args.calibration?.slope,
-          calibrationTrainingSeasons: args.calibration?.trainingSeasons,
-          calibrationVersion: args.calibration?.version ?? 'fixed-logistic-v1',
+          calibrationFitCount: powerEdition.calibration?.fitCount,
+          calibrationIntercept: powerEdition.calibration?.intercept,
+          calibrationMaximumProbability:
+            powerEdition.calibration?.maximumProbability,
+          calibrationMinimumProbability:
+            powerEdition.calibration?.minimumProbability,
+          calibrationSlope: powerEdition.calibration?.slope,
+          calibrationTrainingSeasons: powerEdition.calibration?.trainingSeasons,
+          calibrationVersion:
+            powerEdition.calibration?.version ?? 'fixed-logistic-v1',
           cutoffAt: args.cutoffAt,
           editionType: args.editionType,
           generatedAt,
@@ -1612,27 +1714,18 @@ export const buildRatingEdition = internalAction({
 export const resolveRatingWeek = internalQuery({
   args: { asOf: v.number(), season: v.number() },
   handler: async (ctx, args) => {
-    const [previous, next, games] = await Promise.all([
-      ctx.db
-        .query('collegeGames')
-        .withIndex('by_season_and_startTime', (q) =>
-          q.eq('season', args.season).lte('startTime', args.asOf),
-        )
-        .order('desc')
-        .first(),
-      ctx.db
-        .query('collegeGames')
-        .withIndex('by_season_and_startTime', (q) =>
-          q.eq('season', args.season).gt('startTime', args.asOf),
-        )
-        .first(),
-      ctx.db
-        .query('collegeGames')
-        .withIndex('by_season_and_startTime', (q) =>
-          q.eq('season', args.season),
-        )
-        .take(2_000),
-    ])
+    const games = await ctx.db
+      .query('collegeGames')
+      .withIndex('by_season_and_startTime', (q) => q.eq('season', args.season))
+      .take(2001)
+    if (games.length > 2000)
+      throw new Error('Schedule exceeds publication bound.')
+    const publicSchedule = games.filter(
+      (game) => isFbsGame(game) && !cancellationEvidence(game),
+    )
+    const selected =
+      publicSchedule.find((game) => game.startTime > args.asOf) ??
+      publicSchedule.at(-1)
     return {
       sourceDataFingerprint: gameDataFingerprint(
         games.filter((game) => game.startTime < args.asOf),
@@ -1646,8 +1739,8 @@ export const resolveRatingWeek = internalQuery({
       ),
       week: publicationWeek({
         asOf: args.asOf,
-        selected: next ?? previous,
-        schedule: games,
+        selected: selected ?? null,
+        schedule: publicSchedule,
       }),
     }
   },
@@ -1817,7 +1910,7 @@ export const getWeeklyDashboard = query({
     }
 
     const edition = await preferredWeeklyEdition(ctx, season, week)
-    const [seasonSchedule, snapshotRows, compositeRows, ratingRows, michigan] =
+    const [allSchedule, snapshotRows, compositeRows, ratingRows, michigan] =
       await Promise.all([
         ctx.db
           .query('collegeGames')
@@ -1848,8 +1941,11 @@ export const getWeeklyDashboard = query({
           .unique(),
       ])
 
-    if (seasonSchedule.length > 2000)
+    if (allSchedule.length > 2000)
       throw new Error('Season schedule exceeds its publication bound.')
+    const seasonSchedule = allSchedule.filter(
+      (game) => isFbsGame(game) && !cancellationEvidence(game),
+    )
     const games = seasonSchedule.filter(
       (game) =>
         publicationWeek({

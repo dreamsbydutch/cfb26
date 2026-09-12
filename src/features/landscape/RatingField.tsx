@@ -19,13 +19,14 @@ export function RatingField({
   season: number
   week: number
 }) {
-  const [view, setView] = useState<
-    'current' | 'weekly' | 'selection' | 'final'
-  >('current')
   const [search, setSearch] = useState('')
   const [conference, setConference] = useState('all')
   const result = useQuery(
-    convexQuery(api.ratings.getRatingField, { season, week, view }),
+    convexQuery(api.ratings.getRatingField, {
+      season,
+      week,
+      view: 'current',
+    }),
   )
   const data = result.data
   const isProgram = kind === 'program'
@@ -66,17 +67,6 @@ export function RatingField({
           {conferences.map((value) => (
             <option key={value}>{value}</option>
           ))}
-        </select>
-        <select
-          className="rounded-lg border p-2"
-          aria-label="Rating publication"
-          value={view}
-          onChange={(event) => setView(event.target.value as typeof view)}
-        >
-          <option value="current">Current edition</option>
-          <option value="weekly">Frozen weekly</option>
-          <option value="selection">Selection day</option>
-          <option value="final">Final postseason</option>
         </select>
       </div>
       {result.isPending ? (

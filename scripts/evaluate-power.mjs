@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { evaluatePowerPolicies } from '../convex/powerResearch.ts'
+import { isFbsGame, isResolvedGame } from '../convex/gameStatus.ts'
 
 const [inputPath, outputPath] = process.argv.slice(2)
 if (!inputPath || !outputPath)
@@ -61,8 +62,8 @@ const testSeasons = seasons
   .slice(4)
   .filter((season) =>
     data.games
-      .filter((game) => game.season === season)
-      .every((game) => game.completed),
+      .filter((game) => game.season === season && isFbsGame(game))
+      .every(isResolvedGame),
   )
 const report =
   testSeasons.length === 0
