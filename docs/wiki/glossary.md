@@ -37,3 +37,5 @@
 | Unresolved match   | A provider record that cannot be linked to a canonical identity safely and awaits owner review.                                                |
 | Vertical slice     | One useful user outcome implemented across backend, UI, states, documentation, and verification.                                               |
 | Wiki               | The detailed durable documentation rooted at `docs/wiki/README.md`.                                                                            |
+
+The [three-rating contract](reference/three-team-ratings.md) distinguishes **Program** (sustained competitive health), **Power** (neutral-field predictive strength), and **Résumé** (current-season earned merit). A **selection edition** preserves the pre-postseason merit view independently of the final edition.

@@ -14,7 +14,7 @@
 | Vercel project    | `cfb`                          |
 | Production URL    | `https://cfb-hazel.vercel.app` |
 
-The 41-table contract was deployed to development and production during the backed-up 2026-09-07 v2 cutover. Michigan data was migrated and reconciled; four retired physical table names remain visible but empty. Current source adds Michigan revision and owner-audit tables plus a manifest-retirement migration, but that 43-table delta and the web UI are not yet hosted. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md). Do not extend the deployment without reconfirming the exact target and obtaining an immediate export.
+The 41-table contract was deployed to both environments during the backed-up [2026-09-07 v2 cutover](../operations/convex-v2-cutover-2026-09-07.md). Development validated the backward-compatible 43-table three-rating contract on 2026-09-12 after a fresh export. No manifest-retirement migration was run in the rating release. Production delivery follows the main-branch Convex-first build. Four retired physical table names remain visible but empty. Identify the exact target and obtain a fresh export before extending a deployment.
 
 ## Migration rehearsal
 

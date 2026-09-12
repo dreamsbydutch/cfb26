@@ -351,6 +351,7 @@ export const upsertVenuesBatch = internalMutation({
 })
 export const upsertProgramsBatch = internalMutation({
   args: {
+    expectedFieldSize: v.optional(v.number()),
     rows: v.array(programRowValidator),
     season: v.number(),
     sourceUpdatedAt: v.number(),
@@ -369,14 +370,18 @@ export const upsertProgramsBatch = internalMutation({
         name: row.name,
         sourceUpdatedAt: args.sourceUpdatedAt,
       })
-      if (row.conference) {
+      {
         const sourceKey = `cfbd:${args.season}:${row.cfbdId}`
         const affiliation = await ctx.db
           .query('programAffiliations')
           .withIndex('by_sourceKey', (q) => q.eq('sourceKey', sourceKey))
           .unique()
         const document = {
-          conference: row.conference,
+          directorySize: args.expectedFieldSize,
+          sourceUpdatedAt: args.sourceUpdatedAt,
+          conference: row.conference ?? 'Independent',
+          classification: 'fbs' as const,
+          endSeason: args.season,
           programId,
           sourceKey,
           startSeason: args.season,
@@ -652,8 +657,71 @@ async function batches<T>(
   }
 }
 
+export const syncFbsDirectory = internalAction({
+  args: { season: v.number() },
+  returns: v.object({ teams: v.number() }),
+  handler: async (ctx, args) => {
+    if (
+      !Number.isInteger(args.season) ||
+      args.season < 2000 ||
+      args.season > 2100
+    )
+      throw new Error('Invalid directory season.')
+    const apiKey = env.CFBD_API_KEY
+    if (!apiKey) throw new Error('CFBD_API_KEY is not configured.')
+    const startedAt = Date.now()
+    await ctx.runMutation(internal.teamData.beginSync, {
+      source: 'programs',
+      startedAt,
+    })
+    try {
+      const teams = await createCfbdClient({ apiKey }).getFbsTeams({
+        season: args.season,
+      })
+      if (
+        teams.length === 0 ||
+        teams.length > 300 ||
+        new Set(teams.map((team) => team.id)).size !== teams.length
+      )
+        throw new Error(
+          'FBS directory is empty, duplicated, or exceeds its bound.',
+        )
+      const rows = teams.map(parseProgram)
+      await batches(rows, (batch) =>
+        ctx.runMutation(internal.teamData.upsertProgramsBatch, {
+          rows: batch,
+          season: args.season,
+          sourceUpdatedAt: startedAt,
+          expectedFieldSize: rows.length,
+        }),
+      )
+      await ctx.runMutation(internal.teamData.completeSync, {
+        source: 'programs',
+        completedAt: Date.now(),
+        acceptedRows: rows.length,
+        fetchedRows: rows.length,
+        rejectedRows: 0,
+      })
+      return { teams: rows.length }
+    } catch (error) {
+      await ctx.runMutation(internal.teamData.failSync, {
+        source: 'programs',
+        completedAt: Date.now(),
+        error:
+          error instanceof Error ? error.message : 'Directory sync failed.',
+      })
+      throw error
+    }
+  },
+})
+
 export const syncAll = internalAction({
-  args: { season: v.optional(v.number()) },
+  args: {
+    season: v.optional(v.number()),
+    sources: v.optional(
+      v.array(v.union(v.literal('recruiting'), v.literal('draft'))),
+    ),
+  },
   handler: async (ctx, args) => {
     const apiKey = env.CFBD_API_KEY
     if (!apiKey) throw new Error('CFBD_API_KEY is not configured.')
@@ -672,6 +740,11 @@ export const syncAll = internalAction({
         startedAt: number,
       ) => Promise<{ accepted: number; fetched: number }>,
     ) => {
+      if (
+        args.sources &&
+        !args.sources.some((sourceName) => sourceName === source)
+      )
+        return
       const startedAt = Date.now()
       await ctx.runMutation(internal.teamData.beginSync, { source, startedAt })
       try {
@@ -716,6 +789,7 @@ export const syncAll = internalAction({
       const rows = teams.map(parseProgram)
       await batches(rows, (batch) =>
         ctx.runMutation(internal.teamData.upsertProgramsBatch, {
+          expectedFieldSize: rows.length,
           rows: batch,
           season,
           sourceUpdatedAt: startedAt,

@@ -123,7 +123,7 @@ Material import, merge, delete, rollover, and migration work additionally requir
 
 | ID   | Work package     | Acceptance evidence                                                                                                                                                                         |
 | ---- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P6.1 | Résumé editions  | Week 7 onward uses 90% results/schedule quality and 10% capped dominance with edition Power as opponent quality and no direct talent/conference bonus.                                      |
+| P6.1 | Résumé editions  | Entering Week 7 uses 70% results credit and 30% result-bounded performance credit with edition Power as opponent quality and no direct talent/conference bonus.                                      |
 | P6.2 | Quadrants/SOS    | Q1–Q4, FCS separation, played/remaining/full strength, splits, average opponent Power, benchmark expected wins, and hardest-game ordering use the selected cutoff only.                     |
 | P6.3 | Evidence/ties    | Head-to-head, common opponents, championships, Q1 wins, road/neutral success, and stable tie order display without duplicate score bonuses.                                                 |
 | P6.4 | Playoff rules    | Season-specific qualification rules deterministically explain provisional/actual champions, bids, seeds, byes, at-larges, and first team out.                                               |

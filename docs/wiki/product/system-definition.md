@@ -135,6 +135,10 @@ National views will provide:
 
 Historical ratings from 2015 onward are labeled reconstructions. Official prospective forecasts begin with the 2026 implementation and are never backfilled as if they existed before kickoff.
 
+## CFB26 Program
+
+**Current source:** [Three independent ratings](../reference/three-team-ratings.md) separate durable Program health, predictive Power, and earned Résumé. Program uses ten seasons with recent five-season emphasis, visible results/acquisition/development components, and explicit missing coverage. No brand bonus applies.
+
 ## CFB26 Power
 
 CFB26 Power answers: “How strong is this team, and what should happen in a future matchup?”
@@ -149,14 +153,14 @@ A matchup forecast includes expected margin, win probability, uncertainty, venue
 
 CFB26 Résumé answers: “What has this team earned through the selected cutoff?” It remains separate from predictive Power:
 
-- completed results and schedule quality contribute 90%;
-- capped dominance contributes 10%;
-- opponent quality uses the selected edition's Power order;
+- completed results and schedule quality contribute 70%;
+- result-bounded performance credit contributes 30%;
+- opponent quality is fitted independently from current-season games, excluding the evaluated team's own games;
 - recruiting talent, program history, and conference identity do not directly boost a team's score;
 - championship status affects playoff qualification, not Résumé score; and
-- head-to-head, common opponents, and championships appear as evidence, not duplicate bonuses.
+- head-to-head breaks effectively equal scores; championships have no duplicate merit bonus.
 
-Résumé editions begin in Week 7. FCS games are displayed separately from FBS quadrants.
+Résumé editions begin entering Week 7. Selection-day and final postseason editions remain separate. FCS games are displayed separately from FBS quadrants.
 
 At each cutoff, completed FBS opponents use that edition's leakage-safe Power order:
 

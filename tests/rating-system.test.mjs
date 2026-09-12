@@ -242,6 +242,7 @@ test('Résumé Rating starts in Week 7 and rewards the harder achieved record', 
     week: 7,
   }
   const resumeGames = [
+    game('opponent-evidence', 'strong', 'weak', 42, 7),
     game('hard-win', 'strong', 'hard', 20, 24),
     game('easy-win', 'easy', 'weak', 24, 20),
   ]

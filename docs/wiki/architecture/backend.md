@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 43 tables and 104 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 43 tables and 105 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,7 +50,7 @@ Sync state is set to running before an external request and succeeded/failed aft
 
 The source authority is CFBD for national college facts, nflverse for Michigan-alumni NFL performance, the owner for Michigan-specific facts/corrections, and CFB26 for derived outputs. OpenSheet and PFF paths are absent.
 
-The 41-table model was synchronized to development `adjoining-opossum-710` and production `doting-chipmunk-7` on 2026-09-07. The backed-up migration reconciled Michigan v2 counts with zero unresolved identities and passed representative public-read smoke checks. Source now adds two tables plus a stateful migration that audits and removes unversioned server-side backup manifests; this 43-table delta is not hosted until separately authorized. Downloaded backups are untouched. Four retired physical table names remain visible but empty. See the [cutover record](../operations/convex-v2-cutover-2026-09-07.md).
+The 41-table model was synchronized to both environments on 2026-09-07; see the [cutover record](../operations/convex-v2-cutover-2026-09-07.md). Development `adjoining-opossum-710` validated the backward-compatible 43-table three-rating contract on 2026-09-12 after a fresh export. No manifest-retirement migration was run. Production delivery to `doting-chipmunk-7` follows the main-branch Convex-first Vercel build; source publication is not evidence of a new data migration. Four retired physical table names remain visible but empty.
 
 ## Development loop
 

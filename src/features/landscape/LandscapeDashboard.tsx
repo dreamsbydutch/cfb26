@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
+import { RatingField } from './RatingField'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import {
@@ -25,6 +26,7 @@ export type LandscapeView =
   | 'methodology'
   | 'playoff'
   | 'power'
+  | 'program'
   | 'resume'
   | 'simulator'
   | 'teams'
@@ -58,8 +60,8 @@ export function LandscapeDashboard({
       <PageFrame>
         <PageHero
           eyebrow={`${season} · Week ${week} · National`}
-          summary="Power estimates team strength. Résumé measures what a team has earned. Every view names the edition and evidence it uses."
-          title="Strength predicts. Résumé earns. Keep the questions separate."
+          summary="Program measures sustained competitive health. Power predicts neutral-field strength today. Résumé rewards this season’s achievement."
+          title="Three ratings. Three football questions."
         />
         <ContextBar>
           <div className="flex gap-3">
@@ -104,7 +106,12 @@ export function LandscapeDashboard({
           <>
             {view === 'games' && <Games data={data} />}
             {view === 'power' && <Power data={data} />}
-            {view === 'resume' && <Resume merit={merit.data ?? null} />}
+            {view === 'program' && (
+              <RatingField kind="program" season={season} week={week} />
+            )}
+            {view === 'resume' && (
+              <RatingField kind="resume" season={season} week={week} />
+            )}
             {view === 'playoff' && <Playoff merit={merit.data ?? null} />}
             {view === 'teams' && (
               <Teams
@@ -179,19 +186,16 @@ function Games({
             </caption>
             <thead className="app-label bg-black/15">
               <tr>
-                <th
-                  className="w-1/4 min-w-60 px-5 py-3 text-right"
-                  scope="col"
-                >
+                <th className="w-1/4 min-w-60 px-5 py-3 text-right" scope="col">
                   Away team
                 </th>
-                <th className="w-1/2 min-w-[560px] px-4 py-3 text-center" scope="col">
-                  Matchup · sorted by {lens}
-                </th>
                 <th
-                  className="w-1/4 min-w-60 px-5 py-3 text-left"
+                  className="w-1/2 min-w-[560px] px-4 py-3 text-center"
                   scope="col"
                 >
+                  Matchup · sorted by {lens}
+                </th>
+                <th className="w-1/4 min-w-60 px-5 py-3 text-left" scope="col">
                   Home team
                 </th>
               </tr>
@@ -376,10 +380,31 @@ function Power({
 }) {
   const [search, setSearch] = useState('')
   const [conference, setConference] = useState('all')
+  const [view, setView] = useState<
+    'current' | 'weekly' | 'selection' | 'final'
+  >('current')
+  const field = useQuery({
+    ...convexQuery(api.ratings.getRatingField, {
+      season: data.season,
+      week: data.week,
+      view,
+    }),
+    enabled: view !== 'current',
+  })
+  const ratingRows =
+    view === 'current'
+      ? data.ratings
+      : (field.data?.rows ?? []).map((row) => ({
+          ...row,
+          rankingBasis: 'weekly_edition' as const,
+          sourceSeason: data.season,
+          confidence: undefined,
+          signalCount: undefined,
+        }))
   const conferences = [
-    ...new Set(data.ratings.map((row) => row.conference).filter(Boolean)),
+    ...new Set(ratingRows.map((row) => row.conference).filter(Boolean)),
   ].sort()
-  const rows = data.ratings
+  const rows = ratingRows
     .filter(
       (row) =>
         row.published &&
@@ -420,7 +445,13 @@ function Power({
     }))
   return (
     <div>
-      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+      <p className="mb-4 text-sm leading-6">
+        Neutral-field strength under normal conditions. The current model uses
+        game results and historical carryover; national injury and coaching
+        adjustments are not yet covered consistently. Small rating gaps are
+        uncertain, especially early in the season.
+      </p>
+      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
         <input
           aria-label="Search Power rankings"
           className={controlClass}
@@ -441,7 +472,33 @@ function Power({
             </option>
           ))}
         </select>
+        <select
+          className={controlClass}
+          aria-label="Power publication"
+          value={view}
+          onChange={(event) => setView(event.target.value as typeof view)}
+        >
+          <option value="current">Current edition</option>
+          <option value="weekly">Frozen weekly</option>
+          <option value="selection">Selection day</option>
+          <option value="final">Final postseason</option>
+        </select>
       </div>
+      {view !== 'current' &&
+        (field.isPending ? (
+          <LoadingState label="Loading Power edition" />
+        ) : field.isError ? (
+          <ErrorState>{field.error.message}</ErrorState>
+        ) : !field.data ? (
+          <EmptyState>
+            No published Power edition exists for this selection.
+          </EmptyState>
+        ) : (
+          <p className="mb-3 text-sm">
+            {field.data.edition.modelVersion} ·{' '}
+            {new Date(field.data.edition.cutoffAt).toLocaleString()}
+          </p>
+        ))}
       <RankingTable
         detailHeadings={[
           'Offense',
@@ -451,86 +508,11 @@ function Power({
           'Prior weight',
           'Evidence',
         ]}
-        heading={`DbyD CFB Power · ${rows.length} of ${data.ratingCount} teams`}
+        heading={`DbyD CFB Power · ${rows.length} of ${ratingRows.length} teams`}
         noteHeading="Sources & coverage"
         primaryHeading="Power"
         rows={rows}
       />
-    </div>
-  )
-}
-
-function Resume({
-  merit,
-}: {
-  merit: FunctionReturnType<typeof api.ratings.getMeritDashboard>
-}) {
-  if (!merit?.edition.resumeVisible)
-    return (
-      <EmptyState title="Résumé unlocks in Week 7">
-        Résumé needs enough completed-game evidence to measure achievement.
-        Until then, use{' '}
-        <Link className="app-accent-text font-bold" to="/national/power">
-          Power
-        </Link>{' '}
-        for strength estimates.
-      </EmptyState>
-    )
-  return (
-    <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-      <RankingTable
-        heading="CFB26 Résumé"
-        primaryHeading="Résumé"
-        rows={merit.rankings.map(({ program, snapshot }) => ({
-          highlight:
-            program?.key === 'michigan' ||
-            isMichiganProgram(snapshot.sourceProgramName),
-          label: program?.name ?? snapshot.sourceProgramName,
-          primary: snapshot.resume?.toFixed(1) ?? '—',
-          rank: snapshot.resumeRank ?? 999,
-          secondary: `${snapshot.actualWins ?? 0} wins · ${snapshot.expectedWins?.toFixed(1) ?? '—'} expected`,
-        }))}
-      />
-      <div className="space-y-5">
-        <h2 className="michigan-accent font-display text-2xl font-extrabold">
-          Michigan schedule strength
-        </h2>
-        {merit.schedule ? (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <Metric
-                label="Played avg Power"
-                value={merit.schedule.played.averageOpponentPower ?? '—'}
-              />
-              <Metric
-                label="Full avg Power"
-                value={merit.schedule.full.averageOpponentPower ?? '—'}
-              />
-              <Metric
-                label="Top-25 expected wins"
-                value={merit.schedule.full.benchmarkExpectedWins}
-              />
-              <Metric
-                label="Remaining games"
-                value={merit.schedule.remaining.games}
-              />
-            </div>
-            {merit.schedule.quadrants.map((quadrant) => (
-              <div
-                key={quadrant.quadrant}
-                className="rounded-2xl border-l-4 border-[#ffcb05] bg-white/[0.04] p-4"
-              >
-                <b>{quadrant.quadrant}</b>
-                <span className="float-right">
-                  {quadrant.games.length} completed FBS games
-                </span>
-              </div>
-            ))}
-          </>
-        ) : (
-          <EmptyState>Michigan schedule data is unavailable.</EmptyState>
-        )}
-      </div>
     </div>
   )
 }
@@ -1156,6 +1138,23 @@ function Methodology({
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.65fr)]">
       <div className="grid gap-5">
         <Surface className="p-5 sm:p-6">
+          <p className="app-kicker">Sustained competitive health</p>
+          <h2 className="mt-2 text-3xl font-bold">State of the Program</h2>
+          <p className="mt-3 text-sm leading-6">
+            Ten seasons of evidence, with the recent five carrying most weight.
+            Competitive results contribute 70%, talent acquisition 20%, and
+            development 10%. Partial seasons contribute in proportion to games
+            played. Brand recognition earns no points. Missing evidence remains
+            visible and increases uncertainty.
+          </p>
+          <Link
+            to="/national/program"
+            className="mt-3 inline-block font-semibold underline"
+          >
+            Explore every FBS program
+          </Link>
+        </Surface>
+        <Surface className="p-5 sm:p-6">
           <p className="app-kicker">Predictive model</p>
           <h2 className="mt-2 text-3xl font-bold">CFB26 Power</h2>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-white/55">
@@ -1175,7 +1174,10 @@ function Methodology({
             <li>
               Huber residual weights reduce the influence of extreme results.
             </li>
-            <li>Every current-season game has equal weight.</li>
+            <li>
+              The active baseline weights current-season games equally; recency
+              challengers require held-out validation.
+            </li>
             <li>
               Up to four prior seasons fade recursively as games accumulate.
             </li>
@@ -1189,17 +1191,19 @@ function Methodology({
           <p className="app-kicker">Earned record model</p>
           <h2 className="mt-2 text-3xl font-bold">CFB26 Résumé</h2>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-white/55">
-            Résumé is wins above the expectation of an average top-25 team.
-            Opponent quality comes from the selected edition&apos;s Power field;
-            venue changes expected wins. It has no talent, conference, rivalry,
-            championship, bowl, playoff, or human bonus.
+            Résumé measures results against a fixed playoff-contender standard.
+            Opponent quality is fitted from current-season games without
+            historical priors; venue changes expected wins. It has no talent,
+            conference, rivalry, championship, bowl, playoff, or human bonus.
           </p>
           <div className="app-accent-soft-text mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm">
-            Résumé = 0.90 × schedule/results + 0.10 × capped dominance
+            Résumé = 0.70 × results credit + 0.30 × performance credit
           </div>
           <p className="mt-4 text-sm leading-6 text-white/50">
-            Provisional rows remain hidden before Week 7. Teams with fewer than
-            five games remain ranked afterward and carry a limited-sample flag.
+            Provisional rows remain hidden until entering Week 7. Losses never
+            earn positive game credit; blowout rewards diminish. Teams with
+            fewer than five games remain ranked afterward and carry a
+            limited-sample flag.
           </p>
         </Surface>
         <Surface className="p-5 sm:p-6">

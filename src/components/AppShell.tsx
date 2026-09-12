@@ -64,6 +64,12 @@ const MICHIGAN_NAV: Array<NavItem> = [
 const NATIONAL_NAV: Array<NavItem> = [
   { href: '/games', icon: CalendarDays, id: 'games', label: 'Games' },
   { href: '/national/power', icon: BarChart3, id: 'power', label: 'Power' },
+  {
+    href: '/national/program',
+    icon: BarChart3,
+    id: 'program',
+    label: 'Program',
+  },
   { href: '/national/resume', icon: Trophy, id: 'resume', label: 'Résumé' },
   {
     href: '/national/playoff',

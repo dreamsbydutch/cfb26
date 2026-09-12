@@ -4,53 +4,9 @@
 
 ## Current rating systems
 
-**Current in source and hosted backend:** `cfb26-power-v1` and `cfb26-resume-v1` replace the manually weighted percentile composite. The surrounding 41-table contract adds frozen forecasts, schedule/quadrant evidence, playoff projections, and owner ballots. Development and production received that contract during the backed-up 2026-09-07 cutover. New editions still depend on synchronized source data and publication readiness.
+**Current source:** Program (`cfb26-program-v1`), Power (`cfb26-power-v1`), and Résumé (`cfb26-resume-v2`) answer independent questions. [Three team ratings](three-team-ratings.md) owns the active formulas, membership, publication, coverage limits, and validation workflow. The older two-system hosted editions remain immutable and retain their original model versions.
 
-The public rankings page has one predictive ordering: CFB26 Power Rank. Offense, defense, special teams, team-specific home field, sample size, prior influence, and source coverage explain that position in the same team row. Résumé is supporting record evidence beginning in Week 7, not another predictive perspective. The 16 perspectives documented below exist only in the legacy migration fallback and are not public ranking choices.
-
-### CFB26 Power Rating
-
-Power answers “How strong is this team right now?” in expected points above or below an average FBS team on a neutral field. The pure model:
-
-- creates two scoring observations per completed game and jointly estimates opponent-adjusted offense and defense;
-- separately fits robust opponent-adjusted margin strength, then reconciles offense, defense, and strongly shrunk special teams to that neutral power estimate;
-- estimates each team’s home-field value around a strongly regularized 2.5-point population prior without adding it to neutral rank;
-- caps regulation margins at 35 points, caps overtime margins at one possession, bounds extreme totals, and applies Huber residual weights;
-- gives every current-season game equal weight;
-- carries up to four earlier seasons through a recursively faded performance prior; and
-- rates FCS opponents with stronger shrinkage while excluding them from the published rank.
-
-The model accepts a versioned logistic margin calibrator. Until an eight-season held-out evaluation promotes learned coefficients, published builds explicitly identify the existing `fixed-logistic-v1` probability mapping. Talent, returning production, transfers, coaching, and recency are not silently activated: each requires reliable historical coverage and promotion under [ADR 0007](../decisions/0007-optimize-predictions-with-held-out-seasons.md).
-
-### Ranking universe and visible fallback
-
-Power is not a top-25 or top-50 list. The selected season's FBS schedule defines the published universe, and ranks run consecutively from `1` through that season's actual field size. That makes the field dynamic: a current 138-team season can show all 138, while a historical season with fewer members stops at its smaller total. Programs beyond an alphabetical query window are not dropped.
-
-When a weekly immutable edition exists, its snapshots remain the source of truth. Without an edition, the dashboard uses a season composite when one exists. If neither exists, a complete-field fallback ranks each scheduled FBS program using the first available evidence in this order:
-
-1. current-season Elo;
-2. prior-season composite converted to the same display points scale;
-3. prior-season Elo; or
-4. a neutral zero-point baseline when no current or prior rating exists.
-
-The fallback is intentionally labeled and never presented as a weekly `cfb26-power-v1` edition. Each Power row exposes the basis season, neutral Power, offense, defense, separated special teams when available, remaining prior weight, sample state, sources, and signal coverage. Schedule badges are joined from that same complete field, so a ranked FBS team cannot disappear only on the Games tab.
-
-### CFB26 Résumé Rating
-
-Résumé answers “Whose record was hardest to achieve?” in wins above the expectation of an average top-25 team. The reference strength and home-field value are fixed from the current edition’s top 25. For every completed regular- or postseason game:
-
-- the schedule component adds actual wins minus the reference team’s venue-adjusted expected wins;
-- the dominance component compares a logistic win-equivalent for the actual margin with that same expectation;
-- regulation dominance is capped at 21 points and overtime dominance at seven points; and
-- the final value is 90% schedule/results plus 10% dominance.
-
-Provisional rows exist before Week 7 but are hidden. Beginning in Week 7 the dashboard exposes Power Rank, Résumé Rank, their difference, and disagreement reasons covering schedule, results, dominance, roster-prior influence, or opponent-adjusted performance. Teams with fewer than five games remain ranked and carry a limited-sample flag. No rivalry, championship, bowl, playoff, or human bonus exists.
-
-### Editions and publication
-
-`ratingEditions` stores nightly, official, amendment, and research metadata; `teamRatingSnapshots` stores the corresponding team rows. Both model versions, the probability calibration, cutoff, source-data vintage, and revision travel with the edition. Rows are inserted atomically and never updated. The first official edition for a season/week is frozen. Corrections use a linked amendment, while research reruns use a historical cutoff and cannot become the default published view.
-
-The daily rating job runs only when the synchronized source vintage changed. A Monday job freezes the weekly official edition. Dashboard reads prefer amendments, then official editions, then nightly editions; the old composite and Elo remain bounded migration fallbacks until new editions are built.
+The public Power page still provides one predictive ordering. Program is sustained competitive health, and Résumé is earned current-season merit beginning entering Week 7. Neither is another predictive perspective.
 
 ## Legacy composite migration fallback
 

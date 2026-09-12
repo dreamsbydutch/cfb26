@@ -17,6 +17,8 @@ Architectural decision records explain durable choices and their consequences. O
 | [0011](0011-replace-pff-data-with-cfb26-player-grades.md)        | Accepted   | Remove PFF data and replace it with phase-specific owner-authored CFB26 Player Grades.                |
 | [0012](0012-assign-data-authority-and-retention.md)              | Accepted   | Assign source authority and retain only durable evidence and immutable outputs.                       |
 
+| [0013](0013-three-independent-team-ratings.md) | Accepted | Separate durable Program health, predictive Power, and current-season Résumé. |
+
 ## Adding an ADR
 
 Use the next four-digit number. Record the context, decision, consequences, and status. Do not rewrite accepted history when a decision changes; supersede it with a new ADR and link both records.

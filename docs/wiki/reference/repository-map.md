@@ -101,3 +101,5 @@ Use `rg --files -g '!node_modules' -g '!dist' -g '!.git'` for a current inventor
 | `maintain-docs`  | Agent guidance, wiki, runbooks, contracts, and ADRs.                                                  |
 | `verify-changes` | Diff review and proportional quality gates; does not itself authorize writes.                         |
 | `preview-pr`     | Explicitly authorized publication of a completed goal as a preview branch, Vercel deployment, and PR. |
+
+The three-system rating boundary also includes `convex/programRating.ts` (durable program health), `convex/powerResearch.ts` (historical predictive challengers), `convex/ratingFields.ts` (backward-compatible snapshot validators), and `scripts/evaluate-power.mjs` (offline research reports). See [Three team ratings](three-team-ratings.md).

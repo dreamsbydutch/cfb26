@@ -1,0 +1,447 @@
+{
+  "date": "2026-09-12",
+  "source": "adjoining-opossum-710 read-only game export",
+  "inputSha256": "2309f48187dae103ccbb520b149ae64f43dde859861fbcca18594e2a2c077775",
+  "reconstruction": true,
+  "heldOutSeasons": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2025
+  ],
+  "champion": "cfb26-power-v1",
+  "decisions": {
+    "power-transition-4": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Joint margin and Brier improvement did not win most seasons."
+      ]
+    },
+    "power-recency-60": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Aggregate Brier score did not improve.",
+        "Held-out 2017 regressed materially.",
+        "Held-out 2018 regressed materially.",
+        "Held-out 2019 regressed materially.",
+        "Held-out 2022 regressed materially.",
+        "Held-out 2023 regressed materially.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons."
+      ]
+    },
+    "power-recency-120": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Held-out 2019 regressed materially.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons."
+      ]
+    }
+  },
+  "reports": [
+    {
+      "version": "cfb26-power-v1",
+      "overall": {
+        "count": 6843,
+        "marginMae": 15.027123,
+        "brier": 0.186839,
+        "calibrationError": 0.03321
+      },
+      "byWeekRange": {
+        "weeks_1_4": {
+          "count": 2515,
+          "marginMae": 17.825328,
+          "brier": 0.187187,
+          "calibrationError": 0.077032
+        },
+        "weeks_5_8": {
+          "count": 1689,
+          "marginMae": 13.311604,
+          "brier": 0.195237,
+          "calibrationError": 0.045973
+        },
+        "weeks_9_12": {
+          "count": 1824,
+          "marginMae": 13.427138,
+          "brier": 0.181204,
+          "calibrationError": 0.036504
+        },
+        "weeks_13_plus": {
+          "count": 815,
+          "marginMae": 13.528221,
+          "brier": 0.180976,
+          "calibrationError": 0.032492
+        }
+      },
+      "bySubdivision": {
+        "fbs_vs_fbs": {
+          "count": 6002,
+          "marginMae": 13.455198,
+          "brier": 0.189321,
+          "calibrationError": 0.037934
+        },
+        "includes_fcs": {
+          "count": 841,
+          "marginMae": 26.245541,
+          "brier": 0.169128,
+          "calibrationError": 0.295321
+        }
+      },
+      "folds": [
+        {
+          "season": 2017,
+          "marginMae": 15.022654,
+          "brier": 0.186157,
+          "expectedCalibrationError": 0.034216
+        },
+        {
+          "season": 2018,
+          "marginMae": 15.404751,
+          "brier": 0.179318,
+          "expectedCalibrationError": 0.030904
+        },
+        {
+          "season": 2019,
+          "marginMae": 14.988063,
+          "brier": 0.176407,
+          "expectedCalibrationError": 0.043485
+        },
+        {
+          "season": 2020,
+          "marginMae": 14.200351,
+          "brier": 0.190544,
+          "expectedCalibrationError": 0.046644
+        },
+        {
+          "season": 2021,
+          "marginMae": 15.448027,
+          "brier": 0.193658,
+          "expectedCalibrationError": 0.049434
+        },
+        {
+          "season": 2022,
+          "marginMae": 15.019643,
+          "brier": 0.20206,
+          "expectedCalibrationError": 0.066443
+        },
+        {
+          "season": 2023,
+          "marginMae": 14.737912,
+          "brier": 0.184431,
+          "expectedCalibrationError": 0.041149
+        },
+        {
+          "season": 2025,
+          "marginMae": 15.104818,
+          "brier": 0.183524,
+          "expectedCalibrationError": 0.030877
+        }
+      ]
+    },
+    {
+      "version": "power-transition-4",
+      "overall": {
+        "count": 6843,
+        "marginMae": 15.156028,
+        "brier": 0.183366,
+        "calibrationError": 0.018432
+      },
+      "byWeekRange": {
+        "weeks_1_4": {
+          "count": 2515,
+          "marginMae": 18.271809,
+          "brier": 0.182795,
+          "calibrationError": 0.081816
+        },
+        "weeks_5_8": {
+          "count": 1689,
+          "marginMae": 13.393369,
+          "brier": 0.194077,
+          "calibrationError": 0.039729
+        },
+        "weeks_9_12": {
+          "count": 1824,
+          "marginMae": 13.280263,
+          "brier": 0.177088,
+          "calibrationError": 0.034511
+        },
+        "weeks_13_plus": {
+          "count": 815,
+          "marginMae": 13.392025,
+          "brier": 0.176976,
+          "calibrationError": 0.036491
+        }
+      },
+      "bySubdivision": {
+        "fbs_vs_fbs": {
+          "count": 6002,
+          "marginMae": 13.563462,
+          "brier": 0.18683,
+          "calibrationError": 0.0294
+        },
+        "includes_fcs": {
+          "count": 841,
+          "marginMae": 26.52176,
+          "brier": 0.158639,
+          "calibrationError": 0.297411
+        }
+      },
+      "folds": [
+        {
+          "season": 2017,
+          "marginMae": 15.067162,
+          "brier": 0.181981,
+          "expectedCalibrationError": 0.022146
+        },
+        {
+          "season": 2018,
+          "marginMae": 15.625113,
+          "brier": 0.17832,
+          "expectedCalibrationError": 0.042641
+        },
+        {
+          "season": 2019,
+          "marginMae": 15.265766,
+          "brier": 0.17491,
+          "expectedCalibrationError": 0.041393
+        },
+        {
+          "season": 2020,
+          "marginMae": 14.141053,
+          "brier": 0.184785,
+          "expectedCalibrationError": 0.028155
+        },
+        {
+          "season": 2021,
+          "marginMae": 15.506539,
+          "brier": 0.190022,
+          "expectedCalibrationError": 0.036704
+        },
+        {
+          "season": 2022,
+          "marginMae": 15.149442,
+          "brier": 0.196833,
+          "expectedCalibrationError": 0.050135
+        },
+        {
+          "season": 2023,
+          "marginMae": 14.869121,
+          "brier": 0.180031,
+          "expectedCalibrationError": 0.027081
+        },
+        {
+          "season": 2025,
+          "marginMae": 15.263276,
+          "brier": 0.180618,
+          "expectedCalibrationError": 0.02897
+        }
+      ]
+    },
+    {
+      "version": "power-recency-60",
+      "overall": {
+        "count": 6843,
+        "marginMae": 15.670189,
+        "brier": 0.188121,
+        "calibrationError": 0.026899
+      },
+      "byWeekRange": {
+        "weeks_1_4": {
+          "count": 2515,
+          "marginMae": 19.166561,
+          "brier": 0.193685,
+          "calibrationError": 0.097495
+        },
+        "weeks_5_8": {
+          "count": 1689,
+          "marginMae": 13.59698,
+          "brier": 0.195492,
+          "calibrationError": 0.03417
+        },
+        "weeks_9_12": {
+          "count": 1824,
+          "marginMae": 13.615789,
+          "brier": 0.177741,
+          "calibrationError": 0.02665
+        },
+        "weeks_13_plus": {
+          "count": 815,
+          "marginMae": 13.775092,
+          "brier": 0.178906,
+          "calibrationError": 0.032736
+        }
+      },
+      "bySubdivision": {
+        "fbs_vs_fbs": {
+          "count": 6002,
+          "marginMae": 13.968094,
+          "brier": 0.190164,
+          "calibrationError": 0.026045
+        },
+        "includes_fcs": {
+          "count": 841,
+          "marginMae": 27.817598,
+          "brier": 0.173538,
+          "calibrationError": 0.330515
+        }
+      },
+      "folds": [
+        {
+          "season": 2017,
+          "marginMae": 15.628146,
+          "brier": 0.186578,
+          "expectedCalibrationError": 0.024193
+        },
+        {
+          "season": 2018,
+          "marginMae": 16.191968,
+          "brier": 0.184321,
+          "expectedCalibrationError": 0.041406
+        },
+        {
+          "season": 2019,
+          "marginMae": 15.937725,
+          "brier": 0.179941,
+          "expectedCalibrationError": 0.046152
+        },
+        {
+          "season": 2020,
+          "marginMae": 14.583333,
+          "brier": 0.187001,
+          "expectedCalibrationError": 0.039078
+        },
+        {
+          "season": 2021,
+          "marginMae": 15.797182,
+          "brier": 0.192061,
+          "expectedCalibrationError": 0.02762
+        },
+        {
+          "season": 2022,
+          "marginMae": 15.526674,
+          "brier": 0.200098,
+          "expectedCalibrationError": 0.044841
+        },
+        {
+          "season": 2023,
+          "marginMae": 15.352198,
+          "brier": 0.186166,
+          "expectedCalibrationError": 0.046712
+        },
+        {
+          "season": 2025,
+          "marginMae": 15.951499,
+          "brier": 0.188294,
+          "expectedCalibrationError": 0.038067
+        }
+      ]
+    },
+    {
+      "version": "power-recency-120",
+      "overall": {
+        "count": 6843,
+        "marginMae": 15.379965,
+        "brier": 0.18633,
+        "calibrationError": 0.018928
+      },
+      "byWeekRange": {
+        "weeks_1_4": {
+          "count": 2515,
+          "marginMae": 18.594513,
+          "brier": 0.189114,
+          "calibrationError": 0.088695
+        },
+        "weeks_5_8": {
+          "count": 1689,
+          "marginMae": 13.423564,
+          "brier": 0.193962,
+          "calibrationError": 0.035483
+        },
+        "weeks_9_12": {
+          "count": 1824,
+          "marginMae": 13.527632,
+          "brier": 0.178579,
+          "calibrationError": 0.023947
+        },
+        "weeks_13_plus": {
+          "count": 815,
+          "marginMae": 13.660245,
+          "brier": 0.17927,
+          "calibrationError": 0.034853
+        }
+      },
+      "bySubdivision": {
+        "fbs_vs_fbs": {
+          "count": 6002,
+          "marginMae": 13.707881,
+          "brier": 0.188261,
+          "calibrationError": 0.027605
+        },
+        "includes_fcs": {
+          "count": 841,
+          "marginMae": 27.313199,
+          "brier": 0.172548,
+          "calibrationError": 0.319504
+        }
+      },
+      "folds": [
+        {
+          "season": 2017,
+          "marginMae": 15.358467,
+          "brier": 0.184966,
+          "expectedCalibrationError": 0.025855
+        },
+        {
+          "season": 2018,
+          "marginMae": 15.828281,
+          "brier": 0.180475,
+          "expectedCalibrationError": 0.045229
+        },
+        {
+          "season": 2019,
+          "marginMae": 15.505968,
+          "brier": 0.176466,
+          "expectedCalibrationError": 0.039762
+        },
+        {
+          "season": 2020,
+          "marginMae": 14.338246,
+          "brier": 0.186536,
+          "expectedCalibrationError": 0.040913
+        },
+        {
+          "season": 2021,
+          "marginMae": 15.625028,
+          "brier": 0.191343,
+          "expectedCalibrationError": 0.051642
+        },
+        {
+          "season": 2022,
+          "marginMae": 15.305022,
+          "brier": 0.20026,
+          "expectedCalibrationError": 0.04003
+        },
+        {
+          "season": 2023,
+          "marginMae": 15.095275,
+          "brier": 0.185027,
+          "expectedCalibrationError": 0.028729
+        },
+        {
+          "season": 2025,
+          "marginMae": 15.608244,
+          "brier": 0.185545,
+          "expectedCalibrationError": 0.031524
+        }
+      ]
+    }
+  ]
+}

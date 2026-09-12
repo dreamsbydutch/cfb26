@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -378,6 +379,9 @@ export default defineSchema({
     .index('by_programId_and_source', ['programId', 'source']),
 
   programAffiliations: defineTable({
+    classification: v.optional(ratingClassification),
+    directorySize: v.optional(v.number()),
+    sourceUpdatedAt: v.optional(v.number()),
     conference: v.string(),
     division: v.optional(v.string()),
     endSeason: v.optional(v.number()),
@@ -648,6 +652,7 @@ export default defineSchema({
     .index('by_season_and_overall', ['season', 'overall']),
 
   ratingEditions: defineTable({
+    ...rankingEditionFields,
     calibrationFitCount: v.optional(v.number()),
     calibrationIntercept: v.optional(v.number()),
     calibrationMaximumProbability: v.optional(v.number()),
@@ -673,6 +678,7 @@ export default defineSchema({
   })
     .index('by_sourceKey', ['sourceKey'])
     .index('by_season_and_cutoffAt', ['season', 'cutoffAt'])
+    .index('by_season_stage_cutoff', ['season', 'rankingStage', 'cutoffAt'])
     .index('by_season_week_type_revision', [
       'season',
       'week',
@@ -681,6 +687,7 @@ export default defineSchema({
     ]),
 
   teamRatingSnapshots: defineTable({
+    ...programSnapshotFields,
     actualWins: v.optional(v.number()),
     classification: ratingClassification,
     conference: v.optional(v.string()),

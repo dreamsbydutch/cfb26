@@ -13,9 +13,9 @@ This wiki is the durable source of truth for the application. [AGENTS.md](../../
 
 **Current source:** the nine-phase Michigan-first system is implemented across three context shells. `/` opens the Matrix, with canonical Michigan Overview, Movement, Alumni, player, and comparison routes. `/games` opens chronological national schedules, with canonical complete-field Power, Résumé, Playoff, Teams, Simulator, Blind Ballot, and Methodology routes. `/admin/roster` leads a desktop Owner Dashboard plus an inline-editable Roster, explicit Player Stats entry, Data, and Operations workflows. Direct CFBD and nflverse boundaries replace intermediary/proprietary ingestion. Michigan owner writes now advance a data revision and durable audit trail; destructive workflows require a backup manifest for that exact revision.
 
-**Hosted current:** development `adjoining-opossum-710` and production `doting-chipmunk-7` received the 41-table contract in a backed-up, exact-target cutover on 2026-09-07. Michigan v2 counts and representative public reads were reconciled in both environments. The 43-table source delta and final-form web UI have not been deployed; see the [cutover record](operations/convex-v2-cutover-2026-09-07.md).
+**Hosted current:** development `adjoining-opossum-710` validated the backward-compatible 43-table rating contract on 2026-09-12, including a 138-team public field. Production `doting-chipmunk-7` retains the [2026-09-07 audited data cutover](operations/convex-v2-cutover-2026-09-07.md) as its migration baseline; main-branch delivery uses the Convex-first Vercel build. The manifest-retirement migration was not run for the ratings work.
 
-**Undecided:** no major product decision is open. A richer Power challenger can become official only after it passes the recorded held-out performance and calibration gate.
+**Undecided:** no major product decision is open. The three-rating design is approved under [ADR 0013](decisions/0013-three-independent-team-ratings.md). Richer Power challengers still require the held-out performance and calibration gate; national personnel coverage remains limited.
 
 ## Find an answer
 

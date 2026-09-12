@@ -22,6 +22,7 @@ import { Route as NationalGamesRouteImport } from './routes/national.games'
 import { Route as NationalMethodologyRouteImport } from './routes/national.methodology'
 import { Route as NationalPlayoffRouteImport } from './routes/national.playoff'
 import { Route as NationalPowerRouteImport } from './routes/national.power'
+import { Route as NationalProgramRouteImport } from './routes/national.program'
 import { Route as NationalResumeRouteImport } from './routes/national.resume'
 import { Route as NationalSimulatorRouteImport } from './routes/national.simulator'
 import { Route as NationalTeamsRouteImport } from './routes/national.teams'
@@ -100,6 +101,11 @@ const NationalPowerRoute = NationalPowerRouteImport.update({
   path: '/national/power',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NationalProgramRoute = NationalProgramRouteImport.update({
+  id: '/national/program',
+  path: '/national/program',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NationalResumeRoute = NationalResumeRouteImport.update({
   id: '/national/resume',
   path: '/national/resume',
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/national/methodology': typeof NationalMethodologyRoute
   '/national/playoff': typeof NationalPlayoffRoute
   '/national/power': typeof NationalPowerRoute
+  '/national/program': typeof NationalProgramRoute
   '/national/resume': typeof NationalResumeRoute
   '/national/simulator': typeof NationalSimulatorRoute
   '/national/teams': typeof NationalTeamsRouteWithChildren
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/national/methodology': typeof NationalMethodologyRoute
   '/national/playoff': typeof NationalPlayoffRoute
   '/national/power': typeof NationalPowerRoute
+  '/national/program': typeof NationalProgramRoute
   '/national/resume': typeof NationalResumeRoute
   '/national/simulator': typeof NationalSimulatorRoute
   '/national/teams': typeof NationalTeamsRouteWithChildren
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/national/methodology': typeof NationalMethodologyRoute
   '/national/playoff': typeof NationalPlayoffRoute
   '/national/power': typeof NationalPowerRoute
+  '/national/program': typeof NationalProgramRoute
   '/national/resume': typeof NationalResumeRoute
   '/national/simulator': typeof NationalSimulatorRoute
   '/national/teams': typeof NationalTeamsRouteWithChildren
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/national/methodology'
     | '/national/playoff'
     | '/national/power'
+    | '/national/program'
     | '/national/resume'
     | '/national/simulator'
     | '/national/teams'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/national/methodology'
     | '/national/playoff'
     | '/national/power'
+    | '/national/program'
     | '/national/resume'
     | '/national/simulator'
     | '/national/teams'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/national/methodology'
     | '/national/playoff'
     | '/national/power'
+    | '/national/program'
     | '/national/resume'
     | '/national/simulator'
     | '/national/teams'
@@ -338,6 +350,7 @@ export interface RootRouteChildren {
   NationalMethodologyRoute: typeof NationalMethodologyRoute
   NationalPlayoffRoute: typeof NationalPlayoffRoute
   NationalPowerRoute: typeof NationalPowerRoute
+  NationalProgramRoute: typeof NationalProgramRoute
   NationalResumeRoute: typeof NationalResumeRoute
   NationalSimulatorRoute: typeof NationalSimulatorRoute
   NationalTeamsRoute: typeof NationalTeamsRouteWithChildren
@@ -435,6 +448,13 @@ declare module '@tanstack/react-router' {
       path: '/national/power'
       fullPath: '/national/power'
       preLoaderRoute: typeof NationalPowerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/program': {
+      id: '/national/program'
+      path: '/national/program'
+      fullPath: '/national/program'
+      preLoaderRoute: typeof NationalProgramRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/national/resume': {
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   NationalMethodologyRoute: NationalMethodologyRoute,
   NationalPlayoffRoute: NationalPlayoffRoute,
   NationalPowerRoute: NationalPowerRoute,
+  NationalProgramRoute: NationalProgramRoute,
   NationalResumeRoute: NationalResumeRoute,
   NationalSimulatorRoute: NationalSimulatorRoute,
   NationalTeamsRoute: NationalTeamsRouteWithChildren,

@@ -2,6 +2,9 @@ import { calibrateMargin } from './ratingBacktest.ts'
 import type { LogisticMarginCalibration } from './ratingBacktest.ts'
 
 export const POWER_MODEL_VERSION = 'cfb26-power-v1'
+export const RESUME_MODEL_VERSION = 'cfb26-resume-v2'
+export const RESUME_REFERENCE_POWER = 14
+export const RESUME_DOMINANCE_WEIGHT = 0.3
 
 export type RatingClassification = 'fbs' | 'fcs' | 'transitioning'
 
@@ -21,6 +24,8 @@ export type PowerRatingTeam = {
 }
 
 export type PowerRatingGame = {
+  homeClassification?: RatingClassification
+  awayClassification?: RatingClassification
   awayPoints: number
   awaySpecialTeamsValue?: number
   awayTeamId: string
@@ -34,6 +39,7 @@ export type PowerRatingGame = {
   overtimePeriods: number
   season: number
   week: number
+  evidenceWeight?: number
 }
 
 export type PowerTeamRating = {
@@ -88,7 +94,7 @@ export type ResumeTeamRating = {
 
 export type ResumeRatingEdition = {
   cutoffAt: number
-  modelVersion: 'cfb26-resume-v1'
+  modelVersion: typeof RESUME_MODEL_VERSION
   ratings: Array<ResumeTeamRating>
   referencePower: number
   season: number
@@ -97,6 +103,7 @@ export type ResumeRatingEdition = {
 }
 
 type ScoreObservation = {
+  weight: number
   home: boolean
   opponentId: string
   score: number
@@ -178,18 +185,26 @@ export function buildPowerRatingEdition(input: {
   for (const game of games) {
     if (
       !Number.isFinite(game.homePoints) ||
-      !Number.isFinite(game.awayPoints)
+      !Number.isFinite(game.awayPoints) ||
+      game.homePoints < 0 ||
+      game.awayPoints < 0 ||
+      (game.evidenceWeight !== undefined &&
+        (!Number.isFinite(game.evidenceWeight) ||
+          game.evidenceWeight <= 0 ||
+          game.evidenceWeight > 1))
     ) {
       throw new Error(`Game ${game.id} has an invalid score.`)
     }
     const score = robustScores(game)
     const homeObservation = {
+      weight: game.evidenceWeight ?? 1,
       home: !game.neutralSite,
       opponentId: game.awayTeamId,
       score: score.home,
       teamId: game.homeTeamId,
     }
     const awayObservation = {
+      weight: game.evidenceWeight ?? 1,
       home: false,
       opponentId: game.homeTeamId,
       score: score.away,
@@ -264,7 +279,7 @@ export function buildPowerRatingEdition(input: {
         (defense.get(observation.opponentId) ?? 0) +
         (observation.home ? (homeField.get(observation.teamId) ?? 0) : 0)
       const residual = Math.abs(observation.score - prediction)
-      return residual <= 17 ? 1 : 17 / residual
+      return observation.weight * (residual <= 17 ? 1 : 17 / residual)
     }
 
     let interceptNumerator = 0
@@ -378,7 +393,8 @@ export function buildPowerRatingEdition(input: {
           ? homeMargin + (power.get(opponentId) ?? 0) - homeAdvantage
           : -homeMargin + (power.get(opponentId) ?? 0) + homeAdvantage
         const residual = Math.abs(target - (power.get(team.id) ?? 0))
-        const weight = residual <= 21 ? 1 : 21 / residual
+        const weight =
+          (game.evidenceWeight ?? 1) * (residual <= 21 ? 1 : 21 / residual)
         numerator += weight * target
         denominator += weight
       }
@@ -392,11 +408,12 @@ export function buildPowerRatingEdition(input: {
         if (game.neutralSite || game.homeTeamId !== team.id) continue
         const score = robustScores(game)
         numerator +=
-          score.home -
-          score.away -
-          (power.get(game.homeTeamId) ?? 0) +
-          (power.get(game.awayTeamId) ?? 0)
-        denominator += 1
+          (game.evidenceWeight ?? 1) *
+          (score.home -
+            score.away -
+            (power.get(game.homeTeamId) ?? 0) +
+            (power.get(game.awayTeamId) ?? 0))
+        denominator += game.evidenceWeight ?? 1
       }
       homeField.set(team.id, clamp(numerator / denominator, 0, 8))
     }
@@ -601,17 +618,61 @@ export function buildResumeRatingEdition(input: {
   if (publishedPower.length === 0) {
     throw new Error('Résumé Rating requires published Power Ratings.')
   }
-  const referenceTeams = publishedPower
-    .filter((rating) => rating.rank !== undefined)
-    .sort((left, right) => (left.rank ?? 999) - (right.rank ?? 999))
-    .slice(0, 25)
-  const referencePower = mean(referenceTeams.map((rating) => rating.power))
-  const referenceHomeField = mean(
-    referenceTeams.map((rating) => rating.homeFieldAdvantage),
-  )
+  // Separate opponent evidence from predictive priors and current availability.
+  // Refitting each edition allows earlier opponents to gain/lose earned strength.
+  const earnedEdition = buildPowerRatingEdition({
+    cutoffAt: input.powerEdition.cutoffAt,
+    season: input.powerEdition.season,
+    week: input.week,
+    games: input.games
+      .filter(
+        (game) =>
+          game.completed &&
+          game.season === input.powerEdition.season &&
+          game.kickoffAt < input.powerEdition.cutoffAt,
+      )
+      .map((game) => ({ ...game, evidenceWeight: 1 })),
+    teams: input.powerEdition.ratings.map((rating) => ({
+      id: rating.teamId,
+      name: rating.name,
+      classification: rating.classification,
+    })),
+  })
+  const referencePower = RESUME_REFERENCE_POWER
+  const referenceHomeField = 2.5
   const powerByTeam = new Map(
-    input.powerEdition.ratings.map((rating) => [rating.teamId, rating]),
+    earnedEdition.ratings.map((rating) => [rating.teamId, rating]),
   )
+  // Exclude the evaluated team's own games from opponent estimates. Otherwise
+  // beating someone decisively makes that opponent look weak and can perversely
+  // reduce the winner's credit. Cache one independent fit per evaluated team.
+  const opponentEvidence = new Map<string, Map<string, PowerTeamRating>>()
+  for (const team of publishedPower) {
+    const independent = buildPowerRatingEdition({
+      cutoffAt: input.powerEdition.cutoffAt,
+      season: input.powerEdition.season,
+      week: input.week,
+      teams: input.powerEdition.ratings.map((row) => ({
+        id: row.teamId,
+        name: row.name,
+        classification: row.classification,
+      })),
+      games: input.games
+        .filter(
+          (game) =>
+            game.completed &&
+            game.season === input.powerEdition.season &&
+            game.kickoffAt < input.powerEdition.cutoffAt &&
+            game.homeTeamId !== team.teamId &&
+            game.awayTeamId !== team.teamId,
+        )
+        .map((game) => ({ ...game, evidenceWeight: 1 })),
+    })
+    opponentEvidence.set(
+      team.teamId,
+      new Map(independent.ratings.map((row) => [row.teamId, row])),
+    )
+  }
   const accumulators = new Map(
     publishedPower.map((rating) => [
       rating.teamId,
@@ -647,20 +708,17 @@ export function buildResumeRatingEdition(input: {
         opponentId: game.homeTeamId,
         overtimePeriods: game.overtimePeriods,
         teamId: game.awayTeamId,
-        venueMargin: game.neutralSite
-          ? 0
-          : -(powerByTeam.get(game.homeTeamId)?.homeFieldAdvantage ?? 2.5),
+        venueMargin: game.neutralSite ? 0 : -referenceHomeField,
       },
     ]) {
       const accumulator = accumulators.get(perspective.teamId)
-      const opponent = powerByTeam.get(perspective.opponentId)
+      const opponent =
+        opponentEvidence.get(perspective.teamId)?.get(perspective.opponentId) ??
+        powerByTeam.get(perspective.opponentId)
       if (!accumulator || !opponent) continue
       const expectedMargin =
         referencePower - opponent.power + perspective.venueMargin
-      const expectedProbability = marginProbability(
-        expectedMargin,
-        input.powerEdition.calibration,
-      )
+      const expectedProbability = marginProbability(expectedMargin, undefined)
       const dominanceMargin = clamp(
         perspective.actualMargin,
         perspective.overtimePeriods > 0 ? -7 : -21,
@@ -674,10 +732,22 @@ export function buildResumeRatingEdition(input: {
             ? 1
             : 0
       accumulator.expectedWins += expectedProbability
-      accumulator.dominanceWins += marginProbability(
-        dominanceMargin,
-        input.powerEdition.calibration,
-      )
+      const result =
+        perspective.actualMargin > 0
+          ? 1
+          : perspective.actualMargin < 0
+            ? 0
+            : 0.5
+      const dominance = marginProbability(dominanceMargin, undefined)
+      // Bound each game's contribution by its result: a loss never earns credit
+      // and a win never costs credit, even against a very weak opponent.
+      const performanceCredit =
+        result > 0.5
+          ? (1 - expectedProbability) * (2 * dominance - 1)
+          : result < 0.5
+            ? -expectedProbability * (1 + (1 - 2 * dominance))
+            : 0.5 - expectedProbability
+      accumulator.dominanceWins += performanceCredit
       accumulator.expectedDominanceWins += expectedProbability
     }
   }
@@ -686,8 +756,7 @@ export function buildResumeRatingEdition(input: {
     (accumulator): Omit<ResumeTeamRating, 'resumeRank'> => {
       const scheduleComponent =
         accumulator.actualWins - accumulator.expectedWins
-      const dominanceComponent =
-        accumulator.dominanceWins - accumulator.expectedDominanceWins
+      const dominanceComponent = accumulator.dominanceWins
       const disagreementReasons: ResumeTeamRating['disagreementReasons'] = []
       if (Math.abs(scheduleComponent) >= 0.1) {
         disagreementReasons.push('schedule_strength')
@@ -712,38 +781,76 @@ export function buildResumeRatingEdition(input: {
         limitedSample: accumulator.games < 5,
         name: accumulator.power.name,
         powerRank: accumulator.power.rank,
-        resume: round(scheduleComponent * 0.9 + dominanceComponent * 0.1, 3),
+        resume: round(
+          scheduleComponent * (1 - RESUME_DOMINANCE_WEIGHT) +
+            dominanceComponent * RESUME_DOMINANCE_WEIGHT,
+          3,
+        ),
         scheduleComponent: round(scheduleComponent, 3),
         teamId: accumulator.power.teamId,
       }
     },
   )
-  const ranked = ratings
-    .sort(
-      (left, right) =>
-        right.resume - left.resume || left.name.localeCompare(right.name),
+  const ranked = ratings.sort(
+    (left, right) =>
+      Math.round(right.resume * 100) - Math.round(left.resume * 100) ||
+      left.teamId.localeCompare(right.teamId),
+  )
+  // Rank tied groups together to avoid non-transitive pairwise head-to-head
+  // comparators when A beats B, B beats C, and C beats A.
+  for (let start = 0; start < ranked.length;) {
+    let end = start + 1
+    while (
+      end < ranked.length &&
+      Math.round(ranked[end].resume * 100) ===
+        Math.round(ranked[start].resume * 100)
     )
-    .map((rating, index): ResumeTeamRating => {
-      const resumeRank = index + 1
-      const rankDifference =
-        rating.powerRank === undefined
-          ? undefined
-          : rating.powerRank - resumeRank
-      return {
-        ...rating,
-        disagreementReasons:
-          rankDifference !== undefined && Math.abs(rankDifference) >= 5
-            ? [...rating.disagreementReasons, 'opponent_adjusted_performance']
-            : rating.disagreementReasons,
-        rankDifference,
-        resumeRank,
-      }
-    })
+      end++
+    const group = ranked.slice(start, end)
+    const ids = new Set(group.map((row) => row.teamId))
+    const records = new Map(group.map((row) => [row.teamId, 0]))
+    for (const game of input.games) {
+      if (
+        !game.completed ||
+        game.season !== input.powerEdition.season ||
+        game.kickoffAt >= input.powerEdition.cutoffAt ||
+        !ids.has(game.homeTeamId) ||
+        !ids.has(game.awayTeamId)
+      )
+        continue
+      const result = Math.sign(game.homePoints - game.awayPoints)
+      records.set(game.homeTeamId, (records.get(game.homeTeamId) ?? 0) + result)
+      records.set(game.awayTeamId, (records.get(game.awayTeamId) ?? 0) - result)
+    }
+    group.sort(
+      (a, b) =>
+        (records.get(b.teamId) ?? 0) - (records.get(a.teamId) ?? 0) ||
+        a.expectedWins - b.expectedWins ||
+        b.actualWins - a.actualWins ||
+        a.teamId.localeCompare(b.teamId),
+    )
+    ranked.splice(start, group.length, ...group)
+    start = end
+  }
+  const rankedRows = ranked.map((rating, index): ResumeTeamRating => {
+    const resumeRank = index + 1
+    const rankDifference =
+      rating.powerRank === undefined ? undefined : rating.powerRank - resumeRank
+    return {
+      ...rating,
+      disagreementReasons:
+        rankDifference !== undefined && Math.abs(rankDifference) >= 5
+          ? [...rating.disagreementReasons, 'opponent_adjusted_performance']
+          : rating.disagreementReasons,
+      rankDifference,
+      resumeRank,
+    }
+  })
 
   return {
     cutoffAt: input.powerEdition.cutoffAt,
-    modelVersion: 'cfb26-resume-v1',
-    ratings: ranked,
+    modelVersion: RESUME_MODEL_VERSION,
+    ratings: rankedRows,
     referencePower: round(referencePower),
     season: input.powerEdition.season,
     visible: input.week >= 7,
