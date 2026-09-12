@@ -11,6 +11,7 @@ import {
 import { resolveProgram } from './programIdentity'
 import { buildFallbackPowerField } from './ratingFallback'
 import { calibrateMargin } from './ratingBacktest'
+import { publicationWeek } from './ratingCalendar'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import schema from './schema'
 import {
@@ -1395,12 +1396,16 @@ export const buildRatingEdition = internalAction({
         games: source.games,
       })
       if (evidenceSeason === season) currentEarned = earned
-      const publishedIds = new Set(earned.ratings.filter(row => row.published).map(row => row.teamId))
+      const publishedIds = new Set(
+        earned.ratings.filter((row) => row.published).map((row) => row.teamId),
+      )
       const acquisitionValues = new Map(
-        source.profiles.filter(profile => publishedIds.has(profile.teamId)).flatMap((profile) => {
-          const value = profile.talent ?? profile.recruitingPoints
-          return value === null ? [] : [[profile.teamId, value] as const]
-        }),
+        source.profiles
+          .filter((profile) => publishedIds.has(profile.teamId))
+          .flatMap((profile) => {
+            const value = profile.talent ?? profile.recruitingPoints
+            return value === null ? [] : [[profile.teamId, value] as const]
+          }),
       )
       const coveredAcquisition =
         acquisitionValues.size >=
@@ -1413,7 +1418,9 @@ export const buildRatingEdition = internalAction({
       if (source.drafts.length >= 150) {
         for (const team of earned.ratings)
           if (team.published) draftValues.set(team.teamId, 0)
-        for (const pick of source.drafts.filter(row => publishedIds.has(row.teamId)))
+        for (const pick of source.drafts.filter((row) =>
+          publishedIds.has(row.teamId),
+        ))
           draftValues.set(
             pick.teamId,
             (draftValues.get(pick.teamId) ?? 0) + pick.value,
@@ -1635,7 +1642,11 @@ export const resolveRatingWeek = internalQuery({
           .filter((game) => game.startTime < args.asOf)
           .map((game) => game.sourceUpdatedAt),
       ),
-      week: next?.week ?? Math.min((previous?.week ?? 0) + 1, 30),
+      week: publicationWeek({
+        asOf: args.asOf,
+        selected: next ?? previous,
+        schedule: games,
+      }),
     }
   },
 })
@@ -1778,6 +1789,8 @@ export const getWeeklyDashboard = query({
     if (week !== undefined && (week < 0 || week > 30)) {
       throw new Error('Week must be between 0 and 30.')
     }
+    if (week === undefined)
+      week = (await latestPublishedEdition(ctx, season))?.week
     if (week === undefined) {
       const now = Date.now()
       const [previous, next] = await Promise.all([
@@ -1802,14 +1815,12 @@ export const getWeeklyDashboard = query({
     }
 
     const edition = await preferredWeeklyEdition(ctx, season, week)
-    const [games, snapshotRows, compositeRows, ratingRows, michigan] =
+    const [seasonSchedule, snapshotRows, compositeRows, ratingRows, michigan] =
       await Promise.all([
         ctx.db
           .query('collegeGames')
-          .withIndex('by_season_and_week_and_startTime', (q) =>
-            q.eq('season', season).eq('week', week),
-          )
-          .take(200),
+          .withIndex('by_season_and_startTime', (q) => q.eq('season', season))
+          .take(2001),
         edition
           ? ctx.db
               .query('teamRatingSnapshots')
@@ -1835,6 +1846,16 @@ export const getWeeklyDashboard = query({
           .unique(),
       ])
 
+    if (seasonSchedule.length > 2000)
+      throw new Error('Season schedule exceeds its publication bound.')
+    const games = seasonSchedule.filter(
+      (game) =>
+        publicationWeek({
+          asOf: game.startTime,
+          selected: game,
+          schedule: seasonSchedule,
+        }) === week,
+    )
     const fallbackRows =
       snapshotRows.length === 0
         ? await Promise.all([

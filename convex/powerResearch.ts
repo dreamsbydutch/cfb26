@@ -1,5 +1,6 @@
 import { buildPowerRatingEdition, projectPowerMatchup } from './ratingSystem.ts'
 import { chooseChampion, evaluateForecasts } from './ratingBacktest.ts'
+import { publicationWeek } from './ratingCalendar.ts'
 import type {
   PowerRatingGame,
   PowerRatingTeam,
@@ -223,9 +224,16 @@ export function evaluatePowerPolicies(input: {
         .filter((game) => game.completed && game.season === season)
         .sort((a, b) => a.kickoffAt - b.kickoffAt)
       // Freeze before the first game in each week; later results cannot leak in.
-      const weeks = [...new Set(games.map((game) => game.week))]
-      for (const week of weeks) {
-        const slate = games.filter((game) => game.week === week)
+      const weeks = [
+        ...new Set(
+          games.map((game) => `${game.seasonType ?? 'regular'}:${game.week}`),
+        ),
+      ]
+      for (const weekKey of weeks) {
+        const slate = games.filter(
+          (game) => `${game.seasonType ?? 'regular'}:${game.week}` === weekKey,
+        )
+        const week = slate[0].week
         const cutoffAt = Math.min(...slate.map((game) => game.kickoffAt)) - 1
         const edition = fitHistoricalPower(
           {
@@ -250,14 +258,25 @@ export function evaluatePowerPolicies(input: {
             awayClassification: game.awayClassification,
             gameId: game.id,
             season,
-            week,
+            week: publicationWeek({
+              asOf: game.kickoffAt,
+              selected: {
+                seasonType: game.seasonType ?? 'regular',
+                week: game.week,
+              },
+              schedule: games.map((row) => ({
+                seasonType: row.seasonType ?? 'regular',
+                week: row.week,
+                startTime: row.kickoffAt,
+              })),
+            }),
             kickoffAt: game.kickoffAt,
             featureCutoffAt: cutoffAt,
             actualMargin: game.homePoints - game.awayPoints,
             predictedMargin: projection.projectedMargin,
             homeWinProbability: projection.teamAWinProbability,
             neutralSite: game.neutralSite,
-            seasonType: 'regular',
+            seasonType: game.seasonType ?? 'regular',
           })
         }
       }

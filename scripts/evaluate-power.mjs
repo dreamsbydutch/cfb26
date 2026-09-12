@@ -39,6 +39,7 @@ const games = data.games
   .map((game) => ({
     homeClassification: game.homeClassification,
     awayClassification: game.awayClassification,
+    seasonType: game.seasonType,
     id: String(game.sourceGameId),
     homeTeamId: game.homeProgramId,
     awayTeamId: game.awayProgramId,

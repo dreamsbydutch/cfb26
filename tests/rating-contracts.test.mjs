@@ -4,10 +4,15 @@ import {
   buildPowerRatingEdition,
   buildResumeRatingEdition,
 } from '../convex/ratingSystem.ts'
-import { fitHistoricalPower, POWER_POLICIES } from '../convex/powerResearch.ts'
+import {
+  fitHistoricalPower,
+  POWER_POLICIES,
+  evaluatePowerPolicies,
+} from '../convex/powerResearch.ts'
 
 const season = 2026,
   cutoffAt = Date.UTC(2026, 11, 1)
+
 const teams = ['a', 'b', 'c', 'd'].map((id) => ({
   id,
   name: id,
@@ -139,4 +144,29 @@ test('Power candidates carry prior seasons and ignore personnel learned after cu
     }),
     baseline,
   )
+})
+
+test('postseason forecasts use completed regular-season evidence despite provider week resets', () => {
+  const early = game('regular', 'a', 'b', 21, {
+    kickoffAt: Date.UTC(2026, 8, 1),
+    week: 1,
+    seasonType: 'regular',
+  })
+  const bowl = game('bowl', 'a', 'b', 14, {
+    kickoffAt: Date.UTC(2026, 11, 20),
+    week: 1,
+    seasonType: 'postseason',
+  })
+  const report = evaluatePowerPolicies({
+    teams,
+    games: [early, bowl],
+    testSeasons: [season],
+  })
+  const forecast = report.reports[0].forecasts.find(
+    (row) => row.gameId === 'bowl',
+  )
+  assert.ok(forecast.featureCutoffAt > early.kickoffAt)
+  assert.ok(forecast.predictedMargin > 0)
+  assert.ok(forecast.week >= 7)
+  assert.equal(forecast.seasonType, 'postseason')
 })

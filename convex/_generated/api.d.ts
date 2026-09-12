@@ -25,6 +25,7 @@ import type * as programIdentity from "../programIdentity.js";
 import type * as programRating from "../programRating.js";
 import type * as rankingTools from "../rankingTools.js";
 import type * as ratingBacktest from "../ratingBacktest.js";
+import type * as ratingCalendar from "../ratingCalendar.js";
 import type * as ratingFallback from "../ratingFallback.js";
 import type * as ratingFields from "../ratingFields.js";
 import type * as ratingInputs from "../ratingInputs.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   programRating: typeof programRating;
   rankingTools: typeof rankingTools;
   ratingBacktest: typeof ratingBacktest;
+  ratingCalendar: typeof ratingCalendar;
   ratingFallback: typeof ratingFallback;
   ratingFields: typeof ratingFields;
   ratingInputs: typeof ratingInputs;

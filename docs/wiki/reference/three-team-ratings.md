@@ -24,12 +24,14 @@ The [2026-09-12 evaluation artifact](power-evaluation-2026-09-12.json) records 6
 
 | Policy                    | Margin MAE | Brier score | Calibration error |
 | ------------------------- | ---------: | ----------: | ----------------: |
-| Active baseline           |     15.027 |     .186839 |           .033210 |
-| Four-game offseason prior |     15.156 |     .183366 |           .018432 |
-| 60-day recency            |     15.670 |     .188121 |           .026899 |
-| 120-day recency           |     15.380 |     .186330 |           .018928 |
+| Active baseline           |     14.977 |     .185198 |           .029387 |
+| Four-game offseason prior |     15.118 |     .182274 |           .018776 |
+| 60-day recency            |     15.648 |     .187514 |           .026729 |
+| 120-day recency           |     15.348 |     .185262 |           .019270 |
 
 Lower is better. The transition policy improved probability metrics but worsened margin error, including early-season margin error. These reconstructions use retained results, not original pregame source snapshots, and do not establish that the incumbent is globally optimal. The artifact includes input fingerprint, fold results, early-season diagnostics, and rejection reasons.
+
+Regular and postseason slates are evaluated separately even when the provider restarts week numbering. Postseason forecasts use completed regular-season evidence and do not enter early-season diagnostic buckets.
 
 **Coverage limit:** national coaching changes, transfer retention, and injuries are not yet verified consistently across the field. The published baseline is explicitly results-based, not fully availability-aware. Personnel evidence and recency remain research inputs until reliable coverage and promotion evidence exist. No paid source or manual national injury workflow is silently introduced.
 
@@ -58,6 +60,8 @@ The CFBD FBS directory sync records a season-bounded classification, including i
 Directory batches carry a source timestamp and expected field size; an incomplete batch set cannot become the authoritative directory. `teamData.syncFbsDirectory` refreshes just that bounded directory. `teamData.syncAll` accepts a scoped `sources` selection for recruiting and draft backfills, avoiding unrelated polling or identity refreshes. Source-vintage changes trigger new editions, and a build aborts if its sources change during calculation.
 
 New optional fields preserve old snapshots. Original editions are never rewritten to invent a Program rating. Current views choose the newest cutoff across nightly, official, and amendment editions; frozen weekly views retain the first official edition. `/national/program` and `/national/resume` expose search, conference filters, evidence, and current/weekly/selection/final views.
+
+Fresh visits default to the latest published week; explicit URL weeks select historical views, and the Week control can return to Latest. Publication weeks continue beyond the final regular-season week through the postseason rather than restarting at provider Week 1. The Games view uses the same publication calendar, so the Résumé gate stays open and postseason games remain reachable.
 
 Selection is detected when all regular-season games are complete and scheduled postseason games have not begun. The first non-research selection edition freezes. Final status requires the complete known postseason schedule to be finished. Incomplete source schedules limit this detection; an internal build can specify the stage explicitly. No retrospective build should be represented as an original selection-day publication.
 

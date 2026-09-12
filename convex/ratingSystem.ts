@@ -24,6 +24,7 @@ export type PowerRatingTeam = {
 }
 
 export type PowerRatingGame = {
+  seasonType?: 'regular' | 'postseason'
   homeClassification?: RatingClassification
   awayClassification?: RatingClassification
   awayPoints: number

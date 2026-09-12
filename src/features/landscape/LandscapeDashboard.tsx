@@ -40,10 +40,19 @@ export function LandscapeDashboard({
   programKey?: string
   view?: LandscapeView
 }) {
-  const { season, setSeason, setWeek, week } = useNationalParams()
+  const {
+    season,
+    setSeason,
+    setWeek,
+    week: requestedWeek,
+  } = useNationalParams()
   const dashboard = useQuery(
-    convexQuery(api.ratings.getWeeklyDashboard, { season, week }),
+    convexQuery(api.ratings.getWeeklyDashboard, {
+      season,
+      week: requestedWeek,
+    }),
   )
+  const week = requestedWeek ?? dashboard.data?.week ?? 1
   const merit = useQuery(
     convexQuery(api.ratings.getMeritDashboard, {
       programKey: 'michigan',
@@ -76,12 +85,19 @@ export function LandscapeDashboard({
               ))}
             </select>
             <select
-              value={week}
-              onChange={(event) => setWeek(Number(event.target.value))}
+              value={requestedWeek ?? ''}
+              onChange={(event) =>
+                setWeek(
+                  event.target.value === ''
+                    ? undefined
+                    : Number(event.target.value),
+                )
+              }
               aria-label="Week"
               className={controlClass}
             >
-              {Array.from({ length: 21 }, (_, index) => (
+              <option value="">Latest · Week {week}</option>
+              {Array.from({ length: 31 }, (_, index) => (
                 <option key={index} value={index}>
                   Week {index}
                 </option>
@@ -1352,13 +1368,23 @@ function useNationalParams() {
   const [season, setSeasonState] = useState(() =>
     readNumericParam('season', CURRENT_SEASON),
   )
-  const [week, setWeekState] = useState(() => {
-    const selected = readNumericParam('week', 1)
-    return selected >= 0 && selected <= 20 ? selected : 1
+  const [week, setWeekState] = useState<number | undefined>(() => {
+    if (typeof window === 'undefined') return undefined
+    const raw = new URLSearchParams(window.location.search).get('week')
+    if (raw === null) return undefined
+    const selected = Number(raw)
+    return Number.isInteger(selected) && selected >= 0 && selected <= 30
+      ? selected
+      : undefined
   })
   useEffect(() => {
     setUrlParam('season', String(season))
-    setUrlParam('week', String(week))
+    if (week !== undefined) setUrlParam('week', String(week))
+    else {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('week')
+      window.history.replaceState(window.history.state, '', url)
+    }
   }, [season, week])
   return {
     season,
@@ -1366,9 +1392,9 @@ function useNationalParams() {
       setSeasonState(value)
       setUrlParam('season', String(value))
     },
-    setWeek(value: number) {
+    setWeek(value: number | undefined) {
       setWeekState(value)
-      setUrlParam('week', String(value))
+      if (value !== undefined) setUrlParam('week', String(value))
     },
     week,
   }
