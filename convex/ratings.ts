@@ -12,7 +12,11 @@ import { resolveProgram } from './programIdentity'
 import { buildFallbackPowerField } from './ratingFallback'
 import { calibrateMargin } from './ratingBacktest'
 import { publicationWeek } from './ratingCalendar'
-import { historicalPowerPrior, rememberPowerSeason } from './powerHistory'
+import {
+  POWER_CARRYOVER,
+  historicalPowerPrior,
+  rememberPowerSeason,
+} from './powerHistory'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import schema from './schema'
 import {
@@ -22,6 +26,7 @@ import {
 } from './programRating'
 import { buildMatchupProjection, buildSeasonRatings } from './ratingModel'
 import {
+  POWER_FIT_POLICY,
   POWER_MODEL_VERSION,
   RESUME_MODEL_VERSION,
   buildPowerRatingEdition,
@@ -1249,6 +1254,7 @@ export const buildRatingEdition = internalAction({
                 { id: teamId, ...detail },
                 modelSeason,
                 history,
+                POWER_CARRYOVER,
               ),
             },
           ]
@@ -1282,6 +1288,7 @@ export const buildRatingEdition = internalAction({
         ]
       })
       powerEdition = buildPowerRatingEdition({
+        ...POWER_FIT_POLICY,
         calibration: modelSeason === season ? args.calibration : undefined,
         cutoffAt: modelCutoff,
         games: modelGames,

@@ -90,6 +90,7 @@ console.log(
     testSeasons,
     promoted:
       'selection' in report &&
-      report.selection.champion.modelVersion !== 'cfb26-power-v1',
+      report.selection.champion.modelVersion !==
+        report.selection.incumbent.modelVersion,
   }),
 )

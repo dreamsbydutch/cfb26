@@ -1,7 +1,11 @@
 import { calibrateMargin } from './ratingBacktest.ts'
 import type { LogisticMarginCalibration } from './ratingBacktest.ts'
 
-export const POWER_MODEL_VERSION = 'cfb26-power-v2'
+export const POWER_MODEL_VERSION = 'cfb26-power-v3'
+export const POWER_FIT_POLICY = {
+  modelVersion: POWER_MODEL_VERSION,
+  fullWeightResults: true,
+} as const
 export const RESUME_MODEL_VERSION = 'cfb26-resume-v3'
 export const RESUME_REFERENCE_POWER = 14
 export const RESUME_DOMINANCE_WEIGHT = 0.3
@@ -158,6 +162,9 @@ function sourceSet(
 export function buildPowerRatingEdition(input: {
   /** False only when reconstructing the retired model for comparison. */
   divisionAdjustment?: boolean
+  /** Predictive fits can retain capped results at full weight despite prior surprise. */
+  fullWeightResults?: boolean
+  modelVersion?: string
   calibration?: LogisticMarginCalibration
   cutoffAt: number
   games: ReadonlyArray<PowerRatingGame>
@@ -445,7 +452,8 @@ export function buildPowerRatingEdition(input: {
           : -homeMargin + (power.get(opponentId) ?? 0) + homeAdvantage
         const residual = Math.abs(target - (power.get(team.id) ?? 0))
         const weight =
-          (game.evidenceWeight ?? 1) * (residual <= 21 ? 1 : 21 / residual)
+          (game.evidenceWeight ?? 1) *
+          (input.fullWeightResults || residual <= 21 ? 1 : 21 / residual)
         numerator += weight * target
         denominator += weight
       }
@@ -529,9 +537,10 @@ export function buildPowerRatingEdition(input: {
     cutoffAt: input.cutoffAt,
     leagueAveragePoints: round(leagueAveragePoints),
     modelVersion:
-      input.divisionAdjustment === false
+      input.modelVersion ??
+      (input.divisionAdjustment === false
         ? 'cfb26-power-v1'
-        : POWER_MODEL_VERSION,
+        : 'cfb26-power-v2'),
     ratings: [...ranked, ...ratings.filter((rating) => !rating.published)],
     season: input.season,
     week: input.week,

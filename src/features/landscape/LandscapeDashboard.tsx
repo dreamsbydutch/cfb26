@@ -1159,15 +1159,16 @@ function Methodology({
               Regulation margins cap at 35; overtime margins cap at seven.
             </li>
             <li>
-              Huber residual weights reduce the influence of extreme results.
+              Capped game margins keep full weight even when the result is a
+              surprise. Offense and defense estimates retain robust weighting.
             </li>
             <li>
               The active baseline weights current-season games equally; recency
               challengers require held-out validation.
             </li>
             <li>
-              Up to four prior seasons inform the starting estimate, with less
-              prior weight when a team moves from FCS to FBS. Missing imported
+              Up to four prior seasons inform a four-game starting weight,
+              reduced to two when a team moves from FCS to FBS. Missing imported
               seasons preserve history, with older evidence moving toward its
               subdivision average.
             </li>

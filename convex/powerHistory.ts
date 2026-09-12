@@ -5,15 +5,41 @@ export type PowerHistory = Map<
   { season: number; rating: PowerTeamRating }
 >
 
+export type PowerCarryover = {
+  transitionPriorGames: number
+  priorGames: number
+  seasonRetention: number
+}
+
+export const POWER_CARRYOVER: Readonly<PowerCarryover> = {
+  transitionPriorGames: 2,
+  priorGames: 4,
+  seasonRetention: 1,
+}
+
 /** Missing FBS-feed seasons are gaps in observation, not a reset of the program. */
 export function historicalPowerPrior(
   team: Pick<PowerRatingTeam, 'id' | 'classification'>,
   season: number,
   history: PowerHistory,
-  transitionPriorGames = 2,
+  policy: Partial<PowerCarryover> = {},
 ): NonNullable<PowerRatingTeam['prior']> {
+  // Defaults preserve the v2 reconstruction; production passes its versioned policy.
+  const {
+    transitionPriorGames = 2,
+    priorGames = 8,
+    seasonRetention = 1,
+  } = policy
   if (!Number.isFinite(transitionPriorGames) || transitionPriorGames < 0)
     throw new Error('Transition prior weight must be finite and nonnegative.')
+  if (
+    !Number.isFinite(priorGames) ||
+    priorGames < 0 ||
+    !Number.isFinite(seasonRetention) ||
+    seasonRetention < 0 ||
+    seasonRetention > 1
+  )
+    throw new Error('Invalid historical carryover policy.')
   const candidate = history.get(team.id)
   const previous =
     candidate && candidate.season < season ? candidate : undefined
@@ -33,11 +59,11 @@ export function historicalPowerPrior(
       // No FCS population has been observed at the beginning of the history
       // window. Let cross-division evidence establish it; zero is not evidence.
       effectiveGames:
-        team.classification === 'fcs' && cohort.length === 0 ? 0 : 8,
+        team.classification === 'fcs' && cohort.length === 0 ? 0 : priorGames,
       sources: ['population_prior'],
     }
   const gap = Math.max(0, season - previous.season - 1)
-  const retention = 0.5 ** gap
+  const retention = seasonRetention * 0.5 ** gap
   const power = baseline + retention * (previous.rating.power - baseline)
   const sources = ['multi_season_performance']
   const transitioning =
@@ -52,7 +78,9 @@ export function historicalPowerPrior(
     defense:
       baseline / 2 + retention * (previous.rating.defense - baseline / 2),
     specialTeams: retention * previous.rating.specialTeams,
-    effectiveGames: transitioning ? transitionPriorGames : 8,
+    effectiveGames: transitioning
+      ? Math.min(transitionPriorGames, priorGames)
+      : priorGames,
     sources,
   }
 }

@@ -1,7 +1,16 @@
-import { buildPowerRatingEdition, projectPowerMatchup } from './ratingSystem.ts'
+import {
+  POWER_FIT_POLICY,
+  POWER_MODEL_VERSION,
+  buildPowerRatingEdition,
+  projectPowerMatchup,
+} from './ratingSystem.ts'
 import { chooseChampion, evaluateForecasts } from './ratingBacktest.ts'
 import { publicationWeek } from './ratingCalendar.ts'
-import { historicalPowerPrior, rememberPowerSeason } from './powerHistory.ts'
+import {
+  POWER_CARRYOVER,
+  historicalPowerPrior,
+  rememberPowerSeason,
+} from './powerHistory.ts'
 import type { PowerHistory } from './powerHistory.ts'
 import type {
   PowerRatingGame,
@@ -19,6 +28,7 @@ export type PowerPolicy = {
   turnoverSensitive: boolean
   divisionAdjustment?: boolean
   transitionPriorGames?: number
+  fullWeightResults?: boolean
 }
 
 export const POWER_POLICIES: ReadonlyArray<PowerPolicy> = [
@@ -64,6 +74,22 @@ export const POWER_POLICIES: ReadonlyArray<PowerPolicy> = [
     halfLifeDays: 120,
     turnoverSensitive: true,
   },
+]
+
+export const PUBLISHED_POWER_POLICY: PowerPolicy = {
+  version: POWER_MODEL_VERSION,
+  historySeasons: 5,
+  ...POWER_CARRYOVER,
+  fullWeightResults: POWER_FIT_POLICY.fullWeightResults,
+  divisionAdjustment: true,
+  halfLifeDays: null,
+  turnoverSensitive: false,
+}
+
+/** Retain archived policies above; the default comparison is against the last incumbent. */
+export const POWER_EVALUATION_POLICIES: ReadonlyArray<PowerPolicy> = [
+  POWER_POLICIES[1],
+  PUBLISHED_POWER_POLICY,
 ]
 
 export type PersonnelEvidence = {
@@ -126,7 +152,7 @@ export function fitHistoricalPower(
     season <= input.season;
     season++
   ) {
-    const cacheKey = `${input.policy.version}:${input.season}:${season}`
+    const cacheKey = `${JSON.stringify(input.policy)}:${input.season}:${season}`
     const cached =
       season < input.season ? historyCache?.get(cacheKey) : undefined
     if (cached) {
@@ -191,7 +217,11 @@ export function fitHistoricalPower(
                 },
                 season,
                 history,
-                input.policy.transitionPriorGames,
+                {
+                  transitionPriorGames: input.policy.transitionPriorGames,
+                  priorGames: input.policy.priorGames * retention,
+                  seasonRetention: input.policy.seasonRetention,
+                },
               )
             : prior
               ? {
@@ -211,6 +241,8 @@ export function fitHistoricalPower(
       })
     edition = buildPowerRatingEdition({
       divisionAdjustment: input.policy.divisionAdjustment ?? false,
+      fullWeightResults: input.policy.fullWeightResults,
+      modelVersion: input.policy.version,
       teams,
       season,
       cutoffAt,
@@ -242,7 +274,8 @@ export function evaluatePowerPolicies(input: {
   onProgress?: (version: string) => void
   policies?: ReadonlyArray<PowerPolicy>
 }) {
-  const reports = (input.policies ?? POWER_POLICIES).map((policy) => {
+  const policies = input.policies ?? POWER_EVALUATION_POLICIES
+  const reports = policies.map((policy) => {
     input.onProgress?.(policy.version)
     const historyCache = new Map<
       string,
