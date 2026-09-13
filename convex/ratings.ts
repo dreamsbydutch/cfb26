@@ -23,6 +23,8 @@ import {
 } from './powerHistory'
 import { calibratePowerEdition } from './powerCalibration'
 import { POWER_RELEASE_CALIBRATION } from './powerRelease'
+import { rosterContexts, withRosterForecast } from './powerRoster'
+import { POWER_ROSTER_WEIGHT, releasedRosterFit } from './powerRosterRelease'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import schema from './schema'
 import {
@@ -1297,30 +1299,58 @@ export const buildRatingEdition = internalAction({
         for (const member of confirmedMembers.values())
           details.set(member.teamId, member)
       }
-      const teams: Array<PowerRatingTeam> = [...details].flatMap(
-        ([teamId, detail]) => {
+      const profiles = data.profiles.filter(
+        (profile) =>
+          profile.season === modelSeason &&
+          profile.sourceUpdatedAt < args.cutoffAt,
+      )
+      const contexts = rosterContexts(
+        profiles.map((profile) => ({
+          teamId: String(profile.programId),
+          talent: profile.talent ?? null,
+          recruitingPoints: profile.recruitingPoints ?? null,
+          returningUsage: profile.returningUsage ?? null,
+        })),
+        new Set(
+          [...details]
+            .filter(([, detail]) => detail.classification !== 'fcs')
+            .map(([id]) => id),
+        ),
+      )
+      const rosterFit = releasedRosterFit(modelSeason)
+      const teams: Array<PowerRatingTeam> = [...programById.keys()].flatMap(
+        (teamId) => {
+          const detail = details.get(teamId)
           const program = programById.get(teamId)
-          if (!program) return []
+          if (!program || !detail) return []
           return [
             {
               ...detail,
               id: teamId,
               name: program.name,
-              prior: withOffensiveContinuity(
-                historicalPowerPrior(
-                  { id: teamId, ...detail },
-                  modelSeason,
-                  history,
-                  POWER_CARRYOVER,
-                ),
-                offensiveReturningShare(
-                  data.profiles.find(
-                    (profile) =>
-                      String(profile.programId) === teamId &&
-                      profile.season === modelSeason &&
-                      profile.sourceUpdatedAt < args.cutoffAt,
+              prior: withRosterForecast(
+                withOffensiveContinuity(
+                  historicalPowerPrior(
+                    { id: teamId, ...detail },
+                    modelSeason,
+                    history,
+                    POWER_CARRYOVER,
+                  ),
+                  offensiveReturningShare(
+                    data.profiles.find(
+                      (profile) =>
+                        String(profile.programId) === teamId &&
+                        profile.season === modelSeason &&
+                        profile.sourceUpdatedAt < args.cutoffAt,
+                    ),
                   ),
                 ),
+                detail.classification === 'fcs'
+                  ? undefined
+                  : contexts.get(teamId),
+                rosterFit,
+                modelSeason,
+                POWER_ROSTER_WEIGHT,
               ),
             },
           ]

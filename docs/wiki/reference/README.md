@@ -13,3 +13,5 @@
 - [Rating improvement research sources](rating-improvement-sources-2026-09-12.md) — verified data options and unproven candidates for the next rating experiments.
 
 [Back to wiki home](../README.md)
+
+- [Power forecast foundation evaluation](power-foundation-2026-09-13.md) — blowout treatment, learned roster priors, and external prediction benchmarks.

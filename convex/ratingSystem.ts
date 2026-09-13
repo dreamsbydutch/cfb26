@@ -1,18 +1,21 @@
 import { calibrateMargin } from './ratingBacktest.ts'
+import { censoredMargin, marginInfluence, resultMargin } from './powerMargin.ts'
 import {
   competitiveMargin,
   efficiencyMargin,
   recordDifficulty,
 } from './gameEvidence.ts'
+import type { MarginTreatment } from './powerMargin.ts'
 import type { LogisticMarginCalibration } from './ratingBacktest.ts'
 import type { GameEvidence } from './gameEvidence.ts'
 
-export const POWER_MODEL_VERSION = 'cfb26-power-v4'
+export const POWER_MODEL_VERSION = 'cfb26-power-v5'
 export const POWER_FIT_POLICY = {
   modelVersion: POWER_MODEL_VERSION,
   fullWeightResults: true,
   fixedHomeField: 2.5,
   efficiencyWeight: 0.2,
+  marginTreatment: 'censored',
 } as const
 export const RESUME_MODEL_VERSION = 'cfb26-resume-v4'
 export const RESUME_REFERENCE_POWER = 14
@@ -177,6 +180,9 @@ export function buildPowerRatingEdition(input: {
   divisionAdjustment?: boolean
   /** Predictive fits can retain capped results at full weight despite prior surprise. */
   fullWeightResults?: boolean
+  marginTreatment?: MarginTreatment
+  marginResidualLimit?: number
+  continuousEfficiency?: boolean
   fixedHomeField?: number
   efficiencyWeight?: number
   evidenceCutoffAt?: number
@@ -188,6 +194,12 @@ export function buildPowerRatingEdition(input: {
   teams: ReadonlyArray<PowerRatingTeam>
   week: number
 }): PowerRatingEdition {
+  if (
+    input.marginResidualLimit !== undefined &&
+    (!Number.isFinite(input.marginResidualLimit) ||
+      input.marginResidualLimit <= 0)
+  )
+    throw new Error('Invalid residual limit.')
   if (
     input.fixedHomeField !== undefined &&
     (!Number.isFinite(input.fixedHomeField) ||
@@ -334,8 +346,12 @@ export function buildPowerRatingEdition(input: {
     let denominator = 0
     for (const game of crossDivision) {
       const fcsHome = teams.get(game.homeTeamId)?.classification === 'fcs'
-      const score = robustScores(game)
-      const margin = score.home - score.away
+      const margin = resultMargin(
+        game.homePoints,
+        game.awayPoints,
+        game.overtimePeriods,
+        input.marginTreatment ?? 'capped',
+      )
       const venue = game.neutralSite
         ? 0
         : (homeField.get(game.homeTeamId) ?? 2.5)
@@ -479,21 +495,57 @@ export function buildPowerRatingEdition(input: {
         (team.classification === 'fcs' ? fcsBaseline * 1.5 * fcsMultiplier : 0)
       let denominator = priorWeight + 1.5 * fcsMultiplier
       for (const game of gamesByTeam.get(team.id) ?? []) {
-        const score = robustScores(game)
-        const observedMargin = score.home - score.away
+        const observedMargin = resultMargin(
+          game.homePoints,
+          game.awayPoints,
+          game.overtimePeriods,
+          input.marginTreatment ?? 'capped',
+        )
         const efficiency =
           game.ratingEvidence &&
           game.ratingEvidence.observedAt <
             (input.evidenceCutoffAt ?? input.cutoffAt)
-            ? efficiencyMargin(game.ratingEvidence)
+            ? efficiencyMargin(game.ratingEvidence, input.continuousEfficiency)
             : undefined
         const blend =
-          efficiency === undefined ? 0 : (input.efficiencyWeight ?? 0)
-        const homeMargin =
-          (1 - blend) * observedMargin + blend * (efficiency ?? observedMargin)
+          efficiency === undefined
+            ? 0
+            : (input.efficiencyWeight ?? 0) *
+              (input.continuousEfficiency
+                ? Math.min(
+                    1,
+                    Math.min(
+                      game.ratingEvidence!.home!.plays,
+                      game.ratingEvidence!.away!.plays,
+                    ) / 60,
+                  )
+                : 1)
         const homeAdvantage = game.neutralSite
           ? 0
           : (homeField.get(game.homeTeamId) ?? 2.5)
+        const expected =
+          (power.get(game.homeTeamId) ?? 0) -
+          (power.get(game.awayTeamId) ?? 0) +
+          homeAdvantage
+        const censor =
+          input.marginTreatment === 'censored' && game.overtimePeriods === 0
+        const scoreTarget = censor
+          ? censoredMargin(
+              observedMargin,
+              game.homePoints - game.awayPoints,
+              expected,
+            )
+          : observedMargin
+        const efficiencyTarget =
+          censor && efficiency !== undefined
+            ? censoredMargin(
+                efficiency,
+                efficiencyMargin(game.ratingEvidence, true)!,
+                expected,
+              )
+            : efficiency
+        const homeMargin =
+          (1 - blend) * scoreTarget + blend * (efficiencyTarget ?? scoreTarget)
         const teamIsHome = game.homeTeamId === team.id
         const opponentId = teamIsHome ? game.awayTeamId : game.homeTeamId
         const target = teamIsHome
@@ -502,7 +554,15 @@ export function buildPowerRatingEdition(input: {
         const residual = Math.abs(target - (power.get(team.id) ?? 0))
         const weight =
           (game.evidenceWeight ?? 1) *
-          (input.fullWeightResults || residual <= 21 ? 1 : 21 / residual)
+          (input.marginTreatment === 'huber'
+            ? marginInfluence(
+                target,
+                power.get(team.id) ?? 0,
+                input.marginResidualLimit,
+              )
+            : input.fullWeightResults || residual <= 21
+              ? 1
+              : 21 / residual)
         numerator += weight * target
         denominator += weight
       }

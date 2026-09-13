@@ -4,6 +4,7 @@ import {
   historicalPowerPrior,
   POWER_CARRYOVER,
   rememberPowerSeason,
+  withOffensiveContinuity,
 } from '../convex/powerHistory.ts'
 import {
   fitHistoricalPower,
@@ -145,6 +146,15 @@ test('published and research policies reconstruct identical year-to-year ratings
     week: 2,
     cutoffAt,
     policy: PUBLISHED_POWER_POLICY,
+    personnel: field.map((team) => ({
+      teamId: team.id,
+      season: 2025,
+      returningShare: 0.1,
+      observedAt: Date.UTC(2025, 7, 1),
+      effectiveAt: Date.UTC(2025, 7, 1),
+      expiresAt: Date.UTC(2026, 2, 1),
+      source: 'verified-returning-production',
+    })),
   })
   const retained = new Map()
   let published
@@ -153,7 +163,10 @@ test('published and research policies reconstruct identical year-to-year ratings
       ...POWER_FIT_POLICY,
       teams: field.map((team) => ({
         ...team,
-        prior: historicalPowerPrior(team, year, retained, POWER_CARRYOVER),
+        prior: withOffensiveContinuity(
+          historicalPowerPrior(team, year, retained, POWER_CARRYOVER),
+          year === 2025 ? 0.1 : undefined,
+        ),
       })),
       games: games.filter((g) => g.season === year),
       season: year,

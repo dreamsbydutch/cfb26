@@ -1123,9 +1123,10 @@ function Methodology({
               Regulation margins cap at 35; overtime margins cap at seven.
             </li>
             <li>
-              Capped game margins keep full weight even when the result is a
-              surprise. Where available, competitive per-play efficiency
-              supplies 20% of the game margin signal.
+              Blowouts beyond the margin cap count as lower-bound evidence,
+              avoiding a penalty for exceeding a large expected win. Where
+              available, competitive per-play efficiency supplies 20% of the
+              game margin signal.
             </li>
             <li>
               The active baseline weights current-season games equally; recency
@@ -1134,8 +1135,9 @@ function Methodology({
             <li>
               Up to four prior seasons inform a four-game starting weight,
               reduced to two when a team moves from FCS to FBS. Missing imported
-              seasons preserve history. Verified offensive roster turnover
-              reduces confidence in that starting estimate.
+              seasons preserve history. Talent, recruiting, and returning
+              production refine the preseason forecast; offensive turnover
+              reduces its confidence.
             </li>
             <li>
               FCS opponents are estimated against the subdivision strength

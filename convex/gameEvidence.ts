@@ -106,12 +106,22 @@ export function competitiveMargin(evidence: GameEvidence | undefined) {
   )
 }
 
-export function efficiencyMargin(evidence: GameEvidence | undefined) {
+export function efficiencyMargin(
+  evidence: GameEvidence | undefined,
+  continuous = false,
+) {
   const home = evidence?.home,
     away = evidence?.away
-  if (!home || !away || home.plays < 30 || away.plays < 30) return undefined
+  if (
+    !home ||
+    !away ||
+    home.plays < (continuous ? 1 : 30) ||
+    away.plays < (continuous ? 1 : 30)
+  )
+    return undefined
   // PPA is already a down/distance/field-position measure. Equal plays remove pace.
-  return Math.max(-35, Math.min(35, 65 * (home.ppa - away.ppa)))
+  const margin = 65 * (home.ppa - away.ppa)
+  return continuous ? margin : Math.max(-35, Math.min(35, margin))
 }
 
 /** Poisson-binomial tail for a fixed contender matching or exceeding this record. */

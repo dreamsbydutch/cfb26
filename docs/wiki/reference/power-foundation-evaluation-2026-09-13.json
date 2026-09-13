@@ -1,0 +1,1437 @@
+{
+  "date": "2026-09-13",
+  "selection": {
+    "champion": "censored-roster-half-calibrated",
+    "decisions": {
+      "huber-score-calibrated": {
+        "accepted": false,
+        "reasons": [
+          "Aggregate margin MAE did not improve.",
+          "Aggregate Brier score did not improve.",
+          "Joint margin and Brier improvement did not win most seasons.",
+          "Early-season margin MAE did not improve.",
+          "Matched-market early-season model MAE did not improve."
+        ]
+      },
+      "continuous-roster-calibrated": {
+        "accepted": false,
+        "reasons": ["Early-season margin MAE did not improve."]
+      },
+      "continuous-roster-prior-6-calibrated": {
+        "accepted": false,
+        "reasons": [
+          "Joint margin and Brier improvement did not win most seasons.",
+          "Early-season margin MAE did not improve."
+        ]
+      },
+      "continuous-roster-prior-8-calibrated": {
+        "accepted": false,
+        "reasons": [
+          "Joint margin and Brier improvement did not win most seasons.",
+          "Early-season margin MAE did not improve."
+        ]
+      },
+      "roster-only-calibrated": {
+        "accepted": false,
+        "reasons": ["Held-out 2019 regressed materially."]
+      },
+      "roster-half-calibrated": {
+        "accepted": true,
+        "reasons": []
+      },
+      "censored-roster-half-calibrated": {
+        "accepted": true,
+        "reasons": []
+      },
+      "censored-only-calibrated": {
+        "accepted": false,
+        "reasons": [
+          "Joint margin and Brier improvement did not win most seasons."
+        ]
+      }
+    },
+    "inputs": [
+      {
+        "path": ".tmp/foundation-c0.json",
+        "sha256": "451e14a934004be0f398bbda8836c14e62ae92fa0f3c2e6202eee51cac310677"
+      },
+      {
+        "path": ".tmp/foundation-c1.json",
+        "sha256": "8e5ddb2a54706f6b26d6270162d37c73caf83d6a8d54c9d40dfa5c956131679f"
+      },
+      {
+        "path": ".tmp/foundation-c6.json",
+        "sha256": "a74ad7df5087c7477a597b835392ded2debf0a3f124ad3e52435b92ebcf78177"
+      },
+      {
+        "path": ".tmp/foundation-c8.json",
+        "sha256": "3cf8253f9d62a8f04f8651f072a955fa8fa69830d0186ee91abb03a7521d9d38"
+      },
+      {
+        "path": ".tmp/foundation-c9.json",
+        "sha256": "3f8e3453ec212303fbd700a7ddb80eeca165d25132d4827cd9c7dd0659fcde88"
+      },
+      {
+        "path": ".tmp/foundation-c10.json",
+        "sha256": "4f5f0c27d735d9733b651791080e96b6fc3860a044678071c5dbb6e0b12c093f"
+      },
+      {
+        "path": ".tmp/foundation-c11.json",
+        "sha256": "6788648e31f439e57484e184c8b6404dcad0afba8d0f6f612af83e93274e56ca"
+      },
+      {
+        "path": ".tmp/foundation-c12.json",
+        "sha256": "e8b3847d0fd65e66ee47996e09240f29590f69217399f6e812bc4a028c2b12f5"
+      },
+      {
+        "path": ".tmp/foundation-c13.json",
+        "sha256": "20f0ecc446d02b842fcba110e6384f896af096d7515dfd6af0b9fa7808611c8d"
+      }
+    ],
+    "sources": [
+      {
+        "file": "market-2017.json",
+        "sha256": "e16e585fe6fc3f1e7473ec5af78f8379054f8dbc9038e08703c7a73d617ab55a"
+      },
+      {
+        "file": "market-2018.json",
+        "sha256": "681843bc4bf792d9ee9e99e14eb26c3487fbc4e21d69757841fbffa11baf953e"
+      },
+      {
+        "file": "market-2019.json",
+        "sha256": "86a662cb63edeabe78bbda907f4dec0f2654f91d74be2f8917b2c23d7ad18691"
+      },
+      {
+        "file": "market-2020.json",
+        "sha256": "996b947c5fbfc022deab8e67fa794e9f9b7a97b3bed91e8f0452e4a302c521d5"
+      },
+      {
+        "file": "market-2021.json",
+        "sha256": "619f9873abb43919da02589870fae1ea57b1b7e0ce0797e768fd2edfb419cc4b"
+      },
+      {
+        "file": "market-2022.json",
+        "sha256": "ade1c005e46dd11967cbc37e59c35d874349d6dce3d0e09f85072537c6eece43"
+      },
+      {
+        "file": "market-2023.json",
+        "sha256": "bf0167afb87e012644783e75a5a192f033f44e676277a9bf0b7b3956d1e0085f"
+      },
+      {
+        "file": "market-2024.json",
+        "sha256": "5ef4cf7c91ae7900a4482bc3e69a88fcd60de5b6707fea1ca7e569207a96d9db"
+      },
+      {
+        "file": "market-2025.json",
+        "sha256": "409fade0462bf5d200306a6f4ffd45fecd22ffdb29e8df956b3ed0fd76f80256"
+      }
+    ],
+    "sourceSha256": "cdc5cbb15cb8b47de7db0592ad1f70a9e9828c66f577aaa7a7e353d0b84f86a0",
+    "reconstruction": true,
+    "benchmark": "Opening spreads, common early-season games. Quotes lack timestamps; this is not an equal-information betting test."
+  },
+  "reports": [
+    {
+      "policy": {
+        "version": "v4-incumbent",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.938195,
+        "brier": 0.165145,
+        "calibrationError": 0.012952,
+        "winnerAccuracy": 0.745499
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.560624,
+        "brier": 0.127697,
+        "calibrationError": 0.019812,
+        "winnerAccuracy": 0.813597
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.132999,
+          "brier": 0.156834,
+          "calibrationError": 0.020654,
+          "winnerAccuracy": 0.763575
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.779108,
+          "brier": 0.151563,
+          "calibrationError": 0.030867,
+          "winnerAccuracy": 0.774775
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.230607,
+          "brier": 0.177696,
+          "calibrationError": 0.030184,
+          "winnerAccuracy": 0.72807
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.378449,
+          "brier": 0.171767,
+          "calibrationError": 0.031229,
+          "winnerAccuracy": 0.735062
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.99518,
+          "brier": 0.177895,
+          "calibrationError": 0.049987,
+          "winnerAccuracy": 0.71875
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.805006,
+          "brier": 0.1602,
+          "calibrationError": 0.020645,
+          "winnerAccuracy": 0.761538
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.903937,
+          "brier": 0.170379,
+          "calibrationError": 0.04301,
+          "winnerAccuracy": 0.71926
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.417324,
+          "brier": 0.15941,
+          "calibrationError": 0.042039,
+          "winnerAccuracy": 0.756959
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "huber-score",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0,
+        "offensiveContinuity": true,
+        "marginTreatment": "huber"
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.977928,
+        "brier": 0.165226,
+        "calibrationError": 0.011715,
+        "winnerAccuracy": 0.747096
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.600748,
+        "brier": 0.127435,
+        "calibrationError": 0.021705,
+        "winnerAccuracy": 0.813147
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.080855,
+          "brier": 0.156046,
+          "calibrationError": 0.02149,
+          "winnerAccuracy": 0.765837
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.881241,
+          "brier": 0.151839,
+          "calibrationError": 0.040059,
+          "winnerAccuracy": 0.778153
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.327017,
+          "brier": 0.178508,
+          "calibrationError": 0.022442,
+          "winnerAccuracy": 0.733333
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.479421,
+          "brier": 0.171203,
+          "calibrationError": 0.030648,
+          "winnerAccuracy": 0.739572
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 13.080778,
+          "brier": 0.178733,
+          "calibrationError": 0.045661,
+          "winnerAccuracy": 0.716518
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.838106,
+          "brier": 0.16027,
+          "calibrationError": 0.029506,
+          "winnerAccuracy": 0.765934
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.876406,
+          "brier": 0.170602,
+          "calibrationError": 0.039249,
+          "winnerAccuracy": 0.720348
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.420591,
+          "brier": 0.159439,
+          "calibrationError": 0.031062,
+          "winnerAccuracy": 0.752677
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "continuous-roster",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "marginTreatment": "huber",
+        "marginResidualLimit": 35,
+        "continuousEfficiency": true,
+        "rosterWeight": 1
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.918657,
+        "brier": 0.163682,
+        "calibrationError": 0.01068,
+        "winnerAccuracy": 0.75421
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.686799,
+        "brier": 0.126634,
+        "calibrationError": 0.023879,
+        "winnerAccuracy": 0.822152
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.057919,
+          "brier": 0.15662,
+          "calibrationError": 0.024228,
+          "winnerAccuracy": 0.7681
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.898872,
+          "brier": 0.148747,
+          "calibrationError": 0.040843,
+          "winnerAccuracy": 0.777027
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.228598,
+          "brier": 0.173618,
+          "calibrationError": 0.023193,
+          "winnerAccuracy": 0.742105
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.462169,
+          "brier": 0.172927,
+          "calibrationError": 0.036533,
+          "winnerAccuracy": 0.733935
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.976336,
+          "brier": 0.173651,
+          "calibrationError": 0.030156,
+          "winnerAccuracy": 0.741071
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.775597,
+          "brier": 0.159357,
+          "calibrationError": 0.024891,
+          "winnerAccuracy": 0.761538
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.711866,
+          "brier": 0.169036,
+          "calibrationError": 0.031748,
+          "winnerAccuracy": 0.742111
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.387871,
+          "brier": 0.159105,
+          "calibrationError": 0.027436,
+          "winnerAccuracy": 0.763383
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "continuous-roster-prior-6",
+        "historySeasons": 5,
+        "priorGames": 6,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "marginTreatment": "huber",
+        "marginResidualLimit": 35,
+        "continuousEfficiency": true,
+        "rosterWeight": 1
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.903857,
+        "brier": 0.163615,
+        "calibrationError": 0.011997,
+        "winnerAccuracy": 0.751742
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.607751,
+        "brier": 0.126072,
+        "calibrationError": 0.022589,
+        "winnerAccuracy": 0.823053
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.022662,
+          "brier": 0.15547,
+          "calibrationError": 0.017972,
+          "winnerAccuracy": 0.769231
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.901881,
+          "brier": 0.148457,
+          "calibrationError": 0.039299,
+          "winnerAccuracy": 0.775901
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.278854,
+          "brier": 0.173524,
+          "calibrationError": 0.019407,
+          "winnerAccuracy": 0.72807
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.492648,
+          "brier": 0.173359,
+          "calibrationError": 0.037736,
+          "winnerAccuracy": 0.733935
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.957164,
+          "brier": 0.17353,
+          "calibrationError": 0.030616,
+          "winnerAccuracy": 0.736607
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.681411,
+          "brier": 0.158677,
+          "calibrationError": 0.021221,
+          "winnerAccuracy": 0.763736
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.693995,
+          "brier": 0.16935,
+          "calibrationError": 0.02996,
+          "winnerAccuracy": 0.743199
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.377359,
+          "brier": 0.160093,
+          "calibrationError": 0.024477,
+          "winnerAccuracy": 0.754818
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "continuous-roster-prior-8",
+        "historySeasons": 5,
+        "priorGames": 8,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "marginTreatment": "huber",
+        "marginResidualLimit": 35,
+        "continuousEfficiency": true,
+        "rosterWeight": 1
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.928165,
+        "brier": 0.164102,
+        "calibrationError": 0.012434,
+        "winnerAccuracy": 0.750436
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.603467,
+        "brier": 0.126262,
+        "calibrationError": 0.024871,
+        "winnerAccuracy": 0.821252
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.034282,
+          "brier": 0.155132,
+          "calibrationError": 0.020703,
+          "winnerAccuracy": 0.765837
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.940641,
+          "brier": 0.148622,
+          "calibrationError": 0.042232,
+          "winnerAccuracy": 0.773649
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.35746,
+          "brier": 0.174305,
+          "calibrationError": 0.030238,
+          "winnerAccuracy": 0.735088
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.547096,
+          "brier": 0.17437,
+          "calibrationError": 0.032207,
+          "winnerAccuracy": 0.735062
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.97623,
+          "brier": 0.173759,
+          "calibrationError": 0.032488,
+          "winnerAccuracy": 0.734375
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.629381,
+          "brier": 0.158574,
+          "calibrationError": 0.020152,
+          "winnerAccuracy": 0.762637
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.706881,
+          "brier": 0.170129,
+          "calibrationError": 0.031291,
+          "winnerAccuracy": 0.741023
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.428822,
+          "brier": 0.161527,
+          "calibrationError": 0.029393,
+          "winnerAccuracy": 0.750535
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "roster-only",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "rosterWeight": 1
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.875399,
+        "brier": 0.163816,
+        "calibrationError": 0.010344,
+        "winnerAccuracy": 0.753339
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.529364,
+        "brier": 0.126664,
+        "calibrationError": 0.024274,
+        "winnerAccuracy": 0.819901
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.095465,
+          "brier": 0.156921,
+          "calibrationError": 0.026146,
+          "winnerAccuracy": 0.75905
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.771191,
+          "brier": 0.148536,
+          "calibrationError": 0.047057,
+          "winnerAccuracy": 0.783784
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.190693,
+          "brier": 0.174643,
+          "calibrationError": 0.022816,
+          "winnerAccuracy": 0.735088
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.419451,
+          "brier": 0.173493,
+          "calibrationError": 0.037251,
+          "winnerAccuracy": 0.738444
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.895658,
+          "brier": 0.173652,
+          "calibrationError": 0.028718,
+          "winnerAccuracy": 0.741071
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.678591,
+          "brier": 0.158312,
+          "calibrationError": 0.019518,
+          "winnerAccuracy": 0.763736
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.738342,
+          "brier": 0.168917,
+          "calibrationError": 0.032039,
+          "winnerAccuracy": 0.741023
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.364269,
+          "brier": 0.159981,
+          "calibrationError": 0.023685,
+          "winnerAccuracy": 0.75803
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "roster-half",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "rosterWeight": 0.5
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.850063,
+        "brier": 0.163707,
+        "calibrationError": 0.010491,
+        "winnerAccuracy": 0.74971
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.435318,
+        "brier": 0.125833,
+        "calibrationError": 0.02366,
+        "winnerAccuracy": 0.81855
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.06409,
+          "brier": 0.156068,
+          "calibrationError": 0.024104,
+          "winnerAccuracy": 0.762443
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.711157,
+          "brier": 0.149284,
+          "calibrationError": 0.0385,
+          "winnerAccuracy": 0.778153
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.152618,
+          "brier": 0.174868,
+          "calibrationError": 0.023558,
+          "winnerAccuracy": 0.733333
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.337732,
+          "brier": 0.172001,
+          "calibrationError": 0.036108,
+          "winnerAccuracy": 0.735062
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.879825,
+          "brier": 0.175052,
+          "calibrationError": 0.026443,
+          "winnerAccuracy": 0.733259
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.687474,
+          "brier": 0.158394,
+          "calibrationError": 0.016734,
+          "winnerAccuracy": 0.759341
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.766303,
+          "brier": 0.169,
+          "calibrationError": 0.034749,
+          "winnerAccuracy": 0.732318
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.344059,
+          "brier": 0.159044,
+          "calibrationError": 0.029494,
+          "winnerAccuracy": 0.75803
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "censored-roster-half",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "rosterWeight": 0.5,
+        "marginTreatment": "censored"
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.844823,
+        "brier": 0.16368,
+        "calibrationError": 0.011405,
+        "winnerAccuracy": 0.749129
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.433302,
+        "brier": 0.125794,
+        "calibrationError": 0.021868,
+        "winnerAccuracy": 0.81765
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.063052,
+          "brier": 0.15618,
+          "calibrationError": 0.022368,
+          "winnerAccuracy": 0.762443
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.706601,
+          "brier": 0.149174,
+          "calibrationError": 0.037226,
+          "winnerAccuracy": 0.777027
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.144645,
+          "brier": 0.174888,
+          "calibrationError": 0.029415,
+          "winnerAccuracy": 0.731579
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.338471,
+          "brier": 0.171902,
+          "calibrationError": 0.040259,
+          "winnerAccuracy": 0.732807
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.881188,
+          "brier": 0.175134,
+          "calibrationError": 0.031559,
+          "winnerAccuracy": 0.733259
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.686249,
+          "brier": 0.158468,
+          "calibrationError": 0.017009,
+          "winnerAccuracy": 0.758242
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.768864,
+          "brier": 0.168922,
+          "calibrationError": 0.033853,
+          "winnerAccuracy": 0.735582
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.312261,
+          "brier": 0.158853,
+          "calibrationError": 0.031532,
+          "winnerAccuracy": 0.755889
+        }
+      ]
+    },
+    {
+      "policy": {
+        "version": "censored-only",
+        "historySeasons": 5,
+        "priorGames": 4,
+        "transitionPriorGames": 2,
+        "seasonRetention": 1,
+        "fullWeightResults": true,
+        "divisionAdjustment": true,
+        "halfLifeDays": null,
+        "turnoverSensitive": false,
+        "fixedHomeField": 2.5,
+        "efficiencyWeight": 0.2,
+        "offensiveContinuity": true,
+        "marginTreatment": "censored"
+      },
+      "overall": {
+        "count": 6888,
+        "marginMae": 12.932213,
+        "brier": 0.165102,
+        "calibrationError": 0.014246,
+        "winnerAccuracy": 0.744919
+      },
+      "early": {
+        "count": 2221,
+        "marginMae": 13.555168,
+        "brier": 0.127666,
+        "calibrationError": 0.019904,
+        "winnerAccuracy": 0.813597
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "count": 884,
+          "marginMae": 13.131408,
+          "brier": 0.156964,
+          "calibrationError": 0.021141,
+          "winnerAccuracy": 0.762443
+        },
+        {
+          "season": 2019,
+          "count": 888,
+          "marginMae": 12.773668,
+          "brier": 0.151492,
+          "calibrationError": 0.028049,
+          "winnerAccuracy": 0.774775
+        },
+        {
+          "season": 2020,
+          "count": 570,
+          "marginMae": 13.217559,
+          "brier": 0.177655,
+          "calibrationError": 0.0307,
+          "winnerAccuracy": 0.72807
+        },
+        {
+          "season": 2021,
+          "count": 887,
+          "marginMae": 13.37793,
+          "brier": 0.171594,
+          "calibrationError": 0.032936,
+          "winnerAccuracy": 0.735062
+        },
+        {
+          "season": 2022,
+          "count": 896,
+          "marginMae": 12.997277,
+          "brier": 0.178011,
+          "calibrationError": 0.048655,
+          "winnerAccuracy": 0.71875
+        },
+        {
+          "season": 2023,
+          "count": 910,
+          "marginMae": 12.797928,
+          "brier": 0.160216,
+          "calibrationError": 0.018647,
+          "winnerAccuracy": 0.761538
+        },
+        {
+          "season": 2024,
+          "count": 919,
+          "marginMae": 12.905341,
+          "brier": 0.170276,
+          "calibrationError": 0.042882,
+          "winnerAccuracy": 0.71926
+        },
+        {
+          "season": 2025,
+          "count": 934,
+          "marginMae": 12.391845,
+          "brier": 0.159201,
+          "calibrationError": 0.044162,
+          "winnerAccuracy": 0.753747
+        }
+      ]
+    }
+  ],
+  "benchmarks": [
+    {
+      "source": "CFBD historical market quotes",
+      "timing": "Opening and archived spreads have no exact quote timestamps. Model forecasts freeze before the weekly slate; archived market quotes can have later information. This is a retrospective matched-game benchmark, not an equal-information betting test.",
+      "sources": [
+        {
+          "file": "market-2017.json",
+          "sha256": "e16e585fe6fc3f1e7473ec5af78f8379054f8dbc9038e08703c7a73d617ab55a",
+          "observedAt": 1789323428109
+        },
+        {
+          "file": "market-2018.json",
+          "sha256": "681843bc4bf792d9ee9e99e14eb26c3487fbc4e21d69757841fbffa11baf953e",
+          "observedAt": 1789323429692
+        },
+        {
+          "file": "market-2019.json",
+          "sha256": "86a662cb63edeabe78bbda907f4dec0f2654f91d74be2f8917b2c23d7ad18691",
+          "observedAt": 1789323430403
+        },
+        {
+          "file": "market-2020.json",
+          "sha256": "996b947c5fbfc022deab8e67fa794e9f9b7a97b3bed91e8f0452e4a302c521d5",
+          "observedAt": 1789323431369
+        },
+        {
+          "file": "market-2021.json",
+          "sha256": "619f9873abb43919da02589870fae1ea57b1b7e0ce0797e768fd2edfb419cc4b",
+          "observedAt": 1789323432002
+        },
+        {
+          "file": "market-2022.json",
+          "sha256": "ade1c005e46dd11967cbc37e59c35d874349d6dce3d0e09f85072537c6eece43",
+          "observedAt": 1789323433552
+        },
+        {
+          "file": "market-2023.json",
+          "sha256": "bf0167afb87e012644783e75a5a192f033f44e676277a9bf0b7b3956d1e0085f",
+          "observedAt": 1789323435677
+        },
+        {
+          "file": "market-2024.json",
+          "sha256": "5ef4cf7c91ae7900a4482bc3e69a88fcd60de5b6707fea1ca7e569207a96d9db",
+          "observedAt": 1789323437347
+        },
+        {
+          "file": "market-2025.json",
+          "sha256": "409fade0462bf5d200306a6f4ffd45fecd22ffdb29e8df956b3ed0fd76f80256",
+          "observedAt": 1789323438866
+        }
+      ],
+      "models": [
+        {
+          "modelVersion": "v4-incumbent-calibrated",
+          "opening": {
+            "available": 6888,
+            "matched": 4340,
+            "missing": 2548,
+            "overall": {
+              "count": 4340,
+              "modelMae": 12.871249125230603,
+              "marketMae": 12.264804147465437,
+              "modelWinAccuracy": 0.7278801843317972,
+              "marketWinAccuracy": 0.7398617511520738,
+              "meanPairedErrorDifference": 0.6064449777651638
+            },
+            "early": {
+              "count": 1392,
+              "modelMae": 13.670498597068661,
+              "marketMae": 12.341774425287356,
+              "modelWinAccuracy": 0.7938218390804598,
+              "marketWinAccuracy": 0.8038793103448276,
+              "meanPairedErrorDifference": 1.328724171781327
+            },
+            "bySeason": {
+              "2021": {
+                "count": 303,
+                "modelMae": 13.913923355437076,
+                "marketMae": 12.818481848184819,
+                "modelWinAccuracy": 0.8118811881188119,
+                "marketWinAccuracy": 0.7854785478547854,
+                "meanPairedErrorDifference": 1.0954415072522665
+              },
+              "2022": {
+                "count": 258,
+                "modelMae": 14.00902319832409,
+                "marketMae": 12.174418604651162,
+                "modelWinAccuracy": 0.7596899224806202,
+                "marketWinAccuracy": 0.8023255813953488,
+                "meanPairedErrorDifference": 1.8346045936729316
+              },
+              "2023": {
+                "count": 273,
+                "modelMae": 12.905440869219204,
+                "marketMae": 11.478021978021978,
+                "modelWinAccuracy": 0.8058608058608059,
+                "marketWinAccuracy": 0.8205128205128205,
+                "meanPairedErrorDifference": 1.4274188911972314
+              },
+              "2024": {
+                "count": 247,
+                "modelMae": 14.368550827758412,
+                "marketMae": 12.88663967611336,
+                "modelWinAccuracy": 0.7368421052631579,
+                "marketWinAccuracy": 0.7732793522267206,
+                "meanPairedErrorDifference": 1.4819111516450527
+              },
+              "2025": {
+                "count": 311,
+                "modelMae": 13.269678049843678,
+                "marketMae": 12.341639871382636,
+                "modelWinAccuracy": 0.8392282958199357,
+                "marketWinAccuracy": 0.8327974276527331,
+                "meanPairedErrorDifference": 0.9280381784610349
+              }
+            }
+          },
+          "archived": {
+            "available": 6888,
+            "matched": 6841,
+            "missing": 47,
+            "overall": {
+              "count": 6841,
+              "modelMae": 12.943085249749597,
+              "marketMae": 12.216415728694635,
+              "modelWinAccuracy": 0.7438970910685573,
+              "marketWinAccuracy": 0.7566145300394679,
+              "meanPairedErrorDifference": 0.7266695210549251
+            },
+            "early": {
+              "count": 2183,
+              "modelMae": 13.56736900897779,
+              "marketMae": 12.2997022446175,
+              "modelWinAccuracy": 0.8112688960146587,
+              "marketWinAccuracy": 0.8222629409070087,
+              "meanPairedErrorDifference": 1.2676667643602888
+            },
+            "bySeason": {
+              "2018": {
+                "count": 279,
+                "modelMae": 13.50981054283272,
+                "marketMae": 12.763440860215054,
+                "modelWinAccuracy": 0.8064516129032258,
+                "marketWinAccuracy": 0.8028673835125448,
+                "meanPairedErrorDifference": 0.7463696826176577
+              },
+              "2019": {
+                "count": 282,
+                "modelMae": 12.905224805638547,
+                "marketMae": 11.46808510638298,
+                "modelWinAccuracy": 0.8439716312056738,
+                "marketWinAccuracy": 0.8546099290780141,
+                "meanPairedErrorDifference": 1.4371396992555703
+              },
+              "2020": {
+                "count": 79,
+                "modelMae": 14.080731357275972,
+                "marketMae": 13.94620253164557,
+                "modelWinAccuracy": 0.7468354430379747,
+                "marketWinAccuracy": 0.7974683544303798,
+                "meanPairedErrorDifference": 0.13452882563040014
+              },
+              "2021": {
+                "count": 311,
+                "modelMae": 13.880723254075164,
+                "marketMae": 12.787781350482316,
+                "modelWinAccuracy": 0.8167202572347267,
+                "marketWinAccuracy": 0.797427652733119,
+                "meanPairedErrorDifference": 1.0929419035928554
+              },
+              "2022": {
+                "count": 311,
+                "modelMae": 14.218384259112742,
+                "marketMae": 12.433279742765274,
+                "modelWinAccuracy": 0.7845659163987139,
+                "marketWinAccuracy": 0.819935691318328,
+                "meanPairedErrorDifference": 1.7851045163474681
+              },
+              "2023": {
+                "count": 320,
+                "modelMae": 12.74317236061455,
+                "marketMae": 11.315625,
+                "modelWinAccuracy": 0.828125,
+                "marketWinAccuracy": 0.846875,
+                "meanPairedErrorDifference": 1.427547360614553
+              },
+              "2024": {
+                "count": 290,
+                "modelMae": 14.321278507702855,
+                "marketMae": 12.647413793103448,
+                "modelWinAccuracy": 0.7758620689655172,
+                "marketWinAccuracy": 0.803448275862069,
+                "meanPairedErrorDifference": 1.6738647145993992
+              },
+              "2025": {
+                "count": 311,
+                "modelMae": 13.269678049843678,
+                "marketMae": 12.286173633440514,
+                "modelWinAccuracy": 0.8392282958199357,
+                "marketWinAccuracy": 0.8360128617363344,
+                "meanPairedErrorDifference": 0.9835044164031567
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "source": "CFBD historical market quotes",
+      "timing": "Opening and archived spreads have no exact quote timestamps. Model forecasts freeze before the weekly slate; archived market quotes can have later information. This is a retrospective matched-game benchmark, not an equal-information betting test.",
+      "sources": [
+        {
+          "file": "market-2017.json",
+          "sha256": "e16e585fe6fc3f1e7473ec5af78f8379054f8dbc9038e08703c7a73d617ab55a",
+          "observedAt": 1789323428109
+        },
+        {
+          "file": "market-2018.json",
+          "sha256": "681843bc4bf792d9ee9e99e14eb26c3487fbc4e21d69757841fbffa11baf953e",
+          "observedAt": 1789323429692
+        },
+        {
+          "file": "market-2019.json",
+          "sha256": "86a662cb63edeabe78bbda907f4dec0f2654f91d74be2f8917b2c23d7ad18691",
+          "observedAt": 1789323430403
+        },
+        {
+          "file": "market-2020.json",
+          "sha256": "996b947c5fbfc022deab8e67fa794e9f9b7a97b3bed91e8f0452e4a302c521d5",
+          "observedAt": 1789323431369
+        },
+        {
+          "file": "market-2021.json",
+          "sha256": "619f9873abb43919da02589870fae1ea57b1b7e0ce0797e768fd2edfb419cc4b",
+          "observedAt": 1789323432002
+        },
+        {
+          "file": "market-2022.json",
+          "sha256": "ade1c005e46dd11967cbc37e59c35d874349d6dce3d0e09f85072537c6eece43",
+          "observedAt": 1789323433552
+        },
+        {
+          "file": "market-2023.json",
+          "sha256": "bf0167afb87e012644783e75a5a192f033f44e676277a9bf0b7b3956d1e0085f",
+          "observedAt": 1789323435677
+        },
+        {
+          "file": "market-2024.json",
+          "sha256": "5ef4cf7c91ae7900a4482bc3e69a88fcd60de5b6707fea1ca7e569207a96d9db",
+          "observedAt": 1789323437347
+        },
+        {
+          "file": "market-2025.json",
+          "sha256": "409fade0462bf5d200306a6f4ffd45fecd22ffdb29e8df956b3ed0fd76f80256",
+          "observedAt": 1789323438866
+        }
+      ],
+      "models": [
+        {
+          "modelVersion": "censored-roster-half-calibrated",
+          "opening": {
+            "available": 6888,
+            "matched": 4340,
+            "missing": 2548,
+            "overall": {
+              "count": 4340,
+              "modelMae": 12.773439839914419,
+              "marketMae": 12.264804147465437,
+              "modelWinAccuracy": 0.7322580645161291,
+              "marketWinAccuracy": 0.7398617511520738,
+              "meanPairedErrorDifference": 0.5086356924489677
+            },
+            "early": {
+              "count": 1392,
+              "modelMae": 13.48613979037664,
+              "marketMae": 12.341774425287356,
+              "modelWinAccuracy": 0.7988505747126436,
+              "marketWinAccuracy": 0.8038793103448276,
+              "meanPairedErrorDifference": 1.1443653650893104
+            },
+            "bySeason": {
+              "2021": {
+                "count": 303,
+                "modelMae": 13.74915045082028,
+                "marketMae": 12.818481848184819,
+                "modelWinAccuracy": 0.8118811881188119,
+                "marketWinAccuracy": 0.7854785478547854,
+                "meanPairedErrorDifference": 0.9306686026354627
+              },
+              "2022": {
+                "count": 258,
+                "modelMae": 13.866833855126842,
+                "marketMae": 12.174418604651162,
+                "modelWinAccuracy": 0.7790697674418605,
+                "marketWinAccuracy": 0.8023255813953488,
+                "meanPairedErrorDifference": 1.6924152504756798
+              },
+              "2023": {
+                "count": 273,
+                "modelMae": 12.677253392018272,
+                "marketMae": 11.478021978021978,
+                "modelWinAccuracy": 0.8021978021978022,
+                "marketWinAccuracy": 0.8205128205128205,
+                "meanPairedErrorDifference": 1.1992314139963025
+              },
+              "2024": {
+                "count": 247,
+                "modelMae": 14.181977558402618,
+                "marketMae": 12.88663967611336,
+                "modelWinAccuracy": 0.7530364372469636,
+                "marketWinAccuracy": 0.7732793522267206,
+                "meanPairedErrorDifference": 1.295337882289262
+              },
+              "2025": {
+                "count": 311,
+                "modelMae": 13.071486283075924,
+                "marketMae": 12.341639871382636,
+                "modelWinAccuracy": 0.8360128617363344,
+                "marketWinAccuracy": 0.8327974276527331,
+                "meanPairedErrorDifference": 0.7298464116932823
+              }
+            }
+          },
+          "archived": {
+            "available": 6888,
+            "matched": 6841,
+            "missing": 47,
+            "overall": {
+              "count": 6841,
+              "modelMae": 12.848138620109113,
+              "marketMae": 12.216415728694635,
+              "modelWinAccuracy": 0.7471129951761438,
+              "marketWinAccuracy": 0.7566145300394679,
+              "meanPairedErrorDifference": 0.6317228914144615
+            },
+            "early": {
+              "count": 2183,
+              "modelMae": 13.43736377433697,
+              "marketMae": 12.2997022446175,
+              "modelWinAccuracy": 0.8144754924415941,
+              "marketWinAccuracy": 0.8222629409070087,
+              "meanPairedErrorDifference": 1.1376615297194852
+            },
+            "bySeason": {
+              "2018": {
+                "count": 279,
+                "modelMae": 13.423204952318445,
+                "marketMae": 12.763440860215054,
+                "modelWinAccuracy": 0.8064516129032258,
+                "marketWinAccuracy": 0.8028673835125448,
+                "meanPairedErrorDifference": 0.6597640921033951
+              },
+              "2019": {
+                "count": 282,
+                "modelMae": 13.04387985825136,
+                "marketMae": 11.46808510638298,
+                "modelWinAccuracy": 0.8404255319148937,
+                "marketWinAccuracy": 0.8546099290780141,
+                "meanPairedErrorDifference": 1.5757947518683852
+              },
+              "2020": {
+                "count": 79,
+                "modelMae": 14.15692485063673,
+                "marketMae": 13.94620253164557,
+                "modelWinAccuracy": 0.759493670886076,
+                "marketWinAccuracy": 0.7974683544303798,
+                "meanPairedErrorDifference": 0.2107223189911552
+              },
+              "2021": {
+                "count": 311,
+                "modelMae": 13.740446569067837,
+                "marketMae": 12.787781350482316,
+                "modelWinAccuracy": 0.8167202572347267,
+                "marketWinAccuracy": 0.797427652733119,
+                "meanPairedErrorDifference": 0.9526652185855182
+              },
+              "2022": {
+                "count": 311,
+                "modelMae": 14.06271612784531,
+                "marketMae": 12.433279742765274,
+                "modelWinAccuracy": 0.8006430868167203,
+                "marketWinAccuracy": 0.819935691318328,
+                "meanPairedErrorDifference": 1.6294363850800424
+              },
+              "2023": {
+                "count": 320,
+                "modelMae": 12.531946653569053,
+                "marketMae": 11.315625,
+                "modelWinAccuracy": 0.825,
+                "marketWinAccuracy": 0.846875,
+                "meanPairedErrorDifference": 1.2163216535690595
+              },
+              "2024": {
+                "count": 290,
+                "modelMae": 14.03338273287898,
+                "marketMae": 12.647413793103448,
+                "modelWinAccuracy": 0.7896551724137931,
+                "marketWinAccuracy": 0.803448275862069,
+                "meanPairedErrorDifference": 1.385968939775544
+              },
+              "2025": {
+                "count": 311,
+                "modelMae": 13.071486283075924,
+                "marketMae": 12.286173633440514,
+                "modelWinAccuracy": 0.8360128617363344,
+                "marketWinAccuracy": 0.8360128617363344,
+                "meanPairedErrorDifference": 0.7853126496354049
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Reconstructed source vintages; historical roster availability is assumed, not archived.",
+    "Policies were iterated on these same folds; not an untouched final holdout.",
+    "Opening and archived market quotes have no precise quote timestamps.",
+    "Earlier preliminary runs with the personnel-expiry mismatch are superseded."
+  ]
+}

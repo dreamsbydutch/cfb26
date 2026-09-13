@@ -12,6 +12,8 @@ import {
   rememberPowerSeason,
   withOffensiveContinuity,
 } from './powerHistory.ts'
+import { withRosterForecast } from './powerRoster.ts'
+import { POWER_ROSTER_WEIGHT } from './powerRosterRelease.ts'
 import type { PowerHistory } from './powerHistory.ts'
 import type {
   PowerRatingGame,
@@ -19,6 +21,8 @@ import type {
   PowerTeamRating,
 } from './ratingSystem.ts'
 import type { BacktestForecast } from './ratingBacktest.ts'
+import type { MarginTreatment } from './powerMargin.ts'
+import type { RosterContext, RosterFit } from './powerRoster.ts'
 
 export type PowerPolicy = {
   version: string
@@ -33,6 +37,10 @@ export type PowerPolicy = {
   fixedHomeField?: number
   efficiencyWeight?: number
   offensiveContinuity?: boolean
+  marginTreatment?: MarginTreatment
+  rosterWeight?: number
+  marginResidualLimit?: number
+  continuousEfficiency?: boolean
 }
 
 export const POWER_POLICIES: ReadonlyArray<PowerPolicy> = [
@@ -87,6 +95,8 @@ export const PUBLISHED_POWER_POLICY: PowerPolicy = {
   fullWeightResults: POWER_FIT_POLICY.fullWeightResults,
   fixedHomeField: POWER_FIT_POLICY.fixedHomeField,
   efficiencyWeight: POWER_FIT_POLICY.efficiencyWeight,
+  marginTreatment: POWER_FIT_POLICY.marginTreatment,
+  rosterWeight: POWER_ROSTER_WEIGHT,
   offensiveContinuity: true,
   divisionAdjustment: true,
   halfLifeDays: null,
@@ -131,6 +141,8 @@ export function fitHistoricalPower(
     policy: PowerPolicy
     personnel?: ReadonlyArray<PersonnelEvidence>
     reconstructEvidence?: boolean
+    rosterFits?: ReadonlyMap<number, RosterFit>
+    rosterContexts?: ReadonlyMap<string, RosterContext>
   },
   historyCache?: Map<string, ReturnType<typeof buildPowerRatingEdition>>,
 ) {
@@ -200,6 +212,18 @@ export function fitHistoricalPower(
         game.completed &&
         game.kickoffAt + 6 * 3_600_000 < cutoffAt,
     )
+    // Historical fits end at an administrative March cutoff. Personnel was
+    // relevant when those games were played, even if its validity ended later.
+    const personnelAt =
+      season === input.season
+        ? cutoffAt
+        : Math.min(
+            cutoffAt,
+            Math.max(
+              Date.UTC(season, 7, 1),
+              ...games.map((game) => game.kickoffAt + 6 * 3_600_000),
+            ),
+          )
     const teams = input.teams
       .filter(
         (team) => participantIds.size === 0 || participantIds.has(team.id),
@@ -211,9 +235,9 @@ export function fitHistoricalPower(
             (row) =>
               row.teamId === team.id &&
               row.season === season &&
-              row.observedAt < cutoffAt &&
-              row.effectiveAt <= cutoffAt &&
-              row.expiresAt > cutoffAt,
+              row.observedAt < personnelAt &&
+              row.effectiveAt <= personnelAt &&
+              row.expiresAt > personnelAt,
           )
           .sort((a, b) => b.observedAt - a.observedAt)[0]
         const retention =
@@ -227,24 +251,34 @@ export function fitHistoricalPower(
           ...team,
           classification: classifications.get(team.id) ?? team.classification,
           prior: input.policy.divisionAdjustment
-            ? withOffensiveContinuity(
-                historicalPowerPrior(
-                  {
-                    ...team,
-                    classification:
-                      classifications.get(team.id) ?? team.classification,
-                  },
-                  season,
-                  history,
-                  {
-                    transitionPriorGames: input.policy.transitionPriorGames,
-                    priorGames: input.policy.priorGames * retention,
-                    seasonRetention: input.policy.seasonRetention,
-                  },
+            ? withRosterForecast(
+                withOffensiveContinuity(
+                  historicalPowerPrior(
+                    {
+                      ...team,
+                      classification:
+                        classifications.get(team.id) ?? team.classification,
+                    },
+                    season,
+                    history,
+                    {
+                      transitionPriorGames: input.policy.transitionPriorGames,
+                      priorGames: input.policy.priorGames * retention,
+                      seasonRetention: input.policy.seasonRetention,
+                    },
+                  ),
+                  input.policy.offensiveContinuity
+                    ? personnel?.returningShare
+                    : undefined,
                 ),
-                input.policy.offensiveContinuity
-                  ? personnel?.returningShare
+                (classifications.get(team.id) ?? team.classification) === 'fcs'
+                  ? undefined
+                  : input.rosterContexts?.get(`${season}:${team.id}`),
+                input.policy.rosterWeight
+                  ? input.rosterFits?.get(season)
                   : undefined,
+                season,
+                input.policy.rosterWeight,
               )
             : prior
               ? {
@@ -265,6 +299,9 @@ export function fitHistoricalPower(
     edition = buildPowerRatingEdition({
       divisionAdjustment: input.policy.divisionAdjustment ?? false,
       fullWeightResults: input.policy.fullWeightResults,
+      marginTreatment: input.policy.marginTreatment,
+      marginResidualLimit: input.policy.marginResidualLimit,
+      continuousEfficiency: input.policy.continuousEfficiency,
       fixedHomeField: input.policy.fixedHomeField,
       efficiencyWeight: input.policy.efficiencyWeight,
       modelVersion: input.policy.version,
@@ -307,6 +344,8 @@ export function evaluatePowerPolicies(input: {
   policies?: ReadonlyArray<PowerPolicy>
   personnel?: ReadonlyArray<PersonnelEvidence>
   reconstructEvidence?: boolean
+  rosterFits?: ReadonlyMap<number, RosterFit>
+  rosterContexts?: ReadonlyMap<string, RosterContext>
 }) {
   const policies = input.policies ?? POWER_EVALUATION_POLICIES
   const reports = policies.map((policy) => {
