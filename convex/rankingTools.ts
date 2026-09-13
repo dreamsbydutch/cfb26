@@ -1,5 +1,31 @@
 export type Quadrant = 'Q1' | 'Q2' | 'Q3' | 'Q4'
 
+export type RecordLine = {
+  losses: number
+  ties: number
+  wins: number
+}
+
+export type TeamRecordSummary = RecordLine & {
+  quadrants: Record<Quadrant, RecordLine>
+}
+
+function emptyRecordLine(): RecordLine {
+  return { losses: 0, ties: 0, wins: 0 }
+}
+
+function emptyTeamRecord(): TeamRecordSummary {
+  return {
+    ...emptyRecordLine(),
+    quadrants: {
+      Q1: emptyRecordLine(),
+      Q2: emptyRecordLine(),
+      Q3: emptyRecordLine(),
+      Q4: emptyRecordLine(),
+    },
+  }
+}
+
 export function classifyQuadrant(powerRank: number | null): Quadrant | null {
   if (powerRank === null) return null
   if (!Number.isInteger(powerRank) || powerRank < 1) {
@@ -9,6 +35,43 @@ export function classifyQuadrant(powerRank: number | null): Quadrant | null {
   if (powerRank <= 70) return 'Q2'
   if (powerRank <= 105) return 'Q3'
   return 'Q4'
+}
+
+export function summarizeTeamRecords(input: {
+  games: ReadonlyArray<{
+    awayPoints: number
+    awayTeamId: string
+    homePoints: number
+    homeTeamId: string
+  }>
+  powerRanks: ReadonlyMap<string, number | null>
+  teamIds: ReadonlyArray<string>
+}) {
+  const records = new Map(
+    input.teamIds.map((teamId) => [teamId, emptyTeamRecord()] as const),
+  )
+  for (const game of input.games) {
+    for (const side of ['home', 'away'] as const) {
+      const teamId = side === 'home' ? game.homeTeamId : game.awayTeamId
+      const opponentId = side === 'home' ? game.awayTeamId : game.homeTeamId
+      const record = records.get(teamId)
+      if (!record) continue
+      const teamPoints = side === 'home' ? game.homePoints : game.awayPoints
+      const opponentPoints = side === 'home' ? game.awayPoints : game.homePoints
+      const result =
+        teamPoints > opponentPoints
+          ? ('wins' as const)
+          : teamPoints < opponentPoints
+            ? ('losses' as const)
+            : ('ties' as const)
+      record[result] += 1
+      const quadrant = classifyQuadrant(
+        input.powerRanks.get(opponentId) ?? null,
+      )
+      if (quadrant) record.quadrants[quadrant][result] += 1
+    }
+  }
+  return records
 }
 
 export function moveBallotEntry(

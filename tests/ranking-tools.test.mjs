@@ -4,6 +4,7 @@ import {
   buildPlayoffProjection,
   classifyQuadrant,
   moveBallotEntry,
+  summarizeTeamRecords,
 } from '../convex/rankingTools.ts'
 
 test('ballot movement uses insertion ordering', () => {
@@ -30,6 +31,54 @@ test('quadrants follow the selected edition Power order', () => {
   assert.equal(classifyQuadrant(105), 'Q3')
   assert.equal(classifyQuadrant(106), 'Q4')
   assert.equal(classifyQuadrant(null), null)
+})
+
+test('team and quadrant records use the selected edition Power order', () => {
+  const records = summarizeTeamRecords({
+    games: [
+      {
+        awayPoints: 20,
+        awayTeamId: 'b',
+        homePoints: 24,
+        homeTeamId: 'a',
+      },
+      {
+        awayPoints: 17,
+        awayTeamId: 'a',
+        homePoints: 21,
+        homeTeamId: 'c',
+      },
+      {
+        awayPoints: 14,
+        awayTeamId: 'fcs',
+        homePoints: 35,
+        homeTeamId: 'a',
+      },
+    ],
+    powerRanks: new Map([
+      ['a', 10],
+      ['b', 40],
+      ['c', 80],
+    ]),
+    teamIds: ['a', 'b', 'c'],
+  })
+
+  assert.deepEqual(records.get('a'), {
+    losses: 1,
+    quadrants: {
+      Q1: { losses: 0, ties: 0, wins: 0 },
+      Q2: { losses: 0, ties: 0, wins: 1 },
+      Q3: { losses: 1, ties: 0, wins: 0 },
+      Q4: { losses: 0, ties: 0, wins: 0 },
+    },
+    ties: 0,
+    wins: 2,
+  })
+  assert.deepEqual(records.get('b')?.quadrants.Q1, {
+    losses: 1,
+    ties: 0,
+    wins: 0,
+  })
 })
 
 test('playoff selection uses actual champions then fills at-large spots', () => {

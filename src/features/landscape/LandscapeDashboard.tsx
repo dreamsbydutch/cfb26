@@ -133,10 +133,20 @@ export function LandscapeDashboard({
             {view === 'games' && <Games data={data} />}
             {view === 'power' && <Power data={data} />}
             {view === 'program' && (
-              <RatingField kind="program" season={season} week={week} />
+              <RatingField
+                kind="program"
+                records={data.ratings}
+                season={season}
+                week={week}
+              />
             )}
             {view === 'resume' && (
-              <RatingField kind="resume" season={season} week={week} />
+              <RatingField
+                kind="resume"
+                records={data.ratings}
+                season={season}
+                week={week}
+              />
             )}
             {view === 'playoff' && <Playoff merit={merit.data ?? null} />}
             {view === 'teams' && (
@@ -418,34 +428,42 @@ function Power({
           .includes(search.trim().toLowerCase()),
     )
     .sort((a, b) => (a.powerRank ?? 999) - (b.powerRank ?? 999))
-    .map((row) => ({
-      highlight: isMichiganProgram(row.sourceProgramName),
-      label: row.sourceProgramName,
-      primary: signed(row.power),
-      rank: row.powerRank ?? 999,
-      secondary: row.conference ?? 'Independent',
-      details: [
-        { label: 'Offense', value: signed(row.offense) },
-        { label: 'Defense', value: signed(row.defense) },
-        {
-          label: 'Special teams',
-          value: row.specialTeamsAvailable ? signed(row.specialTeams) : '—',
-        },
-      ],
-    }))
+    .map((row) => {
+      const record = row.record as typeof row.record | undefined
+      return {
+        highlight: isMichiganProgram(row.sourceProgramName),
+        label: row.sourceProgramName,
+        primary: signed(row.power),
+        rank: row.powerRank ?? 999,
+        secondary: row.conference ?? 'Independent',
+        details: [
+          { label: 'Record', value: formatRecord(record) },
+          ...(['Q1', 'Q2', 'Q3', 'Q4'] as const).map((quadrant) => ({
+            label: quadrant,
+            value: formatRecord(record?.quadrants[quadrant]),
+          })),
+          { label: 'Offense', value: signed(row.offense) },
+          { label: 'Defense', value: signed(row.defense) },
+          {
+            label: 'Special teams',
+            value: row.specialTeamsAvailable ? signed(row.specialTeams) : '—',
+          },
+        ],
+      }
+    })
   return (
     <div>
-      <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_minmax(8rem,auto)] gap-2">
         <input
           aria-label="Search Power rankings"
-          className={controlClass}
+          className={`${controlClass} min-w-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm`}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search all FBS teams"
+          placeholder="Search teams"
           value={search}
         />
         <select
           aria-label="Filter by conference"
-          className={controlClass}
+          className={`${controlClass} min-w-0 max-w-40 px-2 py-1.5 text-xs sm:max-w-none sm:px-3 sm:py-2 sm:text-sm`}
           onChange={(event) => setConference(event.target.value)}
           value={conference}
         >
@@ -459,6 +477,11 @@ function Power({
       </div>
       <RankingTable
         detailHeadings={[
+          'Record',
+          'Q1',
+          'Q2',
+          'Q3',
+          'Q4',
           'Offense',
           'Defense',
           ...(showSpecialTeams ? ['Special teams'] : []),
@@ -991,28 +1014,31 @@ function RankingTable({
 }) {
   return (
     <section className="app-card overflow-hidden p-0">
-      <h2 className="app-ranking-header font-display border-b border-white/10 px-5 py-4 text-2xl font-extrabold text-white">
+      <h2 className="app-ranking-header font-display border-b border-white/10 px-3 py-2.5 text-xl font-extrabold text-white sm:px-5 sm:py-4 sm:text-2xl">
         {heading}
       </h2>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm sm:min-w-[540px]">
+        <table className="w-max min-w-full border-collapse text-left text-sm">
           <thead className="app-label bg-black/15">
             <tr>
-              <th className="w-12 px-3 py-3 sm:w-16 sm:px-4" scope="col">
+              <th className="w-12 px-2 py-2.5 sm:w-16 sm:px-4" scope="col">
                 Rank
               </th>
-              <th className="px-2 py-3 sm:min-w-52 sm:px-4" scope="col">
+              <th
+                className="w-40 min-w-40 px-2 py-2.5 sm:w-52 sm:min-w-52 sm:px-4"
+                scope="col"
+              >
                 Team
               </th>
               <th
-                className="whitespace-nowrap px-3 py-3 text-right sm:px-4"
+                className="w-20 min-w-20 whitespace-nowrap px-2 py-2.5 text-right sm:w-24 sm:min-w-24 sm:px-4"
                 scope="col"
               >
                 {primaryHeading}
               </th>
               {detailHeadings.map((detailHeading) => (
                 <th
-                  className="hidden whitespace-nowrap px-4 py-3 text-right sm:table-cell"
+                  className="min-w-20 whitespace-nowrap px-2 py-2.5 text-right sm:min-w-24 sm:px-4"
                   key={detailHeading}
                   scope="col"
                 >
@@ -1028,11 +1054,11 @@ function RankingTable({
                 className={`border-t border-white/[0.07] hover:bg-white/[0.025] ${row.highlight ? 'michigan-highlight' : ''}`}
               >
                 <td
-                  className={`font-display px-3 py-3 text-2xl font-extrabold tabular-nums sm:px-4 ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
+                  className={`font-display px-2 py-2.5 text-xl font-extrabold tabular-nums sm:px-4 sm:py-3 sm:text-2xl ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
                 >
                   {row.rank}
                 </td>
-                <th className="min-w-0 px-2 py-3 sm:px-4" scope="row">
+                <th className="px-2 py-2.5 sm:px-4 sm:py-3" scope="row">
                   <span
                     className={`block ${row.highlight ? 'michigan-accent' : ''}`}
                   >
@@ -1041,27 +1067,13 @@ function RankingTable({
                   <span className="mt-0.5 block text-xs font-normal text-white/40">
                     {row.secondary}
                   </span>
-                  {detailHeadings.length > 0 && (
-                    <span className="mt-1.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] font-normal text-white/55 sm:hidden">
-                      {detailHeadings.map((detailHeading) => (
-                        <span key={detailHeading} className="whitespace-nowrap">
-                          {detailHeading}{' '}
-                          <b className="font-bold text-white/75">
-                            {row.details?.find(
-                              (detail) => detail.label === detailHeading,
-                            )?.value ?? 'â€”'}
-                          </b>
-                        </span>
-                      ))}
-                    </span>
-                  )}
                 </th>
-                <td className="whitespace-nowrap px-3 py-3 text-right text-lg font-extrabold tabular-nums sm:px-4">
+                <td className="whitespace-nowrap px-2 py-2.5 text-right text-lg font-extrabold tabular-nums sm:px-4 sm:py-3">
                   {row.primary}
                 </td>
                 {detailHeadings.map((detailHeading) => (
                   <td
-                    className="hidden whitespace-nowrap px-4 py-3 text-right font-bold tabular-nums text-white/70 sm:table-cell"
+                    className="whitespace-nowrap px-2 py-2.5 text-right font-bold tabular-nums text-white/70 sm:px-4 sm:py-3"
                     key={detailHeading}
                   >
                     {row.details?.find(
@@ -1269,6 +1281,13 @@ function isMichiganProgram(name: string) {
 
 function signed(value: number) {
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
+}
+
+function formatRecord(
+  record: { losses: number; ties: number; wins: number } | undefined,
+) {
+  if (!record) return '—'
+  return `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ''}`
 }
 
 function rankingModeLabel(

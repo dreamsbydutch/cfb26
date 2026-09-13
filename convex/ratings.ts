@@ -48,6 +48,7 @@ import {
   buildPlayoffProjection,
   classifyQuadrant,
   moveBallotEntry,
+  summarizeTeamRecords,
 } from './rankingTools'
 import { requireOwnerSession } from './rosterAdmin'
 import type { PowerHistory } from './powerHistory'
@@ -2114,6 +2115,47 @@ export const getWeeklyDashboard = query({
     const ratingByProgram = new Map(
       ratings.map((row) => [String(row.programId), row]),
     )
+    const recordCutoffGames = seasonSchedule.filter((game) => {
+      if (
+        !game.completed ||
+        !Number.isFinite(game.homePoints) ||
+        !Number.isFinite(game.awayPoints)
+      )
+        return false
+      return edition
+        ? game.startTime < edition.cutoffAt
+        : publicationWeek({
+            asOf: game.startTime,
+            selected: game,
+            schedule: seasonSchedule,
+          }) <= week
+    })
+    const teamRecords = summarizeTeamRecords({
+      games: recordCutoffGames.map((game) => ({
+        awayPoints: game.awayPoints as number,
+        awayTeamId: String(game.awayProgramId),
+        homePoints: game.homePoints as number,
+        homeTeamId: String(game.homeProgramId),
+      })),
+      powerRanks: new Map(
+        ratings.map((row) => [String(row.programId), row.powerRank ?? null]),
+      ),
+      teamIds: ratings.map((row) => String(row.programId)),
+    })
+    const ratingsWithRecords = ratings.map((row) => ({
+      ...row,
+      record: teamRecords.get(String(row.programId)) ?? {
+        losses: 0,
+        quadrants: {
+          Q1: { losses: 0, ties: 0, wins: 0 },
+          Q2: { losses: 0, ties: 0, wins: 0 },
+          Q3: { losses: 0, ties: 0, wins: 0 },
+          Q4: { losses: 0, ties: 0, wins: 0 },
+        },
+        ties: 0,
+        wins: 0,
+      },
+    }))
     const eloByProgram = new Map(
       ratingRows.map((row) => [String(row.programId), row.rating]),
     )
@@ -2225,7 +2267,7 @@ export const getWeeklyDashboard = query({
           : fallbackRows.every((row) => row.rankingBasis === 'season_composite')
             ? ('season_composite' as const)
             : ('fallback' as const),
-      ratings,
+      ratings: ratingsWithRecords,
       resumeVisible: edition?.resumeVisible ?? false,
       season,
       week,

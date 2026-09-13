@@ -54,7 +54,7 @@ Every consequential Michigan owner mutation advances `michiganDataRevisions` and
 - Power is a neutral-field points scale with explicit prior weight, version, calibration, units, home field, and sample state.
 - Power ranks the complete season-specific FBS schedule field from `1` through the field size; it has no fixed top-25 or top-50 publication cutoff, so historical and future counts can differ.
 - When no weekly edition or season composite exists, the complete-field fallback uses current-season Elo where present, then the prior-season composite, then prior-season Elo, and finally a visible neutral baseline. It never leaves a scheduled FBS team unranked silently.
-- The Power UI exposes offense, defense, special teams, prior weight, sample state, source list, signal count/confidence when available, and the exact edition/composite/fallback basis for every team.
+- Ranking tables lead with rank, team, and the named rating, then expose cutoff-safe overall and Q1–Q4 records plus each system's public components through horizontal scrolling. Model diagnostics and edition basis remain on Methodology rather than in every row.
 - Résumé appears from Week 7 and uses the approved 90% results/schedule plus 10% capped-dominance split.
 - Edition snapshots drive historical quadrants, schedule strength, and playoff/ballot evidence; future data is never substituted.
 - Scheduled 2026-forward prospective forecasts freeze before kickoff. Research reconstructions are labeled and kept separate.

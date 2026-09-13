@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
+import type { FunctionReturnType } from 'convex/server'
 import {
   EmptyState,
   ErrorState,
@@ -12,10 +13,12 @@ import {
 
 export function RatingField({
   kind,
+  records,
   season,
   week,
 }: {
   kind: 'program' | 'resume'
+  records: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>['ratings']
   season: number
   week: number
 }) {
@@ -46,19 +49,32 @@ export function RatingField({
         ? (a.programRank ?? 999) - (b.programRank ?? 999)
         : (a.resumeRank ?? 999) - (b.resumeRank ?? 999),
     )
+  const recordByProgram = new Map(
+    records.map((row) => [String(row.programId), row.record]),
+  )
+  const detailHeadings = [
+    'Record',
+    'Q1',
+    'Q2',
+    'Q3',
+    'Q4',
+    ...(isProgram
+      ? ['Results', 'Acquisition', 'Development']
+      : ['Results credit', 'Performance credit', 'Season strength']),
+  ]
   return (
-    <Surface className="p-4 sm:p-6">
-      <h2 className="font-display text-3xl font-bold">{title}</h2>
-      <div className="my-5 flex flex-wrap gap-3">
+    <Surface className="p-3 sm:p-6">
+      <h2 className="font-display text-2xl font-bold sm:text-3xl">{title}</h2>
+      <div className="my-3 grid grid-cols-[minmax(0,1fr)_minmax(8rem,auto)] gap-2 sm:my-5">
         <input
-          className="app-input min-w-0 flex-1 rounded-lg border p-2"
+          className="app-input min-w-0 rounded-lg border px-2 py-1.5 text-xs sm:p-2 sm:text-sm"
           aria-label={`Search ${title}`}
-          placeholder="Search every FBS team"
+          placeholder="Search teams"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
         <select
-          className="rounded-lg border p-2"
+          className="min-w-0 max-w-40 rounded-lg border px-2 py-1.5 text-xs sm:max-w-none sm:p-2 sm:text-sm"
           aria-label="Ranking conference"
           value={conference}
           onChange={(event) => setConference(event.target.value)}
@@ -84,135 +100,111 @@ export function RatingField({
         </EmptyState>
       ) : (
         <>
-          <p className="mb-3 text-sm">
+          <p className="mb-2 text-xs sm:mb-3 sm:text-sm">
             {rows.length} of {data.rows.length} FBS teams · Updated{' '}
             {new Date(data.edition.cutoffAt).toLocaleString()}
           </p>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-max min-w-full text-left text-sm">
               <caption className="sr-only">
                 {title} ratings and components
               </caption>
               <thead>
                 <tr>
-                  {[
-                    'Rank',
-                    'Program',
-                    'Rating',
-                    ...(isProgram
-                      ? ['Results', 'Acquisition', 'Development']
-                      : [
-                          'Wins',
-                          'Results credit',
-                          'Performance credit',
-                          'Season strength',
-                        ]),
-                  ].map((label, index) => (
-                    <th
-                      scope="col"
-                      className={`whitespace-nowrap border-b p-3 ${index >= 3 ? 'hidden sm:table-cell' : ''}`}
-                      key={label}
-                    >
-                      {label}
-                    </th>
-                  ))}
+                  {['Rank', 'Program', 'Rating', ...detailHeadings].map(
+                    (label, index) => (
+                      <th
+                        scope="col"
+                        className={`whitespace-nowrap border-b px-2 py-2.5 sm:px-3 ${index === 0 ? 'w-12' : index === 1 ? 'w-40 min-w-40 sm:w-52 sm:min-w-52' : index === 2 ? 'w-20 min-w-20 text-right sm:w-24 sm:min-w-24' : 'min-w-20 text-right sm:min-w-24'}`}
+                        key={label}
+                      >
+                        {label}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr
-                    key={row._id}
-                    className={
-                      row.programKey === 'michigan' ? 'michigan-accent' : ''
-                    }
-                  >
-                    <td className="px-2 py-3 sm:p-3">
-                      {isProgram ? row.programRank : row.resumeRank}
-                    </td>
-                    <th scope="row" className="min-w-0 px-2 py-3 sm:p-3">
-                      <Link
-                        to="/national/teams/$programKey"
-                        params={{ programKey: row.programKey }}
-                        className="font-semibold underline-offset-4 hover:underline focus-visible:outline"
-                      >
-                        {row.sourceProgramName}
-                      </Link>
-                      <div className="text-xs font-normal">
-                        {row.conference ?? 'Independent'}
-                        {row.classification === 'transitioning'
-                          ? ' · Transitioning'
-                          : ''}
-                      </div>
-                      <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] font-normal sm:hidden">
-                        {(isProgram
-                          ? [
-                              ['Results', row.programResults?.toFixed(1)],
-                              [
-                                'Acquisition',
-                                row.programAcquisition?.toFixed(1),
-                              ],
-                              [
-                                'Development',
-                                row.programDevelopment?.toFixed(1),
-                              ],
-                            ]
-                          : [
-                              ['Wins', String(row.actualWins)],
-                              [
-                                'Results credit',
-                                row.scheduleComponent?.toFixed(2),
-                              ],
-                              [
-                                'Performance credit',
-                                row.dominanceComponent?.toFixed(2),
-                              ],
-                              [
-                                'Season strength',
-                                row.seasonStrength?.toFixed(1),
-                              ],
-                            ]
-                        ).map(([label, value]) => (
-                          <span className="whitespace-nowrap" key={label}>
-                            {label} <b>{value ?? 'â€”'}</b>
-                          </span>
-                        ))}
-                      </div>
-                    </th>
-                    <td className="whitespace-nowrap px-2 py-3 text-right font-bold sm:p-3 sm:text-left">
-                      {(isProgram ? row.programRating : row.resume)?.toFixed(
-                        2,
-                      ) ?? '—'}
-                    </td>
-                    {isProgram ? (
-                      <>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.programResults?.toFixed(1) ?? '—'}
+                {rows.map((row) => {
+                  const record = recordByProgram.get(String(row.programId))
+                  const details = [
+                    { label: 'Record', value: formatRecord(record) },
+                    ...(['Q1', 'Q2', 'Q3', 'Q4'] as const).map((quadrant) => ({
+                      label: quadrant,
+                      value: formatRecord(record?.quadrants[quadrant]),
+                    })),
+                    ...(isProgram
+                      ? [
+                          {
+                            label: 'Results',
+                            value: row.programResults?.toFixed(1) ?? '—',
+                          },
+                          {
+                            label: 'Acquisition',
+                            value: row.programAcquisition?.toFixed(1) ?? '—',
+                          },
+                          {
+                            label: 'Development',
+                            value: row.programDevelopment?.toFixed(1) ?? '—',
+                          },
+                        ]
+                      : [
+                          {
+                            label: 'Results credit',
+                            value: row.scheduleComponent?.toFixed(2) ?? '—',
+                          },
+                          {
+                            label: 'Performance credit',
+                            value: row.dominanceComponent?.toFixed(2) ?? '—',
+                          },
+                          {
+                            label: 'Season strength',
+                            value: row.seasonStrength?.toFixed(1) ?? '—',
+                          },
+                        ]),
+                  ]
+                  return (
+                    <tr
+                      key={row._id}
+                      className={
+                        row.programKey === 'michigan' ? 'michigan-accent' : ''
+                      }
+                    >
+                      <td className="px-2 py-2.5 sm:p-3">
+                        {isProgram ? row.programRank : row.resumeRank}
+                      </td>
+                      <th scope="row" className="px-2 py-2.5 sm:p-3">
+                        <Link
+                          to="/national/teams/$programKey"
+                          params={{ programKey: row.programKey }}
+                          className="font-semibold underline-offset-4 hover:underline focus-visible:outline"
+                        >
+                          {row.sourceProgramName}
+                        </Link>
+                        <div className="text-xs font-normal">
+                          {row.conference ?? 'Independent'}
+                          {row.classification === 'transitioning'
+                            ? ' · Transitioning'
+                            : ''}
+                        </div>
+                      </th>
+                      <td className="whitespace-nowrap px-2 py-2.5 text-right font-bold sm:p-3">
+                        {(isProgram ? row.programRating : row.resume)?.toFixed(
+                          2,
+                        ) ?? '—'}
+                      </td>
+                      {detailHeadings.map((heading) => (
+                        <td
+                          className="whitespace-nowrap px-2 py-2.5 text-right font-medium tabular-nums sm:p-3"
+                          key={heading}
+                        >
+                          {details.find((detail) => detail.label === heading)
+                            ?.value ?? '—'}
                         </td>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.programAcquisition?.toFixed(1) ?? '—'}
-                        </td>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.programDevelopment?.toFixed(1) ?? '—'}
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.actualWins}
-                        </td>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.scheduleComponent?.toFixed(2)}
-                        </td>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.dominanceComponent?.toFixed(2)}
-                        </td>
-                        <td className="hidden p-3 sm:table-cell">
-                          {row.seasonStrength?.toFixed(1) ?? '—'}
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
+                      ))}
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -223,4 +215,17 @@ export function RatingField({
       )}
     </Surface>
   )
+}
+
+function formatRecord(
+  record:
+    | {
+        losses: number
+        ties: number
+        wins: number
+      }
+    | undefined,
+) {
+  if (!record) return '—'
+  return `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ''}`
 }
