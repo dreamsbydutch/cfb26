@@ -462,13 +462,19 @@ export function ContextBar({
   )
 }
 
-function DbyDMark() {
+export function DbyDMark({ className = 'h-10 w-10' }: { className?: string }) {
   return (
     <span
-      className="app-mark grid h-10 w-10 place-items-center rounded-xl border font-display text-[10px] font-extrabold tracking-[-0.04em]"
+      className={`app-mark grid shrink-0 place-items-center overflow-hidden rounded-xl border bg-white p-0.5 ${className}`}
       aria-hidden="true"
     >
-      DxDCFB
+      <img
+        alt=""
+        className="h-full w-full rounded-[0.55rem] object-cover"
+        height="1024"
+        src="/dbyd-logo.png"
+        width="1024"
+      />
     </span>
   )
 }

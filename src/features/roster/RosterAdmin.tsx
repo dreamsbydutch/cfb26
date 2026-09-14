@@ -18,6 +18,7 @@ import type { ReactNode } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import {
+  DbyDMark,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -381,9 +382,7 @@ function OwnerBoundary({
       <div className="hidden lg:block">{children}</div>
       <main className="grid min-h-screen place-items-center px-6 py-12 lg:hidden">
         <section className="app-card max-w-lg p-7 text-center">
-          <span className="font-display mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#ffcb05] text-sm font-extrabold text-[#071421]">
-            DxDCFB
-          </span>
+          <DbyDMark className="mx-auto h-14 w-14 rounded-2xl" />
           <p className="app-kicker mt-6">Owner workspace</p>
           <h1 className="font-display mt-2 text-4xl font-extrabold uppercase">
             Desktop required
@@ -452,9 +451,7 @@ function OwnerShell({
     <div className="owner-workspace mx-auto grid min-h-screen max-w-[1680px] lg:grid-cols-[15rem_minmax(0,1fr)]">
       <aside className="sticky top-0 h-screen border-r border-white/10 bg-[#06111c]/90 p-5 backdrop-blur-xl">
         <Link className="flex items-center gap-3" to="/">
-          <span className="font-display grid h-11 w-11 place-items-center rounded-xl bg-[#ffcb05] text-[11px] font-extrabold text-[#071421]">
-            DxDCFB
-          </span>
+          <DbyDMark className="h-11 w-11" />
           <span>
             <strong className="font-display block text-xl uppercase">
               DbyD CFB
