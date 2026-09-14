@@ -26,6 +26,11 @@ import { POWER_RELEASE_CALIBRATION } from './powerRelease'
 import { rosterContexts, withRosterForecast } from './powerRoster'
 import { POWER_ROSTER_WEIGHT, releasedRosterFit } from './powerRosterRelease'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
+import {
+  PROGRAM_ACCOMPLISHMENT_START,
+  accomplishmentsFromGames,
+} from './programAccomplishments'
+import { historicalNationalTitles } from './programHonorsHistory'
 import schema from './schema'
 import {
   PROGRAM_MODEL_VERSION,
@@ -51,6 +56,7 @@ import {
   summarizeTeamRecords,
 } from './rankingTools'
 import { requireOwnerSession } from './rosterAdmin'
+import type { ProgramAccomplishment } from './programAccomplishments'
 import type { PowerHistory } from './powerHistory'
 import type { ProgramSeasonEvidence } from './programRating'
 import type { Doc, Id } from './_generated/dataModel'
@@ -865,10 +871,96 @@ export const loadProgramSeasonEvidence = internalQuery({
   },
 })
 
+export const loadProgramAccomplishments = internalQuery({
+  args: { season: v.number(), cutoffAt: v.number() },
+  returns: v.array(
+    v.object({
+      teamId: v.string(),
+      season: v.number(),
+      conferenceChampion: v.boolean(),
+      playoffStage: v.number(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const [games, champions] = await Promise.all([
+      ctx.db
+        .query('collegeGames')
+        .withIndex('by_season_and_startTime', (q) =>
+          q.eq('season', args.season).lt('startTime', args.cutoffAt),
+        )
+        .take(2001),
+      ctx.db
+        .query('conferenceChampions')
+        .withIndex('by_season_and_conference', (q) =>
+          q.eq('season', args.season),
+        )
+        .take(101),
+    ])
+    if (games.length > 2000 || champions.length > 100)
+      throw new Error('Program accomplishment slice exceeds its bound.')
+    const earned = accomplishmentsFromGames(
+      games
+        .filter((game) => game.sourceUpdatedAt < args.cutoffAt)
+        .map((game) => ({
+          ...game,
+          homeTeamId: String(game.homeProgramId),
+          awayTeamId: String(game.awayProgramId),
+          kickoffAt: game.startTime,
+        })),
+      args.cutoffAt,
+    )
+    const fbs = new Set(
+      games.flatMap((game) => [
+        ...(game.homeClassification === 'fbs'
+          ? [String(game.homeProgramId)]
+          : []),
+        ...(game.awayClassification === 'fbs'
+          ? [String(game.awayProgramId)]
+          : []),
+      ]),
+    )
+    // Explicit sourced champions support shared titles and conferences without title games.
+    for (const row of champions)
+      if (
+        row.awardedAt !== undefined &&
+        row.sourceUpdatedAt !== undefined &&
+        row.awardedAt < args.cutoffAt &&
+        row.sourceUpdatedAt < args.cutoffAt &&
+        row.sourceLinks.length > 0 &&
+        fbs.has(String(row.programId))
+      )
+        earned.push({
+          teamId: String(row.programId),
+          season: row.season,
+          conferenceChampion: true,
+          playoffStage: 0,
+        })
+    return earned
+  },
+})
+
 export const ratingSourceVersion = internalQuery({
   args: {},
   returns: v.string(),
   handler: async (ctx) => {
+    const champions = await ctx.db
+      .query('conferenceChampions')
+      .withIndex('by_season_and_conference', (q) =>
+        q.gte('season', PROGRAM_ACCOMPLISHMENT_START),
+      )
+      .take(3001)
+    if (champions.length > 3000)
+      throw new Error('Program champion fingerprint exceeds its bound.')
+    const championVersion = JSON.stringify(
+      champions.map((row) => [
+        row.season,
+        row.conference,
+        row.programId,
+        row.awardedAt,
+        row.sourceUpdatedAt,
+        row.sourceLinks,
+      ]),
+    )
     const states = await Promise.all(
       (
         ['games', 'programs', 'recruiting', 'draft', 'rating_inputs'] as const
@@ -879,7 +971,7 @@ export const ratingSourceVersion = internalQuery({
           .unique(),
       ),
     )
-    return `${POWER_MODEL_VERSION}:${PROGRAM_MODEL_VERSION}:${RESUME_MODEL_VERSION}:${states.map((row) => `${row?.source}:${row?.completedAt ?? 0}:${row?.status ?? 'missing'}`).join('|')}`
+    return `${POWER_MODEL_VERSION}:${PROGRAM_MODEL_VERSION}:${RESUME_MODEL_VERSION}:${states.map((row) => `${row?.source}:${row?.completedAt ?? 0}:${row?.status ?? 'missing'}`).join('|')}:${championVersion}`
   },
 })
 
@@ -1442,6 +1534,27 @@ export const buildRatingEdition = internalAction({
       week,
     })
     const programEvidence: Array<ProgramSeasonEvidence> = []
+    const programAccomplishments: Array<ProgramAccomplishment> =
+      historicalNationalTitles(
+        data.programs.map((program) => ({
+          id: String(program._id),
+          name: program.name,
+        })),
+        season,
+        args.cutoffAt,
+      )
+    for (
+      let accomplishmentSeason = PROGRAM_ACCOMPLISHMENT_START;
+      accomplishmentSeason <= season;
+      accomplishmentSeason++
+    ) {
+      programAccomplishments.push(
+        ...(await ctx.runQuery(internal.ratings.loadProgramAccomplishments, {
+          season: accomplishmentSeason,
+          cutoffAt: args.cutoffAt,
+        })),
+      )
+    }
     const coverageWarnings = [
       'FCS opponent schedules are imported independently; missing game evidence falls back to capped scores and subdivision priors.',
       'National coaching, incoming transfer production, defensive continuity, and injury coverage remain unverified.',
@@ -1558,6 +1671,7 @@ export const buildRatingEdition = internalAction({
       season,
       teams: powerEdition.ratings,
       evidence: programEvidence,
+      accomplishments: programAccomplishments,
     })
     const programRatingsByTeam = new Map(
       programRatings.map((row) => [row.teamId, row]),

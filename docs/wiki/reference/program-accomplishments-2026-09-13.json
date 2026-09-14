@@ -1,0 +1,977 @@
+{
+  "editionId": "q17cr6xb5yw61vn0aq0hd91qzh8ed9ps",
+  "all138Verified": true,
+  "powerAndResumeUnchanged": true,
+  "changes": [
+    {
+      "team": "ohio-state",
+      "oldRank": 1,
+      "newRank": 1,
+      "rating": 87.28,
+      "accomplishments": 23.65
+    },
+    {
+      "team": "georgia",
+      "oldRank": 2,
+      "newRank": 2,
+      "rating": 85.26,
+      "accomplishments": 23.81
+    },
+    {
+      "team": "alabama",
+      "oldRank": 3,
+      "newRank": 3,
+      "rating": 84.29,
+      "accomplishments": 23.47
+    },
+    {
+      "team": "michigan",
+      "oldRank": 8,
+      "newRank": 4,
+      "rating": 74.86,
+      "accomplishments": 19.11
+    },
+    {
+      "team": "notre-dame",
+      "oldRank": 4,
+      "newRank": 5,
+      "rating": 74.85,
+      "accomplishments": 14.3
+    },
+    {
+      "team": "oregon",
+      "oldRank": 5,
+      "newRank": 6,
+      "rating": 73.78,
+      "accomplishments": 15.83
+    },
+    {
+      "team": "clemson",
+      "oldRank": 9,
+      "newRank": 7,
+      "rating": 73.67,
+      "accomplishments": 18.82
+    },
+    {
+      "team": "texas",
+      "oldRank": 7,
+      "newRank": 8,
+      "rating": 72.49,
+      "accomplishments": 15.31
+    },
+    {
+      "team": "oklahoma",
+      "oldRank": 12,
+      "newRank": 9,
+      "rating": 65.99,
+      "accomplishments": 11.98
+    },
+    {
+      "team": "miami",
+      "oldRank": 14,
+      "newRank": 10,
+      "rating": 65.83,
+      "accomplishments": 12.84
+    },
+    {
+      "team": "lsu",
+      "oldRank": 10,
+      "newRank": 11,
+      "rating": 65.18,
+      "accomplishments": 10.76
+    },
+    {
+      "team": "indiana",
+      "oldRank": 29,
+      "newRank": 12,
+      "rating": 65.09,
+      "accomplishments": 19.7
+    },
+    {
+      "team": "penn-state",
+      "oldRank": 6,
+      "newRank": 13,
+      "rating": 64.32,
+      "accomplishments": 6.89
+    },
+    {
+      "team": "ole-miss",
+      "oldRank": 13,
+      "newRank": 14,
+      "rating": 61.7,
+      "accomplishments": 8.34
+    },
+    {
+      "team": "washington",
+      "oldRank": 18,
+      "newRank": 15,
+      "rating": 59.05,
+      "accomplishments": 9.48
+    },
+    {
+      "team": "texas-a-m",
+      "oldRank": 11,
+      "newRank": 16,
+      "rating": 57.92,
+      "accomplishments": 3.68
+    },
+    {
+      "team": "usc",
+      "oldRank": 15,
+      "newRank": 17,
+      "rating": 57.57,
+      "accomplishments": 4.87
+    },
+    {
+      "team": "texas-tech",
+      "oldRank": 24,
+      "newRank": 18,
+      "rating": 55.09,
+      "accomplishments": 8.34
+    },
+    {
+      "team": "tennessee",
+      "oldRank": 16,
+      "newRank": 19,
+      "rating": 55.03,
+      "accomplishments": 2.97
+    },
+    {
+      "team": "florida",
+      "oldRank": 20,
+      "newRank": 20,
+      "rating": 54.41,
+      "accomplishments": 5.35
+    },
+    {
+      "team": "auburn",
+      "oldRank": 21,
+      "newRank": 21,
+      "rating": 54.17,
+      "accomplishments": 5.18
+    },
+    {
+      "team": "boise-state",
+      "oldRank": 38,
+      "newRank": 22,
+      "rating": 53.26,
+      "accomplishments": 11.36
+    },
+    {
+      "team": "tcu",
+      "oldRank": 25,
+      "newRank": 23,
+      "rating": 52.93,
+      "accomplishments": 6.45
+    },
+    {
+      "team": "utah",
+      "oldRank": 19,
+      "newRank": 24,
+      "rating": 51.56,
+      "accomplishments": 2.01
+    },
+    {
+      "team": "smu",
+      "oldRank": 28,
+      "newRank": 25,
+      "rating": 51.55,
+      "accomplishments": 5.16
+    },
+    {
+      "team": "florida-state",
+      "oldRank": 30,
+      "newRank": 26,
+      "rating": 50.68,
+      "accomplishments": 6.14
+    },
+    {
+      "team": "iowa",
+      "oldRank": 17,
+      "newRank": 27,
+      "rating": 49.77,
+      "accomplishments": 0
+    },
+    {
+      "team": "arizona-state",
+      "oldRank": 39,
+      "newRank": 28,
+      "rating": 48.92,
+      "accomplishments": 6.89
+    },
+    {
+      "team": "kansas-state",
+      "oldRank": 27,
+      "newRank": 29,
+      "rating": 48.03,
+      "accomplishments": 2.01
+    },
+    {
+      "team": "missouri",
+      "oldRank": 22,
+      "newRank": 30,
+      "rating": 47.95,
+      "accomplishments": 0
+    },
+    {
+      "team": "south-carolina",
+      "oldRank": 23,
+      "newRank": 31,
+      "rating": 46.96,
+      "accomplishments": 0
+    },
+    {
+      "team": "tulane",
+      "oldRank": 54,
+      "newRank": 32,
+      "rating": 46.59,
+      "accomplishments": 8.45
+    },
+    {
+      "team": "louisville",
+      "oldRank": 26,
+      "newRank": 33,
+      "rating": 46.38,
+      "accomplishments": 0
+    },
+    {
+      "team": "iowa-state",
+      "oldRank": 31,
+      "newRank": 34,
+      "rating": 43.51,
+      "accomplishments": 0
+    },
+    {
+      "team": "wisconsin",
+      "oldRank": 33,
+      "newRank": 35,
+      "rating": 43.41,
+      "accomplishments": 0
+    },
+    {
+      "team": "kentucky",
+      "oldRank": 32,
+      "newRank": 36,
+      "rating": 43.25,
+      "accomplishments": 0
+    },
+    {
+      "team": "cincinnati",
+      "oldRank": 49,
+      "newRank": 37,
+      "rating": 43.05,
+      "accomplishments": 4.03
+    },
+    {
+      "team": "ucla",
+      "oldRank": 34,
+      "newRank": 38,
+      "rating": 42.81,
+      "accomplishments": 0
+    },
+    {
+      "team": "mississippi-state",
+      "oldRank": 37,
+      "newRank": 39,
+      "rating": 42.39,
+      "accomplishments": 0
+    },
+    {
+      "team": "pitt",
+      "oldRank": 35,
+      "newRank": 40,
+      "rating": 42.36,
+      "accomplishments": 0
+    },
+    {
+      "team": "arkansas",
+      "oldRank": 36,
+      "newRank": 41,
+      "rating": 42.29,
+      "accomplishments": 0
+    },
+    {
+      "team": "duke",
+      "oldRank": 53,
+      "newRank": 42,
+      "rating": 42.22,
+      "accomplishments": 3.68
+    },
+    {
+      "team": "nebraska",
+      "oldRank": 40,
+      "newRank": 43,
+      "rating": 42.08,
+      "accomplishments": 0
+    },
+    {
+      "team": "nc-state",
+      "oldRank": 41,
+      "newRank": 44,
+      "rating": 41.67,
+      "accomplishments": 0
+    },
+    {
+      "team": "byu",
+      "oldRank": 42,
+      "newRank": 45,
+      "rating": 41.62,
+      "accomplishments": 0
+    },
+    {
+      "team": "minnesota",
+      "oldRank": 44,
+      "newRank": 46,
+      "rating": 41.13,
+      "accomplishments": 0
+    },
+    {
+      "team": "illinois",
+      "oldRank": 43,
+      "newRank": 47,
+      "rating": 41.03,
+      "accomplishments": 0
+    },
+    {
+      "team": "baylor",
+      "oldRank": 45,
+      "newRank": 48,
+      "rating": 40.55,
+      "accomplishments": 0
+    },
+    {
+      "team": "north-carolina",
+      "oldRank": 46,
+      "newRank": 49,
+      "rating": 40.33,
+      "accomplishments": 0
+    },
+    {
+      "team": "ucf",
+      "oldRank": 47,
+      "newRank": 50,
+      "rating": 39.95,
+      "accomplishments": 0
+    },
+    {
+      "team": "james-madison",
+      "oldRank": 75,
+      "newRank": 51,
+      "rating": 39.79,
+      "accomplishments": 6.89
+    },
+    {
+      "team": "georgia-tech",
+      "oldRank": 50,
+      "newRank": 52,
+      "rating": 39.35,
+      "accomplishments": 0
+    },
+    {
+      "team": "maryland",
+      "oldRank": 48,
+      "newRank": 53,
+      "rating": 39.24,
+      "accomplishments": 0
+    },
+    {
+      "team": "memphis",
+      "oldRank": 51,
+      "newRank": 54,
+      "rating": 39.23,
+      "accomplishments": 0
+    },
+    {
+      "team": "virginia-tech",
+      "oldRank": 52,
+      "newRank": 55,
+      "rating": 39.2,
+      "accomplishments": 0
+    },
+    {
+      "team": "michigan-state",
+      "oldRank": 56,
+      "newRank": 56,
+      "rating": 37.88,
+      "accomplishments": 0
+    },
+    {
+      "team": "arizona",
+      "oldRank": 55,
+      "newRank": 57,
+      "rating": 37.74,
+      "accomplishments": 0
+    },
+    {
+      "team": "wake-forest",
+      "oldRank": 57,
+      "newRank": 58,
+      "rating": 37.54,
+      "accomplishments": 0
+    },
+    {
+      "team": "virginia",
+      "oldRank": 60,
+      "newRank": 59,
+      "rating": 37.27,
+      "accomplishments": 0
+    },
+    {
+      "team": "toledo",
+      "oldRank": 66,
+      "newRank": 60,
+      "rating": 37.21,
+      "accomplishments": 2.01
+    },
+    {
+      "team": "houston",
+      "oldRank": 58,
+      "newRank": 61,
+      "rating": 37.16,
+      "accomplishments": 0
+    },
+    {
+      "team": "kansas",
+      "oldRank": 59,
+      "newRank": 62,
+      "rating": 37.14,
+      "accomplishments": 0
+    },
+    {
+      "team": "vanderbilt",
+      "oldRank": 61,
+      "newRank": 63,
+      "rating": 37.11,
+      "accomplishments": 0
+    },
+    {
+      "team": "washington-state",
+      "oldRank": 62,
+      "newRank": 64,
+      "rating": 36.66,
+      "accomplishments": 0
+    },
+    {
+      "team": "california",
+      "oldRank": 63,
+      "newRank": 65,
+      "rating": 36.63,
+      "accomplishments": 0
+    },
+    {
+      "team": "west-virginia",
+      "oldRank": 64,
+      "newRank": 66,
+      "rating": 36.5,
+      "accomplishments": 0
+    },
+    {
+      "team": "oklahoma-state",
+      "oldRank": 65,
+      "newRank": 67,
+      "rating": 36.19,
+      "accomplishments": 0
+    },
+    {
+      "team": "northwestern",
+      "oldRank": 67,
+      "newRank": 68,
+      "rating": 34.98,
+      "accomplishments": 0
+    },
+    {
+      "team": "utsa",
+      "oldRank": 76,
+      "newRank": 69,
+      "rating": 34.73,
+      "accomplishments": 2.01
+    },
+    {
+      "team": "colorado",
+      "oldRank": 70,
+      "newRank": 70,
+      "rating": 34.52,
+      "accomplishments": 0
+    },
+    {
+      "team": "syracuse",
+      "oldRank": 69,
+      "newRank": 71,
+      "rating": 34.47,
+      "accomplishments": 0
+    },
+    {
+      "team": "rutgers",
+      "oldRank": 68,
+      "newRank": 72,
+      "rating": 34.28,
+      "accomplishments": 0
+    },
+    {
+      "team": "fresno-state",
+      "oldRank": 78,
+      "newRank": 73,
+      "rating": 34.06,
+      "accomplishments": 2.01
+    },
+    {
+      "team": "marshall",
+      "oldRank": 80,
+      "newRank": 74,
+      "rating": 33.59,
+      "accomplishments": 2.97
+    },
+    {
+      "team": "purdue",
+      "oldRank": 72,
+      "newRank": 75,
+      "rating": 33.53,
+      "accomplishments": 0
+    },
+    {
+      "team": "boston-college",
+      "oldRank": 71,
+      "newRank": 76,
+      "rating": 33.34,
+      "accomplishments": 0
+    },
+    {
+      "team": "troy",
+      "oldRank": 87,
+      "newRank": 77,
+      "rating": 33.12,
+      "accomplishments": 4.28
+    },
+    {
+      "team": "south-florida",
+      "oldRank": 77,
+      "newRank": 78,
+      "rating": 32.86,
+      "accomplishments": 0
+    },
+    {
+      "team": "east-carolina",
+      "oldRank": 74,
+      "newRank": 79,
+      "rating": 32.85,
+      "accomplishments": 0
+    },
+    {
+      "team": "stanford",
+      "oldRank": 73,
+      "newRank": 80,
+      "rating": 32.55,
+      "accomplishments": 0
+    },
+    {
+      "team": "army",
+      "oldRank": 88,
+      "newRank": 81,
+      "rating": 31.52,
+      "accomplishments": 2.97
+    },
+    {
+      "team": "oregon-state",
+      "oldRank": 79,
+      "newRank": 82,
+      "rating": 31.48,
+      "accomplishments": 0
+    },
+    {
+      "team": "north-texas",
+      "oldRank": 83,
+      "newRank": 83,
+      "rating": 30.49,
+      "accomplishments": 0
+    },
+    {
+      "team": "app-state",
+      "oldRank": 82,
+      "newRank": 84,
+      "rating": 30.44,
+      "accomplishments": 0
+    },
+    {
+      "team": "unlv",
+      "oldRank": 84,
+      "newRank": 85,
+      "rating": 30.4,
+      "accomplishments": 0
+    },
+    {
+      "team": "miami-oh",
+      "oldRank": 90,
+      "newRank": 86,
+      "rating": 30.4,
+      "accomplishments": 2.43
+    },
+    {
+      "team": "western-kentucky",
+      "oldRank": 81,
+      "newRank": 87,
+      "rating": 30.36,
+      "accomplishments": 0
+    },
+    {
+      "team": "western-michigan",
+      "oldRank": 93,
+      "newRank": 88,
+      "rating": 30.1,
+      "accomplishments": 3.68
+    },
+    {
+      "team": "liberty",
+      "oldRank": 91,
+      "newRank": 89,
+      "rating": 30.07,
+      "accomplishments": 2.43
+    },
+    {
+      "team": "san-diego-state",
+      "oldRank": 85,
+      "newRank": 90,
+      "rating": 29.9,
+      "accomplishments": 0
+    },
+    {
+      "team": "louisiana",
+      "oldRank": 86,
+      "newRank": 91,
+      "rating": 29.71,
+      "accomplishments": 0
+    },
+    {
+      "team": "ohio",
+      "oldRank": 96,
+      "newRank": 92,
+      "rating": 29.24,
+      "accomplishments": 2.97
+    },
+    {
+      "team": "navy",
+      "oldRank": 89,
+      "newRank": 93,
+      "rating": 28.02,
+      "accomplishments": 0
+    },
+    {
+      "team": "texas-state",
+      "oldRank": 92,
+      "newRank": 94,
+      "rating": 27.12,
+      "accomplishments": 0
+    },
+    {
+      "team": "old-dominion",
+      "oldRank": 95,
+      "newRank": 95,
+      "rating": 26.35,
+      "accomplishments": 0
+    },
+    {
+      "team": "south-alabama",
+      "oldRank": 98,
+      "newRank": 96,
+      "rating": 25.91,
+      "accomplishments": 0
+    },
+    {
+      "team": "air-force",
+      "oldRank": 97,
+      "newRank": 97,
+      "rating": 25.87,
+      "accomplishments": 0
+    },
+    {
+      "team": "coastal-carolina",
+      "oldRank": 99,
+      "newRank": 98,
+      "rating": 25.63,
+      "accomplishments": 0
+    },
+    {
+      "team": "north-dakota-state",
+      "oldRank": 94,
+      "newRank": 99,
+      "rating": 25.52,
+      "accomplishments": 0
+    },
+    {
+      "team": "jacksonville-state",
+      "oldRank": 111,
+      "newRank": 100,
+      "rating": 25.04,
+      "accomplishments": 2.97
+    },
+    {
+      "team": "georgia-southern",
+      "oldRank": 101,
+      "newRank": 101,
+      "rating": 24.26,
+      "accomplishments": 0
+    },
+    {
+      "team": "florida-atlantic",
+      "oldRank": 102,
+      "newRank": 102,
+      "rating": 24.24,
+      "accomplishments": 0
+    },
+    {
+      "team": "uconn",
+      "oldRank": 100,
+      "newRank": 103,
+      "rating": 23.78,
+      "accomplishments": 0
+    },
+    {
+      "team": "georgia-state",
+      "oldRank": 103,
+      "newRank": 104,
+      "rating": 23.35,
+      "accomplishments": 0
+    },
+    {
+      "team": "utah-state",
+      "oldRank": 104,
+      "newRank": 105,
+      "rating": 23.35,
+      "accomplishments": 0
+    },
+    {
+      "team": "tulsa",
+      "oldRank": 106,
+      "newRank": 106,
+      "rating": 23.14,
+      "accomplishments": 0
+    },
+    {
+      "team": "san-jose-state",
+      "oldRank": 107,
+      "newRank": 107,
+      "rating": 23.08,
+      "accomplishments": 0
+    },
+    {
+      "team": "uab",
+      "oldRank": 105,
+      "newRank": 108,
+      "rating": 23.02,
+      "accomplishments": 0
+    },
+    {
+      "team": "louisiana-tech",
+      "oldRank": 108,
+      "newRank": 109,
+      "rating": 22.39,
+      "accomplishments": 0
+    },
+    {
+      "team": "arkansas-state",
+      "oldRank": 110,
+      "newRank": 110,
+      "rating": 22.33,
+      "accomplishments": 0
+    },
+    {
+      "team": "colorado-state",
+      "oldRank": 109,
+      "newRank": 111,
+      "rating": 22.24,
+      "accomplishments": 0
+    },
+    {
+      "team": "southern-miss",
+      "oldRank": 114,
+      "newRank": 112,
+      "rating": 21.37,
+      "accomplishments": 0
+    },
+    {
+      "team": "buffalo",
+      "oldRank": 112,
+      "newRank": 113,
+      "rating": 21.34,
+      "accomplishments": 0
+    },
+    {
+      "team": "bowling-green",
+      "oldRank": 113,
+      "newRank": 114,
+      "rating": 21.14,
+      "accomplishments": 0
+    },
+    {
+      "team": "temple",
+      "oldRank": 116,
+      "newRank": 115,
+      "rating": 21.09,
+      "accomplishments": 0
+    },
+    {
+      "team": "wyoming",
+      "oldRank": 115,
+      "newRank": 116,
+      "rating": 20.99,
+      "accomplishments": 0
+    },
+    {
+      "team": "eastern-michigan",
+      "oldRank": 117,
+      "newRank": 117,
+      "rating": 20.2,
+      "accomplishments": 0
+    },
+    {
+      "team": "florida-international",
+      "oldRank": 121,
+      "newRank": 118,
+      "rating": 20.06,
+      "accomplishments": 0
+    },
+    {
+      "team": "northern-illinois",
+      "oldRank": 119,
+      "newRank": 119,
+      "rating": 20.04,
+      "accomplishments": 0
+    },
+    {
+      "team": "new-mexico",
+      "oldRank": 118,
+      "newRank": 120,
+      "rating": 19.96,
+      "accomplishments": 0
+    },
+    {
+      "team": "nevada",
+      "oldRank": 120,
+      "newRank": 121,
+      "rating": 19.84,
+      "accomplishments": 0
+    },
+    {
+      "team": "central-michigan",
+      "oldRank": 122,
+      "newRank": 122,
+      "rating": 19.47,
+      "accomplishments": 0
+    },
+    {
+      "team": "middle-tennessee",
+      "oldRank": 123,
+      "newRank": 123,
+      "rating": 19.27,
+      "accomplishments": 0
+    },
+    {
+      "team": "rice",
+      "oldRank": 124,
+      "newRank": 124,
+      "rating": 19.13,
+      "accomplishments": 0
+    },
+    {
+      "team": "hawai-i",
+      "oldRank": 125,
+      "newRank": 125,
+      "rating": 18.87,
+      "accomplishments": 0
+    },
+    {
+      "team": "kennesaw-state",
+      "oldRank": 131,
+      "newRank": 126,
+      "rating": 18.39,
+      "accomplishments": 3.68
+    },
+    {
+      "team": "ball-state",
+      "oldRank": 126,
+      "newRank": 127,
+      "rating": 16.98,
+      "accomplishments": 0
+    },
+    {
+      "team": "sam-houston",
+      "oldRank": 128,
+      "newRank": 128,
+      "rating": 16.07,
+      "accomplishments": 0
+    },
+    {
+      "team": "utep",
+      "oldRank": 127,
+      "newRank": 129,
+      "rating": 16.06,
+      "accomplishments": 0
+    },
+    {
+      "team": "charlotte",
+      "oldRank": 129,
+      "newRank": 130,
+      "rating": 15.95,
+      "accomplishments": 0
+    },
+    {
+      "team": "akron",
+      "oldRank": 130,
+      "newRank": 131,
+      "rating": 15.42,
+      "accomplishments": 0
+    },
+    {
+      "team": "new-mexico-state",
+      "oldRank": 132,
+      "newRank": 132,
+      "rating": 14.21,
+      "accomplishments": 0
+    },
+    {
+      "team": "ul-monroe",
+      "oldRank": 133,
+      "newRank": 133,
+      "rating": 13.94,
+      "accomplishments": 0
+    },
+    {
+      "team": "missouri-state",
+      "oldRank": 134,
+      "newRank": 134,
+      "rating": 13.64,
+      "accomplishments": 0
+    },
+    {
+      "team": "kent-state",
+      "oldRank": 135,
+      "newRank": 135,
+      "rating": 13.18,
+      "accomplishments": 0
+    },
+    {
+      "team": "sacramento-state",
+      "oldRank": 136,
+      "newRank": 136,
+      "rating": 12.8,
+      "accomplishments": 0
+    },
+    {
+      "team": "delaware",
+      "oldRank": 137,
+      "newRank": 137,
+      "rating": 12.57,
+      "accomplishments": 0
+    },
+    {
+      "team": "umass",
+      "oldRank": 138,
+      "newRank": 138,
+      "rating": 12.05,
+      "accomplishments": 0
+    }
+  ],
+  "deployment": "adjoining-opossum-710",
+  "modelVersion": "cfb26-program-v4",
+  "cutoffAt": 1789351108562,
+  "coverage": "Modern-era national-title ledger plus sourced championship-game evidence; shared and non-game conference titles require further verified backfill."
+}

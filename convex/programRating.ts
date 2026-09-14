@@ -1,6 +1,8 @@
+import { programAccomplishmentCredit } from './programAccomplishments.ts'
 import type { PowerTeamRating } from './ratingSystem.ts'
+import type { ProgramAccomplishment } from './programAccomplishments'
 
-export const PROGRAM_MODEL_VERSION = 'cfb26-program-v3'
+export const PROGRAM_MODEL_VERSION = 'cfb26-program-v4'
 
 export type ProgramSeasonEvidence = {
   teamId: string
@@ -17,6 +19,9 @@ export type ProgramRating = {
   programRating: number
   programRank: number
   programResults: number
+  programAccomplishments: number
+  programRecentAccomplishments: number
+  programLegacyAccomplishments: number
   programAcquisition: number | null
   programDevelopment: number | null
   programCoverage: number
@@ -108,6 +113,7 @@ export function buildProgramRatings(input: {
   season: number
   teams: ReadonlyArray<Pick<PowerTeamRating, 'teamId' | 'published'>>
   evidence: ReadonlyArray<ProgramSeasonEvidence>
+  accomplishments?: ReadonlyArray<ProgramAccomplishment>
 }): Array<ProgramRating> {
   const keys = new Set<string>()
   for (const row of input.evidence) {
@@ -161,17 +167,27 @@ export function buildProgramRatings(input: {
       const resultReliability = Math.min(results.weight / 1.5, 1)
       const programResults =
         50 + (score(results.value) - 50) * resultReliability
+      const accomplishments = programAccomplishmentCredit(
+        (input.accomplishments ?? []).filter(
+          (row) => row.teamId === team.teamId,
+        ),
+        input.season,
+      )
       return {
         teamId: team.teamId,
         programRating:
           Math.round(
-            (programResults * 0.7 +
-              score(acquisition.value) * 0.2 +
-              score(development.value) * 0.1) *
+            (programResults * 0.5 +
+              score(acquisition.value) * 0.15 +
+              score(development.value) * 0.05 +
+              accomplishments.total) *
               100,
           ) / 100,
         programRank: 0,
         programResults,
+        programAccomplishments: accomplishments.total,
+        programRecentAccomplishments: accomplishments.recentCredit,
+        programLegacyAccomplishments: accomplishments.legacyCredit,
         programAcquisition: acquisition.value,
         programDevelopment: development.value,
         programCoverage: Math.round(coverage * 100),

@@ -1272,12 +1272,11 @@ function Methodology({
           <p className="app-kicker">Sustained competitive health</p>
           <h2 className="mt-2 text-3xl font-bold">State of the Program</h2>
           <p className="mt-3 text-sm leading-6">
-            Ten seasons of evidence, with the recent five carrying most weight.
-            Competitive results contribute 70%, talent acquisition 20%, and
-            development 10%. Partial seasons contribute in proportion to games
-            played. Older seasons fade smoothly. Talent and recruiting use
-            comparable percentile scales; development also considers prior
-            roster talent. Brand recognition earns no points.
+            Sustained results, recruiting, development, and accomplishments
+            since 2000. Conference titles and deeper playoff runs earn prestige;
+            national championships carry the most credit. Recent success matters
+            most, while older accomplishments retain a smaller legacy
+            contribution.
           </p>
           <Link
             to="/national/program"

@@ -29,7 +29,10 @@ test('verified offseason capacity updates Program before any current-season game
   const newcomer = rows.find((row) => row.teamId === 'newcomer')
   assert.equal(newcomer.programResults, 50)
   assert.equal(newcomer.programAcquisition, 90)
-  assert.ok(newcomer.programRating > 50)
+  assert.ok(
+    newcomer.programRating >
+      rows.find((row) => row.teamId === 'brand').programRating,
+  )
   assert.equal(newcomer.programSeasons, 0)
 })
 test('recent sustained excellence outranks older prestige and a small hot sample', () => {

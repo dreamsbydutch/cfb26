@@ -137,7 +137,7 @@ Historical ratings from 2015 onward are labeled reconstructions. Official prospe
 
 ## CFB26 Program
 
-**Current source:** [Three independent ratings](../reference/three-team-ratings.md) separate durable Program health, predictive Power, and earned Résumé. Program uses ten seasons with recent five-season emphasis, visible results/acquisition/development components, and explicit missing coverage. No brand bonus applies.
+**Current source:** [Three independent ratings](../reference/three-team-ratings.md) separate durable Program health, predictive Power, and earned Résumé. Program combines ten seasons of results, acquisition, and development with earned accomplishments since 2000. Conference titles, playoff advancement, and national championships contribute explicit prestige credit through recent and legacy curves. Recent success matters most; older honors retain a bounded contribution. Brand recognition alone earns no points. Historical conference-title coverage remains limited to verified records and sourced title-game results.
 
 ## CFB26 Power
 

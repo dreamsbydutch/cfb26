@@ -31,6 +31,8 @@ import type * as powerRelease from "../powerRelease.js";
 import type * as powerResearch from "../powerResearch.js";
 import type * as powerRoster from "../powerRoster.js";
 import type * as powerRosterRelease from "../powerRosterRelease.js";
+import type * as programAccomplishments from "../programAccomplishments.js";
+import type * as programHonorsHistory from "../programHonorsHistory.js";
 import type * as programIdentity from "../programIdentity.js";
 import type * as programRating from "../programRating.js";
 import type * as rankingTools from "../rankingTools.js";
@@ -78,6 +80,8 @@ declare const fullApi: ApiFromModules<{
   powerResearch: typeof powerResearch;
   powerRoster: typeof powerRoster;
   powerRosterRelease: typeof powerRosterRelease;
+  programAccomplishments: typeof programAccomplishments;
+  programHonorsHistory: typeof programHonorsHistory;
   programIdentity: typeof programIdentity;
   programRating: typeof programRating;
   rankingTools: typeof rankingTools;

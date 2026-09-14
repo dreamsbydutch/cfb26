@@ -429,6 +429,8 @@ export default defineSchema({
   }).index('by_season', ['season']),
 
   conferenceChampions: defineTable({
+    awardedAt: v.optional(v.number()),
+    sourceUpdatedAt: v.optional(v.number()),
     conference: v.string(),
     programId: v.id('programs'),
     season: v.number(),
