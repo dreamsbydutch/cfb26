@@ -29,7 +29,7 @@ const [
 ] = process.argv.slice(2)
 if (!outputPath)
   throw new Error(
-    'Usage: node scripts/evaluate-power-ensemble.mjs <enriched-data.json> <incumbent-evaluation.json> <market-directory> <new-output.json> [prepared-program-context.json]',
+    'Usage: node scripts/evaluate-power-ensemble.mjs <enriched-data.json> <incumbent-evaluation.json> <market-directory> <new-output.json> [prepared-program-context.json] [--retain-forecasts]',
   )
 const buffer = await readFile(dataPath),
   data = JSON.parse(buffer)
@@ -294,8 +294,12 @@ const output = {
   forecastSha256: createHash('sha256')
     .update(JSON.stringify(forecasts))
     .digest('hex'),
+  forecasts: process.argv.includes('--retain-forecasts')
+    ? forecasts
+    : undefined,
 }
 await writeFile(outputPath, JSON.stringify(output, null, 2) + '\n', {
   flag: 'wx',
 })
-console.log(JSON.stringify(output, null, 2))
+const { forecasts: _retainedForecasts, ...summary } = output
+console.log(JSON.stringify(summary, null, 2))

@@ -16,6 +16,7 @@ export const programSnapshotFields = {
   programRating: v.optional(v.number()),
   programRank: v.optional(v.number()),
   programResults: v.optional(v.number()),
+  programSustainedResults: v.optional(v.number()),
   programAccomplishments: v.optional(v.number()),
   programRecentAccomplishments: v.optional(v.number()),
   programLegacyAccomplishments: v.optional(v.number()),

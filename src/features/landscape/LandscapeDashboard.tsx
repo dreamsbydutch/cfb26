@@ -1275,8 +1275,8 @@ function Methodology({
             Sustained results, recruiting, development, and accomplishments
             since 2000. Conference titles and deeper playoff runs earn prestige;
             national championships carry the most credit. Recent success matters
-            most, while older accomplishments retain a smaller legacy
-            contribution.
+            more when elite results repeat in consecutive seasons. Older
+            accomplishments retain a smaller legacy contribution.
           </p>
           <Link
             to="/national/program"

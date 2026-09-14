@@ -1,0 +1,1114 @@
+{
+  "deployment": "adjoining-opossum-710",
+  "editionId": "q17b1mbd85dz18kbpk09bfpcz98ecm03",
+  "cutoffAt": 1789351108562,
+  "modelVersion": "cfb26-program-v5",
+  "all138Verified": true,
+  "powerAndResumeUnchanged": true,
+  "changes": [
+    {
+      "team": "ohio-state",
+      "oldRank": 1,
+      "oldRating": 87.28,
+      "rating": 88.62,
+      "lift": 1.3436348456015423,
+      "rank": 1
+    },
+    {
+      "team": "georgia",
+      "oldRank": 2,
+      "oldRating": 85.26,
+      "rating": 87.1,
+      "lift": 1.8490272779188701,
+      "rank": 2
+    },
+    {
+      "team": "alabama",
+      "oldRank": 3,
+      "oldRating": 84.29,
+      "rating": 85.4,
+      "lift": 1.1118787656671876,
+      "rank": 3
+    },
+    {
+      "team": "michigan",
+      "oldRank": 4,
+      "oldRating": 74.86,
+      "rating": 78.14,
+      "lift": 3.2790263451692208,
+      "rank": 4
+    },
+    {
+      "team": "notre-dame",
+      "oldRank": 5,
+      "oldRating": 74.85,
+      "rating": 77.3,
+      "lift": 2.448884729348413,
+      "rank": 5
+    },
+    {
+      "team": "oregon",
+      "oldRank": 6,
+      "oldRating": 73.78,
+      "rating": 76.27,
+      "lift": 2.4900243109792446,
+      "rank": 6
+    },
+    {
+      "team": "clemson",
+      "oldRank": 7,
+      "oldRating": 73.67,
+      "rating": 74.98,
+      "lift": 1.3136519214079998,
+      "rank": 7
+    },
+    {
+      "team": "texas",
+      "oldRank": 8,
+      "oldRating": 72.49,
+      "rating": 74.59,
+      "lift": 2.0985796543642463,
+      "rank": 8
+    },
+    {
+      "team": "indiana",
+      "oldRank": 12,
+      "oldRating": 65.09,
+      "rating": 69.09,
+      "lift": 4,
+      "rank": 9
+    },
+    {
+      "team": "miami",
+      "oldRank": 10,
+      "oldRating": 65.83,
+      "rating": 67.83,
+      "lift": 2.0003515930531326,
+      "rank": 10
+    },
+    {
+      "team": "oklahoma",
+      "oldRank": 9,
+      "oldRating": 65.99,
+      "rating": 66.59,
+      "lift": 0.6030434902585706,
+      "rank": 11
+    },
+    {
+      "team": "penn-state",
+      "oldRank": 13,
+      "oldRating": 64.32,
+      "rating": 65.78,
+      "lift": 1.4540145028773297,
+      "rank": 12
+    },
+    {
+      "team": "lsu",
+      "oldRank": 11,
+      "oldRating": 65.18,
+      "rating": 65.29,
+      "lift": 0.1047717593341162,
+      "rank": 13
+    },
+    {
+      "team": "ole-miss",
+      "oldRank": 14,
+      "oldRating": 61.7,
+      "rating": 64.17,
+      "lift": 2.466942571220347,
+      "rank": 14
+    },
+    {
+      "team": "washington",
+      "oldRank": 15,
+      "oldRating": 59.05,
+      "rating": 59.05,
+      "lift": 0,
+      "rank": 15
+    },
+    {
+      "team": "texas-a-m",
+      "oldRank": 16,
+      "oldRating": 57.92,
+      "rating": 57.92,
+      "lift": 0,
+      "rank": 16
+    },
+    {
+      "team": "usc",
+      "oldRank": 17,
+      "oldRating": 57.57,
+      "rating": 57.57,
+      "lift": 0,
+      "rank": 17
+    },
+    {
+      "team": "texas-tech",
+      "oldRank": 18,
+      "oldRating": 55.09,
+      "rating": 55.09,
+      "lift": 0,
+      "rank": 18
+    },
+    {
+      "team": "tennessee",
+      "oldRank": 19,
+      "oldRating": 55.03,
+      "rating": 55.03,
+      "lift": 0,
+      "rank": 19
+    },
+    {
+      "team": "florida",
+      "oldRank": 20,
+      "oldRating": 54.41,
+      "rating": 54.68,
+      "lift": 0.2677355412454027,
+      "rank": 20
+    },
+    {
+      "team": "auburn",
+      "oldRank": 21,
+      "oldRating": 54.17,
+      "rating": 54.17,
+      "lift": 0,
+      "rank": 21
+    },
+    {
+      "team": "boise-state",
+      "oldRank": 22,
+      "oldRating": 53.26,
+      "rating": 53.26,
+      "lift": 0,
+      "rank": 22
+    },
+    {
+      "team": "tcu",
+      "oldRank": 23,
+      "oldRating": 52.93,
+      "rating": 52.93,
+      "lift": 0,
+      "rank": 23
+    },
+    {
+      "team": "florida-state",
+      "oldRank": 26,
+      "oldRating": 50.68,
+      "rating": 51.87,
+      "lift": 1.1879320428976752,
+      "rank": 24
+    },
+    {
+      "team": "utah",
+      "oldRank": 24,
+      "oldRating": 51.56,
+      "rating": 51.64,
+      "lift": 0.07821909085415915,
+      "rank": 25
+    },
+    {
+      "team": "smu",
+      "oldRank": 25,
+      "oldRating": 51.55,
+      "rating": 51.55,
+      "lift": 0,
+      "rank": 26
+    },
+    {
+      "team": "iowa",
+      "oldRank": 27,
+      "oldRating": 49.77,
+      "rating": 49.89,
+      "lift": 0.11742030790360593,
+      "rank": 27
+    },
+    {
+      "team": "kansas-state",
+      "oldRank": 29,
+      "oldRating": 48.03,
+      "rating": 49.5,
+      "lift": 1.4764014597296187,
+      "rank": 28
+    },
+    {
+      "team": "arizona-state",
+      "oldRank": 28,
+      "oldRating": 48.92,
+      "rating": 48.92,
+      "lift": 0,
+      "rank": 29
+    },
+    {
+      "team": "missouri",
+      "oldRank": 30,
+      "oldRating": 47.95,
+      "rating": 47.95,
+      "lift": 0,
+      "rank": 30
+    },
+    {
+      "team": "south-carolina",
+      "oldRank": 31,
+      "oldRating": 46.96,
+      "rating": 46.96,
+      "lift": 0,
+      "rank": 31
+    },
+    {
+      "team": "tulane",
+      "oldRank": 32,
+      "oldRating": 46.59,
+      "rating": 46.59,
+      "lift": 0,
+      "rank": 32
+    },
+    {
+      "team": "louisville",
+      "oldRank": 33,
+      "oldRating": 46.38,
+      "rating": 46.38,
+      "lift": 0,
+      "rank": 33
+    },
+    {
+      "team": "cincinnati",
+      "oldRank": 37,
+      "oldRating": 43.05,
+      "rating": 44.09,
+      "lift": 1.0404480550036896,
+      "rank": 34
+    },
+    {
+      "team": "iowa-state",
+      "oldRank": 34,
+      "oldRating": 43.51,
+      "rating": 43.51,
+      "lift": 0,
+      "rank": 35
+    },
+    {
+      "team": "wisconsin",
+      "oldRank": 35,
+      "oldRating": 43.41,
+      "rating": 43.41,
+      "lift": 0,
+      "rank": 36
+    },
+    {
+      "team": "kentucky",
+      "oldRank": 36,
+      "oldRating": 43.25,
+      "rating": 43.25,
+      "lift": 0,
+      "rank": 37
+    },
+    {
+      "team": "ucla",
+      "oldRank": 38,
+      "oldRating": 42.81,
+      "rating": 42.81,
+      "lift": 0,
+      "rank": 38
+    },
+    {
+      "team": "mississippi-state",
+      "oldRank": 39,
+      "oldRating": 42.39,
+      "rating": 42.39,
+      "lift": 0,
+      "rank": 39
+    },
+    {
+      "team": "pitt",
+      "oldRank": 40,
+      "oldRating": 42.36,
+      "rating": 42.36,
+      "lift": 0,
+      "rank": 40
+    },
+    {
+      "team": "arkansas",
+      "oldRank": 41,
+      "oldRating": 42.29,
+      "rating": 42.29,
+      "lift": 0,
+      "rank": 41
+    },
+    {
+      "team": "duke",
+      "oldRank": 42,
+      "oldRating": 42.22,
+      "rating": 42.22,
+      "lift": 0,
+      "rank": 42
+    },
+    {
+      "team": "nebraska",
+      "oldRank": 43,
+      "oldRating": 42.08,
+      "rating": 42.08,
+      "lift": 0,
+      "rank": 43
+    },
+    {
+      "team": "byu",
+      "oldRank": 45,
+      "oldRating": 41.62,
+      "rating": 41.7,
+      "lift": 0.07628114575206357,
+      "rank": 44
+    },
+    {
+      "team": "nc-state",
+      "oldRank": 44,
+      "oldRating": 41.67,
+      "rating": 41.67,
+      "lift": 0,
+      "rank": 45
+    },
+    {
+      "team": "minnesota",
+      "oldRank": 46,
+      "oldRating": 41.13,
+      "rating": 41.13,
+      "lift": 0,
+      "rank": 46
+    },
+    {
+      "team": "illinois",
+      "oldRank": 47,
+      "oldRating": 41.03,
+      "rating": 41.03,
+      "lift": 0,
+      "rank": 47
+    },
+    {
+      "team": "baylor",
+      "oldRank": 48,
+      "oldRating": 40.55,
+      "rating": 40.55,
+      "lift": 0,
+      "rank": 48
+    },
+    {
+      "team": "north-carolina",
+      "oldRank": 49,
+      "oldRating": 40.33,
+      "rating": 40.33,
+      "lift": 0,
+      "rank": 49
+    },
+    {
+      "team": "ucf",
+      "oldRank": 50,
+      "oldRating": 39.95,
+      "rating": 40.15,
+      "lift": 0.2047731412236809,
+      "rank": 50
+    },
+    {
+      "team": "james-madison",
+      "oldRank": 51,
+      "oldRating": 39.79,
+      "rating": 39.79,
+      "lift": 0,
+      "rank": 51
+    },
+    {
+      "team": "georgia-tech",
+      "oldRank": 52,
+      "oldRating": 39.35,
+      "rating": 39.35,
+      "lift": 0,
+      "rank": 52
+    },
+    {
+      "team": "maryland",
+      "oldRank": 53,
+      "oldRating": 39.24,
+      "rating": 39.24,
+      "lift": 0,
+      "rank": 53
+    },
+    {
+      "team": "memphis",
+      "oldRank": 54,
+      "oldRating": 39.23,
+      "rating": 39.23,
+      "lift": 0,
+      "rank": 54
+    },
+    {
+      "team": "virginia-tech",
+      "oldRank": 55,
+      "oldRating": 39.2,
+      "rating": 39.2,
+      "lift": 0,
+      "rank": 55
+    },
+    {
+      "team": "michigan-state",
+      "oldRank": 56,
+      "oldRating": 37.88,
+      "rating": 37.88,
+      "lift": 0,
+      "rank": 56
+    },
+    {
+      "team": "arizona",
+      "oldRank": 57,
+      "oldRating": 37.74,
+      "rating": 37.74,
+      "lift": 0,
+      "rank": 57
+    },
+    {
+      "team": "wake-forest",
+      "oldRank": 58,
+      "oldRating": 37.54,
+      "rating": 37.54,
+      "lift": 0,
+      "rank": 58
+    },
+    {
+      "team": "virginia",
+      "oldRank": 59,
+      "oldRating": 37.27,
+      "rating": 37.27,
+      "lift": 0,
+      "rank": 59
+    },
+    {
+      "team": "toledo",
+      "oldRank": 60,
+      "oldRating": 37.21,
+      "rating": 37.21,
+      "lift": 0,
+      "rank": 60
+    },
+    {
+      "team": "houston",
+      "oldRank": 61,
+      "oldRating": 37.16,
+      "rating": 37.16,
+      "lift": 0,
+      "rank": 61
+    },
+    {
+      "team": "kansas",
+      "oldRank": 62,
+      "oldRating": 37.14,
+      "rating": 37.14,
+      "lift": 0,
+      "rank": 62
+    },
+    {
+      "team": "vanderbilt",
+      "oldRank": 63,
+      "oldRating": 37.11,
+      "rating": 37.11,
+      "lift": 0,
+      "rank": 63
+    },
+    {
+      "team": "washington-state",
+      "oldRank": 64,
+      "oldRating": 36.66,
+      "rating": 36.66,
+      "lift": 0,
+      "rank": 64
+    },
+    {
+      "team": "california",
+      "oldRank": 65,
+      "oldRating": 36.63,
+      "rating": 36.63,
+      "lift": 0,
+      "rank": 65
+    },
+    {
+      "team": "west-virginia",
+      "oldRank": 66,
+      "oldRating": 36.5,
+      "rating": 36.5,
+      "lift": 0,
+      "rank": 66
+    },
+    {
+      "team": "oklahoma-state",
+      "oldRank": 67,
+      "oldRating": 36.19,
+      "rating": 36.19,
+      "lift": 0,
+      "rank": 67
+    },
+    {
+      "team": "northwestern",
+      "oldRank": 68,
+      "oldRating": 34.98,
+      "rating": 34.98,
+      "lift": 0,
+      "rank": 68
+    },
+    {
+      "team": "utsa",
+      "oldRank": 69,
+      "oldRating": 34.73,
+      "rating": 34.73,
+      "lift": 0,
+      "rank": 69
+    },
+    {
+      "team": "colorado",
+      "oldRank": 70,
+      "oldRating": 34.52,
+      "rating": 34.52,
+      "lift": 0,
+      "rank": 70
+    },
+    {
+      "team": "syracuse",
+      "oldRank": 71,
+      "oldRating": 34.47,
+      "rating": 34.47,
+      "lift": 0,
+      "rank": 71
+    },
+    {
+      "team": "rutgers",
+      "oldRank": 72,
+      "oldRating": 34.28,
+      "rating": 34.28,
+      "lift": 0,
+      "rank": 72
+    },
+    {
+      "team": "fresno-state",
+      "oldRank": 73,
+      "oldRating": 34.06,
+      "rating": 34.06,
+      "lift": 0,
+      "rank": 73
+    },
+    {
+      "team": "marshall",
+      "oldRank": 74,
+      "oldRating": 33.59,
+      "rating": 33.59,
+      "lift": 0,
+      "rank": 74
+    },
+    {
+      "team": "purdue",
+      "oldRank": 75,
+      "oldRating": 33.53,
+      "rating": 33.53,
+      "lift": 0,
+      "rank": 75
+    },
+    {
+      "team": "boston-college",
+      "oldRank": 76,
+      "oldRating": 33.34,
+      "rating": 33.34,
+      "lift": 0,
+      "rank": 76
+    },
+    {
+      "team": "troy",
+      "oldRank": 77,
+      "oldRating": 33.12,
+      "rating": 33.12,
+      "lift": 0,
+      "rank": 77
+    },
+    {
+      "team": "south-florida",
+      "oldRank": 78,
+      "oldRating": 32.86,
+      "rating": 32.86,
+      "lift": 0,
+      "rank": 78
+    },
+    {
+      "team": "east-carolina",
+      "oldRank": 79,
+      "oldRating": 32.85,
+      "rating": 32.85,
+      "lift": 0,
+      "rank": 79
+    },
+    {
+      "team": "stanford",
+      "oldRank": 80,
+      "oldRating": 32.55,
+      "rating": 32.55,
+      "lift": 0,
+      "rank": 80
+    },
+    {
+      "team": "army",
+      "oldRank": 81,
+      "oldRating": 31.52,
+      "rating": 31.52,
+      "lift": 0,
+      "rank": 81
+    },
+    {
+      "team": "oregon-state",
+      "oldRank": 82,
+      "oldRating": 31.48,
+      "rating": 31.48,
+      "lift": 0,
+      "rank": 82
+    },
+    {
+      "team": "app-state",
+      "oldRank": 84,
+      "oldRating": 30.44,
+      "rating": 30.57,
+      "lift": 0.12460278404414198,
+      "rank": 83
+    },
+    {
+      "team": "north-texas",
+      "oldRank": 83,
+      "oldRating": 30.49,
+      "rating": 30.49,
+      "lift": 0,
+      "rank": 84
+    },
+    {
+      "team": "unlv",
+      "oldRank": 85,
+      "oldRating": 30.4,
+      "rating": 30.4,
+      "lift": 0,
+      "rank": 85
+    },
+    {
+      "team": "miami-oh",
+      "oldRank": 86,
+      "oldRating": 30.4,
+      "rating": 30.4,
+      "lift": 0,
+      "rank": 86
+    },
+    {
+      "team": "western-kentucky",
+      "oldRank": 87,
+      "oldRating": 30.36,
+      "rating": 30.36,
+      "lift": 0,
+      "rank": 87
+    },
+    {
+      "team": "western-michigan",
+      "oldRank": 88,
+      "oldRating": 30.1,
+      "rating": 30.1,
+      "lift": 0,
+      "rank": 88
+    },
+    {
+      "team": "liberty",
+      "oldRank": 89,
+      "oldRating": 30.07,
+      "rating": 30.07,
+      "lift": 0,
+      "rank": 89
+    },
+    {
+      "team": "san-diego-state",
+      "oldRank": 90,
+      "oldRating": 29.9,
+      "rating": 29.9,
+      "lift": 0,
+      "rank": 90
+    },
+    {
+      "team": "louisiana",
+      "oldRank": 91,
+      "oldRating": 29.71,
+      "rating": 29.71,
+      "lift": 0,
+      "rank": 91
+    },
+    {
+      "team": "ohio",
+      "oldRank": 92,
+      "oldRating": 29.24,
+      "rating": 29.24,
+      "lift": 0,
+      "rank": 92
+    },
+    {
+      "team": "navy",
+      "oldRank": 93,
+      "oldRating": 28.02,
+      "rating": 28.02,
+      "lift": 0,
+      "rank": 93
+    },
+    {
+      "team": "texas-state",
+      "oldRank": 94,
+      "oldRating": 27.12,
+      "rating": 27.12,
+      "lift": 0,
+      "rank": 94
+    },
+    {
+      "team": "old-dominion",
+      "oldRank": 95,
+      "oldRating": 26.35,
+      "rating": 26.35,
+      "lift": 0,
+      "rank": 95
+    },
+    {
+      "team": "south-alabama",
+      "oldRank": 96,
+      "oldRating": 25.91,
+      "rating": 25.91,
+      "lift": 0,
+      "rank": 96
+    },
+    {
+      "team": "air-force",
+      "oldRank": 97,
+      "oldRating": 25.87,
+      "rating": 25.87,
+      "lift": 0,
+      "rank": 97
+    },
+    {
+      "team": "coastal-carolina",
+      "oldRank": 98,
+      "oldRating": 25.63,
+      "rating": 25.63,
+      "lift": 0,
+      "rank": 98
+    },
+    {
+      "team": "north-dakota-state",
+      "oldRank": 99,
+      "oldRating": 25.52,
+      "rating": 25.52,
+      "lift": 0,
+      "rank": 99
+    },
+    {
+      "team": "jacksonville-state",
+      "oldRank": 100,
+      "oldRating": 25.04,
+      "rating": 25.04,
+      "lift": 0,
+      "rank": 100
+    },
+    {
+      "team": "georgia-southern",
+      "oldRank": 101,
+      "oldRating": 24.26,
+      "rating": 24.26,
+      "lift": 0,
+      "rank": 101
+    },
+    {
+      "team": "florida-atlantic",
+      "oldRank": 102,
+      "oldRating": 24.24,
+      "rating": 24.24,
+      "lift": 0,
+      "rank": 102
+    },
+    {
+      "team": "uconn",
+      "oldRank": 103,
+      "oldRating": 23.78,
+      "rating": 23.78,
+      "lift": 0,
+      "rank": 103
+    },
+    {
+      "team": "georgia-state",
+      "oldRank": 104,
+      "oldRating": 23.35,
+      "rating": 23.35,
+      "lift": 0,
+      "rank": 104
+    },
+    {
+      "team": "utah-state",
+      "oldRank": 105,
+      "oldRating": 23.35,
+      "rating": 23.35,
+      "lift": 0,
+      "rank": 105
+    },
+    {
+      "team": "tulsa",
+      "oldRank": 106,
+      "oldRating": 23.14,
+      "rating": 23.14,
+      "lift": 0,
+      "rank": 106
+    },
+    {
+      "team": "san-jose-state",
+      "oldRank": 107,
+      "oldRating": 23.08,
+      "rating": 23.08,
+      "lift": 0,
+      "rank": 107
+    },
+    {
+      "team": "uab",
+      "oldRank": 108,
+      "oldRating": 23.02,
+      "rating": 23.02,
+      "lift": 0,
+      "rank": 108
+    },
+    {
+      "team": "louisiana-tech",
+      "oldRank": 109,
+      "oldRating": 22.39,
+      "rating": 22.39,
+      "lift": 0,
+      "rank": 109
+    },
+    {
+      "team": "arkansas-state",
+      "oldRank": 110,
+      "oldRating": 22.33,
+      "rating": 22.33,
+      "lift": 0,
+      "rank": 110
+    },
+    {
+      "team": "colorado-state",
+      "oldRank": 111,
+      "oldRating": 22.24,
+      "rating": 22.24,
+      "lift": 0,
+      "rank": 111
+    },
+    {
+      "team": "southern-miss",
+      "oldRank": 112,
+      "oldRating": 21.37,
+      "rating": 21.37,
+      "lift": 0,
+      "rank": 112
+    },
+    {
+      "team": "buffalo",
+      "oldRank": 113,
+      "oldRating": 21.34,
+      "rating": 21.34,
+      "lift": 0,
+      "rank": 113
+    },
+    {
+      "team": "bowling-green",
+      "oldRank": 114,
+      "oldRating": 21.14,
+      "rating": 21.14,
+      "lift": 0,
+      "rank": 114
+    },
+    {
+      "team": "temple",
+      "oldRank": 115,
+      "oldRating": 21.09,
+      "rating": 21.09,
+      "lift": 0,
+      "rank": 115
+    },
+    {
+      "team": "wyoming",
+      "oldRank": 116,
+      "oldRating": 20.99,
+      "rating": 20.99,
+      "lift": 0,
+      "rank": 116
+    },
+    {
+      "team": "eastern-michigan",
+      "oldRank": 117,
+      "oldRating": 20.2,
+      "rating": 20.2,
+      "lift": 0,
+      "rank": 117
+    },
+    {
+      "team": "florida-international",
+      "oldRank": 118,
+      "oldRating": 20.06,
+      "rating": 20.06,
+      "lift": 0,
+      "rank": 118
+    },
+    {
+      "team": "northern-illinois",
+      "oldRank": 119,
+      "oldRating": 20.04,
+      "rating": 20.04,
+      "lift": 0,
+      "rank": 119
+    },
+    {
+      "team": "new-mexico",
+      "oldRank": 120,
+      "oldRating": 19.96,
+      "rating": 19.96,
+      "lift": 0,
+      "rank": 120
+    },
+    {
+      "team": "nevada",
+      "oldRank": 121,
+      "oldRating": 19.84,
+      "rating": 19.84,
+      "lift": 0,
+      "rank": 121
+    },
+    {
+      "team": "central-michigan",
+      "oldRank": 122,
+      "oldRating": 19.47,
+      "rating": 19.47,
+      "lift": 0,
+      "rank": 122
+    },
+    {
+      "team": "middle-tennessee",
+      "oldRank": 123,
+      "oldRating": 19.27,
+      "rating": 19.27,
+      "lift": 0,
+      "rank": 123
+    },
+    {
+      "team": "rice",
+      "oldRank": 124,
+      "oldRating": 19.13,
+      "rating": 19.13,
+      "lift": 0,
+      "rank": 124
+    },
+    {
+      "team": "hawai-i",
+      "oldRank": 125,
+      "oldRating": 18.87,
+      "rating": 18.87,
+      "lift": 0,
+      "rank": 125
+    },
+    {
+      "team": "kennesaw-state",
+      "oldRank": 126,
+      "oldRating": 18.39,
+      "rating": 18.39,
+      "lift": 0,
+      "rank": 126
+    },
+    {
+      "team": "ball-state",
+      "oldRank": 127,
+      "oldRating": 16.98,
+      "rating": 16.98,
+      "lift": 0,
+      "rank": 127
+    },
+    {
+      "team": "sam-houston",
+      "oldRank": 128,
+      "oldRating": 16.07,
+      "rating": 16.07,
+      "lift": 0,
+      "rank": 128
+    },
+    {
+      "team": "utep",
+      "oldRank": 129,
+      "oldRating": 16.06,
+      "rating": 16.06,
+      "lift": 0,
+      "rank": 129
+    },
+    {
+      "team": "charlotte",
+      "oldRank": 130,
+      "oldRating": 15.95,
+      "rating": 15.95,
+      "lift": 0,
+      "rank": 130
+    },
+    {
+      "team": "akron",
+      "oldRank": 131,
+      "oldRating": 15.42,
+      "rating": 15.42,
+      "lift": 0,
+      "rank": 131
+    },
+    {
+      "team": "new-mexico-state",
+      "oldRank": 132,
+      "oldRating": 14.21,
+      "rating": 14.21,
+      "lift": 0,
+      "rank": 132
+    },
+    {
+      "team": "ul-monroe",
+      "oldRank": 133,
+      "oldRating": 13.94,
+      "rating": 13.94,
+      "lift": 0,
+      "rank": 133
+    },
+    {
+      "team": "missouri-state",
+      "oldRank": 134,
+      "oldRating": 13.64,
+      "rating": 13.64,
+      "lift": 0,
+      "rank": 134
+    },
+    {
+      "team": "kent-state",
+      "oldRank": 135,
+      "oldRating": 13.18,
+      "rating": 13.18,
+      "lift": 0,
+      "rank": 135
+    },
+    {
+      "team": "sacramento-state",
+      "oldRank": 136,
+      "oldRating": 12.8,
+      "rating": 12.8,
+      "lift": 0,
+      "rank": 136
+    },
+    {
+      "team": "delaware",
+      "oldRank": 137,
+      "oldRating": 12.57,
+      "rating": 12.57,
+      "lift": 0,
+      "rank": 137
+    },
+    {
+      "team": "umass",
+      "oldRank": 138,
+      "oldRating": 12.05,
+      "rating": 12.05,
+      "lift": 0,
+      "rank": 138
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { buildPowerRatingEdition } from '../convex/ratingSystem.ts'
 import {
+  PROGRAM_MODEL_VERSION,
   buildProgramRatings,
   acquisitionPercentiles,
   evidencePercentiles,
@@ -15,9 +16,10 @@ import {
 } from '../convex/programContext.ts'
 
 const [enrichedPath, gamesPath, draftsPath, outputPath] = process.argv.slice(2)
+const sustainedSuccess = !process.argv.includes('--program-v4')
 if (!outputPath)
   throw new Error(
-    'Usage: node scripts/prepare-program-context.mjs <enriched.json> <games.jsonl> <drafts.jsonl> <new-output.json>',
+    'Usage: node scripts/prepare-program-context.mjs <enriched.json> <games.jsonl> <drafts.jsonl> <new-output.json> [--program-v4]',
   )
 const buffers = await Promise.all(
   [enrichedPath, gamesPath, draftsPath].map((path) => readFile(path)),
@@ -62,6 +64,7 @@ for (let season = 2000; season <= 2026; season++) {
     ...historicalNationalTitles(teams, season - 1, cutoffAt),
   ]
   const program = buildProgramRatings({
+    sustainedSuccess,
     season,
     teams: [...field].map((teamId) => ({ teamId, published: true })),
     evidence: evidence.filter((row) => row.season < season),
@@ -156,6 +159,9 @@ await writeFile(
       sourceSha256: createHash('sha256').update(buffers[0]).digest('hex'),
       inputs: buffers.map((b) => createHash('sha256').update(b).digest('hex')),
       reconstruction: true,
+      programModelVersion: sustainedSuccess
+        ? PROGRAM_MODEL_VERSION
+        : 'cfb26-program-v4',
       description:
         'Preseason Program built only from preceding seasons; linear strength mapping trained on earlier-season outcomes. Historical personnel availability is reconstructed; incomplete conference title coverage remains.',
       scores,

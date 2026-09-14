@@ -2,7 +2,7 @@
 
 [Reference index](README.md) · [Three team ratings](three-team-ratings.md)
 
-**Current source:** Power v6 includes a learned prior-season Program forecast. Résumé v5 adds bounded opponent context and the owner's explicitly approved own-history bonus. Program v4 itself is unchanged. Current-season achievements never enter these historical components.
+**Current source:** Power v6 includes a learned prior-season Program forecast. Résumé v5 adds bounded opponent context and the owner's explicitly approved own-history bonus. Their Program v4 history feature remains versioned separately from the displayed Program ranking. Current-season achievements never enter these historical components.
 
 ## Predictive evidence
 
@@ -39,3 +39,7 @@ The preparer reconstructs Program before each season from results, personnel evi
 Run `npm run test:ratings` for the forecast leakage/calibration suite and `npm test` for the bonus, blending, date cutoff, FCS fallback, and complete repository tests.
 
 The [development verification](program-context-verification-2026-09-13.json) reproduces every published team's Power value and own-history bonus from the same dated source slices. All 138 match exactly, Program scores/ranks remain unchanged at the same cutoff, and the largest current bonus is 0.113 win-equivalents. This artifact identifies a development edition; historical prediction evaluation remains the separate evidence above.
+
+## Later Program display version
+
+[Program v5](program-sustained-success-2026-09-13.md) now recognizes sustained exceptional results. Its replacement forecast feature failed promotion, so Power and Résumé continue to use the validated v4 history calculation described here. The displayed Program score is not directly substituted into the released mapping.

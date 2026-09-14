@@ -1,8 +1,9 @@
 import { programAccomplishmentCredit } from './programAccomplishments.ts'
+import { sustainedProgramResults } from './programSustained.ts'
 import type { PowerTeamRating } from './ratingSystem.ts'
 import type { ProgramAccomplishment } from './programAccomplishments'
 
-export const PROGRAM_MODEL_VERSION = 'cfb26-program-v4'
+export const PROGRAM_MODEL_VERSION = 'cfb26-program-v5'
 
 export type ProgramSeasonEvidence = {
   teamId: string
@@ -19,6 +20,7 @@ export type ProgramRating = {
   programRating: number
   programRank: number
   programResults: number
+  programSustainedResults: number
   programAccomplishments: number
   programRecentAccomplishments: number
   programLegacyAccomplishments: number
@@ -114,6 +116,8 @@ export function buildProgramRatings(input: {
   teams: ReadonlyArray<Pick<PowerTeamRating, 'teamId' | 'published'>>
   evidence: ReadonlyArray<ProgramSeasonEvidence>
   accomplishments?: ReadonlyArray<ProgramAccomplishment>
+  /** Reproduce the versioned v4 forecasting feature until a replacement passes validation. */
+  sustainedSuccess?: boolean
 }): Array<ProgramRating> {
   const keys = new Set<string>()
   for (const row of input.evidence) {
@@ -165,12 +169,23 @@ export function buildProgramRatings(input: {
           0.1 * development.weight) /
         maximumWeight
       const resultReliability = Math.min(results.weight / 1.5, 1)
-      const programResults =
+      const baselineResults =
         50 + (score(results.value) - 50) * resultReliability
+      const teamHonors = (input.accomplishments ?? []).filter(
+        (row) => row.teamId === team.teamId,
+      )
+      const sustained =
+        input.sustainedSuccess === false
+          ? { results: baselineResults, ratingLift: 0 }
+          : sustainedProgramResults(
+              rows,
+              teamHonors,
+              input.season,
+              baselineResults,
+            )
+      const programResults = sustained.results
       const accomplishments = programAccomplishmentCredit(
-        (input.accomplishments ?? []).filter(
-          (row) => row.teamId === team.teamId,
-        ),
+        teamHonors,
         input.season,
       )
       return {
@@ -185,6 +200,7 @@ export function buildProgramRatings(input: {
           ) / 100,
         programRank: 0,
         programResults,
+        programSustainedResults: sustained.ratingLift,
         programAccomplishments: accomplishments.total,
         programRecentAccomplishments: accomplishments.recentCredit,
         programLegacyAccomplishments: accomplishments.legacyCredit,

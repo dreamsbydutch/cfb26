@@ -39,6 +39,7 @@ import type * as programContextRelease from "../programContextRelease.js";
 import type * as programHonorsHistory from "../programHonorsHistory.js";
 import type * as programIdentity from "../programIdentity.js";
 import type * as programRating from "../programRating.js";
+import type * as programSustained from "../programSustained.js";
 import type * as rankingTools from "../rankingTools.js";
 import type * as ratingBacktest from "../ratingBacktest.js";
 import type * as ratingCalendar from "../ratingCalendar.js";
@@ -92,6 +93,7 @@ declare const fullApi: ApiFromModules<{
   programHonorsHistory: typeof programHonorsHistory;
   programIdentity: typeof programIdentity;
   programRating: typeof programRating;
+  programSustained: typeof programSustained;
   rankingTools: typeof rankingTools;
   ratingBacktest: typeof ratingBacktest;
   ratingCalendar: typeof ratingCalendar;

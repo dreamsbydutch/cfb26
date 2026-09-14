@@ -1679,6 +1679,9 @@ export const buildRatingEdition = internalAction({
       accomplishments: programAccomplishments,
     })
     const priorPrograms = buildProgramRatings({
+      // Keep the validated v4 feature scale for Power and Résumé context.
+      // The v5 sustained-results challenger failed the eight-season Power gate.
+      sustainedSuccess: false,
       season,
       teams: powerEdition.ratings,
       evidence: programEvidence.filter((row) => row.season < season),

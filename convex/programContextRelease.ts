@@ -1,6 +1,7 @@
 import type { ProgramForecastFit } from './programContext'
 
-// Past-season fits; see the Program-context evaluation artifact.
+// Fits for the frozen Program v4 feature, not the current displayed Program score.
+// See the Program-context evaluation and sustained-success comparison artifacts.
 export const PROGRAM_CONTEXT_FITS: Record<number, ProgramForecastFit> = {
   '2003': {
     intercept: -32.256011162938,

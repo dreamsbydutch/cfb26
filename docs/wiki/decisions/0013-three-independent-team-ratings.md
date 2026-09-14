@@ -32,3 +32,9 @@ The numerical implementations and remaining data limits live in [Three team rati
 The owner explicitly chose a small bonus for a team’s own history in Résumé, in addition to opponent context. This supersedes the original no-history Résumé rule. The bonus is capped at 0.15 win-equivalents and requires a current-season win; FBS opponent fitting receives half a game of Program prior. Only completed prior seasons qualify. This intentionally introduces a small prestige preference into otherwise earned merit.
 
 Power may use Program history only after earlier-season prediction validation. The learned 2026 blend passed the existing gates and is released as Power v6; Résumé becomes v5 and Program stays v4. See the [evaluation and reproduction contract](../reference/program-context-2026-09-13.md).
+
+## Amendment: sustained exceptional success, September 13, 2026
+
+The owner chose one Program ranking that remains stable through ordinary variation but responds more strongly to multiple consecutive exceptional seasons. Program v5 applies a bounded adjustment inside its existing results allocation; it does not add another ranking or duplicate trophy points. The common rule uses completed prior-season performance, sample requirements, and achievement confirmation. See the [numerical rule and verification](../reference/program-sustained-success-2026-09-13.md).
+
+The revised Program input failed prediction promotion against the released Power ensemble. Power v6 and Résumé v5 therefore retain the versioned v4 history feature and existing coefficients. Updating a public prestige score does not silently rewrite a validated forecast feature.

@@ -19,3 +19,5 @@
 - [Power forecast foundation evaluation](power-foundation-2026-09-13.md) — blowout treatment, learned roster priors, and external prediction benchmarks.
 
 - [Program context in Power and Résumé](program-context-2026-09-13.md) — learned Power blend, bounded merit policy, and reproduction evidence.
+
+- [Sustained exceptional Program success](program-sustained-success-2026-09-13.md) — consecutive elite seasons, bounded results adjustment, and prediction safeguards.
