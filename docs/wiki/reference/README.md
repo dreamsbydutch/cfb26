@@ -17,3 +17,5 @@
 - [Power model methods and benchmark freshness](power-methods-2026-09-13.md) — SP+, FPI, football efficiency, Elo, and evaluation boundaries.
 
 - [Power forecast foundation evaluation](power-foundation-2026-09-13.md) — blowout treatment, learned roster priors, and external prediction benchmarks.
+
+- [Program context in Power and Résumé](program-context-2026-09-13.md) — learned Power blend, bounded merit policy, and reproduction evidence.

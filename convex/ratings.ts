@@ -31,6 +31,9 @@ import {
   accomplishmentsFromGames,
 } from './programAccomplishments'
 import { historicalNationalTitles } from './programHonorsHistory'
+import { releasedProgramContextFit } from './programContextRelease'
+import { withProgramPower } from './powerProgram'
+import { POWER_PROGRAM_RELEASE } from './powerProgramRelease'
 import schema from './schema'
 import {
   PROGRAM_MODEL_VERSION,
@@ -46,6 +49,7 @@ import {
   RESUME_MODEL_VERSION,
   buildPowerRatingEdition,
   buildResumeRatingEdition,
+  powerForOpponent,
   projectPowerMatchup,
   scoreWeeklyMatchup,
 } from './ratingSystem'
@@ -1154,9 +1158,15 @@ export const storeDerivedEditionOutputs = internalMutation({
         cancellationEvidence(game)
       )
         continue
-      const homeFieldEffect = game.neutralSite ? 0 : home.homeFieldAdvantage
+      const homePoints = powerForOpponent(home, away)
+      const awayPoints = powerForOpponent(away, home)
+      const homeFieldEffect = game.neutralSite
+        ? 0
+        : homePoints.homeFieldAdvantage
       const expectedMargin =
-        Math.round((home.power - away.power + homeFieldEffect) * 10) / 10
+        Math.round(
+          (homePoints.power - awayPoints.power + homeFieldEffect) * 10,
+        ) / 10
       const calibration = editionCalibration(edition)
       const winProbability = calibration
         ? calibrateMargin(expectedMargin, calibration)
@@ -1528,11 +1538,6 @@ export const buildRatingEdition = internalAction({
         },
       ]
     })
-    const resumeEdition = buildResumeRatingEdition({
-      games: currentGames,
-      powerEdition,
-      week,
-    })
     const programEvidence: Array<ProgramSeasonEvidence> = []
     const programAccomplishments: Array<ProgramAccomplishment> =
       historicalNationalTitles(
@@ -1595,7 +1600,7 @@ export const buildRatingEdition = internalAction({
             participantIds.has(String(program._id)) ||
             memberIds.has(String(program._id)) ||
             (evidenceSeason === season &&
-              powerEdition.ratings.some(
+              powerEdition?.ratings.some(
                 (row) => row.teamId === String(program._id),
               )),
         )
@@ -1673,6 +1678,38 @@ export const buildRatingEdition = internalAction({
       evidence: programEvidence,
       accomplishments: programAccomplishments,
     })
+    const priorPrograms = buildProgramRatings({
+      season,
+      teams: powerEdition.ratings,
+      evidence: programEvidence.filter((row) => row.season < season),
+      accomplishments: programAccomplishments.filter(
+        (row) => row.season < season,
+      ),
+    })
+    const programContext = new Map(
+      priorPrograms.map((row) => [
+        row.teamId,
+        {
+          programRating: row.programRating,
+          programSeasons: row.programSeasons,
+          historyThroughSeason: season - 1,
+        },
+      ]),
+    )
+    if (season >= 2026)
+      powerEdition = withProgramPower(
+        powerEdition,
+        programContext,
+        releasedProgramContextFit(season),
+        POWER_PROGRAM_RELEASE,
+      )
+    const resumeEdition = buildResumeRatingEdition({
+      games: currentGames,
+      powerEdition,
+      week,
+      programContext,
+      programForecastFit: releasedProgramContextFit(season),
+    })
     const programRatingsByTeam = new Map(
       programRatings.map((row) => [row.teamId, row]),
     )
@@ -1747,6 +1784,7 @@ export const buildRatingEdition = internalAction({
           limitedSample: power.limitedSample,
           offense: power.offense,
           power: power.power,
+          powerWithoutProgram: power.powerWithoutProgram,
           powerRank: power.rank,
           priorWeight: power.priorWeight,
           programId: program._id,
@@ -1754,6 +1792,7 @@ export const buildRatingEdition = internalAction({
           published: power.published,
           rankDifference: resume?.rankDifference,
           resume: resume?.resume,
+          resumeProgramBonus: resume?.resumeProgramBonus,
           recordDifficulty: resume?.recordDifficulty,
           recordProbability: resume?.recordProbability,
           resumeRank: resume?.resumeRank,
@@ -2494,6 +2533,7 @@ export const getMatchup = query({
         name: rating.sourceProgramName,
         offense: rating.offense,
         power: rating.power,
+        powerWithoutProgram: rating.powerWithoutProgram,
         priorWeight: rating.priorWeight,
         published: rating.published,
         rank: rating.powerRank,

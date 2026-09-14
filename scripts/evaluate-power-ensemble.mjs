@@ -20,11 +20,16 @@ import {
   compareMarketMargins,
 } from '../convex/powerBenchmarks.ts'
 
-const [dataPath, incumbentPath, marketDirectory, outputPath] =
-  process.argv.slice(2)
+const [
+  dataPath,
+  incumbentPath,
+  marketDirectory,
+  outputPath,
+  programContextPath,
+] = process.argv.slice(2)
 if (!outputPath)
   throw new Error(
-    'Usage: node scripts/evaluate-power-ensemble.mjs <enriched-data.json> <incumbent-evaluation.json> <market-directory> <new-output.json>',
+    'Usage: node scripts/evaluate-power-ensemble.mjs <enriched-data.json> <incumbent-evaluation.json> <market-directory> <new-output.json> [prepared-program-context.json]',
   )
 const buffer = await readFile(dataPath),
   data = JSON.parse(buffer)
@@ -129,12 +134,43 @@ const seed = evaluatePowerPolicies({
 const byId = new Map(games.map((game) => [game.id, game]))
 const rawPower = [...seed, ...baseline.raw.forecasts]
 const requests = rawPower.map((row) => ({ ...byId.get(row.gameId), ...row }))
-console.log('Replaying independent Elo and efficiency forecasts.')
-const rawComponents = [
-  rawPower,
-  replayElo(games, requests),
-  replayEfficiency(games, requests),
-]
+console.log('Replaying independent component forecasts.')
+const programContext = programContextPath
+  ? JSON.parse(await readFile(programContextPath, 'utf8'))
+  : undefined
+if (programContext && programContext.sourceSha256 !== sourceSha256)
+  throw new Error('Program context source does not match the evaluation.')
+const programScores = new Map(
+  (programContext?.scores ?? []).map((row) => [
+    `${row.season}:${row.teamId}`,
+    row.power,
+  ]),
+)
+const componentNames = programContext
+  ? ['Power v5', 'prior-season Program forecast']
+  : ['Power v5', 'results-only Elo', 'opponent-adjusted PPA']
+const rawComponents = programContext
+  ? [
+      rawPower,
+      requests.map((row) => {
+        const home = programScores.get(`${row.season}:${row.homeTeamId}`),
+          away = programScores.get(`${row.season}:${row.awayTeamId}`)
+        if (home === undefined || away === undefined) {
+          // The Program model covers FBS, so FCS games keep the incumbent forecast.
+          if (
+            row.homeClassification === 'fbs' &&
+            row.awayClassification === 'fbs'
+          )
+            throw new Error('Missing FBS Program forecast.')
+          return { ...row }
+        }
+        return {
+          ...row,
+          predictedMargin: home - away + (row.neutralSite ? 0 : 2.5),
+        }
+      }),
+    ]
+  : [rawPower, replayElo(games, requests), replayEfficiency(games, requests)]
 const componentFits = []
 const components = rawComponents.map((raw, index) => {
   const calibrated = []
@@ -151,7 +187,14 @@ const components = rawComponents.map((raw, index) => {
       )
     } else {
       const fit = fitPowerCalibration(
-        raw.filter((row) => row.season < season),
+        raw.filter(
+          (row) =>
+            row.season < season &&
+            (!programContext ||
+              index === 0 ||
+              (row.homeClassification === 'fbs' &&
+                row.awayClassification === 'fbs')),
+        ),
         season,
       )
       componentFits.push({ component: index, season, fit })
@@ -164,6 +207,14 @@ const components = rawComponents.map((raw, index) => {
   }
   return calibrated
 })
+if (programContext) {
+  const fallback = new Map(components[0].map((row) => [row.gameId, row]))
+  components[1] = components[1].map((row) =>
+    row.homeClassification === 'fbs' && row.awayClassification === 'fbs'
+      ? row
+      : fallback.get(row.gameId),
+  )
+}
 const { forecasts, fits, finalFit } = evaluateLearnedEnsemble(
   alignComponents(components),
   testSeasons,
@@ -171,11 +222,21 @@ const { forecasts, fits, finalFit } = evaluateLearnedEnsemble(
 finalFit.components = rawComponents.map((raw, index) =>
   index === 0
     ? baseline.finalCalibration
-    : fitPowerCalibration(raw, finalFit.season),
+    : fitPowerCalibration(
+        raw.filter(
+          (row) =>
+            !programContext ||
+            (row.homeClassification === 'fbs' &&
+              row.awayClassification === 'fbs'),
+        ),
+        finalFit.season,
+      ),
 )
 const evaluation = evaluateForecasts(forecasts)
 const challenger = {
-  modelVersion: 'power-v5-learned-ensemble',
+  modelVersion: programContext
+    ? 'power-v5-program-context'
+    : 'power-v5-learned-ensemble',
   forecasts,
   evaluation,
   folds: Object.entries(evaluation.bySeason).map(([season, metrics]) => ({
@@ -211,7 +272,12 @@ const output = {
   incumbentSha256: createHash('sha256')
     .update(await readFile(incumbentPath))
     .digest('hex'),
-  components: ['Power v5', 'results-only Elo', 'opponent-adjusted PPA'],
+  components: componentNames,
+  programContextSha256: programContextPath
+    ? createHash('sha256')
+        .update(await readFile(programContextPath))
+        .digest('hex')
+    : undefined,
   policy:
     'Nonnegative sum-to-one least-squares weights on earlier out-of-season component margins. Symmetric logistic calibration on earlier ensemble predictions whose weights excluded their season. No weighted probability averaging; no external ratings.',
   reconstruction: true,

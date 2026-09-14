@@ -137,7 +137,7 @@ Historical ratings from 2015 onward are labeled reconstructions. Official prospe
 
 ## CFB26 Program
 
-**Current source:** [Three independent ratings](../reference/three-team-ratings.md) separate durable Program health, predictive Power, and earned Résumé. Program combines ten seasons of results, acquisition, and development with earned accomplishments since 2000. Conference titles, playoff advancement, and national championships contribute explicit prestige credit through recent and legacy curves. Recent success matters most; older honors retain a bounded contribution. Brand recognition alone earns no points. Historical conference-title coverage remains limited to verified records and sourced title-game results.
+**Current source:** [Three distinct ratings](../reference/three-team-ratings.md) separate durable Program health, predictive Power, and earned Résumé. Program combines ten seasons of results, acquisition, and development with earned accomplishments since 2000. Conference titles, playoff advancement, and national championships contribute explicit prestige credit through recent and legacy curves. Recent success matters most; older honors retain a bounded contribution. Brand recognition alone earns no points. Historical conference-title coverage remains limited to verified records and sourced title-game results.
 
 ## CFB26 Power
 
@@ -155,9 +155,9 @@ CFB26 Résumé answers: “What has this team earned through the selected cutoff
 
 - completed results and schedule quality contribute 70%;
 - result-bounded performance credit contributes 30%;
-- opponent quality is fitted independently from current-season games, excluding the evaluated team's own games;
-- recruiting talent, program history, and conference identity do not directly boost a team's score;
-- championship status affects playoff qualification, not Résumé score; and
+- opponent quality uses current-season games and half a game of prior-season Program context, excluding the evaluated team's games and own prior;
+- recruiting talent and conference identity receive no separate direct bonus;
+- prior-season Program history adds a one-time bonus of at most 0.15 win-equivalents after a win; current-season championship status affects qualification without a separate trophy bonus; and
 - head-to-head breaks effectively equal scores; championships have no duplicate merit bonus.
 
 Résumé editions begin entering Week 7. Selection-day and final postseason editions remain separate. FCS games are displayed separately from FBS quadrants.

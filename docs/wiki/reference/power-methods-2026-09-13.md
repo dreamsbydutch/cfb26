@@ -79,3 +79,7 @@ Freeze each slate's inputs before kickoff. Within each outer season, tune featur
 Score margin MAE and RMSE, probability Brier and log loss, and calibration on identical games. Report early season, late season, postseason, large favorites, conferences, FCS opponents and missing-data cohorts. Report paired uncertainty with season/week grouping rather than treating correlated forecasts as independent. Also score full-field fallbacks so coverage selection cannot manufacture improvement.
 
 Compare against the incumbent, simple margin and Elo baselines, and edition-verified external forecasts. Timestamped market quotes require a common forecast horizon; a retrospectively archived line without quote time is a limited benchmark. Promote only after prespecified improvement and calibration gates plus a frozen prospective trial. No source above establishes that this proposed ensemble will beat SP+, FPI or the market.
+
+## Later Program-context experiment
+
+The separate [Program-context candidate](program-context-2026-09-13.md) passed the existing gates and entered Power v6 with learned weights and combined probability calibration. The earlier Elo/efficiency experiment above remains rejected. SP+ and FPI remain benchmarks only.

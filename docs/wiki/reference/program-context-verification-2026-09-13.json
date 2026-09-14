@@ -1,0 +1,837 @@
+{
+  "deployment": "adjoining-opossum-710",
+  "editionId": "q173hk62722ytfqqrxf8hm39nh8ecwy4",
+  "cutoffAt": 1789351108562,
+  "all138Verified": true,
+  "programUnchanged": true,
+  "teams": [
+    {
+      "team": "ohio-state",
+      "power": 22.77,
+      "priorProgram": 87.78,
+      "bonus": 0.113
+    },
+    {
+      "team": "notre-dame",
+      "power": 22.44,
+      "priorProgram": 74.82,
+      "bonus": 0.074
+    },
+    {
+      "team": "indiana",
+      "power": 22.36,
+      "priorProgram": 63.44,
+      "bonus": 0.04
+    },
+    {
+      "team": "alabama",
+      "power": 20.77,
+      "priorProgram": 84.36,
+      "bonus": 0.103
+    },
+    {
+      "team": "miami",
+      "power": 19.92,
+      "priorProgram": 65.41,
+      "bonus": 0.046
+    },
+    {
+      "team": "georgia",
+      "power": 19.05,
+      "priorProgram": 85.97,
+      "bonus": 0.108
+    },
+    {
+      "team": "texas-a-m",
+      "power": 18.45,
+      "priorProgram": 57.36,
+      "bonus": 0.022
+    },
+    {
+      "team": "texas",
+      "power": 17.17,
+      "priorProgram": 72.56,
+      "bonus": 0.068
+    },
+    {
+      "team": "lsu",
+      "power": 16.49,
+      "priorProgram": 64.94,
+      "bonus": 0.045
+    },
+    {
+      "team": "usc",
+      "power": 16.18,
+      "priorProgram": 57.15,
+      "bonus": 0.021
+    },
+    {
+      "team": "utah",
+      "power": 15.05,
+      "priorProgram": 52.05,
+      "bonus": 0.006
+    },
+    {
+      "team": "oregon",
+      "power": 14.35,
+      "priorProgram": 74.37,
+      "bonus": 0.073
+    },
+    {
+      "team": "penn-state",
+      "power": 14.2,
+      "priorProgram": 64.74,
+      "bonus": 0.044
+    },
+    {
+      "team": "oklahoma",
+      "power": 13.22,
+      "priorProgram": 66.28,
+      "bonus": 0.049
+    },
+    {
+      "team": "tennessee",
+      "power": 13.07,
+      "priorProgram": 54.88,
+      "bonus": 0.015
+    },
+    {
+      "team": "ole-miss",
+      "power": 13.07,
+      "priorProgram": 61.89,
+      "bonus": 0.036
+    },
+    {
+      "team": "michigan",
+      "power": 11,
+      "priorProgram": 75.45,
+      "bonus": 0.076
+    },
+    {
+      "team": "texas-tech",
+      "power": 10.98,
+      "priorProgram": 54.62,
+      "bonus": 0.014
+    },
+    {
+      "team": "smu",
+      "power": 10.97,
+      "priorProgram": 51.27,
+      "bonus": 0.004
+    },
+    {
+      "team": "iowa",
+      "power": 10.38,
+      "priorProgram": 49.94,
+      "bonus": 0
+    },
+    {
+      "team": "florida",
+      "power": 10.36,
+      "priorProgram": 53.88,
+      "bonus": 0.012
+    },
+    {
+      "team": "byu",
+      "power": 10.28,
+      "priorProgram": 40.96,
+      "bonus": 0
+    },
+    {
+      "team": "auburn",
+      "power": 10.02,
+      "priorProgram": 53.92,
+      "bonus": 0.012
+    },
+    {
+      "team": "mississippi-state",
+      "power": 9.9,
+      "priorProgram": 41.08,
+      "bonus": 0
+    },
+    {
+      "team": "south-carolina",
+      "power": 9.57,
+      "priorProgram": 46.58,
+      "bonus": 0
+    },
+    {
+      "team": "missouri",
+      "power": 9.43,
+      "priorProgram": 47.4,
+      "bonus": 0
+    },
+    {
+      "team": "kansas-state",
+      "power": 9.04,
+      "priorProgram": 47.57,
+      "bonus": 0
+    },
+    {
+      "team": "washington",
+      "power": 8.82,
+      "priorProgram": 59.18,
+      "bonus": 0.028
+    },
+    {
+      "team": "pitt",
+      "power": 8.51,
+      "priorProgram": 42.8,
+      "bonus": 0
+    },
+    {
+      "team": "nebraska",
+      "power": 7.95,
+      "priorProgram": 41.43,
+      "bonus": 0
+    },
+    {
+      "team": "louisville",
+      "power": 7.94,
+      "priorProgram": 46.57,
+      "bonus": 0
+    },
+    {
+      "team": "virginia",
+      "power": 7.48,
+      "priorProgram": 36.92,
+      "bonus": 0
+    },
+    {
+      "team": "boise-state",
+      "power": 6.99,
+      "priorProgram": 53.31,
+      "bonus": 0.01
+    },
+    {
+      "team": "vanderbilt",
+      "power": 5.8,
+      "priorProgram": 36.21,
+      "bonus": 0
+    },
+    {
+      "team": "duke",
+      "power": 5.07,
+      "priorProgram": 41.57,
+      "bonus": 0
+    },
+    {
+      "team": "ucla",
+      "power": 4.86,
+      "priorProgram": 43.03,
+      "bonus": 0
+    },
+    {
+      "team": "illinois",
+      "power": 4.66,
+      "priorProgram": 40.57,
+      "bonus": 0
+    },
+    {
+      "team": "florida-state",
+      "power": 4.62,
+      "priorProgram": 51.07,
+      "bonus": 0.003
+    },
+    {
+      "team": "north-texas",
+      "power": 4.6,
+      "priorProgram": 30.48,
+      "bonus": 0
+    },
+    {
+      "team": "arizona",
+      "power": 4.38,
+      "priorProgram": 37.3,
+      "bonus": 0
+    },
+    {
+      "team": "cincinnati",
+      "power": 4.27,
+      "priorProgram": 42.81,
+      "bonus": 0
+    },
+    {
+      "team": "maryland",
+      "power": 4.26,
+      "priorProgram": 38.95,
+      "bonus": 0
+    },
+    {
+      "team": "baylor",
+      "power": 4.13,
+      "priorProgram": 40.02,
+      "bonus": 0
+    },
+    {
+      "team": "wake-forest",
+      "power": 3.93,
+      "priorProgram": 36.62,
+      "bonus": 0
+    },
+    {
+      "team": "south-florida",
+      "power": 3.86,
+      "priorProgram": 31.9,
+      "bonus": 0
+    },
+    {
+      "team": "iowa-state",
+      "power": 3.81,
+      "priorProgram": 43.97,
+      "bonus": 0
+    },
+    {
+      "team": "james-madison",
+      "power": 3.7,
+      "priorProgram": 38.99,
+      "bonus": 0
+    },
+    {
+      "team": "tcu",
+      "power": 3.68,
+      "priorProgram": 53.51,
+      "bonus": 0.011
+    },
+    {
+      "team": "clemson",
+      "power": 3.21,
+      "priorProgram": 74.64,
+      "bonus": 0.074
+    },
+    {
+      "team": "north-dakota-state",
+      "power": 3.14,
+      "priorProgram": 29.92,
+      "bonus": 0
+    },
+    {
+      "team": "virginia-tech",
+      "power": 2.9,
+      "priorProgram": 38.95,
+      "bonus": 0
+    },
+    {
+      "team": "toledo",
+      "power": 2.87,
+      "priorProgram": 37.86,
+      "bonus": 0
+    },
+    {
+      "team": "houston",
+      "power": 2.83,
+      "priorProgram": 36.88,
+      "bonus": 0
+    },
+    {
+      "team": "western-michigan",
+      "power": 2.4,
+      "priorProgram": 30.1,
+      "bonus": 0
+    },
+    {
+      "team": "utsa",
+      "power": 2.26,
+      "priorProgram": 34.77,
+      "bonus": 0
+    },
+    {
+      "team": "michigan-state",
+      "power": 2.24,
+      "priorProgram": 37.85,
+      "bonus": 0
+    },
+    {
+      "team": "northwestern",
+      "power": 2.22,
+      "priorProgram": 34.66,
+      "bonus": 0
+    },
+    {
+      "team": "arizona-state",
+      "power": 1.78,
+      "priorProgram": 48.98,
+      "bonus": 0
+    },
+    {
+      "team": "north-carolina",
+      "power": 1.37,
+      "priorProgram": 41.06,
+      "bonus": 0
+    },
+    {
+      "team": "nc-state",
+      "power": 1.3,
+      "priorProgram": 41.64,
+      "bonus": 0
+    },
+    {
+      "team": "memphis",
+      "power": 1.3,
+      "priorProgram": 39.29,
+      "bonus": 0
+    },
+    {
+      "team": "new-mexico",
+      "power": 0.71,
+      "priorProgram": 18.3,
+      "bonus": 0
+    },
+    {
+      "team": "ucf",
+      "power": 0.64,
+      "priorProgram": 40.22,
+      "bonus": 0
+    },
+    {
+      "team": "tulane",
+      "power": 0.14,
+      "priorProgram": 47.36,
+      "bonus": 0
+    },
+    {
+      "team": "kentucky",
+      "power": -0.13,
+      "priorProgram": 43.24,
+      "bonus": 0
+    },
+    {
+      "team": "kansas",
+      "power": -0.34,
+      "priorProgram": 37.15,
+      "bonus": 0
+    },
+    {
+      "team": "west-virginia",
+      "power": -0.46,
+      "priorProgram": 36.52,
+      "bonus": 0
+    },
+    {
+      "team": "colorado",
+      "power": -0.5,
+      "priorProgram": 34.65,
+      "bonus": 0
+    },
+    {
+      "team": "georgia-tech",
+      "power": -0.94,
+      "priorProgram": 39.15,
+      "bonus": 0
+    },
+    {
+      "team": "san-diego-state",
+      "power": -1.34,
+      "priorProgram": 29.29,
+      "bonus": 0
+    },
+    {
+      "team": "fresno-state",
+      "power": -2.06,
+      "priorProgram": 34.15,
+      "bonus": 0
+    },
+    {
+      "team": "washington-state",
+      "power": -2.4,
+      "priorProgram": 38.06,
+      "bonus": 0
+    },
+    {
+      "team": "syracuse",
+      "power": -2.44,
+      "priorProgram": 34.23,
+      "bonus": 0
+    },
+    {
+      "team": "minnesota",
+      "power": -2.46,
+      "priorProgram": 41.57,
+      "bonus": 0
+    },
+    {
+      "team": "army",
+      "power": -2.83,
+      "priorProgram": 31.33,
+      "bonus": 0
+    },
+    {
+      "team": "colorado-state",
+      "power": -3.46,
+      "priorProgram": 20.84,
+      "bonus": 0
+    },
+    {
+      "team": "navy",
+      "power": -3.49,
+      "priorProgram": 28.06,
+      "bonus": 0
+    },
+    {
+      "team": "app-state",
+      "power": -3.59,
+      "priorProgram": 30.3,
+      "bonus": 0
+    },
+    {
+      "team": "wisconsin",
+      "power": -3.61,
+      "priorProgram": 44.89,
+      "bonus": 0
+    },
+    {
+      "team": "purdue",
+      "power": -3.76,
+      "priorProgram": 34.08,
+      "bonus": 0
+    },
+    {
+      "team": "texas-state",
+      "power": -3.78,
+      "priorProgram": 27.04,
+      "bonus": 0
+    },
+    {
+      "team": "louisiana",
+      "power": -3.93,
+      "priorProgram": 29.34,
+      "bonus": 0
+    },
+    {
+      "team": "arkansas",
+      "power": -4.05,
+      "priorProgram": 43.12,
+      "bonus": 0
+    },
+    {
+      "team": "east-carolina",
+      "power": -4.13,
+      "priorProgram": 33.1,
+      "bonus": 0
+    },
+    {
+      "team": "california",
+      "power": -4.17,
+      "priorProgram": 36.46,
+      "bonus": 0
+    },
+    {
+      "team": "old-dominion",
+      "power": -4.19,
+      "priorProgram": 26.79,
+      "bonus": 0
+    },
+    {
+      "team": "troy",
+      "power": -4.68,
+      "priorProgram": 33.08,
+      "bonus": 0
+    },
+    {
+      "team": "unlv",
+      "power": -4.97,
+      "priorProgram": 29.92,
+      "bonus": 0
+    },
+    {
+      "team": "uconn",
+      "power": -5.07,
+      "priorProgram": 22.24,
+      "bonus": 0
+    },
+    {
+      "team": "florida-international",
+      "power": -5.07,
+      "priorProgram": 19.11,
+      "bonus": 0
+    },
+    {
+      "team": "south-alabama",
+      "power": -5.18,
+      "priorProgram": 26.12,
+      "bonus": 0
+    },
+    {
+      "team": "air-force",
+      "power": -5.29,
+      "priorProgram": 26.02,
+      "bonus": 0
+    },
+    {
+      "team": "boston-college",
+      "power": -5.44,
+      "priorProgram": 33.47,
+      "bonus": 0
+    },
+    {
+      "team": "tulsa",
+      "power": -5.45,
+      "priorProgram": 22.14,
+      "bonus": 0
+    },
+    {
+      "team": "delaware",
+      "power": -5.52,
+      "priorProgram": 11.43,
+      "bonus": 0
+    },
+    {
+      "team": "georgia-southern",
+      "power": -5.63,
+      "priorProgram": 23.26,
+      "bonus": 0
+    },
+    {
+      "team": "ohio",
+      "power": -5.65,
+      "priorProgram": 29.63,
+      "bonus": 0
+    },
+    {
+      "team": "georgia-state",
+      "power": -5.71,
+      "priorProgram": 22.31,
+      "bonus": 0
+    },
+    {
+      "team": "jacksonville-state",
+      "power": -5.77,
+      "priorProgram": 23.5,
+      "bonus": 0
+    },
+    {
+      "team": "temple",
+      "power": -5.82,
+      "priorProgram": 20.17,
+      "bonus": 0
+    },
+    {
+      "team": "stanford",
+      "power": -5.91,
+      "priorProgram": 32.95,
+      "bonus": 0
+    },
+    {
+      "team": "miami-oh",
+      "power": -5.93,
+      "priorProgram": 29.73,
+      "bonus": 0
+    },
+    {
+      "team": "oklahoma-state",
+      "power": -6.18,
+      "priorProgram": 37.19,
+      "bonus": 0
+    },
+    {
+      "team": "louisiana-tech",
+      "power": -6.23,
+      "priorProgram": 22.88,
+      "bonus": 0
+    },
+    {
+      "team": "rutgers",
+      "power": -6.39,
+      "priorProgram": 34.35,
+      "bonus": 0
+    },
+    {
+      "team": "coastal-carolina",
+      "power": -6.53,
+      "priorProgram": 25.52,
+      "bonus": 0
+    },
+    {
+      "team": "utah-state",
+      "power": -6.73,
+      "priorProgram": 24.12,
+      "bonus": 0
+    },
+    {
+      "team": "southern-miss",
+      "power": -6.89,
+      "priorProgram": 21.22,
+      "bonus": 0
+    },
+    {
+      "team": "oregon-state",
+      "power": -7.07,
+      "priorProgram": 32.56,
+      "bonus": 0
+    },
+    {
+      "team": "nevada",
+      "power": -7.16,
+      "priorProgram": 19.79,
+      "bonus": 0
+    },
+    {
+      "team": "arkansas-state",
+      "power": -7.3,
+      "priorProgram": 22,
+      "bonus": 0
+    },
+    {
+      "team": "marshall",
+      "power": -7.68,
+      "priorProgram": 34.56,
+      "bonus": 0
+    },
+    {
+      "team": "kennesaw-state",
+      "power": -7.82,
+      "priorProgram": 17.63,
+      "bonus": 0
+    },
+    {
+      "team": "missouri-state",
+      "power": -8.72,
+      "priorProgram": 12.08,
+      "bonus": 0
+    },
+    {
+      "team": "san-jose-state",
+      "power": -8.87,
+      "priorProgram": 22.91,
+      "bonus": 0
+    },
+    {
+      "team": "liberty",
+      "power": -9.13,
+      "priorProgram": 29.67,
+      "bonus": 0
+    },
+    {
+      "team": "hawai-i",
+      "power": -9.2,
+      "priorProgram": 18.85,
+      "bonus": 0
+    },
+    {
+      "team": "akron",
+      "power": -9.44,
+      "priorProgram": 14.96,
+      "bonus": 0
+    },
+    {
+      "team": "florida-atlantic",
+      "power": -9.91,
+      "priorProgram": 24.77,
+      "bonus": 0
+    },
+    {
+      "team": "middle-tennessee",
+      "power": -10.92,
+      "priorProgram": 18.47,
+      "bonus": 0
+    },
+    {
+      "team": "uab",
+      "power": -11.07,
+      "priorProgram": 22.84,
+      "bonus": 0
+    },
+    {
+      "team": "western-kentucky",
+      "power": -11.43,
+      "priorProgram": 31.48,
+      "bonus": 0
+    },
+    {
+      "team": "new-mexico-state",
+      "power": -11.61,
+      "priorProgram": 13.77,
+      "bonus": 0
+    },
+    {
+      "team": "rice",
+      "power": -11.64,
+      "priorProgram": 18.68,
+      "bonus": 0
+    },
+    {
+      "team": "eastern-michigan",
+      "power": -11.88,
+      "priorProgram": 19.89,
+      "bonus": 0
+    },
+    {
+      "team": "sam-houston",
+      "power": -12.01,
+      "priorProgram": 15.02,
+      "bonus": 0
+    },
+    {
+      "team": "buffalo",
+      "power": -12.03,
+      "priorProgram": 20.95,
+      "bonus": 0
+    },
+    {
+      "team": "utep",
+      "power": -12.05,
+      "priorProgram": 15.34,
+      "bonus": 0
+    },
+    {
+      "team": "umass",
+      "power": -12.41,
+      "priorProgram": 11.36,
+      "bonus": 0
+    },
+    {
+      "team": "ball-state",
+      "power": -12.83,
+      "priorProgram": 16.62,
+      "bonus": 0
+    },
+    {
+      "team": "kent-state",
+      "power": -13.48,
+      "priorProgram": 12.92,
+      "bonus": 0
+    },
+    {
+      "team": "central-michigan",
+      "power": -13.65,
+      "priorProgram": 20.09,
+      "bonus": 0
+    },
+    {
+      "team": "wyoming",
+      "power": -13.9,
+      "priorProgram": 21.47,
+      "bonus": 0
+    },
+    {
+      "team": "northern-illinois",
+      "power": -14.72,
+      "priorProgram": 20.6,
+      "bonus": 0
+    },
+    {
+      "team": "ul-monroe",
+      "power": -15.12,
+      "priorProgram": 13.71,
+      "bonus": 0
+    },
+    {
+      "team": "bowling-green",
+      "power": -15.22,
+      "priorProgram": 21.62,
+      "bonus": 0
+    },
+    {
+      "team": "sacramento-state",
+      "power": -16.4,
+      "priorProgram": 18.59,
+      "bonus": 0
+    },
+    {
+      "team": "charlotte",
+      "power": -19.38,
+      "priorProgram": 16.47,
+      "bonus": 0
+    }
+  ]
+}

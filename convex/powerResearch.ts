@@ -1,6 +1,5 @@
 import {
   POWER_FIT_POLICY,
-  POWER_MODEL_VERSION,
   buildPowerRatingEdition,
   projectPowerMatchup,
 } from './ratingSystem.ts'
@@ -88,8 +87,9 @@ export const POWER_POLICIES: ReadonlyArray<PowerPolicy> = [
   },
 ]
 
+// The recursive foundation only; final calibration and Program blending are separate.
 export const PUBLISHED_POWER_POLICY: PowerPolicy = {
-  version: POWER_MODEL_VERSION,
+  version: POWER_FIT_POLICY.modelVersion,
   historySeasons: 5,
   ...POWER_CARRYOVER,
   fullWeightResults: POWER_FIT_POLICY.fullWeightResults,

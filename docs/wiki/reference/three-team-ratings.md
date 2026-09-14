@@ -2,7 +2,7 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-**Current source:** independent Program, Power, and Résumé edition fields and complete-field views. Each public ranking page presents its named system for the selected season and week; immutable publication snapshots remain a data-retention contract rather than alternate rating types. This page owns the numerical contract under [ADR 0013](../decisions/0013-three-independent-team-ratings.md). Source availability and model promotion limits below are material parts of the contract.
+**Current source:** distinct Program, Power, and Résumé edition fields and complete-field views. Each public ranking page presents its named system for the selected season and week; immutable publication snapshots remain a data-retention contract rather than alternate rating types. This page owns the numerical contract under [ADR 0013](../decisions/0013-three-independent-team-ratings.md). Source availability and model promotion limits below are material parts of the contract.
 
 Ranking tables lead with rank, team/conference, and the named rating, followed by the cutoff-safe overall record and Q1–Q4 records. Power then shows offense and defense; special teams appears only when the selected edition has a separately rated special-teams component. Program shows results, acquisition, and development. Résumé shows results credit, performance credit, and season strength. Prior weights, source notes, coverage, uncertainty, and sample-size explanations remain outside table columns; the backend retains them for validation and methodology.
 
@@ -10,7 +10,7 @@ Ranking pages use short page titles and publication timestamps. Repeated model i
 
 ## Program
 
-`cfb26-program-v4` is a 0–100 index: competitive results contribute up to 50 points, acquisition 15, development 5, and accomplishments 30. These are explicit prestige policy allocations, not learned forecasting coefficients. Power and Résumé remain independent and receive no trophy bonus.
+`cfb26-program-v4` is a 0–100 index: competitive results contribute up to 50 points, acquisition 15, development 5, and accomplishments 30. These are explicit prestige policy allocations, not learned forecasting coefficients. Prior-season Program strength supplies bounded context to Power and Résumé as described below; current-season trophies do not produce a separate bonus in either.
 
 Accomplishments cover the approved modern era **since 2000**. A conference championship earns four raw achievement points. A team's deepest national postseason stage earns four for a playoff appearance, six for a quarterfinal, ten for a semifinal, fourteen for a national final, or twenty-six for a national championship. Stages are **not summed**; the conference title is separate. Winners advance immediately after the completed result is available. Four-team-era semifinalists receive the same stage credit as modern semifinalists; a first-round bye does not invent a playoff win. Ordinary bowls and FCS championships receive no FBS honor credit.
 
@@ -30,9 +30,9 @@ Missing components remain null in the evidence display. A neutral estimate fills
 
 ## Power
 
-The active `cfb26-power-v5` uses opponent-adjusted points and five-season recursive history. Current-season games have equal calendar weight. Historical carryover starts at four effective games, down from eight in v2, and two when crossing from FCS to FBS. Verified offensive continuity can reduce those weights further. Prior weights are diagnostics rather than exact decompositions of influence: ridge regularization, opponent fitting, and subdivision pooling also contribute.
+The active `cfb26-power-v6` adds a learned final Program-context blend to the v5 foundation, which uses opponent-adjusted points and five-season recursive history. Current-season games have equal calendar weight. Historical carryover starts at four effective games, down from eight in v2, and two when crossing from FCS to FBS. Verified offensive continuity can reduce those weights further. Prior weights are diagnostics rather than exact decompositions of influence: ridge regularization, opponent fitting, and subdivision pooling also contribute.
 
-Regulation margins above 35 points now provide censored lower-bound evidence: a 60-point win cannot become negative score evidence merely because an expected 43-point win exceeds the cap. Score and efficiency tails are censored independently; exact margins at or below 35 remain exact. Overtime retains the seven-point cap. Current results retain full residual weight. Offense/defense estimates retain their robust score-residual weights and reconcile to the final margin strength. The starting estimate is not additionally regressed every offseason; available evidence supported lighter confidence rather than a mandatory strength reduction. Program and Résumé retain their independent season fits and versions.
+Regulation margins above 35 points now provide censored lower-bound evidence: a 60-point win cannot become negative score evidence merely because an expected 43-point win exceeds the cap. Score and efficiency tails are censored independently; exact margins at or below 35 remain exact. Overtime retains the seven-point cap. Current results retain full residual weight. Offense/defense estimates retain their robust score-residual weights and reconcile to the final margin strength. The starting estimate is not additionally regressed every offseason; available evidence supported lighter confidence rather than a mandatory strength reduction. Program retains its independent annual season fits. The final Power blend never feeds back into those fits or recursive Power history.
 
 The preseason forecast blends half of a bounded, learned roster adjustment into the historical prior (at most four raw points). Its past-only annual ridge fits use prior strength, separately normalized talent and recruiting, returning offensive usage, and availability indicators. FCS teams retain subdivision priors. Missing roster evidence leaves the prior unchanged. The latest approved fit is reused in future seasons until an annual evaluation approves a refit. See the [Power foundation evaluation](power-foundation-2026-09-13.md) for coefficients, benchmark results, and limitations.
 
@@ -71,11 +71,15 @@ The [improvement evaluation](power-improvements-evaluation-2026-09-12.json) reco
 
 Run `node scripts/evaluate-rating-improvements.mjs <enriched-data.json> <new-report.json>` to reproduce the comparison against the frozen v3 policy. Advanced-game observation times and preseason personnel availability are explicitly reconstructed. These reused seasons support model selection, not untouched prospective validation. The daily evidence sync preserves actual observation times for live editions.
 
+The [Program-context evaluation](program-context-2026-09-13.md) passed the existing eight-season promotion gate with modest gains. The 2026 final forecast combines 90.7342% calibrated v5 Power and 9.2658% calibrated prior-season Program strength. Earlier-season forecasts determine these weights and the combined probability curve. History adjusts offense and defense equally because this component estimates overall strength. FCS matchup point forecasts retain the base model; all matchups use the combined probability calibration. Missing history uses the tested neutral component fallback. The released coefficients apply from 2026 onward.
+
 ## Résumé
 
-`cfb26-resume-v4` is current-season merit in win-equivalent units. Its fixed reference is +14 points relative to average FBS strength, with a fixed 2.5-point venue effect and the versioned baseline logistic curve. This is an explicit contender standard, not a weekly moving average of the current top 25. Version 4 retains the subdivision correction using only the selected season's independent opponent evidence; it does not import Power's historical or population priors.
+`cfb26-resume-v5` measures current-season merit in win-equivalent units with the explicitly approved small own-history bonus. Its fixed reference is +14 points relative to average FBS strength, with a fixed 2.5-point venue effect and the versioned baseline logistic curve. This is an explicit contender standard, not a weekly moving average of the current top 25. The subdivision correction remains based on the selected season. Résumé does not import the predictive Power rating.
 
-Opponent strength is refitted from the selected season's games **without historical priors or personnel adjustments**. Each evaluated team's own games are excluded from its opponent-strength fit: otherwise a convincing win can depress its opponent's rating and perversely reduce the winner's credit. Opponents with little independent evidence remain uncertain and regularized.
+Opponent strength is refitted from the selected season's games with at most half a game's prior-season Program evidence for FBS opponents. A past-only learned mapping converts Program scores to strength; more current games dilute that prior. The evaluated team's own prior is removed from its opponent fit. Each evaluated team's own games are excluded from its opponent-strength fit: otherwise a convincing win can depress its opponent's rating and perversely reduce the winner's credit. Opponents with little independent evidence remain uncertain and regularized.
+
+The own-history bonus is `0.15 * max(0, (priorProgramRating - 50) / 50)` after at least one win, otherwise zero. It is added once to the season total, capped at 0.15 win-equivalents, and never multiplied by wins. Both uses of Program exclude current-season results and honors. This is a deliberate prestige policy, not a learned accuracy claim; it can break a close merit comparison in favor of the stronger historical program. Unknown history earns zero.
 
 For each game, let `p` be the reference team's expected win probability, `w` the actual result (1 win, 0 loss, .5 historical tie), and `d` the logistic transform of capped margin. Regulation dominance caps at 21 points; overtime caps at seven.
 
@@ -83,7 +87,7 @@ For each game, let `p` be the reference team's expected win probability, `w` the
 - Winning performance credit: `(1 - p) × (2d - 1)`.
 - Losing performance credit: `-p × (2 - 2d)`.
 - Historical tie performance credit: `.5 - p`.
-- Final score: `70% × sum(results credit) + 30% × sum(performance credit)`.
+- Final score: `70% × sum(results credit) + 30% × sum(performance credit) + own-history bonus`.
 
 Every win earns positive credit and every loss negative credit. Dominance matters more against difficult opposition and cannot turn a loss into positive credit. Weak blowouts earn little. Teams within the same .01-win-equivalent score bucket use mini head-to-head win/loss balance, then greater full-record difficulty, lower expected wins, more actual wins, and stable identity. Full-record difficulty is `-log10(P(reference team wins at least this many games))`, computed from the complete independent-game win distribution; it breaks near ties without changing the 70/30 score. Tied groups are evaluated together to avoid cyclic sort comparators.
 

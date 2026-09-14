@@ -1327,7 +1327,9 @@ function Methodology({
             </li>
             <li>
               Home-field value uses a stable base. Point margins and win
-              probabilities are calibrated using earlier-season forecasts.
+              probabilities are calibrated using earlier-season forecasts. A
+              learned 9.3% Program-history component adds durable strength to
+              the final forecast.
             </li>
           </ul>
         </Surface>
@@ -1336,12 +1338,12 @@ function Methodology({
           <h2 className="mt-2 text-3xl font-bold">CFB26 Résumé</h2>
           <p className="mt-3 max-w-4xl text-sm leading-6 text-white/55">
             Résumé measures results against a fixed playoff-contender standard.
-            Opponent quality is fitted from current-season games without
-            historical priors; venue changes expected wins. It has no talent,
-            conference, rivalry, championship, bowl, playoff, or human bonus.
+            Opponent quality uses current-season games with limited prior-season
+            Program context. A team's own history adds at most 0.15
+            win-equivalents; current-season results drive the ranking.
           </p>
           <div className="app-accent-soft-text mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm">
-            Résumé = 0.70 × results credit + 0.30 × performance credit
+            Résumé = 0.70 × results credit + 0.30 × performance credit + history
           </div>
           <p className="mt-4 text-sm leading-6 text-white/50">
             Provisional rows remain hidden until entering Week 7. Losses never

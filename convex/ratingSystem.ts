@@ -1,4 +1,5 @@
 import { calibrateMargin } from './ratingBacktest.ts'
+import { resumeProgramBonus, resumeProgramPrior } from './programContext.ts'
 import { censoredMargin, marginInfluence, resultMargin } from './powerMargin.ts'
 import {
   competitiveMargin,
@@ -8,16 +9,17 @@ import {
 import type { MarginTreatment } from './powerMargin.ts'
 import type { LogisticMarginCalibration } from './ratingBacktest.ts'
 import type { GameEvidence } from './gameEvidence.ts'
+import type { ProgramContext, ProgramForecastFit } from './programContext.ts'
 
-export const POWER_MODEL_VERSION = 'cfb26-power-v5'
+export const POWER_MODEL_VERSION = 'cfb26-power-v6'
 export const POWER_FIT_POLICY = {
-  modelVersion: POWER_MODEL_VERSION,
+  modelVersion: 'cfb26-power-v5',
   fullWeightResults: true,
   fixedHomeField: 2.5,
   efficiencyWeight: 0.2,
   marginTreatment: 'censored',
 } as const
-export const RESUME_MODEL_VERSION = 'cfb26-resume-v4'
+export const RESUME_MODEL_VERSION = 'cfb26-resume-v5'
 export const RESUME_REFERENCE_POWER = 14
 export const RESUME_DOMINANCE_WEIGHT = 0.3
 
@@ -62,6 +64,7 @@ export type PowerRatingGame = {
 }
 
 export type PowerTeamRating = {
+  powerWithoutProgram?: PowerPointUnits
   classification: RatingClassification
   conference?: string
   dataSources: Array<string>
@@ -78,6 +81,26 @@ export type PowerTeamRating = {
   specialTeams: number
   specialTeamsAvailable: boolean
   teamId: string
+}
+
+export type PowerPointUnits = {
+  power: number
+  offense: number
+  defense: number
+  specialTeams: number
+  homeFieldAdvantage: number
+}
+
+/** Program was validated for FBS opponents; retain base margins for FCS games. */
+export function powerForOpponent<
+  T extends PowerPointUnits & {
+    published: boolean
+    powerWithoutProgram?: PowerPointUnits
+  },
+>(team: T, opponent: { published: boolean }): T {
+  return (!team.published || !opponent.published) && team.powerWithoutProgram
+    ? { ...team, ...team.powerWithoutProgram }
+    : team
 }
 
 export type PowerRatingEdition = {
@@ -108,6 +131,7 @@ export type ResumeTeamRating = {
   powerRank?: number
   rankDifference?: number
   resume: number
+  resumeProgramBonus: number
   resumeRank: number
   scheduleComponent: number
   teamId: string
@@ -665,9 +689,11 @@ export function projectPowerMatchup(
   teamBId: string,
   venue: 'neutral' | 'team_a' | 'team_b',
 ) {
-  const teamA = edition.ratings.find((rating) => rating.teamId === teamAId)
-  const teamB = edition.ratings.find((rating) => rating.teamId === teamBId)
-  if (!teamA || !teamB) throw new Error('Both matchup teams must be rated.')
+  const ratedA = edition.ratings.find((rating) => rating.teamId === teamAId)
+  const ratedB = edition.ratings.find((rating) => rating.teamId === teamBId)
+  if (!ratedA || !ratedB) throw new Error('Both matchup teams must be rated.')
+  const teamA = powerForOpponent(ratedA, ratedB)
+  const teamB = powerForOpponent(ratedB, ratedA)
   const venueMargin =
     venue === 'team_a'
       ? teamA.homeFieldAdvantage
@@ -786,6 +812,8 @@ export function buildResumeRatingEdition(input: {
   games: ReadonlyArray<PowerRatingGame>
   powerEdition: PowerRatingEdition
   week: number
+  programContext?: ReadonlyMap<string, ProgramContext>
+  programForecastFit?: ProgramForecastFit
 }): ResumeRatingEdition {
   const publishedPower = input.powerEdition.ratings.filter(
     (rating) => rating.published,
@@ -793,8 +821,20 @@ export function buildResumeRatingEdition(input: {
   if (publishedPower.length === 0) {
     throw new Error('Résumé Rating requires published Power Ratings.')
   }
-  // Separate opponent evidence from predictive priors and current availability.
-  // Refitting each edition allows earlier opponents to gain/lose earned strength.
+  // Current results lead; only a half-game prior from completed Program history enters.
+  // The full predictive Power rating and current personnel adjustments never enter this fit.
+  const opponentTeams = input.powerEdition.ratings.map((row) => ({
+    id: row.teamId,
+    name: row.name,
+    classification: row.classification,
+    prior: row.published
+      ? resumeProgramPrior(
+          input.programContext?.get(row.teamId),
+          input.programForecastFit,
+          input.powerEdition.season,
+        )
+      : undefined,
+  }))
   const earnedEdition = buildPowerRatingEdition({
     cutoffAt: input.powerEdition.cutoffAt,
     season: input.powerEdition.season,
@@ -807,11 +847,7 @@ export function buildResumeRatingEdition(input: {
           game.kickoffAt < input.powerEdition.cutoffAt,
       )
       .map((game) => ({ ...game, evidenceWeight: 1 })),
-    teams: input.powerEdition.ratings.map((rating) => ({
-      id: rating.teamId,
-      name: rating.name,
-      classification: rating.classification,
-    })),
+    teams: opponentTeams,
   })
   const referencePower = RESUME_REFERENCE_POWER
   const referenceHomeField = 2.5
@@ -827,11 +863,9 @@ export function buildResumeRatingEdition(input: {
       cutoffAt: input.powerEdition.cutoffAt,
       season: input.powerEdition.season,
       week: input.week,
-      teams: input.powerEdition.ratings.map((row) => ({
-        id: row.teamId,
-        name: row.name,
-        classification: row.classification,
-      })),
+      teams: opponentTeams.map((row) =>
+        row.id === team.teamId ? { ...row, prior: undefined } : row,
+      ),
       games: input.games
         .filter(
           (game) =>
@@ -950,6 +984,11 @@ export function buildResumeRatingEdition(input: {
       const scheduleComponent =
         accumulator.actualWins - accumulator.expectedWins
       const dominanceComponent = accumulator.dominanceWins
+      const programBonus = resumeProgramBonus(
+        input.programContext?.get(accumulator.power.teamId),
+        input.powerEdition.season,
+        accumulator.actualWins,
+      )
       const disagreementReasons: ResumeTeamRating['disagreementReasons'] = []
       if (Math.abs(scheduleComponent) >= 0.1) {
         disagreementReasons.push('schedule_strength')
@@ -984,9 +1023,11 @@ export function buildResumeRatingEdition(input: {
         powerRank: accumulator.power.rank,
         resume: round(
           scheduleComponent * (1 - RESUME_DOMINANCE_WEIGHT) +
-            dominanceComponent * RESUME_DOMINANCE_WEIGHT,
+            dominanceComponent * RESUME_DOMINANCE_WEIGHT +
+            programBonus,
           3,
         ),
+        resumeProgramBonus: round(programBonus, 3),
         scheduleComponent: round(scheduleComponent, 3),
         teamId: accumulator.power.teamId,
       }

@@ -1,6 +1,16 @@
 import { v } from 'convex/values'
 
 export const programSnapshotFields = {
+  powerWithoutProgram: v.optional(
+    v.object({
+      power: v.number(),
+      offense: v.number(),
+      defense: v.number(),
+      specialTeams: v.number(),
+      homeFieldAdvantage: v.number(),
+    }),
+  ),
+  resumeProgramBonus: v.optional(v.number()),
   recordDifficulty: v.optional(v.number()),
   recordProbability: v.optional(v.number()),
   programRating: v.optional(v.number()),

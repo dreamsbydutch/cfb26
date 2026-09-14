@@ -11,7 +11,7 @@ A program persists while its players and coaches change. Historical success info
 
 ## Decision
 
-Publish three independent numerical ratings and consecutive rankings for every confirmed member of the selected season's FBS field, including transitioning programs. Eligibility remains separate. FCS opponents participate internally without entering the public field.
+Publish three distinct numerical ratings and consecutive rankings for every confirmed member of the selected season's FBS field, including transitioning programs. Eligibility remains separate. FCS opponents participate internally without entering the public field.
 
 **Program** measures sustained competitive health. Recent five seasons carry most influence, the preceding five fade substantially, and partial seasons contribute in proportion to evidence. Results anchor talent acquisition/retention and development. Brand recognition earns nothing. Coaching continuity is context rather than an automatic bonus.
 
@@ -26,3 +26,9 @@ Résumé opens entering Week 7, using completed evidence through Week 6. Preserv
 The numerical implementations and remaining data limits live in [Three team ratings](../reference/three-team-ratings.md). Program and Résumé use explicit behavioral tests; their value judgments cannot be settled by winner-prediction accuracy. Power challengers require at least eight complete held-out seasons and joint improvement in margin error and probability calibration. No challenger is promoted merely because its design sounds plausible.
 
 [Back to decisions](README.md)
+
+## Amendment: bounded Program context, September 13, 2026
+
+The owner explicitly chose a small bonus for a team’s own history in Résumé, in addition to opponent context. This supersedes the original no-history Résumé rule. The bonus is capped at 0.15 win-equivalents and requires a current-season win; FBS opponent fitting receives half a game of Program prior. Only completed prior seasons qualify. This intentionally introduces a small prestige preference into otherwise earned merit.
+
+Power may use Program history only after earlier-season prediction validation. The learned 2026 blend passed the existing gates and is released as Power v6; Résumé becomes v5 and Program stays v4. See the [evaluation and reproduction contract](../reference/program-context-2026-09-13.md).
