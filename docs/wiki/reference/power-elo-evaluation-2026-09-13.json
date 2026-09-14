@@ -1,0 +1,1442 @@
+{
+  "sourceSha256": "cdc5cbb15cb8b47de7db0592ad1f70a9e9828c66f577aaa7a7e353d0b84f86a0",
+  "policy": {
+    "k": 24,
+    "retention": 0.8,
+    "homeFieldElo": 55,
+    "marginConversion": 25
+  },
+  "training": "Earlier seasons only; six-hour completion buffer. Fixed 10/20/30% blend candidates; reused historical folds, not prospective proof.",
+  "champion": "censored-roster-half-calibrated",
+  "decisions": {
+    "elo-independent": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Aggregate Brier score did not improve.",
+        "Held-out 2018 regressed materially.",
+        "Held-out 2019 regressed materially.",
+        "Held-out 2020 regressed materially.",
+        "Held-out 2021 regressed materially.",
+        "Held-out 2022 regressed materially.",
+        "Held-out 2023 regressed materially.",
+        "Held-out 2024 regressed materially.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons.",
+        "Early-season margin MAE did not improve.",
+        "Early-season Brier score did not improve.",
+        "Matched-market early-season model MAE did not improve."
+      ]
+    },
+    "power-v5-elo-0.1": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Aggregate Brier score did not improve.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons.",
+        "Early-season margin MAE did not improve.",
+        "Early-season Brier score did not improve.",
+        "Matched-market early-season model MAE did not improve."
+      ]
+    },
+    "power-v5-elo-0.2": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Aggregate Brier score did not improve.",
+        "Held-out 2020 regressed materially.",
+        "Held-out 2022 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons.",
+        "Early-season margin MAE did not improve.",
+        "Early-season Brier score did not improve.",
+        "Matched-market early-season model MAE did not improve."
+      ]
+    },
+    "power-v5-elo-0.3": {
+      "accepted": false,
+      "reasons": [
+        "Aggregate margin MAE did not improve.",
+        "Aggregate Brier score did not improve.",
+        "Held-out 2018 regressed materially.",
+        "Held-out 2020 regressed materially.",
+        "Held-out 2025 regressed materially.",
+        "Joint margin and Brier improvement did not win most seasons.",
+        "Early-season margin MAE did not improve.",
+        "Early-season Brier score did not improve.",
+        "Matched-market early-season model MAE did not improve."
+      ]
+    }
+  },
+  "reports": [
+    {
+      "modelVersion": "censored-roster-half-calibrated",
+      "overall": {
+        "brier": 0.16368,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.075377,
+            "count": 199,
+            "lowerBound": 0,
+            "meanProbability": 0.06317,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.182051,
+            "count": 390,
+            "lowerBound": 0.1,
+            "meanProbability": 0.152665,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.262956,
+            "count": 521,
+            "lowerBound": 0.2,
+            "meanProbability": 0.25164,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.390728,
+            "count": 604,
+            "lowerBound": 0.3,
+            "meanProbability": 0.34877,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.472222,
+            "count": 648,
+            "lowerBound": 0.4,
+            "meanProbability": 0.451952,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.541298,
+            "count": 678,
+            "lowerBound": 0.5,
+            "meanProbability": 0.551086,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.65,
+            "count": 800,
+            "lowerBound": 0.6,
+            "meanProbability": 0.650231,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.765013,
+            "count": 766,
+            "lowerBound": 0.7,
+            "meanProbability": 0.748849,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.851276,
+            "count": 901,
+            "lowerBound": 0.8,
+            "meanProbability": 0.851599,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.958001,
+            "count": 1381,
+            "lowerBound": 0.9,
+            "meanProbability": 0.95742,
+            "upperBound": 1
+          }
+        ],
+        "count": 6888,
+        "expectedCalibrationError": 0.011405,
+        "marginMae": 12.844823,
+        "winnerAccuracy": 0.749129
+      },
+      "early": {
+        "brier": 0.125794,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.074074,
+            "count": 27,
+            "lowerBound": 0,
+            "meanProbability": 0.072617,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.130435,
+            "count": 69,
+            "lowerBound": 0.1,
+            "meanProbability": 0.153631,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.247706,
+            "count": 109,
+            "lowerBound": 0.2,
+            "meanProbability": 0.253802,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.340909,
+            "count": 132,
+            "lowerBound": 0.3,
+            "meanProbability": 0.351557,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.422535,
+            "count": 142,
+            "lowerBound": 0.4,
+            "meanProbability": 0.453005,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.5,
+            "count": 160,
+            "lowerBound": 0.5,
+            "meanProbability": 0.548943,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.71875,
+            "count": 192,
+            "lowerBound": 0.6,
+            "meanProbability": 0.65111,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.786611,
+            "count": 239,
+            "lowerBound": 0.7,
+            "meanProbability": 0.749725,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.833333,
+            "count": 300,
+            "lowerBound": 0.8,
+            "meanProbability": 0.853703,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.968273,
+            "count": 851,
+            "lowerBound": 0.9,
+            "meanProbability": 0.962647,
+            "upperBound": 1
+          }
+        ],
+        "count": 2221,
+        "expectedCalibrationError": 0.021868,
+        "marginMae": 13.433302,
+        "winnerAccuracy": 0.81765
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "marginMae": 13.063052,
+          "brier": 0.15618,
+          "expectedCalibrationError": 0.022368
+        },
+        {
+          "season": 2019,
+          "marginMae": 12.706601,
+          "brier": 0.149174,
+          "expectedCalibrationError": 0.037226
+        },
+        {
+          "season": 2020,
+          "marginMae": 13.144645,
+          "brier": 0.174888,
+          "expectedCalibrationError": 0.029415
+        },
+        {
+          "season": 2021,
+          "marginMae": 13.338471,
+          "brier": 0.171902,
+          "expectedCalibrationError": 0.040259
+        },
+        {
+          "season": 2022,
+          "marginMae": 12.881188,
+          "brier": 0.175134,
+          "expectedCalibrationError": 0.031559
+        },
+        {
+          "season": 2023,
+          "marginMae": 12.686249,
+          "brier": 0.158468,
+          "expectedCalibrationError": 0.017009
+        },
+        {
+          "season": 2024,
+          "marginMae": 12.768864,
+          "brier": 0.168922,
+          "expectedCalibrationError": 0.033853
+        },
+        {
+          "season": 2025,
+          "marginMae": 12.312261,
+          "brier": 0.158853,
+          "expectedCalibrationError": 0.031532
+        }
+      ],
+      "opening": {
+        "count": 1392,
+        "modelMae": 13.48613979037664,
+        "marketMae": 12.341774425287356,
+        "modelWinAccuracy": 0.7988505747126436,
+        "marketWinAccuracy": 0.8038793103448276,
+        "meanPairedErrorDifference": 1.1443653650893104
+      }
+    },
+    {
+      "modelVersion": "elo-independent",
+      "overall": {
+        "brier": 0.185303,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.1,
+            "count": 50,
+            "lowerBound": 0,
+            "meanProbability": 0.076058,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.14876,
+            "count": 242,
+            "lowerBound": 0.1,
+            "meanProbability": 0.152494,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.273585,
+            "count": 424,
+            "lowerBound": 0.2,
+            "meanProbability": 0.25308,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.370304,
+            "count": 559,
+            "lowerBound": 0.3,
+            "meanProbability": 0.350336,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.480055,
+            "count": 727,
+            "lowerBound": 0.4,
+            "meanProbability": 0.450364,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.544725,
+            "count": 872,
+            "lowerBound": 0.5,
+            "meanProbability": 0.551358,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.632505,
+            "count": 966,
+            "lowerBound": 0.6,
+            "meanProbability": 0.651905,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.733833,
+            "count": 1067,
+            "lowerBound": 0.7,
+            "meanProbability": 0.750073,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.842197,
+            "count": 1147,
+            "lowerBound": 0.8,
+            "meanProbability": 0.850363,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.935252,
+            "count": 834,
+            "lowerBound": 0.9,
+            "meanProbability": 0.936633,
+            "upperBound": 1
+          }
+        ],
+        "count": 6888,
+        "expectedCalibrationError": 0.013925,
+        "marginMae": 15.340615,
+        "winnerAccuracy": 0.711963
+      },
+      "early": {
+        "brier": 0.152792,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.285714,
+            "count": 7,
+            "lowerBound": 0,
+            "meanProbability": 0.080824,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.157895,
+            "count": 38,
+            "lowerBound": 0.1,
+            "meanProbability": 0.15665,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.25,
+            "count": 92,
+            "lowerBound": 0.2,
+            "meanProbability": 0.253832,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.396947,
+            "count": 131,
+            "lowerBound": 0.3,
+            "meanProbability": 0.354864,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.502793,
+            "count": 179,
+            "lowerBound": 0.4,
+            "meanProbability": 0.451359,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.590361,
+            "count": 249,
+            "lowerBound": 0.5,
+            "meanProbability": 0.550312,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.694352,
+            "count": 301,
+            "lowerBound": 0.6,
+            "meanProbability": 0.651993,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.825521,
+            "count": 384,
+            "lowerBound": 0.7,
+            "meanProbability": 0.753535,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.888158,
+            "count": 456,
+            "lowerBound": 0.8,
+            "meanProbability": 0.852804,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.96875,
+            "count": 384,
+            "lowerBound": 0.9,
+            "meanProbability": 0.936971,
+            "upperBound": 1
+          }
+        ],
+        "count": 2221,
+        "expectedCalibrationError": 0.042883,
+        "marginMae": 18.242686,
+        "winnerAccuracy": 0.776227
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "marginMae": 16.091062,
+          "brier": 0.182195,
+          "expectedCalibrationError": 0.025976
+        },
+        {
+          "season": 2019,
+          "marginMae": 15.601532,
+          "brier": 0.172676,
+          "expectedCalibrationError": 0.039537
+        },
+        {
+          "season": 2020,
+          "marginMae": 14.698464,
+          "brier": 0.194772,
+          "expectedCalibrationError": 0.044393
+        },
+        {
+          "season": 2021,
+          "marginMae": 15.324111,
+          "brier": 0.183111,
+          "expectedCalibrationError": 0.038081
+        },
+        {
+          "season": 2022,
+          "marginMae": 15.175836,
+          "brier": 0.198373,
+          "expectedCalibrationError": 0.059407
+        },
+        {
+          "season": 2023,
+          "marginMae": 14.916032,
+          "brier": 0.181033,
+          "expectedCalibrationError": 0.012678
+        },
+        {
+          "season": 2024,
+          "marginMae": 15.33734,
+          "brier": 0.194756,
+          "expectedCalibrationError": 0.042256
+        },
+        {
+          "season": 2025,
+          "marginMae": 15.364807,
+          "brier": 0.178873,
+          "expectedCalibrationError": 0.037026
+        }
+      ],
+      "opening": {
+        "count": 1392,
+        "modelMae": 17.54406605811889,
+        "marketMae": 12.341774425287356,
+        "modelWinAccuracy": 0.7535919540229885,
+        "marketWinAccuracy": 0.8038793103448276,
+        "meanPairedErrorDifference": 5.202291632831516
+      }
+    },
+    {
+      "modelVersion": "power-v5-elo-0.1",
+      "overall": {
+        "brier": 0.163754,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.075472,
+            "count": 159,
+            "lowerBound": 0,
+            "meanProbability": 0.066166,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.151351,
+            "count": 370,
+            "lowerBound": 0.1,
+            "meanProbability": 0.152171,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.257813,
+            "count": 512,
+            "lowerBound": 0.2,
+            "meanProbability": 0.252843,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.376812,
+            "count": 621,
+            "lowerBound": 0.3,
+            "meanProbability": 0.34982,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.464179,
+            "count": 670,
+            "lowerBound": 0.4,
+            "meanProbability": 0.453311,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.545064,
+            "count": 699,
+            "lowerBound": 0.5,
+            "meanProbability": 0.551878,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.666264,
+            "count": 827,
+            "lowerBound": 0.6,
+            "meanProbability": 0.650938,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.755076,
+            "count": 788,
+            "lowerBound": 0.7,
+            "meanProbability": 0.749943,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.851735,
+            "count": 951,
+            "lowerBound": 0.8,
+            "meanProbability": 0.851461,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.965143,
+            "count": 1291,
+            "lowerBound": 0.9,
+            "meanProbability": 0.952086,
+            "upperBound": 1
+          }
+        ],
+        "count": 6888,
+        "expectedCalibrationError": 0.009723,
+        "marginMae": 12.873501,
+        "winnerAccuracy": 0.750581
+      },
+      "early": {
+        "brier": 0.12605,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.058824,
+            "count": 17,
+            "lowerBound": 0,
+            "meanProbability": 0.073703,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.130435,
+            "count": 69,
+            "lowerBound": 0.1,
+            "meanProbability": 0.15155,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.212121,
+            "count": 99,
+            "lowerBound": 0.2,
+            "meanProbability": 0.251138,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.326087,
+            "count": 138,
+            "lowerBound": 0.3,
+            "meanProbability": 0.351254,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.437908,
+            "count": 153,
+            "lowerBound": 0.4,
+            "meanProbability": 0.453844,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.493421,
+            "count": 152,
+            "lowerBound": 0.5,
+            "meanProbability": 0.547373,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.722488,
+            "count": 209,
+            "lowerBound": 0.6,
+            "meanProbability": 0.649805,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.774319,
+            "count": 257,
+            "lowerBound": 0.7,
+            "meanProbability": 0.751506,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.845697,
+            "count": 337,
+            "lowerBound": 0.8,
+            "meanProbability": 0.854202,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.974684,
+            "count": 790,
+            "lowerBound": 0.9,
+            "meanProbability": 0.955479,
+            "upperBound": 1
+          }
+        ],
+        "count": 2221,
+        "expectedCalibrationError": 0.026464,
+        "marginMae": 13.541054,
+        "winnerAccuracy": 0.816299
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "marginMae": 13.129772,
+          "brier": 0.156271,
+          "expectedCalibrationError": 0.025213
+        },
+        {
+          "season": 2019,
+          "marginMae": 12.7135,
+          "brier": 0.149494,
+          "expectedCalibrationError": 0.035275
+        },
+        {
+          "season": 2020,
+          "marginMae": 13.110938,
+          "brier": 0.17508,
+          "expectedCalibrationError": 0.031225
+        },
+        {
+          "season": 2021,
+          "marginMae": 13.346803,
+          "brier": 0.170868,
+          "expectedCalibrationError": 0.029113
+        },
+        {
+          "season": 2022,
+          "marginMae": 12.911527,
+          "brier": 0.175392,
+          "expectedCalibrationError": 0.034145
+        },
+        {
+          "season": 2023,
+          "marginMae": 12.659055,
+          "brier": 0.158804,
+          "expectedCalibrationError": 0.01849
+        },
+        {
+          "season": 2024,
+          "marginMae": 12.831568,
+          "brier": 0.169393,
+          "expectedCalibrationError": 0.030982
+        },
+        {
+          "season": 2025,
+          "marginMae": 12.402397,
+          "brier": 0.158836,
+          "expectedCalibrationError": 0.051778
+        }
+      ],
+      "opening": {
+        "count": 1392,
+        "modelMae": 13.609470008264562,
+        "marketMae": 12.341774425287356,
+        "modelWinAccuracy": 0.7974137931034483,
+        "marketWinAccuracy": 0.8038793103448276,
+        "meanPairedErrorDifference": 1.2676955829772145
+      }
+    },
+    {
+      "modelVersion": "power-v5-elo-0.2",
+      "overall": {
+        "brier": 0.164292,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.079365,
+            "count": 126,
+            "lowerBound": 0,
+            "meanProbability": 0.067473,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.121547,
+            "count": 362,
+            "lowerBound": 0.1,
+            "meanProbability": 0.153466,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.250526,
+            "count": 475,
+            "lowerBound": 0.2,
+            "meanProbability": 0.253501,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.376378,
+            "count": 635,
+            "lowerBound": 0.3,
+            "meanProbability": 0.34964,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.445095,
+            "count": 683,
+            "lowerBound": 0.4,
+            "meanProbability": 0.452595,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.561141,
+            "count": 736,
+            "lowerBound": 0.5,
+            "meanProbability": 0.55063,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.648775,
+            "count": 857,
+            "lowerBound": 0.6,
+            "meanProbability": 0.651429,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.766667,
+            "count": 810,
+            "lowerBound": 0.7,
+            "meanProbability": 0.750504,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.855446,
+            "count": 1010,
+            "lowerBound": 0.8,
+            "meanProbability": 0.850912,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.969849,
+            "count": 1194,
+            "lowerBound": 0.9,
+            "meanProbability": 0.948223,
+            "upperBound": 1
+          }
+        ],
+        "count": 6888,
+        "expectedCalibrationError": 0.013076,
+        "marginMae": 12.963043,
+        "winnerAccuracy": 0.751597
+      },
+      "early": {
+        "brier": 0.126849,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.076923,
+            "count": 13,
+            "lowerBound": 0,
+            "meanProbability": 0.078675,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.104478,
+            "count": 67,
+            "lowerBound": 0.1,
+            "meanProbability": 0.155589,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.195652,
+            "count": 92,
+            "lowerBound": 0.2,
+            "meanProbability": 0.251713,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.338235,
+            "count": 136,
+            "lowerBound": 0.3,
+            "meanProbability": 0.353028,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.415094,
+            "count": 159,
+            "lowerBound": 0.4,
+            "meanProbability": 0.45285,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.521212,
+            "count": 165,
+            "lowerBound": 0.5,
+            "meanProbability": 0.54895,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.699531,
+            "count": 213,
+            "lowerBound": 0.6,
+            "meanProbability": 0.6527,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.790614,
+            "count": 277,
+            "lowerBound": 0.7,
+            "meanProbability": 0.751895,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.857143,
+            "count": 385,
+            "lowerBound": 0.8,
+            "meanProbability": 0.854596,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.981793,
+            "count": 714,
+            "lowerBound": 0.9,
+            "meanProbability": 0.950734,
+            "upperBound": 1
+          }
+        ],
+        "count": 2221,
+        "expectedCalibrationError": 0.02929,
+        "marginMae": 13.746173,
+        "winnerAccuracy": 0.816749
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "marginMae": 13.269616,
+          "brier": 0.15692,
+          "expectedCalibrationError": 0.032783
+        },
+        {
+          "season": 2019,
+          "marginMae": 12.799001,
+          "brier": 0.150265,
+          "expectedCalibrationError": 0.046793
+        },
+        {
+          "season": 2020,
+          "marginMae": 13.138057,
+          "brier": 0.175671,
+          "expectedCalibrationError": 0.044632
+        },
+        {
+          "season": 2021,
+          "marginMae": 13.405413,
+          "brier": 0.170313,
+          "expectedCalibrationError": 0.019464
+        },
+        {
+          "season": 2022,
+          "marginMae": 12.981113,
+          "brier": 0.176109,
+          "expectedCalibrationError": 0.048085
+        },
+        {
+          "season": 2023,
+          "marginMae": 12.690774,
+          "brier": 0.159568,
+          "expectedCalibrationError": 0.022619
+        },
+        {
+          "season": 2024,
+          "marginMae": 12.95471,
+          "brier": 0.170334,
+          "expectedCalibrationError": 0.035562
+        },
+        {
+          "season": 2025,
+          "marginMae": 12.558067,
+          "brier": 0.159267,
+          "expectedCalibrationError": 0.038986
+        }
+      ],
+      "opening": {
+        "count": 1392,
+        "modelMae": 13.80950153319759,
+        "marketMae": 12.341774425287356,
+        "modelWinAccuracy": 0.7974137931034483,
+        "marketWinAccuracy": 0.8038793103448276,
+        "meanPairedErrorDifference": 1.4677271079102117
+      }
+    },
+    {
+      "modelVersion": "power-v5-elo-0.3",
+      "overall": {
+        "brier": 0.165295,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0.082569,
+            "count": 109,
+            "lowerBound": 0,
+            "meanProbability": 0.070166,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.117825,
+            "count": 331,
+            "lowerBound": 0.1,
+            "meanProbability": 0.15475,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.23348,
+            "count": 454,
+            "lowerBound": 0.2,
+            "meanProbability": 0.252076,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.367188,
+            "count": 640,
+            "lowerBound": 0.3,
+            "meanProbability": 0.349651,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.449008,
+            "count": 706,
+            "lowerBound": 0.4,
+            "meanProbability": 0.452866,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.555407,
+            "count": 749,
+            "lowerBound": 0.5,
+            "meanProbability": 0.549559,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.635845,
+            "count": 876,
+            "lowerBound": 0.6,
+            "meanProbability": 0.650153,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.77081,
+            "count": 877,
+            "lowerBound": 0.7,
+            "meanProbability": 0.749747,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.866019,
+            "count": 1030,
+            "lowerBound": 0.8,
+            "meanProbability": 0.850676,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.968638,
+            "count": 1116,
+            "lowerBound": 0.9,
+            "meanProbability": 0.944861,
+            "upperBound": 1
+          }
+        ],
+        "count": 6888,
+        "expectedCalibrationError": 0.016505,
+        "marginMae": 13.109903,
+        "winnerAccuracy": 0.748548
+      },
+      "early": {
+        "brier": 0.128191,
+        "calibrationBuckets": [
+          {
+            "actualWinRate": 0,
+            "count": 8,
+            "lowerBound": 0,
+            "meanProbability": 0.07503,
+            "upperBound": 0.1
+          },
+          {
+            "actualWinRate": 0.111111,
+            "count": 63,
+            "lowerBound": 0.1,
+            "meanProbability": 0.155888,
+            "upperBound": 0.2
+          },
+          {
+            "actualWinRate": 0.170455,
+            "count": 88,
+            "lowerBound": 0.2,
+            "meanProbability": 0.249137,
+            "upperBound": 0.3
+          },
+          {
+            "actualWinRate": 0.338235,
+            "count": 136,
+            "lowerBound": 0.3,
+            "meanProbability": 0.353082,
+            "upperBound": 0.4
+          },
+          {
+            "actualWinRate": 0.408805,
+            "count": 159,
+            "lowerBound": 0.4,
+            "meanProbability": 0.452427,
+            "upperBound": 0.5
+          },
+          {
+            "actualWinRate": 0.508571,
+            "count": 175,
+            "lowerBound": 0.5,
+            "meanProbability": 0.547097,
+            "upperBound": 0.6
+          },
+          {
+            "actualWinRate": 0.692661,
+            "count": 218,
+            "lowerBound": 0.6,
+            "meanProbability": 0.651808,
+            "upperBound": 0.7
+          },
+          {
+            "actualWinRate": 0.801282,
+            "count": 312,
+            "lowerBound": 0.7,
+            "meanProbability": 0.749498,
+            "upperBound": 0.8
+          },
+          {
+            "actualWinRate": 0.874384,
+            "count": 406,
+            "lowerBound": 0.8,
+            "meanProbability": 0.853563,
+            "upperBound": 0.9
+          },
+          {
+            "actualWinRate": 0.983232,
+            "count": 656,
+            "lowerBound": 0.9,
+            "meanProbability": 0.946386,
+            "upperBound": 1
+          }
+        ],
+        "count": 2221,
+        "expectedCalibrationError": 0.037699,
+        "marginMae": 14.062627,
+        "winnerAccuracy": 0.815398
+      },
+      "folds": [
+        {
+          "season": 2018,
+          "marginMae": 13.483923,
+          "brier": 0.158127,
+          "expectedCalibrationError": 0.030812
+        },
+        {
+          "season": 2019,
+          "marginMae": 12.96686,
+          "brier": 0.151487,
+          "expectedCalibrationError": 0.0498
+        },
+        {
+          "season": 2020,
+          "marginMae": 13.201632,
+          "brier": 0.176661,
+          "expectedCalibrationError": 0.052147
+        },
+        {
+          "season": 2021,
+          "marginMae": 13.512872,
+          "brier": 0.170237,
+          "expectedCalibrationError": 0.022752
+        },
+        {
+          "season": 2022,
+          "marginMae": 13.108967,
+          "brier": 0.177286,
+          "expectedCalibrationError": 0.035908
+        },
+        {
+          "season": 2023,
+          "marginMae": 12.793658,
+          "brier": 0.160757,
+          "expectedCalibrationError": 0.027552
+        },
+        {
+          "season": 2024,
+          "marginMae": 13.109636,
+          "brier": 0.171745,
+          "expectedCalibrationError": 0.037347
+        },
+        {
+          "season": 2025,
+          "marginMae": 12.762514,
+          "brier": 0.160147,
+          "expectedCalibrationError": 0.035074
+        }
+      ],
+      "opening": {
+        "count": 1392,
+        "modelMae": 14.075416200311277,
+        "marketMae": 12.341774425287356,
+        "modelWinAccuracy": 0.7945402298850575,
+        "marketWinAccuracy": 0.8038793103448276,
+        "meanPairedErrorDifference": 1.7336417750238846
+      }
+    }
+  ],
+  "fits": [
+    {
+      "season": 2018,
+      "scale": 1.5,
+      "homeOffset": -0.1296740316490767,
+      "probability": {
+        "fitCount": 4333,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1788017231,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    {
+      "season": 2019,
+      "scale": 1.5,
+      "homeOffset": -0.15017989258943837,
+      "probability": {
+        "fitCount": 5217,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1795717926,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018
+      ]
+    },
+    {
+      "season": 2020,
+      "scale": 1.5,
+      "homeOffset": -0.24753652175220878,
+      "probability": {
+        "fitCount": 6105,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1839349232,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    {
+      "season": 2021,
+      "scale": 1.5,
+      "homeOffset": -0.49754194467074336,
+      "probability": {
+        "fitCount": 6675,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1847865072,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020
+      ]
+    },
+    {
+      "season": 2022,
+      "scale": 1.5,
+      "homeOffset": -0.6349229873936715,
+      "probability": {
+        "fitCount": 7562,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1859685053,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ]
+    },
+    {
+      "season": 2023,
+      "scale": 1.5,
+      "homeOffset": -0.5839185029609539,
+      "probability": {
+        "fitCount": 8458,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1797311369,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022
+      ]
+    },
+    {
+      "season": 2024,
+      "scale": 1.5,
+      "homeOffset": -0.6531670785792084,
+      "probability": {
+        "fitCount": 9368,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1810306309,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ]
+    },
+    {
+      "season": 2025,
+      "scale": 1.5,
+      "homeOffset": -0.5841104666691249,
+      "probability": {
+        "fitCount": 10287,
+        "intercept": 0,
+        "maximumProbability": 0.99,
+        "minimumProbability": 0.01,
+        "slope": 0.1779390505,
+        "trainingSeasons": [
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024
+        ],
+        "version": "logistic-margin-v1"
+      },
+      "trainingSeasons": [
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ]
+    }
+  ]
+}

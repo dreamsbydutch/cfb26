@@ -1,5 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
+import { benchmarkVintage } from './lib/benchmark-vintage.mjs'
+import { isFbsGame, isResolvedGame } from '../convex/gameStatus.ts'
 
 const [modelPath, snapshotPath, outputPath] = process.argv.slice(2)
 if (!modelPath || !snapshotPath || !outputPath)
@@ -11,6 +13,25 @@ const data = JSON.parse(await readFile(modelPath, 'utf8')),
   snapshot = JSON.parse(buffer)
 if (!Number.isFinite(snapshot.observedAt) || snapshot.observedAt > Date.now())
   throw new Error('Invalid observation timestamp')
+const seasonGames = data.games.filter(
+  (g) =>
+    g.season === snapshot.season && g.seasonType === 'regular' && isFbsGame(g),
+)
+const completeWeeks = [...new Set(seasonGames.map((g) => g.week))].filter(
+  (week) => seasonGames.filter((g) => g.week === week).every(isResolvedGame),
+)
+const throughWeek = Math.max(0, ...completeWeeks)
+const vintage = benchmarkVintage(snapshot, {
+  season: snapshot.season,
+  throughWeek,
+  cutoffAt: Date.now(),
+})
+if (!vintage.eligible)
+  throw new Error(`Cannot freeze a current SP+ benchmark: ${vintage.reason}`)
+const availableAt = Math.max(
+  snapshot.observedAt,
+  snapshot.publisherEdition.verifiedAt,
+)
 const ratings = new Map(
   snapshot.rows
     .filter(
@@ -27,7 +48,7 @@ const games = data.games.filter(
     g.seasonType === 'regular' &&
     g.week <= 4 &&
     !g.completed &&
-    g.startTime > snapshot.observedAt &&
+    g.startTime > Date.now() &&
     g.homeClassification === 'fbs' &&
     g.awayClassification === 'fbs',
 )
@@ -45,7 +66,7 @@ for (const game of games) {
     season: game.season,
     week: game.week,
     kickoffAt: game.startTime,
-    observedAt: snapshot.observedAt,
+    observedAt: availableAt,
     home: game.homeSourceName,
     away: game.awaySourceName,
     neutralSite: game.neutralSite,
@@ -59,6 +80,7 @@ await writeFile(
       source: snapshot.source,
       sourceSha256: createHash('sha256').update(buffer).digest('hex'),
       observedAt: snapshot.observedAt,
+      publisherEdition: snapshot.publisherEdition,
       venueAssumption:
         'SP+ neutral rating difference plus a fixed 2.5-point home effect; these are derived benchmarks, not published Connelly game picks.',
       missing,

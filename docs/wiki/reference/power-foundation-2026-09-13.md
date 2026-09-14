@@ -51,7 +51,9 @@ Candidate choices were iterated after inspecting these historical folds. Reporte
 
 Historical opening and archived provider spreads come from [CFBD betting data](https://api.collegefootballdata.com/api/betting). Providers receive equal weight through the median; home spreads are negated to obtain predicted home margins. Missing opening quotes are not filled with later lines. Only shared games are scored. Quotes lack timestamps, so an archived spread is not asserted to be a closing line, and this comparison is not an equal-information betting test.
 
-SP+ supplies an independent prospective benchmark through [CFBD ratings](https://api.collegefootballdata.com/api/ratings). The [frozen September 13 forecasts](power-sp-forecasts-2026-09-13.json) cover 115 upcoming FBS-versus-FBS games through week 4. They use the observed neutral rating difference plus an explicitly assumed 2.5-point home effect. These are derived margins, not published Connelly game picks. No SP+ win probabilities are fabricated. No outcomes were available when frozen; season-end SP+ values must never substitute for missing historical weekly snapshots.
+The [September 13 SP+ archive](power-sp-forecasts-2026-09-13.json) preserves 115 derived forecasts from the copy observed through CFBD. **Its publisher edition is unverified and it is not an eligible current benchmark or model input.** Download time did not establish which ESPN update the copy contained; the Clemson discrepancy exposed this limitation. The immutable archive remains for audit, but current scoring now rejects it. New SP+ and FPI downloads explicitly carry unverified publisher status. Freezing a current benchmark requires independently verified publisher edition, season, completed week, publication time, verification time, source URL, and content fingerprint. See [model methods and source freshness](power-methods-2026-09-13.md).
+
+SP+-derived margins use a neutral rating difference plus an assumed 2.5-point home effect. They are not published Connelly game picks. No external win probabilities are fabricated, and season-end ratings must never substitute for missing historical weekly snapshots.
 
 ## Reproduction
 

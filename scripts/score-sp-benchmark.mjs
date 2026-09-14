@@ -13,6 +13,10 @@ if (!snapshotPath || !reportPath || !outputPath)
 const buffer = await readFile(snapshotPath),
   snapshot = JSON.parse(buffer),
   report = JSON.parse(await readFile(reportPath, 'utf8'))
+if (snapshot.publisherEdition?.status !== 'verified')
+  throw new Error(
+    'Cannot score this as a current SP+ benchmark: publisher edition is unverified. Preserve the archive, but obtain a verified edition.',
+  )
 const frozen = new Map()
 for (const row of snapshot.forecasts) {
   if (

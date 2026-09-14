@@ -70,7 +70,9 @@ await writeFile(
     source: 'CFBD /ratings/sp',
     observedAt,
     season,
-    timing: 'Observed snapshot; usable only for games after this timestamp.',
+    publisherEdition: { status: 'unverified' },
+    timing:
+      'Downloaded copy; publisher edition/week is unknown. Not eligible as a current benchmark or model input.',
     rows: teams.map((r) => ({
       team: r.team,
       rating: r.rating,
@@ -80,3 +82,24 @@ await writeFile(
   { flag: 'wx' },
 )
 console.log(JSON.stringify({ spTeams: teams.length, observedAt }))
+const fpi = await get(`/ratings/fpi?year=${season}`)
+const fpiObservedAt = Date.now()
+const fpiRows = fpi
+  .filter((r) => typeof r.team === 'string' && Number.isFinite(r.fpi))
+  .map((r) => ({ team: r.team, rating: r.fpi }))
+await writeFile(
+  `${directory}/fpi-${season}-${fpiObservedAt}.json`,
+  JSON.stringify({
+    source: 'CFBD /ratings/fpi',
+    season,
+    observedAt: fpiObservedAt,
+    publisherEdition: { status: 'unverified' },
+    timing:
+      'Downloaded copy; publisher edition/week is unknown. Not eligible as a current benchmark or model input.',
+    rows: fpiRows,
+  }),
+  { flag: 'wx' },
+)
+console.log(
+  JSON.stringify({ fpiTeams: fpiRows.length, observedAt: fpiObservedAt }),
+)
