@@ -1,7 +1,11 @@
 import { fitLogisticMarginCalibrator } from '../../convex/ratingBacktest.ts'
 
 /** Independent Elo units need their own learned point conversion, not foundation scale caps. */
-export function fitResultCalibration(rows, testSeason) {
+export function fitResultCalibration(
+  rows,
+  testSeason,
+  { allowNegativeScale = false } = {},
+) {
   if (
     rows.length < 100 ||
     rows.some(
@@ -34,7 +38,11 @@ export function fitResultCalibration(rows, testSeason) {
         ? xy / xx
         : 0
   const homeOffset = determinant > 1e-9 ? (hy * xx - xy * xh) / determinant : 0
-  if (!Number.isFinite(scale) || !Number.isFinite(homeOffset) || scale <= 0)
+  if (
+    !Number.isFinite(scale) ||
+    !Number.isFinite(homeOffset) ||
+    (!allowNegativeScale && scale <= 0)
+  )
     throw new Error('Result signal has no valid positive point conversion.')
   const probability = fitLogisticMarginCalibrator(
     rows

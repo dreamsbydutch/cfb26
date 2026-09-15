@@ -235,6 +235,29 @@ const { forecasts, fits, finalFit } = evaluateLearnedEnsemble(
   alignComponents(components),
   testSeasons,
 )
+const componentOutput = process.argv
+  .find((arg) => arg.startsWith('--save-components='))
+  ?.slice('--save-components='.length)
+if (componentOutput) {
+  if (!programContext || resultK !== undefined)
+    throw new Error('Component export requires the unchanged Program ensemble.')
+  await writeFile(
+    componentOutput,
+    JSON.stringify({
+      sourceSha256,
+      foundationSha256: createHash('sha256')
+        .update(await readFile(incumbentPath))
+        .digest('hex'),
+      programContextSha256: createHash('sha256')
+        .update(await readFile(programContextPath))
+        .digest('hex'),
+      testSeasons,
+      requests,
+      components,
+    }) + '\n',
+    { flag: 'wx' },
+  )
+}
 finalFit.components = rawComponents.map((raw, index) =>
   index === 0
     ? baseline.finalCalibration

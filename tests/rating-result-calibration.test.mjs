@@ -3,6 +3,26 @@ import assert from 'node:assert/strict'
 import { fitResultCalibration } from '../scripts/lib/result-calibration.mjs'
 import { calibrateForecast } from '../convex/powerCalibration.ts'
 
+test('signed research calibration learns an inverse signal only when explicitly enabled', () => {
+  const rows = Array.from({ length: 200 }, (_, i) => {
+    const predictedMargin = (i % 21) - 10
+    return {
+      season: 2017,
+      predictedMargin,
+      actualMargin: -3 * predictedMargin + 2,
+      neutralSite: false,
+    }
+  })
+  assert.throws(() => fitResultCalibration(rows, 2018), /positive point/)
+  const fit = fitResultCalibration(rows, 2018, { allowNegativeScale: true })
+  assert.ok(Math.abs(fit.scale + 3) < 1e-9)
+  assert.ok(Math.abs(fit.homeOffset - 2) < 1e-9)
+  assert.throws(
+    () => fitResultCalibration(rows, 2017, { allowNegativeScale: true }),
+    /earlier finite/,
+  )
+})
+
 test('result-only units learn an unrestricted point scale and venue offset from past forecasts', () => {
   const rows = Array.from({ length: 240 }, (_, i) => {
     const x = (i % 37) - 18,
