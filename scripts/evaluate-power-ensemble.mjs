@@ -1,6 +1,7 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { replayElo } from './lib/power-elo.mjs'
+import { fitResultCalibration } from './lib/result-calibration.mjs'
 import { replayEfficiency } from './lib/power-efficiency.mjs'
 import {
   alignComponents,
@@ -27,9 +28,15 @@ const [
   outputPath,
   programContextPath,
 ] = process.argv.slice(2)
+const resultOption = process.argv.find((arg) => arg.startsWith('--win-loss-k='))
+const resultK = resultOption ? Number(resultOption.split('=')[1]) : undefined
+if (resultOption && (!programContextPath || ![12, 24, 48].includes(resultK)))
+  throw new Error(
+    'Win/loss testing requires Program context and K of 12, 24, or 48.',
+  )
 if (!outputPath)
   throw new Error(
-    'Usage: node scripts/evaluate-power-ensemble.mjs <enriched-data.json> <incumbent-evaluation.json> <market-directory> <new-output.json> [prepared-program-context.json] [--retain-forecasts]',
+    'Usage: node scripts/evaluate-power-ensemble.mjs <enriched-data.json> <incumbent-evaluation.json> <market-directory> <new-output.json> [prepared-program-context.json] [--retain-forecasts] [--win-loss-k=12|24|48]',
   )
 const buffer = await readFile(dataPath),
   data = JSON.parse(buffer)
@@ -172,6 +179,10 @@ const rawComponents = programContext
     ]
   : [rawPower, replayElo(games, requests), replayEfficiency(games, requests)]
 const componentFits = []
+if (resultK !== undefined) {
+  componentNames.push(`win/loss-only Elo K=${resultK}`)
+  rawComponents.push(replayElo(games, requests, { k: resultK }))
+}
 const components = rawComponents.map((raw, index) => {
   const calibrated = []
   for (const season of [...seedSeasons.slice(1), ...testSeasons]) {
@@ -186,7 +197,11 @@ const components = rawComponents.map((raw, index) => {
         ...incumbent.forecasts.filter((row) => row.season === season),
       )
     } else {
-      const fit = fitPowerCalibration(
+      const fit = (
+        resultK !== undefined && index === 2
+          ? fitResultCalibration
+          : fitPowerCalibration
+      )(
         raw.filter(
           (row) =>
             row.season < season &&
@@ -209,11 +224,12 @@ const components = rawComponents.map((raw, index) => {
 })
 if (programContext) {
   const fallback = new Map(components[0].map((row) => [row.gameId, row]))
-  components[1] = components[1].map((row) =>
-    row.homeClassification === 'fbs' && row.awayClassification === 'fbs'
-      ? row
-      : fallback.get(row.gameId),
-  )
+  for (let index = 1; index < components.length; index++)
+    components[index] = components[index].map((row) =>
+      row.homeClassification === 'fbs' && row.awayClassification === 'fbs'
+        ? row
+        : fallback.get(row.gameId),
+    )
 }
 const { forecasts, fits, finalFit } = evaluateLearnedEnsemble(
   alignComponents(components),
@@ -222,7 +238,9 @@ const { forecasts, fits, finalFit } = evaluateLearnedEnsemble(
 finalFit.components = rawComponents.map((raw, index) =>
   index === 0
     ? baseline.finalCalibration
-    : fitPowerCalibration(
+    : (resultK !== undefined && index === 2
+        ? fitResultCalibration
+        : fitPowerCalibration)(
         raw.filter(
           (row) =>
             !programContext ||
@@ -234,9 +252,12 @@ finalFit.components = rawComponents.map((raw, index) =>
 )
 const evaluation = evaluateForecasts(forecasts)
 const challenger = {
-  modelVersion: programContext
-    ? 'power-v5-program-context'
-    : 'power-v5-learned-ensemble',
+  modelVersion:
+    resultK !== undefined
+      ? `power-win-loss-k${resultK}`
+      : programContext
+        ? 'power-v5-program-context'
+        : 'power-v5-learned-ensemble',
   forecasts,
   evaluation,
   folds: Object.entries(evaluation.bySeason).map(([season, metrics]) => ({
@@ -268,6 +289,11 @@ const compact = (report) => ({
   opening: compareMarketMargins(report.forecasts, market).early,
 })
 const output = {
+  candidateName: challenger.modelVersion,
+  winLossPolicy:
+    resultK === undefined
+      ? undefined
+      : { k: resultK, retention: 0.8, homeField: 55, usesScoreMargin: false },
   sourceSha256,
   incumbentSha256: createHash('sha256')
     .update(await readFile(incumbentPath))

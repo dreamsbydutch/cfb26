@@ -21,3 +21,5 @@
 - [Program context in Power and Résumé](program-context-2026-09-13.md) — learned Power blend, bounded merit policy, and reproduction evidence.
 
 - [Sustained exceptional Program success](program-sustained-success-2026-09-13.md) — consecutive elite seasons, bounded results adjustment, and prediction safeguards.
+
+- [Additional win/loss signal testing](power-win-loss-testing-2026-09-14.md) — learned result-only components, narrow-win diagnostics, and the decision to retain Power v6.

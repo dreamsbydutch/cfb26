@@ -55,7 +55,7 @@ const marketRows = (
 ).flat()
 const selected = chooseEarlyPowerChampion(
   report(incumbent, 'released-program-context'),
-  [report(challenger, 'sustained-program-context')],
+  [report(challenger, challenger.candidateName ?? 'sustained-program-context')],
   marketMargins(marketRows, 'opening'),
 )
 const { forecasts: _forecasts, ...candidateEvidence } = challenger
