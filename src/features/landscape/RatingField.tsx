@@ -57,10 +57,10 @@ export function RatingField({
     ? [
         'National titles',
         'Conference titles',
-        'Results /50',
-        'Acquisition /15',
-        'Development /5',
-        'Honors /30',
+        'Results',
+        'Acquisition',
+        'Development',
+        'Honors',
       ]
     : [
         'Record',
@@ -141,19 +141,19 @@ export function RatingField({
                         ),
                       },
                       {
-                        label: 'Results /50',
+                        label: 'Results',
                         value: weighted(row.programResults, 0.5, 1),
                       },
                       {
-                        label: 'Acquisition /15',
+                        label: 'Acquisition',
                         value: weighted(row.programAcquisition, 0.15, 1),
                       },
                       {
-                        label: 'Development /5',
+                        label: 'Development',
                         value: weighted(row.programDevelopment, 0.05, 1),
                       },
                       {
-                        label: 'Honors /30',
+                        label: 'Honors',
                         value: row.programAccomplishments?.toFixed(1) ?? '—',
                       },
                     ]

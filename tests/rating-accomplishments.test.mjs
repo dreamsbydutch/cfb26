@@ -33,7 +33,7 @@ test('conference winners earn titles; ordinary bowls, FCS trophies and future re
       [{ ...game, notes: 'Dr Pepper Big 12 Championship' }],
       cutoff,
     ),
-    [honor(0, 2025, true)],
+    [{ ...honor(0, 2025, true), conference: 'Big 12' }],
   )
   for (const notes of [
     'Rose Bowl Game',
@@ -62,6 +62,20 @@ test('conference winners earn titles; ordinary bowls, FCS trophies and future re
     ),
     [],
   )
+})
+
+test('conference title-game labels retain a canonical conference name', () => {
+  for (const [notes, conference] of [
+    ['Big 10 Championship Game', 'Big Ten'],
+    ['Pac 12 Football Championship', 'Pac-12'],
+    ['American Athletic Conference Championship', 'American'],
+    ['Mid-American Championship', 'MAC'],
+  ]) {
+    assert.equal(
+      accomplishmentsFromGames([{ ...game, notes }], cutoff)[0].conference,
+      conference,
+    )
+  }
 })
 
 test('each playoff round credits both participants and advances the winner immediately', () => {

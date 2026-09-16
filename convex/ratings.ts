@@ -466,7 +466,43 @@ export const getRatingField = query({
     )
     if (championSlices.some((championRows) => championRows.length > 100))
       throw new Error('Program honors display slice exceeds its bound.')
-    const loadedAccomplishments: Array<ProgramAccomplishment> = championSlices
+    const standingsSlices = await Promise.all(
+      accomplishmentSeasons.map((season) =>
+        ctx.db
+          .query('teamSeasonStandings')
+          .withIndex('by_season_and_wins', (q) => q.eq('season', season))
+          .take(201),
+      ),
+    )
+    if (standingsSlices.some((standings) => standings.length > 200))
+      throw new Error('Program honors standings slice exceeds its bound.')
+    const championshipGameSlices = await Promise.all(
+      accomplishmentSeasons.map((season) =>
+        ctx.db
+          .query('collegeGames')
+          .withIndex('by_season_and_week_and_startTime', (q) =>
+            q.eq('season', season).gte('week', 12),
+          )
+          .take(501),
+      ),
+    )
+    if (championshipGameSlices.some((games) => games.length > 500))
+      throw new Error('Program honors game slice exceeds its bound.')
+    const gameAccomplishments = accomplishmentsFromGames(
+      championshipGameSlices
+        .flat()
+        .filter((game) => game.sourceUpdatedAt < edition.cutoffAt)
+        .map((game) => ({
+          ...game,
+          homeTeamId: String(game.homeProgramId),
+          awayTeamId: String(game.awayProgramId),
+          kickoffAt: game.startTime,
+        })),
+      edition.cutoffAt,
+    )
+      .filter((row) => row.conferenceChampion)
+      .map((row) => ({ ...row, playoffStage: 0 }))
+    const sourcedAccomplishments: Array<ProgramAccomplishment> = championSlices
       .flat()
       .filter(
         (row) =>
@@ -483,6 +519,26 @@ export const getRatingField = query({
         conferenceChampion: true,
         playoffStage: 0,
       }))
+    const standingsAccomplishments: Array<ProgramAccomplishment> =
+      standingsSlices
+        .flat()
+        .filter(
+          (row) =>
+            row.conferenceChampion &&
+            row.sourceUpdatedAt < edition.cutoffAt,
+        )
+        .map((row) => ({
+          teamId: String(row.programId),
+          season: row.season,
+          conference: row.conference,
+          conferenceChampion: true,
+          playoffStage: 0,
+        }))
+    const loadedAccomplishments = [
+      ...gameAccomplishments,
+      ...standingsAccomplishments,
+      ...sourcedAccomplishments,
+    ]
     const programIds = new Map(
       publishedRows.map((row) => [String(row.programId), row.programId]),
     )
@@ -963,12 +1019,13 @@ export const loadProgramAccomplishments = internalQuery({
     v.object({
       teamId: v.string(),
       season: v.number(),
+      conference: v.optional(v.string()),
       conferenceChampion: v.boolean(),
       playoffStage: v.number(),
     }),
   ),
   handler: async (ctx, args) => {
-    const [games, champions] = await Promise.all([
+    const [games, champions, standings] = await Promise.all([
       ctx.db
         .query('collegeGames')
         .withIndex('by_season_and_startTime', (q) =>
@@ -981,8 +1038,16 @@ export const loadProgramAccomplishments = internalQuery({
           q.eq('season', args.season),
         )
         .take(101),
+      ctx.db
+        .query('teamSeasonStandings')
+        .withIndex('by_season_and_wins', (q) => q.eq('season', args.season))
+        .take(201),
     ])
-    if (games.length > 2000 || champions.length > 100)
+    if (
+      games.length > 2000 ||
+      champions.length > 100 ||
+      standings.length > 200
+    )
       throw new Error('Program accomplishment slice exceeds its bound.')
     const earned = accomplishmentsFromGames(
       games
@@ -1005,6 +1070,15 @@ export const loadProgramAccomplishments = internalQuery({
           : []),
       ]),
     )
+    for (const row of standings)
+      if (row.conferenceChampion && row.sourceUpdatedAt < args.cutoffAt)
+        earned.push({
+          teamId: String(row.programId),
+          season: row.season,
+          conference: row.conference,
+          conferenceChampion: true,
+          playoffStage: 0,
+        })
     // Explicit sourced champions support shared titles and conferences without title games.
     for (const row of champions)
       if (
@@ -1018,6 +1092,7 @@ export const loadProgramAccomplishments = internalQuery({
         earned.push({
           teamId: String(row.programId),
           season: row.season,
+          conference: row.conference,
           conferenceChampion: true,
           playoffStage: 0,
         })

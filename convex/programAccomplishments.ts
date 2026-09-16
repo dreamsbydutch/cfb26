@@ -28,6 +28,25 @@ export type AccomplishmentGame = {
   notes?: string
 }
 
+const CONFERENCE_CHAMPIONSHIP_PATTERNS = [
+  ['ACC', /\bACC\b.*championship/i],
+  ['SEC', /\bSEC\b.*championship/i],
+  ['Big Ten', /\b(?:Big Ten|Big 10)\b.*championship/i],
+  ['Big 12', /\b(?:Big 12|Big XII)\b.*championship/i],
+  ['Pac-12', /\bPac[ -]?(?:10|12)\b.*championship/i],
+  ['MAC', /\b(?:MAC|Mid-American)\b.*championship/i],
+  ['Mountain West', /\b(?:Mountain West|MWC)\b.*championship/i],
+  ['Sun Belt', /\bSun Belt\b.*championship/i],
+  ['Conference USA', /\b(?:Conference USA|C-USA)\b.*championship/i],
+  ['American', /\b(?:American|AAC)\b.*championship/i],
+] as const
+
+export function conferenceFromChampionshipNotes(notes: string) {
+  return CONFERENCE_CHAMPIONSHIP_PATTERNS.find(([, pattern]) =>
+    pattern.test(notes),
+  )?.[0]
+}
+
 /** Only explicit FBS event labels establish honors; ordinary bowls and FCS titles do not. */
 export function accomplishmentsFromGames(
   games: ReadonlyArray<AccomplishmentGame>,
@@ -83,12 +102,12 @@ export function accomplishmentsFromGames(
         record(winner, game.season).playoffStage,
         stage + 1,
       )
-    } else if (
-      /\b(ACC|SEC|Big Ten|Big 10|Big 12|Big XII|Pac[ -]?(10|12)|MAC|Mid-American|Mountain West|MWC|Sun Belt|Conference USA|C-USA|American|AAC)\b.*championship/i.test(
-        notes,
-      )
-    ) {
-      record(winner, game.season).conferenceChampion = true
+    } else {
+      const conference = conferenceFromChampionshipNotes(notes)
+      if (!conference) continue
+      const row = record(winner, game.season)
+      row.conference = conference
+      row.conferenceChampion = true
     }
   }
   return [...earned.values()]
