@@ -2,7 +2,7 @@
 
 [Reference index](README.md) · [Three team ratings](three-team-ratings.md)
 
-**Current source:** Program v5 strengthens the existing results component after consecutive exceptional seasons. There is still one Program rating. Its 50/15/5/30 results/acquisition/development/accomplishment allocations and modern-era trophy ledger remain intact. This is a declared prestige policy, not a claim that extra prestige predicts future wins.
+**Current source:** Program v6 strengthens the existing results component after consecutive exceptional seasons. There is still one Program rating. Its raw 0–100 results, acquisition, development, and honors components are weighted 50/20/10/20, and the modern-era trophy ledger remains intact. This is a declared prestige policy, not a claim that extra prestige predicts future wins.
 
 ## Rule
 
@@ -24,7 +24,7 @@ The overall rating contribution remains in optional snapshot field `programSusta
 
 The [eight-season comparison](program-sustained-power-evaluation-2026-09-13.json) rebuilt prior-season Program scores, relearned the mapping and ensemble weights, and calibrated probabilities using earlier seasons. It compares 6,888 identical games from 2018–2025 against the released Power v6 ensemble. The revised input failed the existing overall, early-season, and matched-market improvement gates. Reused development seasons and reconstructed historical availability remain limitations.
 
-Power v6 and Résumé v5 therefore continue using the explicitly versioned **Program v4 history feature** and its existing mapping, rather than silently substituting a new score scale. Their previously approved small history influence remains present. The public Program ranking uses v5. Current-season accomplishments never enter either historical context. This boundary prevents a prestige-policy change from automatically changing validated forecasts or playoff-merit scores.
+Power v6 and Résumé v5 therefore continue using the explicitly versioned **Program v4 history feature** and its existing mapping, rather than silently substituting a new score scale. Their previously approved small history influence remains present. The public Program ranking uses v6, which retains the v5 sustained-results rule under the revised 50/20/10/20 prestige allocation. Current-season accomplishments never enter either historical context. This boundary prevents a prestige-policy change from automatically changing validated forecasts or playoff-merit scores.
 
 ## Reproduction and verification
 

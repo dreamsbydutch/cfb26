@@ -70,6 +70,11 @@ test('conference title-game labels retain a canonical conference name', () => {
     ['Pac 12 Football Championship', 'Pac-12'],
     ['American Athletic Conference Championship', 'American'],
     ['Mid-American Championship', 'MAC'],
+    ['Conference USA Championship', 'Conference USA'],
+    ['Conf USA Championship', 'Conference USA'],
+    ['Conf. USA Championship', 'Conference USA'],
+    ['CUSA Championship', 'Conference USA'],
+    ['C-USA Championship', 'Conference USA'],
   ]) {
     assert.equal(
       accomplishmentsFromGames([{ ...game, notes }], cutoff)[0].conference,
@@ -212,7 +217,8 @@ test('Program ranks equal-strength programs by earned honors without changing re
   assert.equal(ratings.length, 138)
   assert.equal(ratings[0].teamId, '1')
   assert.equal(ratings[1].teamId, '2')
-  assert.ok(ratings[0].programRating - ratings[2].programRating > 15)
+  assert.ok(ratings[0].programRating - ratings[2].programRating > 10)
+  assert.ok(ratings[0].programRating - ratings[2].programRating <= 20)
   assert.equal(ratings[0].programResults, ratings[2].programResults)
   assert.ok(
     ratings.every((row) => row.programRating >= 0 && row.programRating <= 100),

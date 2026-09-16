@@ -142,19 +142,24 @@ export function RatingField({
                       },
                       {
                         label: 'Results',
-                        value: weighted(row.programResults, 0.5, 1),
+                        value: rawScore(row.programResults),
                       },
                       {
                         label: 'Acquisition',
-                        value: weighted(row.programAcquisition, 0.15, 1),
+                        value: rawScore(row.programAcquisition),
                       },
                       {
                         label: 'Development',
-                        value: weighted(row.programDevelopment, 0.05, 1),
+                        value: rawScore(row.programDevelopment),
                       },
                       {
                         label: 'Honors',
-                        value: row.programAccomplishments?.toFixed(1) ?? '—',
+                        value: rawScore(
+                          row.programHonors ??
+                            (row.programAccomplishments === undefined
+                              ? undefined
+                              : (row.programAccomplishments / 30) * 100),
+                        ),
                       },
                     ]
                   : [
@@ -231,6 +236,10 @@ function weighted(
   return value === null || value === undefined
     ? '—'
     : (value * weight).toFixed(digits)
+}
+
+function rawScore(value: number | null | undefined) {
+  return value === null || value === undefined ? '—' : value.toFixed(1)
 }
 
 function NationalTitleMarks({
@@ -310,6 +319,12 @@ function ConferenceTitleMarks({
 }
 
 function conferenceLogo(conference: string | undefined) {
+  const normalizedConference = conference
+    ?.trim()
+    .toLowerCase()
+    .replace(/[.\-_]/g, '')
+    .replace(/\s+/g, ' ')
+
   if (conference === 'Big Ten' || conference === 'Big 10')
     return '/big-ten-conference-logo.webp'
   if (conference === 'SEC') return '/sec-conference-logo.png'
@@ -326,7 +341,11 @@ function conferenceLogo(conference: string | undefined) {
     conference === 'AAC'
   )
     return '/american-athletic-conference-logo.png'
-  if (conference === 'Conference USA' || conference === 'C-USA')
+  if (
+    normalizedConference === 'conference usa' ||
+    normalizedConference === 'conf usa' ||
+    normalizedConference === 'cusa'
+  )
     return '/conference-usa-logo.png'
   if (conference === 'MAC' || conference === 'Mid-American')
     return '/mid-american-conference-logo.png'

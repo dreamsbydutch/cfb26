@@ -37,7 +37,10 @@ const CONFERENCE_CHAMPIONSHIP_PATTERNS = [
   ['MAC', /\b(?:MAC|Mid-American)\b.*championship/i],
   ['Mountain West', /\b(?:Mountain West|MWC)\b.*championship/i],
   ['Sun Belt', /\bSun Belt\b.*championship/i],
-  ['Conference USA', /\b(?:Conference USA|C-USA)\b.*championship/i],
+  [
+    'Conference USA',
+    /\b(?:Conference USA|Conf\.?\s*USA|C-?USA)\b.*championship/i,
+  ],
   ['American', /\b(?:American|AAC)\b.*championship/i],
 ] as const
 

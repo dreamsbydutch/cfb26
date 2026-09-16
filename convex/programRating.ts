@@ -3,7 +3,14 @@ import { sustainedProgramResults } from './programSustained.ts'
 import type { PowerTeamRating } from './ratingSystem.ts'
 import type { ProgramAccomplishment } from './programAccomplishments'
 
-export const PROGRAM_MODEL_VERSION = 'cfb26-program-v5'
+export const PROGRAM_MODEL_VERSION = 'cfb26-program-v6'
+
+export const PROGRAM_COMPONENT_WEIGHTS = {
+  acquisition: 0.2,
+  development: 0.1,
+  honors: 0.2,
+  results: 0.5,
+} as const
 
 export type ProgramSeasonEvidence = {
   teamId: string
@@ -21,6 +28,7 @@ export type ProgramRating = {
   programRank: number
   programResults: number
   programSustainedResults: number
+  programHonors: number
   programAccomplishments: number
   programRecentAccomplishments: number
   programLegacyAccomplishments: number
@@ -164,9 +172,9 @@ export function buildProgramRatings(input: {
       // Neutral regularization is an estimate, never an assertion of observed average performance.
       const score = (value: number | null) => value ?? 50
       const coverage =
-        (0.7 * results.weight +
-          0.2 * acquisition.weight +
-          0.1 * development.weight) /
+        (0.625 * results.weight +
+          0.25 * acquisition.weight +
+          0.125 * development.weight) /
         maximumWeight
       const resultReliability = Math.min(results.weight / 1.5, 1)
       const baselineResults =
@@ -188,22 +196,30 @@ export function buildProgramRatings(input: {
         teamHonors,
         input.season,
       )
+      const programHonors = (accomplishments.total / 30) * 100
+      const programAccomplishments =
+        programHonors * PROGRAM_COMPONENT_WEIGHTS.honors
       return {
         teamId: team.teamId,
         programRating:
           Math.round(
-            (programResults * 0.5 +
-              score(acquisition.value) * 0.15 +
-              score(development.value) * 0.05 +
-              accomplishments.total) *
+            (programResults * PROGRAM_COMPONENT_WEIGHTS.results +
+              score(acquisition.value) *
+                PROGRAM_COMPONENT_WEIGHTS.acquisition +
+              score(development.value) *
+                PROGRAM_COMPONENT_WEIGHTS.development +
+              programAccomplishments) *
               100,
           ) / 100,
         programRank: 0,
         programResults,
         programSustainedResults: sustained.ratingLift,
-        programAccomplishments: accomplishments.total,
-        programRecentAccomplishments: accomplishments.recentCredit,
-        programLegacyAccomplishments: accomplishments.legacyCredit,
+        programHonors,
+        programAccomplishments,
+        programRecentAccomplishments:
+          accomplishments.recentCredit * (2 / 3),
+        programLegacyAccomplishments:
+          accomplishments.legacyCredit * (2 / 3),
         programAcquisition: acquisition.value,
         programDevelopment: development.value,
         programCoverage: Math.round(coverage * 100),

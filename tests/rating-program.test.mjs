@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  PROGRAM_COMPONENT_WEIGHTS,
   buildProgramRatings,
   evidencePercentiles,
   programSeasonWeight,
@@ -10,6 +11,49 @@ const teams = ['sustained', 'brand', 'newcomer'].map((teamId) => ({
   teamId,
   published: true,
 }))
+
+test('Program weights raw 0-100 components at 50/20/10/20', () => {
+  const rating = buildProgramRatings({
+    season: 2026,
+    teams: teams.slice(0, 1),
+    evidence: [
+      {
+        teamId: 'sustained',
+        season: 2026,
+        games: 12,
+        performance: 80,
+        acquisition: 70,
+        development: 60,
+      },
+    ],
+    accomplishments: [
+      {
+        teamId: 'sustained',
+        season: 2025,
+        conferenceChampion: true,
+        playoffStage: 5,
+      },
+    ],
+  })[0]
+  assert.deepEqual(PROGRAM_COMPONENT_WEIGHTS, {
+    acquisition: 0.2,
+    development: 0.1,
+    honors: 0.2,
+    results: 0.5,
+  })
+  assert.ok(rating.programHonors >= 0 && rating.programHonors <= 100)
+  assert.equal(
+    rating.programRating,
+    Math.round(
+      (rating.programResults * 0.5 +
+        rating.programAcquisition * 0.2 +
+        rating.programDevelopment * 0.1 +
+        rating.programHonors * 0.2) *
+        100,
+    ) / 100,
+  )
+  assert.equal(rating.programAccomplishments, rating.programHonors * 0.2)
+})
 
 test('verified offseason capacity updates Program before any current-season games', () => {
   const rows = buildProgramRatings({
