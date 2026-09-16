@@ -320,6 +320,11 @@ function conferenceLogo(conference: string | undefined) {
       className: '-mx-1 h-2.5 w-auto',
       src: '/sec-conference-logo.png',
     }
+  if (conference === 'ACC')
+    return {
+      className: '-mx-1 h-2.5 w-auto',
+      src: '/acc-conference-logo.png',
+    }
   if (conference === 'Big 12' || conference === 'Big XII')
     return {
       className: 'h-2.5 w-auto',
@@ -334,6 +339,30 @@ function conferenceLogo(conference: string | undefined) {
     return {
       className: '-mx-1 h-2.5 w-auto',
       src: '/pac-12-conference-logo.png',
+    }
+  if (
+    conference === 'American' ||
+    conference === 'American Athletic' ||
+    conference === 'AAC'
+  )
+    return {
+      className: '-mx-1 h-2.5 w-auto',
+      src: '/american-athletic-conference-logo.png',
+    }
+  if (conference === 'Conference USA' || conference === 'C-USA')
+    return {
+      className: 'h-2.5 w-auto',
+      src: '/conference-usa-logo.png',
+    }
+  if (conference === 'MAC' || conference === 'Mid-American')
+    return {
+      className: 'h-2.5 w-auto',
+      src: '/mid-american-conference-logo.png',
+    }
+  if (conference === 'Mountain West' || conference === 'MWC')
+    return {
+      className: '-mx-1 h-2.5 w-auto',
+      src: '/mountain-west-conference-logo.png',
     }
   return null
 }
