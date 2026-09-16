@@ -29,7 +29,7 @@ Pages lead with their name, controls, and data. Repeated introductions, source p
 
 Controls are semantic, keyboard reachable, visibly focused, and sized for touch. Public navigation becomes a bottom context bar on narrow screens; Matrix rooms collapse into accordions. The global search dialog is focus-contained and opens with Ctrl/Cmd-K. Every query surface accounts for loading, error, empty, unavailable, or stale data. No visual treatment changes domain null semantics.
 
-National season and week controls scroll with the page. Ranking tables use compact rows and horizontal overflow: narrow screens initially show rank, team, and the primary rating, then expose record, quadrant records, and rating components by horizontal scrolling.
+National season and week controls scroll with the page. Ranking tables use the same dense headers, separators, and short rows as the Games schedule. Narrow screens initially show rank, team, and the primary rating, then use horizontal scrolling for rating-specific evidence: Power units, Program score allocations, or Résumé record quadrants and contributions.
 
 ## Data-access rules
 

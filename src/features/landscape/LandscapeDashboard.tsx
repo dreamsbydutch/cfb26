@@ -592,10 +592,6 @@ function Power({
         secondary: row.conference ?? 'Independent',
         details: [
           { label: 'Record', value: formatRecord(record) },
-          ...(['Q1', 'Q2', 'Q3', 'Q4'] as const).map((quadrant) => ({
-            label: quadrant,
-            value: formatRecord(record?.quadrants[quadrant]),
-          })),
           { label: 'Offense', value: signed(row.offense) },
           { label: 'Defense', value: signed(row.defense) },
           {
@@ -632,10 +628,6 @@ function Power({
       <RankingTable
         detailHeadings={[
           'Record',
-          'Q1',
-          'Q2',
-          'Q3',
-          'Q4',
           'Offense',
           'Defense',
           ...(showSpecialTeams ? ['Special teams'] : []),
@@ -1168,31 +1160,31 @@ function RankingTable({
 }) {
   return (
     <section className="app-card overflow-hidden p-0">
-      <h2 className="app-ranking-header font-display border-b border-white/10 px-3 py-2.5 text-xl font-extrabold text-white sm:px-5 sm:py-4 sm:text-2xl">
+      <h2 className="app-ranking-header font-display border-b border-white/10 px-3 py-2 text-lg font-extrabold text-white sm:px-4 sm:text-xl">
         {heading}
       </h2>
       <div className="overflow-x-auto">
         <table className="w-max min-w-full border-collapse text-left text-sm">
           <thead className="app-label bg-black/15">
             <tr>
-              <th className="w-12 px-2 py-2.5 sm:w-16 sm:px-4" scope="col">
+              <th className="w-11 px-2 py-2 sm:px-3" scope="col">
                 Rank
               </th>
               <th
-                className="w-40 min-w-40 px-2 py-2.5 sm:w-52 sm:min-w-52 sm:px-4"
+                className="w-36 min-w-36 px-2 py-2 sm:w-48 sm:min-w-48 sm:px-3"
                 scope="col"
               >
                 Team
               </th>
               <th
-                className="w-20 min-w-20 whitespace-nowrap px-2 py-2.5 text-right sm:w-24 sm:min-w-24 sm:px-4"
+                className="w-18 min-w-18 whitespace-nowrap px-2 py-2 text-right sm:w-20 sm:min-w-20 sm:px-3"
                 scope="col"
               >
                 {primaryHeading}
               </th>
               {detailHeadings.map((detailHeading) => (
                 <th
-                  className="min-w-20 whitespace-nowrap px-2 py-2.5 text-right sm:min-w-24 sm:px-4"
+                  className="min-w-20 whitespace-nowrap px-2 py-2 text-right sm:px-3"
                   key={detailHeading}
                   scope="col"
                 >
@@ -1208,26 +1200,26 @@ function RankingTable({
                 className={`border-t border-white/[0.07] hover:bg-white/[0.025] ${row.highlight ? 'michigan-highlight' : ''}`}
               >
                 <td
-                  className={`font-display px-2 py-2.5 text-xl font-extrabold tabular-nums sm:px-4 sm:py-3 sm:text-2xl ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
+                  className={`font-display px-2 py-1.5 text-lg font-extrabold tabular-nums sm:px-3 ${row.highlight ? 'michigan-accent' : 'app-accent-text'}`}
                 >
                   {row.rank}
                 </td>
-                <th className="px-2 py-2.5 sm:px-4 sm:py-3" scope="row">
+                <th className="px-2 py-1.5 sm:px-3" scope="row">
                   <span
-                    className={`block ${row.highlight ? 'michigan-accent' : ''}`}
+                    className={`block text-sm leading-4 ${row.highlight ? 'michigan-accent' : ''}`}
                   >
                     {row.label}
                   </span>
-                  <span className="mt-0.5 block text-xs font-normal text-white/40">
+                  <span className="mt-0.5 block text-[10px] leading-3 font-normal text-white/40">
                     {row.secondary}
                   </span>
                 </th>
-                <td className="whitespace-nowrap px-2 py-2.5 text-right text-lg font-extrabold tabular-nums sm:px-4 sm:py-3">
+                <td className="font-display whitespace-nowrap px-2 py-1.5 text-right text-base font-extrabold tabular-nums sm:px-3">
                   {row.primary}
                 </td>
                 {detailHeadings.map((detailHeading) => (
                   <td
-                    className="whitespace-nowrap px-2 py-2.5 text-right font-bold tabular-nums text-white/70 sm:px-4 sm:py-3"
+                    className="whitespace-nowrap px-2 py-1.5 text-right text-xs font-semibold tabular-nums text-white/70 sm:px-3"
                     key={detailHeading}
                   >
                     {row.details?.find(

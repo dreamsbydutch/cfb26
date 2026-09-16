@@ -52,29 +52,51 @@ export function RatingField({
   const recordByProgram = new Map(
     records.map((row) => [String(row.programId), row.record]),
   )
-  const detailHeadings = [
-    'Record',
-    'Q1',
-    'Q2',
-    'Q3',
-    'Q4',
-    ...(isProgram
-      ? ['Results', 'Acquisition', 'Development']
-      : ['Results credit', 'Performance credit', 'Season strength']),
-  ]
+  const detailHeadings = isProgram
+    ? [
+        'Record',
+        'Results /50',
+        'Acquisition /15',
+        'Development /5',
+        'Honors /30',
+      ]
+    : [
+        'Record',
+        'Q1',
+        'Q2',
+        'Q3',
+        'Q4',
+        'Results contribution',
+        'Performance contribution',
+        'History bonus',
+        'Season strength',
+      ]
   return (
-    <Surface className="p-3 sm:p-6">
-      <h2 className="font-display text-2xl font-bold sm:text-3xl">{title}</h2>
-      <div className="my-3 grid grid-cols-[minmax(0,1fr)_minmax(8rem,auto)] gap-2 sm:my-5">
+    <Surface className="overflow-hidden p-0">
+      <div className="app-ranking-header flex items-center justify-between gap-3 border-b px-3 py-2 sm:px-4">
+        <h2 className="font-display text-lg font-extrabold sm:text-xl">
+          {title}
+        </h2>
+        {data && (
+          <p className="text-right text-[10px] text-white/40 sm:text-xs">
+            {rows.length} of {data.rows.length} teams
+            <span className="hidden sm:inline">
+              {' '}
+              · {new Date(data.edition.cutoffAt).toLocaleString()}
+            </span>
+          </p>
+        )}
+      </div>
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(8rem,auto)] gap-2 border-b border-white/[0.07] p-2 sm:px-3">
         <input
-          className="app-input min-w-0 rounded-lg border px-2 py-1.5 text-xs sm:p-2 sm:text-sm"
+          className="app-input min-h-9 min-w-0 rounded-lg border px-2 py-1 text-xs sm:text-sm"
           aria-label={`Search ${title}`}
           placeholder="Search teams"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
         <select
-          className="min-w-0 max-w-40 rounded-lg border px-2 py-1.5 text-xs sm:max-w-none sm:p-2 sm:text-sm"
+          className="min-h-9 min-w-0 max-w-40 rounded-lg border px-2 py-1 text-xs sm:max-w-none sm:text-sm"
           aria-label="Ranking conference"
           value={conference}
           onChange={(event) => setConference(event.target.value)}
@@ -100,10 +122,6 @@ export function RatingField({
         </EmptyState>
       ) : (
         <>
-          <p className="mb-2 text-xs sm:mb-3 sm:text-sm">
-            {rows.length} of {data.rows.length} FBS teams · Updated{' '}
-            {new Date(data.edition.cutoffAt).toLocaleString()}
-          </p>
           <div className="overflow-x-auto">
             <table className="w-max min-w-full text-left text-sm">
               <caption className="sr-only">
@@ -115,7 +133,7 @@ export function RatingField({
                     (label, index) => (
                       <th
                         scope="col"
-                        className={`whitespace-nowrap border-b px-2 py-2.5 sm:px-3 ${index === 0 ? 'w-12' : index === 1 ? 'w-40 min-w-40 sm:w-52 sm:min-w-52' : index === 2 ? 'w-20 min-w-20 text-right sm:w-24 sm:min-w-24' : 'min-w-20 text-right sm:min-w-24'}`}
+                        className={`app-label whitespace-nowrap border-b bg-black/15 px-2 py-2 sm:px-3 ${index === 0 ? 'w-11' : index === 1 ? 'w-36 min-w-36 sm:w-48 sm:min-w-48' : index === 2 ? 'w-18 min-w-18 text-right sm:w-20 sm:min-w-20' : 'min-w-20 text-right'}`}
                         key={label}
                       >
                         {label}
@@ -127,81 +145,107 @@ export function RatingField({
               <tbody>
                 {rows.map((row) => {
                   const record = recordByProgram.get(String(row.programId))
-                  const details = [
-                    { label: 'Record', value: formatRecord(record) },
-                    ...(['Q1', 'Q2', 'Q3', 'Q4'] as const).map((quadrant) => ({
-                      label: quadrant,
-                      value: formatRecord(record?.quadrants[quadrant]),
-                    })),
-                    ...(isProgram
-                      ? [
-                          {
-                            label: 'Results',
-                            value: row.programResults?.toFixed(1) ?? '—',
-                          },
-                          {
-                            label: 'Acquisition',
-                            value: row.programAcquisition?.toFixed(1) ?? '—',
-                          },
-                          {
-                            label: 'Development',
-                            value: row.programDevelopment?.toFixed(1) ?? '—',
-                          },
-                        ]
-                      : [
-                          {
-                            label: 'Results credit',
-                            value: row.scheduleComponent?.toFixed(2) ?? '—',
-                          },
-                          {
-                            label: 'Performance credit',
-                            value: row.dominanceComponent?.toFixed(2) ?? '—',
-                          },
-                          {
-                            label: 'Season strength',
-                            value: row.seasonStrength?.toFixed(1) ?? '—',
-                          },
-                        ]),
-                  ]
+                  const details = isProgram
+                    ? [
+                        { label: 'Record', value: formatRecord(record) },
+                        {
+                          label: 'Results /50',
+                          secondary:
+                            row.programSustainedResults &&
+                            row.programSustainedResults > 0
+                              ? `includes +${row.programSustainedResults.toFixed(1)} sustained`
+                              : undefined,
+                          value: weighted(row.programResults, 0.5, 1),
+                        },
+                        {
+                          label: 'Acquisition /15',
+                          value: weighted(row.programAcquisition, 0.15, 1),
+                        },
+                        {
+                          label: 'Development /5',
+                          value: weighted(row.programDevelopment, 0.05, 1),
+                        },
+                        {
+                          label: 'Honors /30',
+                          secondary:
+                            row.programRecentAccomplishments !== undefined &&
+                            row.programLegacyAccomplishments !== undefined
+                              ? `${row.programRecentAccomplishments.toFixed(1)} recent · ${row.programLegacyAccomplishments.toFixed(1)} legacy`
+                              : undefined,
+                          value: row.programAccomplishments?.toFixed(1) ?? '—',
+                        },
+                      ]
+                    : [
+                        { label: 'Record', value: formatRecord(record) },
+                        ...(['Q1', 'Q2', 'Q3', 'Q4'] as const).map(
+                          (quadrant) => ({
+                            label: quadrant,
+                            value: formatRecord(record?.quadrants[quadrant]),
+                          }),
+                        ),
+                        {
+                          label: 'Results contribution',
+                          value: weighted(row.scheduleComponent, 0.7, 2),
+                        },
+                        {
+                          label: 'Performance contribution',
+                          value: weighted(row.dominanceComponent, 0.3, 2),
+                        },
+                        {
+                          label: 'History bonus',
+                          value: row.resumeProgramBonus?.toFixed(2) ?? '—',
+                        },
+                        {
+                          label: 'Season strength',
+                          value: row.seasonStrength?.toFixed(1) ?? '—',
+                        },
+                      ]
                   return (
                     <tr
                       key={row._id}
-                      className={
-                        row.programKey === 'michigan' ? 'michigan-accent' : ''
-                      }
+                      className={`border-t border-white/[0.07] hover:bg-white/[0.025] ${row.programKey === 'michigan' ? 'michigan-accent' : ''}`}
                     >
-                      <td className="px-2 py-2.5 sm:p-3">
+                      <td className="font-display app-accent-text px-2 py-1.5 text-lg font-extrabold tabular-nums sm:px-3">
                         {isProgram ? row.programRank : row.resumeRank}
                       </td>
-                      <th scope="row" className="px-2 py-2.5 sm:p-3">
+                      <th scope="row" className="px-2 py-1.5 sm:px-3">
                         <Link
                           to="/national/teams/$programKey"
                           params={{ programKey: row.programKey }}
-                          className="font-semibold underline-offset-4 hover:underline focus-visible:outline"
+                          className="text-sm font-semibold underline-offset-4 hover:underline focus-visible:outline"
                         >
                           {row.sourceProgramName}
                         </Link>
-                        <div className="text-xs font-normal">
+                        <div className="text-[10px] leading-3 font-normal text-white/40">
                           {row.conference ?? 'Independent'}
                           {row.classification === 'transitioning'
                             ? ' · Transitioning'
                             : ''}
                         </div>
                       </th>
-                      <td className="whitespace-nowrap px-2 py-2.5 text-right font-bold sm:p-3">
+                      <td className="font-display whitespace-nowrap px-2 py-1.5 text-right text-base font-extrabold tabular-nums sm:px-3">
                         {(isProgram ? row.programRating : row.resume)?.toFixed(
                           2,
                         ) ?? '—'}
                       </td>
-                      {detailHeadings.map((heading) => (
-                        <td
-                          className="whitespace-nowrap px-2 py-2.5 text-right font-medium tabular-nums sm:p-3"
-                          key={heading}
-                        >
-                          {details.find((detail) => detail.label === heading)
-                            ?.value ?? '—'}
-                        </td>
-                      ))}
+                      {detailHeadings.map((heading) => {
+                        const detail = details.find(
+                          (item) => item.label === heading,
+                        )
+                        return (
+                          <td
+                            className="whitespace-nowrap px-2 py-1.5 text-right text-xs font-semibold tabular-nums text-white/70 sm:px-3"
+                            key={heading}
+                          >
+                            {detail?.value ?? '—'}
+                            {detail?.secondary ? (
+                              <span className="ml-1 text-[9px] font-normal text-white/35">
+                                · {detail.secondary}
+                              </span>
+                            ) : null}
+                          </td>
+                        )
+                      })}
                     </tr>
                   )
                 })}
@@ -228,4 +272,14 @@ function formatRecord(
 ) {
   if (!record) return '—'
   return `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ''}`
+}
+
+function weighted(
+  value: number | null | undefined,
+  weight: number,
+  digits: number,
+) {
+  return value === null || value === undefined
+    ? '—'
+    : (value * weight).toFixed(digits)
 }
