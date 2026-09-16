@@ -281,7 +281,7 @@ function ConferenceTitleMarks({
         const logo = conferenceLogo(title.conference)
         return (
           <span
-            className="flex h-3 items-center justify-center"
+            className="flex h-3 w-5 shrink-0 items-center justify-center overflow-hidden"
             key={`${title.season}:${title.conference ?? 'conference'}`}
             style={{
               opacity: honorOpacity(
@@ -296,8 +296,8 @@ function ConferenceTitleMarks({
               <img
                 alt=""
                 aria-hidden="true"
-                className={logo.className}
-                src={logo.src}
+                className="size-full object-contain"
+                src={logo}
               />
             ) : (
               <Medal aria-hidden="true" className="size-3" />
@@ -311,59 +311,29 @@ function ConferenceTitleMarks({
 
 function conferenceLogo(conference: string | undefined) {
   if (conference === 'Big Ten' || conference === 'Big 10')
-    return {
-      className: 'h-2.5 w-auto',
-      src: '/big-ten-conference-logo.webp',
-    }
-  if (conference === 'SEC')
-    return {
-      className: '-mx-1 h-2.5 w-auto',
-      src: '/sec-conference-logo.png',
-    }
-  if (conference === 'ACC')
-    return {
-      className: '-mx-1 h-2.5 w-auto',
-      src: '/acc-conference-logo.png',
-    }
+    return '/big-ten-conference-logo.webp'
+  if (conference === 'SEC') return '/sec-conference-logo.png'
+  if (conference === 'ACC') return '/acc-conference-logo.png'
   if (conference === 'Big 12' || conference === 'Big XII')
-    return {
-      className: 'h-2.5 w-auto',
-      src: '/big-12-conference-logo.png',
-    }
-  if (conference === 'Sun Belt')
-    return {
-      className: 'h-2.5 w-auto',
-      src: '/sun-belt-conference-logo.png',
-    }
+    return '/big-12-conference-logo.png'
+  if (conference === 'Sun Belt') return '/sun-belt-conference-logo.png'
   if (conference === 'Pac-10' || conference === 'Pac-12')
-    return {
-      className: '-mx-1 h-2.5 w-auto',
-      src: '/pac-12-conference-logo.png',
-    }
+    return '/pac-12-conference-logo.png'
+  if (conference === 'Big East') return '/big-east-conference-logo.png'
   if (
     conference === 'American' ||
     conference === 'American Athletic' ||
     conference === 'AAC'
   )
-    return {
-      className: '-mx-1 h-2.5 w-auto',
-      src: '/american-athletic-conference-logo.png',
-    }
+    return '/american-athletic-conference-logo.png'
   if (conference === 'Conference USA' || conference === 'C-USA')
-    return {
-      className: 'h-2.5 w-auto',
-      src: '/conference-usa-logo.png',
-    }
+    return '/conference-usa-logo.png'
   if (conference === 'MAC' || conference === 'Mid-American')
-    return {
-      className: 'h-2.5 w-auto',
-      src: '/mid-american-conference-logo.png',
-    }
+    return '/mid-american-conference-logo.png'
   if (conference === 'Mountain West' || conference === 'MWC')
-    return {
-      className: '-mx-1 h-2.5 w-auto',
-      src: '/mountain-west-conference-logo.png',
-    }
+    return '/mountain-west-conference-logo.png'
+  if (conference === 'WAC' || conference === 'Western Athletic')
+    return '/western-athletic-conference-logo.png'
   return null
 }
 
