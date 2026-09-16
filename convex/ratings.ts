@@ -28,7 +28,9 @@ import { POWER_ROSTER_WEIGHT, releasedRosterFit } from './powerRosterRelease'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import {
   PROGRAM_ACCOMPLISHMENT_START,
+  PROGRAM_HONORS_DISPLAY_SEASONS,
   accomplishmentsFromGames,
+  programHonorsForDisplay,
 } from './programAccomplishments'
 import { historicalNationalTitles } from './programHonorsHistory'
 import { releasedProgramContextFit } from './programContextRelease'
@@ -371,6 +373,7 @@ async function preferredWeeklyEdition(
 
 export const getRatingField = query({
   args: {
+    includeProgramHonors: v.optional(v.boolean()),
     season: v.number(),
     week: v.number(),
     view: v.union(
@@ -384,6 +387,14 @@ export const getRatingField = query({
     v.null(),
     v.object({
       edition: schema.doc('ratingEditions'),
+      honors: v.array(
+        v.object({
+          programId: v.id('programs'),
+          nationalTitles: v.array(v.number()),
+          conferenceTitles: v.array(v.number()),
+        }),
+      ),
+      honorsWindowSeasons: v.number(),
       rows: v.array(schema.doc('teamRatingSnapshots')),
     }),
   ),
@@ -429,10 +440,76 @@ export const getRatingField = query({
       .take(601)
     if (rows.length > 600)
       throw new Error('Rating field exceeds publication bound.')
+    const publishedRows = rows.filter((row) => row.published)
+    const firstHonorSeason = Math.max(
+      PROGRAM_ACCOMPLISHMENT_START,
+      args.season - PROGRAM_HONORS_DISPLAY_SEASONS + 1,
+    )
+    const accomplishmentSeasons = args.includeProgramHonors
+      ? Array.from(
+          { length: Math.max(0, args.season - firstHonorSeason + 1) },
+          (_, index) => firstHonorSeason + index,
+        )
+      : []
+    const championSlices = await Promise.all(
+      accomplishmentSeasons.map((season) =>
+        ctx.db
+          .query('conferenceChampions')
+          .withIndex('by_season_and_conference', (q) => q.eq('season', season))
+          .take(101),
+      ),
+    )
+    if (championSlices.some((championRows) => championRows.length > 100))
+      throw new Error('Program honors display slice exceeds its bound.')
+    const loadedAccomplishments: Array<ProgramAccomplishment> = championSlices
+      .flat()
+      .filter(
+        (row) =>
+          row.awardedAt !== undefined &&
+          row.sourceUpdatedAt !== undefined &&
+          row.awardedAt < edition.cutoffAt &&
+          row.sourceUpdatedAt < edition.cutoffAt &&
+          row.sourceLinks.length > 0,
+      )
+      .map((row) => ({
+        teamId: String(row.programId),
+        season: row.season,
+        conferenceChampion: true,
+        playoffStage: 0,
+      }))
+    const programIds = new Map(
+      publishedRows.map((row) => [String(row.programId), row.programId]),
+    )
+    const historicalTitles = args.includeProgramHonors
+      ? historicalNationalTitles(
+          publishedRows.map((row) => ({
+            id: String(row.programId),
+            name: row.sourceProgramName,
+          })),
+          args.season,
+          edition.cutoffAt,
+        )
+      : []
+    const honors = programHonorsForDisplay(
+      [...historicalTitles, ...loadedAccomplishments],
+      args.season,
+    ).flatMap((row) => {
+      const programId = programIds.get(row.teamId)
+      return programId
+        ? [
+            {
+              programId,
+              nationalTitles: row.nationalTitles,
+              conferenceTitles: row.conferenceTitles,
+            },
+          ]
+        : []
+    })
     return {
       edition,
-      rows: rows
-        .filter((row) => row.published)
+      honors,
+      honorsWindowSeasons: PROGRAM_HONORS_DISPLAY_SEASONS,
+      rows: publishedRows
         .map((row) =>
           edition.resumeVisible
             ? row

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   accomplishmentsFromGames,
   programAccomplishmentCredit,
+  programHonorsForDisplay,
 } from '../convex/programAccomplishments.ts'
 import { historicalNationalTitles } from '../convex/programHonorsHistory.ts'
 import { buildProgramRatings } from '../convex/programRating.ts'
@@ -128,6 +129,28 @@ test('recent accomplishments count more while modern legacy survives the results
     2026,
   )
   assert.ok(dynasty.total < 30)
+})
+
+test('program honors display deduplicates recent title years and drops expired honors', () => {
+  assert.deepEqual(
+    programHonorsForDisplay(
+      [
+        honor(5, 2025, true),
+        honor(5, 2025, false),
+        honor(0, 2021, true),
+        honor(5, 2011, false),
+        honor(5, 2010, false),
+      ],
+      2025,
+    ),
+    [
+      {
+        teamId: 'a',
+        nationalTitles: [2025, 2011],
+        conferenceTitles: [2025, 2021],
+      },
+    ],
+  )
 })
 
 test('Program ranks equal-strength programs by earned honors without changing results', () => {

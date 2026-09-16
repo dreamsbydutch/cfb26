@@ -1,10 +1,17 @@
 /** Prestige policy, not predictive coefficients. A team's deepest stage counts once per season. */
 export const PROGRAM_ACCOMPLISHMENT_START = 2000
+export const PROGRAM_HONORS_DISPLAY_SEASONS = 15
 export type ProgramAccomplishment = {
   teamId: string
   season: number
   conferenceChampion: boolean
   playoffStage: number // 0 none, 1 appearance, 2 quarterfinal, 3 semifinal, 4 finalist, 5 champion
+}
+
+export type ProgramHonorSummary = {
+  teamId: string
+  nationalTitles: Array<number>
+  conferenceTitles: Array<number>
 }
 
 export type AccomplishmentGame = {
@@ -122,4 +129,41 @@ export function programAccomplishmentCredit(
   const recentCredit = 20 * (1 - Math.exp(-recent / 20))
   const legacyCredit = 10 * (1 - Math.exp(-legacy / 40))
   return { recentCredit, legacyCredit, total: recentCredit + legacyCredit }
+}
+
+export function programHonorsForDisplay(
+  rows: ReadonlyArray<ProgramAccomplishment>,
+  season: number,
+  windowSeasons = PROGRAM_HONORS_DISPLAY_SEASONS,
+): Array<ProgramHonorSummary> {
+  if (!Number.isInteger(season) || !Number.isInteger(windowSeasons))
+    throw new Error('Invalid program honors display window.')
+  if (windowSeasons < 1) throw new Error('Invalid program honors display window.')
+  const firstSeason = Math.max(
+    PROGRAM_ACCOMPLISHMENT_START,
+    season - windowSeasons + 1,
+  )
+  const honors = new Map<
+    string,
+    { nationalTitles: Set<number>; conferenceTitles: Set<number> }
+  >()
+  for (const row of rows) {
+    if (row.season < firstSeason || row.season > season) continue
+    const summary = honors.get(row.teamId) ?? {
+      nationalTitles: new Set<number>(),
+      conferenceTitles: new Set<number>(),
+    }
+    if (row.playoffStage === 5) summary.nationalTitles.add(row.season)
+    if (row.conferenceChampion) summary.conferenceTitles.add(row.season)
+    honors.set(row.teamId, summary)
+  }
+  return [...honors.entries()]
+    .map(([teamId, summary]) => ({
+      teamId,
+      nationalTitles: [...summary.nationalTitles].sort((a, b) => b - a),
+      conferenceTitles: [...summary.conferenceTitles].sort((a, b) => b - a),
+    }))
+    .filter(
+      (row) => row.nationalTitles.length > 0 || row.conferenceTitles.length > 0,
+    )
 }

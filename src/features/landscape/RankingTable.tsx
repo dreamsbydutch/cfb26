@@ -4,7 +4,7 @@ export const rankingControlClass =
   'app-control min-h-11 px-3 py-2 text-sm font-bold text-white focus-visible:outline-2'
 
 export type RankingTableRow = {
-  details?: Array<{ label: string; value: string }>
+  details?: Array<{ label: string; value: ReactNode }>
   highlight?: boolean
   key?: string
   label: ReactNode

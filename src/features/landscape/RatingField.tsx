@@ -1,6 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { Medal } from 'lucide-react'
 import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { RankingTable, rankingControlClass } from './RankingTable'
@@ -22,6 +23,7 @@ export function RatingField({
   const [conference, setConference] = useState('all')
   const result = useQuery(
     convexQuery(api.ratings.getRatingField, {
+      includeProgramHonors: kind === 'program',
       season,
       week,
       view: 'current',
@@ -48,9 +50,13 @@ export function RatingField({
   const recordByProgram = new Map(
     records.map((row) => [String(row.programId), row.record]),
   )
+  const honorsByProgram = new Map(
+    data?.honors.map((row) => [String(row.programId), row]) ?? [],
+  )
   const detailHeadings = isProgram
     ? [
-        'Record',
+        'National titles',
+        'Conference titles',
         'Results /50',
         'Acquisition /15',
         'Development /5',
@@ -110,10 +116,30 @@ export function RatingField({
             primaryHeading={isProgram ? 'Program' : 'Résumé'}
             rows={rows.map((row) => {
               const record = recordByProgram.get(String(row.programId))
+              const honors = honorsByProgram.get(String(row.programId))
               return {
                 details: isProgram
                   ? [
-                      { label: 'Record', value: formatRecord(record) },
+                      {
+                        label: 'National titles',
+                        value: (
+                          <NationalTitleMarks
+                            currentSeason={season}
+                            titleYears={honors?.nationalTitles ?? []}
+                            windowSeasons={data.honorsWindowSeasons}
+                          />
+                        ),
+                      },
+                      {
+                        label: 'Conference titles',
+                        value: (
+                          <ConferenceTitleMarks
+                            currentSeason={season}
+                            titleYears={honors?.conferenceTitles ?? []}
+                            windowSeasons={data.honorsWindowSeasons}
+                          />
+                        ),
+                      },
                       {
                         label: 'Results /50',
                         value: weighted(row.programResults, 0.5, 1),
@@ -205,4 +231,71 @@ function weighted(
   return value === null || value === undefined
     ? '—'
     : (value * weight).toFixed(digits)
+}
+
+function NationalTitleMarks({
+  currentSeason,
+  titleYears,
+  windowSeasons,
+}: {
+  currentSeason: number
+  titleYears: Array<number>
+  windowSeasons: number
+}) {
+  if (titleYears.length === 0) return '—'
+  return (
+    <span
+      aria-label={`National championships: ${titleYears.join(', ')}`}
+      className="flex min-w-12 items-center justify-end gap-0.5"
+    >
+      {titleYears.map((year) => (
+        <img
+          alt=""
+          className="h-6 w-auto"
+          key={year}
+          src="/cfp-championship-trophy-icon.png"
+          style={{ opacity: honorOpacity(year, currentSeason, windowSeasons) }}
+          title={`${year} national champion`}
+        />
+      ))}
+    </span>
+  )
+}
+
+function ConferenceTitleMarks({
+  currentSeason,
+  titleYears,
+  windowSeasons,
+}: {
+  currentSeason: number
+  titleYears: Array<number>
+  windowSeasons: number
+}) {
+  if (titleYears.length === 0) return '—'
+  return (
+    <span
+      aria-label={`Conference championships: ${titleYears.join(', ')}`}
+      className="flex min-w-12 items-center justify-end gap-0.5 text-amber-300"
+    >
+      {titleYears.map((year) => (
+        <span
+          key={year}
+          style={{ opacity: honorOpacity(year, currentSeason, windowSeasons) }}
+          title={`${year} conference champion`}
+        >
+          <Medal aria-hidden="true" className="size-4" />
+        </span>
+      ))}
+    </span>
+  )
+}
+
+function honorOpacity(
+  honorSeason: number,
+  currentSeason: number,
+  windowSeasons: number,
+) {
+  const age = Math.max(0, currentSeason - honorSeason)
+  const denominator = Math.max(1, windowSeasons - 1)
+  return Math.max(0.18, 1 - (age / denominator) * 0.82)
 }
