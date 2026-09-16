@@ -140,15 +140,35 @@ test('program honors display deduplicates recent title years and drops expired h
         honor(0, 2021, true),
         honor(5, 2011, false),
         honor(5, 2010, false),
+        honor(5, 2000, false),
       ],
       2025,
     ),
     [
       {
         teamId: 'a',
-        nationalTitles: [2025, 2011],
-        conferenceTitles: [2025, 2021],
+        nationalTitles: [2025, 2011, 2010],
+        conferenceTitles: [
+          { conference: undefined, season: 2025 },
+          { conference: undefined, season: 2021 },
+        ],
       },
+    ],
+  )
+})
+
+test('program honors display retains the conference for title-specific marks', () => {
+  assert.deepEqual(
+    programHonorsForDisplay(
+      [
+        { ...honor(0, 2025, true), conference: 'Big Ten' },
+        { ...honor(0, 2024, true), conference: 'SEC' },
+      ],
+      2025,
+    )[0].conferenceTitles,
+    [
+      { conference: 'Big Ten', season: 2025 },
+      { conference: 'SEC', season: 2024 },
     ],
   )
 })

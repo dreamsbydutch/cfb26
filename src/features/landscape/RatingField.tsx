@@ -135,7 +135,7 @@ export function RatingField({
                         value: (
                           <ConferenceTitleMarks
                             currentSeason={season}
-                            titleYears={honors?.conferenceTitles ?? []}
+                            titles={honors?.conferenceTitles ?? []}
                             windowSeasons={data.honorsWindowSeasons}
                           />
                         ),
@@ -246,7 +246,7 @@ function NationalTitleMarks({
   return (
     <span
       aria-label={`National championships: ${titleYears.join(', ')}`}
-      className="flex min-w-12 items-center justify-end gap-0.5"
+      className="flex min-w-12 items-center justify-end -space-x-1"
     >
       {titleYears.map((year) => (
         <img
@@ -264,30 +264,46 @@ function NationalTitleMarks({
 
 function ConferenceTitleMarks({
   currentSeason,
-  titleYears,
+  titles,
   windowSeasons,
 }: {
   currentSeason: number
-  titleYears: Array<number>
+  titles: Array<{ conference?: string; season: number }>
   windowSeasons: number
 }) {
-  if (titleYears.length === 0) return '—'
+  if (titles.length === 0) return '—'
   return (
     <span
-      aria-label={`Conference championships: ${titleYears.join(', ')}`}
-      className="flex min-w-12 items-center justify-end gap-0.5 text-amber-300"
+      aria-label={`Conference championships: ${titles.map((title) => `${title.season}${title.conference ? ` ${title.conference}` : ''}`).join(', ')}`}
+      className="grid min-h-6 min-w-12 grid-flow-col grid-rows-2 place-content-center justify-end gap-x-0.5 gap-y-0 text-amber-300"
     >
-      {titleYears.map((year) => (
+      {titles.map((title) => (
         <span
-          key={year}
-          style={{ opacity: honorOpacity(year, currentSeason, windowSeasons) }}
-          title={`${year} conference champion`}
+          className="flex h-3 items-center justify-center"
+          key={`${title.season}:${title.conference ?? 'conference'}`}
+          style={{
+            opacity: honorOpacity(title.season, currentSeason, windowSeasons),
+          }}
+          title={`${title.season} ${title.conference ? `${title.conference} ` : ''}conference champion`}
         >
-          <Medal aria-hidden="true" className="size-4" />
+          {isBigTen(title.conference) ? (
+            <img
+              alt=""
+              aria-hidden="true"
+              className="h-2.5 w-auto"
+              src="/big-ten-conference-logo.webp"
+            />
+          ) : (
+            <Medal aria-hidden="true" className="size-3" />
+          )}
         </span>
       ))}
     </span>
   )
+}
+
+function isBigTen(conference: string | undefined) {
+  return conference === 'Big Ten' || conference === 'Big 10'
 }
 
 function honorOpacity(

@@ -391,7 +391,12 @@ export const getRatingField = query({
         v.object({
           programId: v.id('programs'),
           nationalTitles: v.array(v.number()),
-          conferenceTitles: v.array(v.number()),
+          conferenceTitles: v.array(
+            v.object({
+              conference: v.optional(v.string()),
+              season: v.number(),
+            }),
+          ),
         }),
       ),
       honorsWindowSeasons: v.number(),
@@ -474,6 +479,7 @@ export const getRatingField = query({
       .map((row) => ({
         teamId: String(row.programId),
         season: row.season,
+        conference: row.conference,
         conferenceChampion: true,
         playoffStage: 0,
       }))
@@ -509,20 +515,19 @@ export const getRatingField = query({
       edition,
       honors,
       honorsWindowSeasons: PROGRAM_HONORS_DISPLAY_SEASONS,
-      rows: publishedRows
-        .map((row) =>
-          edition.resumeVisible
-            ? row
-            : {
-                ...row,
-                recordDifficulty: undefined,
-                recordProbability: undefined,
-                resume: undefined,
-                resumeRank: undefined,
-                dominanceComponent: undefined,
-                scheduleComponent: undefined,
-              },
-        ),
+      rows: publishedRows.map((row) =>
+        edition.resumeVisible
+          ? row
+          : {
+              ...row,
+              recordDifficulty: undefined,
+              recordProbability: undefined,
+              resume: undefined,
+              resumeRank: undefined,
+              dominanceComponent: undefined,
+              scheduleComponent: undefined,
+            },
+      ),
     }
   },
 })

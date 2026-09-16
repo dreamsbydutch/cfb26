@@ -1,9 +1,10 @@
 /** Prestige policy, not predictive coefficients. A team's deepest stage counts once per season. */
 export const PROGRAM_ACCOMPLISHMENT_START = 2000
-export const PROGRAM_HONORS_DISPLAY_SEASONS = 15
+export const PROGRAM_HONORS_DISPLAY_SEASONS = 25
 export type ProgramAccomplishment = {
   teamId: string
   season: number
+  conference?: string
   conferenceChampion: boolean
   playoffStage: number // 0 none, 1 appearance, 2 quarterfinal, 3 semifinal, 4 finalist, 5 champion
 }
@@ -11,7 +12,7 @@ export type ProgramAccomplishment = {
 export type ProgramHonorSummary = {
   teamId: string
   nationalTitles: Array<number>
-  conferenceTitles: Array<number>
+  conferenceTitles: Array<{ conference?: string; season: number }>
 }
 
 export type AccomplishmentGame = {
@@ -138,30 +139,40 @@ export function programHonorsForDisplay(
 ): Array<ProgramHonorSummary> {
   if (!Number.isInteger(season) || !Number.isInteger(windowSeasons))
     throw new Error('Invalid program honors display window.')
-  if (windowSeasons < 1) throw new Error('Invalid program honors display window.')
+  if (windowSeasons < 1)
+    throw new Error('Invalid program honors display window.')
   const firstSeason = Math.max(
     PROGRAM_ACCOMPLISHMENT_START,
     season - windowSeasons + 1,
   )
   const honors = new Map<
     string,
-    { nationalTitles: Set<number>; conferenceTitles: Set<number> }
+    {
+      nationalTitles: Set<number>
+      conferenceTitles: Map<number, string | undefined>
+    }
   >()
   for (const row of rows) {
     if (row.season < firstSeason || row.season > season) continue
     const summary = honors.get(row.teamId) ?? {
       nationalTitles: new Set<number>(),
-      conferenceTitles: new Set<number>(),
+      conferenceTitles: new Map<number, string | undefined>(),
     }
     if (row.playoffStage === 5) summary.nationalTitles.add(row.season)
-    if (row.conferenceChampion) summary.conferenceTitles.add(row.season)
+    if (row.conferenceChampion)
+      summary.conferenceTitles.set(row.season, row.conference)
     honors.set(row.teamId, summary)
   }
   return [...honors.entries()]
     .map(([teamId, summary]) => ({
       teamId,
       nationalTitles: [...summary.nationalTitles].sort((a, b) => b - a),
-      conferenceTitles: [...summary.conferenceTitles].sort((a, b) => b - a),
+      conferenceTitles: [...summary.conferenceTitles]
+        .map(([titleSeason, conference]) => ({
+          conference,
+          season: titleSeason,
+        }))
+        .sort((a, b) => b.season - a.season),
     }))
     .filter(
       (row) => row.nationalTitles.length > 0 || row.conferenceTitles.length > 0,
