@@ -277,33 +277,65 @@ function ConferenceTitleMarks({
       aria-label={`Conference championships: ${titles.map((title) => `${title.season}${title.conference ? ` ${title.conference}` : ''}`).join(', ')}`}
       className="grid min-h-6 min-w-12 grid-flow-col grid-rows-2 place-content-center justify-end gap-x-0.5 gap-y-0 text-amber-300"
     >
-      {titles.map((title) => (
-        <span
-          className="flex h-3 items-center justify-center"
-          key={`${title.season}:${title.conference ?? 'conference'}`}
-          style={{
-            opacity: honorOpacity(title.season, currentSeason, windowSeasons),
-          }}
-          title={`${title.season} ${title.conference ? `${title.conference} ` : ''}conference champion`}
-        >
-          {isBigTen(title.conference) ? (
-            <img
-              alt=""
-              aria-hidden="true"
-              className="h-2.5 w-auto"
-              src="/big-ten-conference-logo.webp"
-            />
-          ) : (
-            <Medal aria-hidden="true" className="size-3" />
-          )}
-        </span>
-      ))}
+      {titles.map((title) => {
+        const logo = conferenceLogo(title.conference)
+        return (
+          <span
+            className="flex h-3 items-center justify-center"
+            key={`${title.season}:${title.conference ?? 'conference'}`}
+            style={{
+              opacity: honorOpacity(
+                title.season,
+                currentSeason,
+                windowSeasons,
+              ),
+            }}
+            title={`${title.season} ${title.conference ? `${title.conference} ` : ''}conference champion`}
+          >
+            {logo ? (
+              <img
+                alt=""
+                aria-hidden="true"
+                className={logo.className}
+                src={logo.src}
+              />
+            ) : (
+              <Medal aria-hidden="true" className="size-3" />
+            )}
+          </span>
+        )
+      })}
     </span>
   )
 }
 
-function isBigTen(conference: string | undefined) {
-  return conference === 'Big Ten' || conference === 'Big 10'
+function conferenceLogo(conference: string | undefined) {
+  if (conference === 'Big Ten' || conference === 'Big 10')
+    return {
+      className: 'h-2.5 w-auto',
+      src: '/big-ten-conference-logo.webp',
+    }
+  if (conference === 'SEC')
+    return {
+      className: '-mx-1 h-2.5 w-auto',
+      src: '/sec-conference-logo.png',
+    }
+  if (conference === 'Big 12' || conference === 'Big XII')
+    return {
+      className: 'h-2.5 w-auto',
+      src: '/big-12-conference-logo.png',
+    }
+  if (conference === 'Sun Belt')
+    return {
+      className: 'h-2.5 w-auto',
+      src: '/sun-belt-conference-logo.png',
+    }
+  if (conference === 'Pac-10' || conference === 'Pac-12')
+    return {
+      className: '-mx-1 h-2.5 w-auto',
+      src: '/pac-12-conference-logo.png',
+    }
+  return null
 }
 
 function honorOpacity(
