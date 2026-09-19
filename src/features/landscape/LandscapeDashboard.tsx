@@ -377,12 +377,11 @@ function Games({
                           </div>
                         </td>
                         <td className="px-4 py-2.5 align-middle text-xs leading-4 text-white/70">
-                          <div>{gameLocation(game)}</div>
-                          <div className="font-semibold text-white/90">
-                            Broadcast:{' '}
+                          <div>
+                            {gameLocation(game)}
                             {game.tvOutlets?.length
-                              ? game.tvOutlets.join(', ')
-                              : 'TBD'}
+                              ? ` · ${game.tvOutlets.join(', ')}`
+                              : ''}
                           </div>
                         </td>
                       </tr>
@@ -436,10 +435,8 @@ function MobileGameRow({
         {importanceFor(game, lens)}
       </b>
       <div className="col-span-2 col-start-2 mt-1 text-[10px] leading-4 text-white/45">
-        {gameLocation(game)} · Broadcast:{' '}
-        <span className="font-semibold text-white/80">
-          {game.tvOutlets?.length ? game.tvOutlets.join(', ') : 'TBD'}
-        </span>
+        {gameLocation(game)}
+        {game.tvOutlets?.length ? ` · ${game.tvOutlets.join(', ')}` : ''}
       </div>
       <details className="group col-span-2 col-start-2 mt-1">
         <summary className="w-fit cursor-pointer text-[10px] font-bold text-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
