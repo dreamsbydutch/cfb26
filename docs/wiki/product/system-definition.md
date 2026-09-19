@@ -133,6 +133,8 @@ National views will provide:
 - scheduled and hypothetical matchup forecasts; and
 - a season-specific projected playoff field and revealed all-FBS personal ranking ballots.
 
+The weekly Games view has two separate game-interest ratings. Landscape prioritizes strong, close national matchups with bounded stakes context. Michigan prioritizes direct Wolverines games, rivals, Big Ten opponents, teams around or above Michigan in the rankings, and games involving Michigan’s past or future opponents.
+
 Historical ratings from 2015 onward are labeled reconstructions. Official prospective forecasts begin with the 2026 implementation and are never backfilled as if they existed before kickoff.
 
 ## CFB26 Program

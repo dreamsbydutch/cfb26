@@ -5,6 +5,7 @@ import {
   buildPowerRatingEdition,
   buildResumeRatingEdition,
   projectPowerMatchup,
+  scoreMichiganRelevance,
   scoreWeeklyMatchup,
 } from '../convex/ratingSystem.ts'
 
@@ -94,6 +95,66 @@ test('weekly matchups separate quality from playoff leverage', () => {
     eliteMatchup.playoffImportance > evenAverageMatchup.playoffImportance,
   )
   assert.ok(eliteMatchup.playoffLeverage > eliteMatchup.competitiveness / 2)
+})
+
+test('landscape rating favors a close strong matchup over an elite mismatch', () => {
+  const closeStrong = scoreWeeklyMatchup({
+    awayPower: 8,
+    awayPowerRank: 30,
+    conferenceGame: true,
+    homeFieldAdvantage: 0,
+    homePower: 8.5,
+    homePowerRank: 22,
+    neutralSite: true,
+  })
+  const eliteMismatch = scoreWeeklyMatchup({
+    awayPower: -6,
+    awayPowerRank: 100,
+    conferenceGame: false,
+    homeFieldAdvantage: 0,
+    homePower: 20,
+    homePowerRank: 1,
+    neutralSite: true,
+  })
+
+  assert.ok(closeStrong.landscapeRating > eliteMismatch.landscapeRating)
+  assert.equal(closeStrong.competitiveness, 98)
+})
+
+test('Michigan relevance explains direct, shared, ranked, and conference context', () => {
+  const direct = scoreMichiganRelevance({
+    conferenceGame: true,
+    landscapeRating: 82,
+    opponentCount: 1,
+    opponentRanks: [2],
+    rivalry: true,
+    isMichiganGame: true,
+    michiganRank: 12,
+  })
+  const shared = scoreMichiganRelevance({
+    conferenceGame: false,
+    landscapeRating: 60,
+    opponentCount: 2,
+    opponentRanks: [18, 24],
+    rivalry: false,
+    isMichiganGame: false,
+    michiganRank: 12,
+  })
+  const unrelated = scoreMichiganRelevance({
+    conferenceGame: false,
+    landscapeRating: 30,
+    opponentCount: 0,
+    opponentRanks: [110, 120],
+    rivalry: false,
+    isMichiganGame: false,
+    michiganRank: 12,
+  })
+
+  assert.ok(direct.rating > shared.rating)
+  assert.ok(shared.rating > unrelated.rating)
+  assert.match(direct.reasons[0], /Michigan plays/)
+  assert.ok(shared.reasons.some((reason) => reason.includes('schedule')))
+  assert.equal(unrelated.relation, 'National landscape')
 })
 
 test('Power Rating fades priors and gives current-season games equal weight', () => {

@@ -53,6 +53,7 @@ import {
   buildResumeRatingEdition,
   powerForOpponent,
   projectPowerMatchup,
+  scoreMichiganRelevance,
   scoreWeeklyMatchup,
 } from './ratingSystem'
 import {
@@ -524,8 +525,7 @@ export const getRatingField = query({
         .flat()
         .filter(
           (row) =>
-            row.conferenceChampion &&
-            row.sourceUpdatedAt < edition.cutoffAt,
+            row.conferenceChampion && row.sourceUpdatedAt < edition.cutoffAt,
         )
         .map((row) => ({
           teamId: String(row.programId),
@@ -1043,11 +1043,7 @@ export const loadProgramAccomplishments = internalQuery({
         .withIndex('by_season_and_wins', (q) => q.eq('season', args.season))
         .take(201),
     ])
-    if (
-      games.length > 2000 ||
-      champions.length > 100 ||
-      standings.length > 200
-    )
+    if (games.length > 2000 || champions.length > 100 || standings.length > 200)
       throw new Error('Program accomplishment slice exceeds its bound.')
     const earned = accomplishmentsFromGames(
       games
@@ -2212,9 +2208,22 @@ function clampScore(value: number) {
   return Math.min(Math.max(Math.round(value), 0), 100)
 }
 
+function normalizedProgramName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
 function isBigTen(conference: string | undefined) {
   const normalized = conference?.toLowerCase().replace(/[^a-z0-9]/g, '')
   return normalized === 'bigten' || normalized === 'big10'
+}
+
+function isMichiganRival(name: string) {
+  const normalized = normalizedProgramName(name)
+  return (
+    normalized.includes('ohiostate') ||
+    normalized.includes('michiganstate') ||
+    normalized.includes('pennstate')
+  )
 }
 
 export const getWeeklyDashboard = query({
@@ -2474,24 +2483,12 @@ export const getWeeklyDashboard = query({
     )
     const michiganOpponents = new Set<string>()
     if (michigan) {
-      const [homeGames, awayGames] = await Promise.all([
-        ctx.db
-          .query('collegeGames')
-          .withIndex('by_homeProgramId_and_season', (q) =>
-            q.eq('homeProgramId', michigan._id).eq('season', season),
-          )
-          .take(30),
-        ctx.db
-          .query('collegeGames')
-          .withIndex('by_awayProgramId_and_season', (q) =>
-            q.eq('awayProgramId', michigan._id).eq('season', season),
-          )
-          .take(30),
-      ])
-      for (const game of homeGames)
-        michiganOpponents.add(String(game.awayProgramId))
-      for (const game of awayGames)
-        michiganOpponents.add(String(game.homeProgramId))
+      for (const scheduledGame of seasonSchedule) {
+        if (scheduledGame.homeProgramId === michigan._id)
+          michiganOpponents.add(String(scheduledGame.awayProgramId))
+        if (scheduledGame.awayProgramId === michigan._id)
+          michiganOpponents.add(String(scheduledGame.homeProgramId))
+      }
     }
 
     const scoredGames = games.map((game) => {
@@ -2533,24 +2530,27 @@ export const getWeeklyDashboard = query({
       const homeIsOpponent = michiganOpponents.has(String(game.homeProgramId))
       const awayIsOpponent = michiganOpponents.has(String(game.awayProgramId))
       const opponentCount = Number(homeIsOpponent) + Number(awayIsOpponent)
-      let michiganRelation = 'National landscape'
-      let michiganImportance = matchup.playoffImportance * 0.15
-      if (isMichiganGame) {
-        michiganRelation = 'Michigan game'
-        michiganImportance = 100
-      } else if (opponentCount === 2) {
-        michiganRelation = 'Two Michigan opponents'
-        michiganImportance = 75 + matchup.playoffImportance * 0.2
-      } else if (opponentCount === 1) {
-        michiganRelation = 'Michigan opponent'
-        michiganImportance = 48 + matchup.playoffImportance * 0.35
-      } else if (
-        isBigTen(game.homeConference) ||
-        isBigTen(game.awayConference)
-      ) {
-        michiganRelation = 'Big Ten race'
-        michiganImportance = 25 + matchup.playoffImportance * 0.3
-      }
+      const michiganRelevance = scoreMichiganRelevance({
+        conferenceGame:
+          game.conferenceGame &&
+          (isBigTen(game.homeConference) || isBigTen(game.awayConference)),
+        landscapeRating: matchup.landscapeRating,
+        opponentCount,
+        opponentRanks: [
+          ...(game.homeProgramId === michigan?._id
+            ? [awayRatingRow?.powerRank]
+            : [homeRatingRow?.powerRank]),
+          ...(game.homeProgramId === michigan?._id ||
+          game.awayProgramId === michigan?._id
+            ? []
+            : [homeRatingRow?.powerRank, awayRatingRow?.powerRank]),
+        ].filter((rank): rank is number => rank !== undefined),
+        rivalry:
+          isMichiganRival(game.homeSourceName) ||
+          isMichiganRival(game.awaySourceName),
+        isMichiganGame,
+        michiganRank: ratingByProgram.get(String(michigan?._id))?.powerRank,
+      })
 
       return {
         ...game,
@@ -2560,8 +2560,11 @@ export const getWeeklyDashboard = query({
         homeRank: homeRatingRow?.powerRank,
         homeRating,
         matchupQuality: clampScore(matchup.matchupQuality),
-        michiganImportance: clampScore(michiganImportance),
-        michiganRelation,
+        landscapeRating: clampScore(matchup.landscapeRating),
+        michiganImportance: michiganRelevance.rating,
+        michiganRating: michiganRelevance.rating,
+        michiganReasons: michiganRelevance.reasons,
+        michiganRelation: michiganRelevance.relation,
         nationalImportance: clampScore(matchup.playoffImportance),
         playoffImportance: clampScore(matchup.playoffImportance),
         playoffLeverage: clampScore(matchup.playoffLeverage),

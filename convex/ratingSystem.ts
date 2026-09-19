@@ -731,6 +731,7 @@ export function projectPowerMatchup(
 
 export type WeeklyMatchupScore = {
   competitiveness: number
+  landscapeRating: number
   matchupQuality: number
   playoffImportance: number
   playoffLeverage: number
@@ -761,10 +762,10 @@ export function scoreWeeklyMatchup(input: {
   const homeStrength = clamp(50 + input.homePower * 2, 0, 100)
   const awayStrength = clamp(50 + input.awayPower * 2, 0, 100)
   const pairedStrength =
-    Math.max(homeStrength, awayStrength) * 0.4 +
-    Math.min(homeStrength, awayStrength) * 0.6
+    Math.max(homeStrength, awayStrength) * 0.35 +
+    Math.min(homeStrength, awayStrength) * 0.65
   const matchupQuality = clamp(
-    pairedStrength * 0.7 + competitiveness * 0.3,
+    pairedStrength * 0.45 + competitiveness * 0.55,
     0,
     100,
   )
@@ -790,12 +791,106 @@ export function scoreWeeklyMatchup(input: {
     0,
     100,
   )
+  const landscapeRating = clamp(
+    competitiveness * 0.55 + pairedStrength * 0.3 + playoffLeverage * 0.15,
+    0,
+    100,
+  )
   return {
     competitiveness: round(competitiveness),
+    landscapeRating: round(landscapeRating),
     matchupQuality: round(matchupQuality),
     playoffImportance: round(playoffImportance),
     playoffLeverage: round(playoffLeverage),
     projectedMargin: round(projectedMargin, 1),
+  }
+}
+
+export type MichiganRelevanceScore = {
+  reasons: Array<string>
+  relation: string
+  rating: number
+}
+
+export function scoreMichiganRelevance(input: {
+  conferenceGame: boolean
+  landscapeRating: number
+  opponentCount: number
+  opponentRanks: Array<number>
+  rivalry: boolean
+  isMichiganGame: boolean
+  michiganRank?: number
+}): MichiganRelevanceScore {
+  const reasons: Array<string> = []
+  const highestRankedOpponent = Math.min(
+    ...input.opponentRanks,
+    Number.POSITIVE_INFINITY,
+  )
+  const relation = input.isMichiganGame
+    ? 'Michigan game'
+    : input.rivalry
+      ? 'Michigan rival'
+      : input.opponentCount >= 2
+        ? 'Two Michigan opponents'
+        : input.opponentCount === 1
+          ? 'Michigan opponent'
+          : input.conferenceGame
+            ? 'Big Ten race'
+            : 'National landscape'
+
+  let base = 8
+  if (input.conferenceGame) {
+    base = 28
+    reasons.push('Big Ten race')
+  }
+  if (input.opponentCount >= 1) {
+    base = Math.max(base, input.opponentCount >= 2 ? 55 : 40)
+    reasons.push(
+      input.opponentCount >= 2
+        ? 'both teams are on Michigan’s past/future schedule'
+        : 'one team is on Michigan’s past/future schedule',
+    )
+  }
+  if (input.rivalry) {
+    base = Math.max(base, 62)
+    reasons.push('Michigan rivalry')
+  }
+  if (input.isMichiganGame) {
+    base = 72
+    reasons.unshift('Michigan plays in this game')
+  }
+
+  let rankContext = 0
+  if (Number.isFinite(highestRankedOpponent)) {
+    if (
+      input.michiganRank !== undefined &&
+      highestRankedOpponent < input.michiganRank
+    ) {
+      rankContext = 18
+      reasons.push('includes a team ranked above Michigan')
+    } else if (
+      input.michiganRank !== undefined &&
+      Math.abs(highestRankedOpponent - input.michiganRank) <= 10
+    ) {
+      rankContext = 16
+      reasons.push('includes a team ranked around Michigan')
+    } else if (highestRankedOpponent <= 25) {
+      rankContext = 10
+      reasons.push('includes a nationally ranked team')
+    }
+  }
+
+  if (input.landscapeRating >= 70) {
+    rankContext += 8
+    reasons.push('strong national matchup')
+  } else if (input.landscapeRating >= 50) {
+    rankContext += 4
+  }
+
+  return {
+    reasons: reasons.length > 0 ? reasons : ['limited Michigan connection'],
+    relation,
+    rating: round(clamp(base + rankContext, 0, 100)),
   }
 }
 

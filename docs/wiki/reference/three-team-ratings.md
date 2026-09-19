@@ -8,6 +8,15 @@ Ranking tables use the compact schedule-table rhythm and lead with rank, team/co
 
 Ranking pages use short page titles and publication timestamps. Repeated model introductions, version identifiers, and evidence/limitations footers are omitted from the browsing views; Methodology retains the model explanations and coverage limits. The Week 7 opening message and unavailable-edition states remain visible when relevant.
 
+## Game ratings
+
+The weekly Games view exposes two independent orderings rather than one blended importance score:
+
+- **Landscape** answers “what is the most important game to the national college-football landscape?” It leads with projected competitiveness, gives more weight to the weaker team’s quality than the favorite’s name value, and adds a bounded national-stakes component. A close game between teams in the 20s or 30s can therefore outrank a top team facing a team near 100.
+- **Michigan** answers “what game changes how we understand Michigan’s current and future position?” It considers direct Michigan games, Michigan rivals, one or two shared opponents from Michigan’s full past/future schedule, Big Ten games, opponent rank relative to Michigan, and the game’s Landscape quality. Every game returns an explanation list so the ordering is inspectable.
+
+These are game-interest ratings, not team ratings and not betting or forecast probabilities. Power remains the input for projected strength; Résumé remains the earned team rating.
+
 ## Program
 
 `cfb26-program-v6` is a 0–100 index: competitive results contribute 50%, acquisition 20%, development 10%, and honors 20%. Each component remains a raw 0–100 score before weighting. These are explicit prestige policy allocations, not learned forecasting coefficients. Prior-season Program strength supplies bounded context to Power and Résumé as described below; current-season trophies do not produce a separate bonus in either.

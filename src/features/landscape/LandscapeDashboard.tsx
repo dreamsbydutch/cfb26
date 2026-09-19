@@ -179,21 +179,13 @@ function Games({
 }: {
   data: FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
 }) {
-  const [lens, setLens] = useState<'quality' | 'playoff' | 'michigan'>(
-    'quality',
-  )
+  const [lens, setLens] = useState<'landscape' | 'michigan'>('landscape')
   const lensLabels = {
-    quality: 'Matchup',
-    playoff: 'Playoff',
+    landscape: 'Landscape',
     michigan: 'Michigan',
   } as const
   const windows = useMemo(() => {
-    const field =
-      lens === 'quality'
-        ? 'matchupQuality'
-        : lens === 'playoff'
-          ? 'playoffImportance'
-          : 'michiganImportance'
+    const field = lens === 'landscape' ? 'landscapeRating' : 'michiganRating'
     const sorted = [...data.games].sort(
       (left, right) => left.startTime - right.startTime,
     )
@@ -234,7 +226,7 @@ function Games({
     <>
       <div className="mb-3">
         <div className="grid grid-cols-3 gap-1.5 sm:flex sm:gap-2">
-          {(['quality', 'playoff', 'michigan'] as const).map((option) => (
+          {(['landscape', 'michigan'] as const).map((option) => (
             <button
               aria-pressed={lens === option}
               key={option}
@@ -248,7 +240,9 @@ function Games({
         </div>
         <p className="mt-1.5 text-[11px] text-white/40 sm:text-xs">
           Eastern broadcast windows · exact kickoffs shown in your local time ·
-          sorted by {lensLabels[lens].toLowerCase()} importance
+          sorted by {lensLabels[lens].toLowerCase()} rating. Landscape rewards
+          close, strong matchups; Michigan follows the Wolverines’ schedule,
+          rivals, rank bands, and shared opponents.
         </p>
       </div>
       <section
@@ -371,9 +365,12 @@ function Games({
                             Home {signed(game.projectedMargin)}
                           </b>
                           <div className="mt-0.5 text-[10px] text-white/35">
-                            Q {game.matchupQuality} · CFP{' '}
-                            {game.playoffImportance} · M{' '}
-                            {game.michiganImportance}
+                            Landscape {game.landscapeRating} · Michigan{' '}
+                            {game.michiganRating}
+                          </div>
+                          <div className="mt-0.5 text-[10px] text-white/45">
+                            {game.michiganRelation} ·{' '}
+                            {game.michiganReasons.join(' · ')}
                           </div>
                         </td>
                         <td className="px-4 py-2.5 align-middle text-xs leading-4 text-white/70">
@@ -402,7 +399,7 @@ function MobileGameRow({
   lens,
 }: {
   game: NationalGame
-  lens: 'quality' | 'playoff' | 'michigan'
+  lens: 'landscape' | 'michigan'
 }) {
   const highlightsMichigan =
     isMichiganProgram(game.awaySourceName) ||
@@ -444,20 +441,16 @@ function MobileGameRow({
         </summary>
         <div className="mt-1.5 grid grid-cols-4 gap-1 border-t border-white/[0.07] pt-2">
           <GameMetric
-            active={lens === 'quality'}
-            label="Quality"
-            value={game.matchupQuality}
+            active={lens === 'landscape'}
+            label="Landscape"
+            value={game.landscapeRating}
           />
-          <GameMetric
-            active={lens === 'playoff'}
-            label="Playoff"
-            value={game.playoffImportance}
-          />
+          <GameMetric label="Matchup" value={game.matchupQuality} />
           <GameMetric
             active={lens === 'michigan'}
             label="Michigan"
             tone="michigan"
-            value={game.michiganImportance}
+            value={game.michiganRating}
           />
           <GameMetric
             label="Margin"
@@ -467,7 +460,7 @@ function MobileGameRow({
         <p className="mt-1 text-[10px] text-white/35">
           Week {game.week} ·{' '}
           {game.conferenceGame ? 'Conference' : 'Nonconference'} ·{' '}
-          {game.michiganRelation}
+          {game.michiganRelation} · {game.michiganReasons.join(' · ')}
         </p>
       </details>
     </article>
@@ -510,13 +503,8 @@ function InlineRank({ rank }: { rank?: number }) {
   )
 }
 
-function importanceFor(
-  game: NationalGame,
-  lens: 'quality' | 'playoff' | 'michigan',
-) {
-  if (lens === 'quality') return game.matchupQuality
-  if (lens === 'playoff') return game.playoffImportance
-  return game.michiganImportance
+function importanceFor(game: NationalGame, lens: 'landscape' | 'michigan') {
+  return lens === 'landscape' ? game.landscapeRating : game.michiganRating
 }
 
 function gameLocation(game: NationalGame) {
