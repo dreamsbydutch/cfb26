@@ -47,7 +47,7 @@ Add URL-addressable pages under `src/routes/`; keep domain orchestration in the 
 
 Games defaults to the [Watch now TV lineup](../reference/live-scoring.md#watch-now-and-the-three-tvs), with Michigan pinned on the main TV and live watchability ordering across broadcast windows. Landscape and Michigan schedule lenses remain available.
 
-Watch now uses compact expandable TV slots: network, teams, live score, and a muted pregame model spread beside the projected winner. Ratings, timing, reasons, and full margin details expand per game. Main TV spans the mobile width above side-by-side B/C cards; the complete candidate list sits under All games.
+Watch now uses compact expandable TV slots: network, teams, live score, and a muted pregame model spread beside the projected winner. Ratings, timing, reasons, and full margin details expand per game. On every screen size, Main TV spans the top row, with TV B below left and TV C below right, matching the physical TV wall; the complete candidate list sits under All games.
 
 Games shows one Latest score update timestamp above the list in every lens, using the newest retained in-progress/final scoreboard observation in the selected week. It ages with the existing browser timer and shows Waiting for score updates when none exists. Per-game update ages are omitted; individual delayed-score states remain available.
 

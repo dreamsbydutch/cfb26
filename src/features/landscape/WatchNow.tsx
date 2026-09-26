@@ -132,12 +132,12 @@ export function WatchNow<T extends TelevisionGame>({
           }}
         />
       )}
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2">
         {assignments.map((tv, index) => (
           <section
             key={tv.label}
             aria-label={tv.label}
-            className={`app-card min-w-0 p-3 ${tv.label === 'Main TV' ? 'col-span-2 md:col-span-1' : ''} ${tv.main && isMichiganGame(tv.main.game) ? 'michigan-highlight' : ''}`}
+            className={`app-card min-w-0 p-3 ${tv.label === 'Main TV' ? 'col-span-2' : ''} ${tv.main && isMichiganGame(tv.main.game) ? 'michigan-highlight' : ''}`}
           >
             <div className="mb-2 flex items-center justify-between gap-1">
               <h3 className="text-[11px] font-bold uppercase tracking-wide text-white/50">
