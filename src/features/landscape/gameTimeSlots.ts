@@ -12,6 +12,94 @@ export type GameTimeSlot = {
   label: string
 }
 
+type ScheduledGame = {
+  startTime: number
+  completed: boolean
+  canceled?: boolean
+  homePoints?: number
+  awayPoints?: number
+  landscapeRating: number
+  michiganRating: number
+}
+
+export function gameStatus(game: ScheduledGame, now: number) {
+  if (game.canceled) return 'Canceled'
+  if (game.completed) {
+    return Number.isFinite(game.homePoints) && Number.isFinite(game.awayPoints)
+      ? 'Final'
+      : 'Result pending'
+  }
+  if (game.startTime > now) return 'Upcoming'
+  // Kickoff alone cannot establish live status or a final result.
+  return now - game.startTime < 8 * 60 * 60 * 1000
+    ? 'Started'
+    : 'Result pending'
+}
+
+export function scheduleSections<T extends ScheduledGame>(
+  games: Array<T>,
+  lens: 'landscape' | 'michigan',
+  now: number,
+) {
+  const field = lens === 'landscape' ? 'landscapeRating' : 'michiganRating'
+  const sections = [
+    { label: 'Upcoming', games: [] as Array<T> },
+    { label: 'Started', games: [] as Array<T> },
+    { label: 'Past games & results', games: [] as Array<T> },
+  ]
+  for (const game of games) {
+    const status = gameStatus(game, now)
+    sections[
+      status === 'Upcoming' ? 0 : status === 'Started' ? 1 : 2
+    ].games.push(game)
+  }
+  return sections
+    .filter((section) => section.games.length > 0)
+    .map((section) => {
+      const past = section.label === 'Past games & results'
+      const groups = new Map<
+        string,
+        {
+          key: string
+          label: string
+          dateLabel: string
+          startTime: number
+          games: Array<T>
+        }
+      >()
+      for (const game of [...section.games].sort(
+        (a, b) => a.startTime - b.startTime,
+      )) {
+        const slot = gameTimeSlot(game.startTime)
+        const key = `${slot.dateKey}-${slot.id}`
+        const group = groups.get(key) ?? {
+          key,
+          label: slot.label,
+          dateLabel: slot.dateLabel,
+          startTime: game.startTime,
+          games: [],
+        }
+        group.games.push(game)
+        groups.set(key, group)
+      }
+      return {
+        label: section.label,
+        groups: [...groups.values()]
+          .sort((a, b) =>
+            past ? b.startTime - a.startTime : a.startTime - b.startTime,
+          )
+          .map((group) => ({
+            ...group,
+            games: group.games.sort((a, b) =>
+              past
+                ? b.startTime - a.startTime
+                : b[field] - a[field] || a.startTime - b.startTime,
+            ),
+          })),
+      }
+    })
+}
+
 const easternParts = new Intl.DateTimeFormat('en-US', {
   day: '2-digit',
   hour: '2-digit',

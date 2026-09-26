@@ -15,6 +15,8 @@ The weekly Games view exposes two independent orderings rather than one blended 
 - **Landscape** answers “what is the most important game to the national college-football landscape?” Team quality contributes 50%, national stakes 30%, and projected competitiveness 20%. Quality weights the weaker team 65% and the stronger team 35%, so a competitive strong matchup can still outrank an elite mismatch. Missing ratings earn no strength or closeness credit; available unpublished FCS Power ratings remain usable for projections. See the [weekly formula](landscape-ranking.md#weekly-importance).
 - **Michigan** answers “what game changes how we understand Michigan’s current and future position?” It considers direct Michigan games, Michigan rivals, one or two shared opponents from Michigan’s full past/future schedule, Big Ten games, opponent rank relative to Michigan, and the game’s Landscape quality. Every game returns an explanation list so the ordering is inspectable.
 
+Upcoming games lead the schedule, followed by started games and past results. Confirmed finals display both scores; unavailable results are labeled pending. The selected lens sorts games within each upcoming broadcast window, with interest scores and projections in expandable details.
+
 These are game-interest ratings, not team ratings and not betting or forecast probabilities. Power remains the input for projected strength; Résumé remains the earned team rating.
 
 ## Program
