@@ -63,3 +63,5 @@ The 41-table model was synchronized to both environments on 2026-09-07; see the 
 3. Run `npm run check`.
 4. Update [Current contracts](../reference/current-contracts.md).
 5. Only with exact-target authorization, push once to development and inspect generated types and live behavior before production.
+
+The scoreboard mutation retains at most six recent in-progress observations per game in optional `liveScoreHistory`, enabling [comeback-aware viewing recommendations](../reference/live-scoring.md#watch-now-and-the-three-tvs) without additional API calls. Schedule imports preserve both the latest score and history.

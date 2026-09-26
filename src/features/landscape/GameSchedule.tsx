@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { gameStatus, scheduleSections } from './gameTimeSlots'
+import { WatchNow } from './WatchNow'
+import { watchRating } from './watchRating'
 import type { FunctionReturnType } from 'convex/server'
 import type { api } from '../../../convex/_generated/api'
 
 type Schedule = FunctionReturnType<typeof api.ratings.getWeeklyDashboard>
 type Game = Schedule['games'][number]
-type Lens = 'landscape' | 'michigan'
+type Lens = 'landscape' | 'michigan' | 'watch'
 
 export function GameSchedule({ data }: { data: Schedule }) {
-  const [lens, setLens] = useState<Lens>('landscape')
+  const [lens, setLens] = useState<Lens>('watch')
   const [now, setNow] = useState(data.generatedAt)
   useEffect(() => {
     const refresh = () => setNow(Date.now())
@@ -18,7 +20,8 @@ export function GameSchedule({ data }: { data: Schedule }) {
     return () => window.clearInterval(timer)
   }, [])
   const sections = useMemo(
-    () => scheduleSections(data.games, lens, now),
+    () =>
+      scheduleSections(data.games, lens === 'watch' ? 'landscape' : lens, now),
     [data.games, lens, now],
   )
 
@@ -26,8 +29,8 @@ export function GameSchedule({ data }: { data: Schedule }) {
     <div className="mx-auto max-w-4xl">
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <span className="text-xs text-white/50">Prioritize</span>
-        <div className="flex gap-2">
-          {(['landscape', 'michigan'] as const).map((option) => (
+        <div className="flex flex-wrap gap-2">
+          {(['watch', 'landscape', 'michigan'] as const).map((option) => (
             <button
               key={option}
               type="button"
@@ -35,7 +38,7 @@ export function GameSchedule({ data }: { data: Schedule }) {
               onClick={() => setLens(option)}
               className={`min-h-11 rounded-full border border-white/10 px-4 text-xs font-bold capitalize focus-visible:outline-2 focus-visible:outline-offset-2 ${lens === option ? 'app-filter-active' : 'text-white/50'}`}
             >
-              {option}
+              {option === 'watch' ? 'Watch now' : option}
             </button>
           ))}
         </div>
@@ -43,40 +46,50 @@ export function GameSchedule({ data }: { data: Schedule }) {
           Kickoffs in your local time
         </span>
       </div>
-      {sections.length === 0 && (
+      {lens === 'watch' && (
+        <WatchNow
+          games={data.games}
+          now={now}
+          renderGame={(game) => (
+            <GameRow key={game._id} game={game} lens={lens} now={now} />
+          )}
+        />
+      )}
+      {lens !== 'watch' && sections.length === 0 && (
         <p className="py-8 text-center text-sm text-white/50">
           No games scheduled for this week.
         </p>
       )}
-      {sections.map((section) => (
-        <section
-          key={section.label}
-          aria-label={section.label}
-          className="mb-8"
-        >
-          <h2 className="font-display mb-3 text-2xl font-bold text-white">
-            {section.label}
-          </h2>
-          <div className="app-card overflow-hidden p-0">
-            {section.groups.map((group) => (
-              <section
-                key={group.key}
-                aria-label={`${group.dateLabel}, ${group.label}`}
-              >
-                <h3 className="app-ranking-header flex flex-wrap items-baseline gap-x-2 border-y border-white/10 px-3 py-2 text-xs sm:px-5">
-                  <span className="font-semibold text-white/70">
-                    {group.dateLabel}
-                  </span>
-                  <span className="text-white/40">{group.label}</span>
-                </h3>
-                {group.games.map((game) => (
-                  <GameRow key={game._id} game={game} lens={lens} now={now} />
-                ))}
-              </section>
-            ))}
-          </div>
-        </section>
-      ))}
+      {lens !== 'watch' &&
+        sections.map((section) => (
+          <section
+            key={section.label}
+            aria-label={section.label}
+            className="mb-8"
+          >
+            <h2 className="font-display mb-3 text-2xl font-bold text-white">
+              {section.label}
+            </h2>
+            <div className="app-card overflow-hidden p-0">
+              {section.groups.map((group) => (
+                <section
+                  key={group.key}
+                  aria-label={`${group.dateLabel}, ${group.label}`}
+                >
+                  <h3 className="app-ranking-header flex flex-wrap items-baseline gap-x-2 border-y border-white/10 px-3 py-2 text-xs sm:px-5">
+                    <span className="font-semibold text-white/70">
+                      {group.dateLabel}
+                    </span>
+                    <span className="text-white/40">{group.label}</span>
+                  </h3>
+                  {group.games.map((game) => (
+                    <GameRow key={game._id} game={game} lens={lens} now={now} />
+                  ))}
+                </section>
+              ))}
+            </div>
+          </section>
+        ))}
     </div>
   )
 }
@@ -170,6 +183,12 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
               {minutesAgo === 0
                 ? 'Updated just now'
                 : `Updated ${minutesAgo}m ago`}
+            </p>
+          )}
+          {lens === 'watch' && (
+            <p className="mt-1 pl-5 text-xs text-white/60">
+              Watch {watchRating(game, now).score} ·{' '}
+              {watchRating(game, now).reason}
             </p>
           )}
         </div>

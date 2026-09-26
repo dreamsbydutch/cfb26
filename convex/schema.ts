@@ -550,6 +550,7 @@ export default defineSchema({
 
   collegeGames: defineTable({
     liveScore: v.optional(liveScoreValidator),
+    liveScoreHistory: v.optional(v.array(liveScoreValidator)),
     ratingEvidence: v.optional(gameEvidenceValidator),
     canceled: v.optional(v.boolean()),
     cancellationSource: v.optional(v.string()),

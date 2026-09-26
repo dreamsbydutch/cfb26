@@ -16,6 +16,7 @@ import {
   needsScoreboard,
   parseScoreboard,
   parseScoreboardAllowance,
+  scoreHistory,
   scoreboardBackoff,
   scoreboardBudget,
 } from './scoreboardModel'
@@ -149,6 +150,11 @@ export const finish = internalMutation({
         continue
       const { id: _id, homeId: _home, awayId: _away, ...score } = row
       await ctx.db.patch('collegeGames', game._id, {
+        liveScoreHistory: scoreHistory(
+          game.liveScoreHistory,
+          game.liveScore,
+          args.token,
+        ),
         liveScore: { ...score, updatedAt: args.token },
       })
       updated += 1

@@ -44,3 +44,5 @@ The Games list uses one responsive expandable row on all screen sizes. Live and 
 ## Changing the UI
 
 Add URL-addressable pages under `src/routes/`; keep domain orchestration in the owning feature. Reuse the shell/tokens before adding dependencies. Run `npm run check`, inspect narrow and wide layouts, exercise keyboard focus, and update [Current contracts](../reference/current-contracts.md).
+
+Games defaults to the [Watch now TV lineup](../reference/live-scoring.md#watch-now-and-the-three-tvs), with Michigan pinned on the main TV and live watchability ordering across broadcast windows. Landscape and Michigan schedule lenses remain available.

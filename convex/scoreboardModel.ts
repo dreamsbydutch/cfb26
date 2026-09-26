@@ -20,6 +20,22 @@ export type ScoreboardRow = Omit<LiveScore, 'updatedAt'> & {
   awayId: number
 }
 
+// Bounded recent observations enable comeback detection without extra API calls.
+export function scoreHistory(
+  history: Array<LiveScore> | undefined,
+  previous: LiveScore | undefined,
+  now: number,
+) {
+  return [...(history ?? []), ...(previous ? [previous] : [])]
+    .filter(
+      (score) =>
+        score.status === 'in_progress' &&
+        score.updatedAt >= now - 30 * 60_000 &&
+        score.updatedAt < now,
+    )
+    .slice(-6)
+}
+
 function object(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value))
     throw new Error('Invalid scoreboard object')

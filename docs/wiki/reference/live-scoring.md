@@ -37,3 +37,23 @@ An operator may run the internal `scoreboard:refresh` with `{"verifyAccess":true
 The parser, request-budget boundaries, status transitions, stale results, and update protections have offline tests in `tests/scoreboard.test.mjs`. Browser checks use isolated fixtures when no live games are underway; those fixtures are not stored in either deployment.
 
 Provider references: [scoreboard contract](https://api.collegefootballdata.com/api/games), [account allowance](https://api.collegefootballdata.com/api/info), and [Tier 1 scoreboard access](https://collegefootballdata.com/api-tiers).
+
+## Watch now and the three TVs
+
+**Current source:** Games defaults to a third, independent **Watch now** lens. Landscape and Michigan remain available. Watch now covers every active game in the selected week across kickoff windows; finished, canceled, TBD, and unresolved games more than eight hours after kickoff are excluded. A fresh in-progress observation remains eligible even in a long game.
+
+Michigan is pinned first among active games regardless of score, with no backup and no flipping. Otherwise fresh live scores precede provisional/delayed games, then descending watch score decides order. The main TV retains its game while it remains in the top three, or reuses its network for another top-three game when possible. B and C hold the best four remaining games: retained games keep their primary/backup slots, then incoming games reuse a vacated network, then remaining slots fill by rank. Initial assignments use #2/#5 and #3/#4; subsequent ranking changes do not reshuffle retained games. The sixth distinct game is the main TV commercial-break pick when Michigan is not on the main TV. Network names are prominent above each matchup. Assignments persist in this browser's local storage (with in-memory fallback); no TV hardware is controlled.
+
+Picks never duplicate. Empty slots use the next kickoff window (earliest future kickoff through 30 minutes afterward), with Michigan first within that window. A later Michigan kickoff does not displace a game currently playing. Finals vacate their slots on the next reactive update. With no eligible games the view explains how to select another week or view results.
+
+Pregame watch score equals Landscape. During play, the 1-99 watch score starts at Landscape and adjusts by reported margin and game-clock urgency:
+
+- Within eight points: +5 to +40 as regulation winds down.
+- Nine through sixteen points: -5 to +5.
+- Beyond sixteen points: a ten-point penalty plus one per point beyond sixteen, up to triple that penalty late in regulation.
+- Overtime: +15 in addition to the margin adjustment.
+- Comeback: +22 when a team previously behind by at least 17 scores at least seven points, cuts its deficit by at least ten, and is now within sixteen (or leads by at most eight).
+
+Comebacks use at most six prior in-progress observations from the last 30 wall-clock minutes, stored in optional collegeGames.liveScoreHistory and preserved by normal imports. They start becoming detectable after sufficient real observations accumulate; no history is fabricated. This adds no provider requests. No possession or play-by-play inference is made. Missing clocks use quarter-level urgency, never an invented ticking clock. Observations older than 15 minutes lose live boosts and use Landscape minus 20 with a provisional label. Michigan priority affects ordering, not the numerical watch score. The view shows score, explanation, network, reported clock, and update age; these are watchability heuristics, not win probabilities. Rankings refresh with stored scores and the existing 30-second browser timer.
+
+Behavioral regressions and TV assignment boundaries are covered by tests/watch-rating.test.mjs and tests/tv-lineup.test.mjs.
