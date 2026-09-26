@@ -50,3 +50,5 @@ Games defaults to the [Watch now TV lineup](../reference/live-scoring.md#watch-n
 Watch now uses compact expandable TV slots: network, teams, live score, and a muted pregame model spread beside the projected winner. Ratings, timing, reasons, and full margin details expand per game. Main TV spans the mobile width above side-by-side B/C cards; the complete candidate list sits under All games.
 
 Games shows one Latest score update timestamp above the list in every lens, using the newest retained in-progress/final scoreboard observation in the selected week. It ages with the existing browser timer and shows Waiting for score updates when none exists. Per-game update ages are omitted; individual delayed-score states remain available.
+
+Watch now supports browser-local manual network/event overrides via each TV's Edit panel. Main and flip-to slots can be reserved independently; a manual main can turn flipping off. Remaining automatic football slots are recomputed while preserving channel stability. Explicit manual slots take priority over Michigan placement. See [manual TV events](../reference/live-scoring.md#manual-tv-events).

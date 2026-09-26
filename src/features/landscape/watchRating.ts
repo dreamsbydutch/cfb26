@@ -15,6 +15,114 @@ export type WatchGame = {
 }
 
 export type TvSlot = { id: string; networks: Array<string> }
+export type ManualTvEvent = {
+  network: string
+  event: string
+  allowFlip: boolean
+}
+export type TvOverrides = Array<ManualTvEvent | null>
+
+export function parseTvOverrides(value: unknown): TvOverrides {
+  if (!Array.isArray(value) || value.length !== 6)
+    return Array.from({ length: 6 }, () => null)
+  return value.map((item: unknown) => {
+    if (typeof item !== 'object' || item === null) return null
+    if (
+      !('network' in item) ||
+      !('event' in item) ||
+      !('allowFlip' in item) ||
+      typeof item.network !== 'string' ||
+      typeof item.event !== 'string' ||
+      typeof item.allowFlip !== 'boolean'
+    )
+      return null
+    const network = item.network.trim().slice(0, 60)
+    const event = item.event.trim().slice(0, 120)
+    return network && event
+      ? { network, event, allowFlip: item.allowFlip }
+      : null
+  })
+}
+
+export function manualTvPlan<T extends WatchGame>(
+  ranked: Array<T>,
+  previous: Array<TvSlot>,
+  overrides: TvOverrides,
+  now: number,
+) {
+  if (!overrides.some(Boolean))
+    return {
+      slots: stableTvPlan(ranked, previous, now),
+      disabled: [] as Array<number>,
+    }
+  const slots: Array<T | undefined> = Array.from({ length: 6 })
+  const disabled = [0, 2, 4]
+    .filter((i) => overrides.at(i)?.allowFlip === false)
+    .map((i) => i + 1)
+  const available = [0, 2, 4, 5, 3, 1].filter(
+    (i) => !overrides.at(i) && !disabled.includes(i),
+  )
+  const anchor = available.at(0)
+  if (anchor === undefined) return { slots, disabled }
+  const first = ranked.at(0)
+  const top = ranked
+    .slice(0, 3)
+    .filter((game) => !first || first.startTime > now || game.startTime <= now)
+  const prior = previous.at(anchor)
+  const main =
+    first && isMichiganGame(first)
+      ? first
+      : (top.find((game) => game._id === prior?.id) ??
+        top.find((game) =>
+          (game.tvOutlets ?? []).some((network) =>
+            prior?.networks.includes(network.trim().toLowerCase()),
+          ),
+        ) ??
+        first)
+  slots[anchor] = main
+  if (
+    main &&
+    isMichiganGame(main) &&
+    anchor % 2 === 0 &&
+    !overrides.at(anchor + 1)
+  )
+    disabled.push(anchor + 1)
+  const remaining = available.filter(
+    (i) => i !== anchor && !disabled.includes(i),
+  )
+  const candidates = ranked
+    .filter((game) => game._id !== main?._id)
+    .slice(0, remaining.length)
+  const used = new Set<string>()
+  for (const matchNetwork of [false, true]) {
+    for (const i of remaining) {
+      if (slots[i]) continue
+      const memory = previous.at(i)
+      const game = candidates.find(
+        (candidate) =>
+          !used.has(candidate._id) &&
+          (matchNetwork
+            ? (candidate.tvOutlets ?? []).some((network) =>
+                memory?.networks.includes(network.trim().toLowerCase()),
+              )
+            : candidate._id === memory?.id),
+      )
+      if (game) {
+        slots[i] = game
+        used.add(game._id)
+      }
+    }
+  }
+  for (const i of remaining) {
+    if (slots[i]) continue
+    const game = candidates.find((candidate) => !used.has(candidate._id))
+    if (game) {
+      slots[i] = game
+      used.add(game._id)
+    }
+  }
+  return { slots, disabled }
+}
 
 // Four fixed positions: B main, B backup, C main, C backup. Keep a retained
 // game first, then reuse a network, then fill openings by current watch rank.
