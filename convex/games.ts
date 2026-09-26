@@ -437,6 +437,7 @@ export const upsertGamesBatch = internalMutation({
       const document = {
         ...fields,
         ratingEvidence: existing?.ratingEvidence,
+        liveScore: existing?.liveScore,
         canceled: Boolean(cancellationEvidence(row)),
         cancellationSource: cancellationEvidence(row),
         awayProgramId,

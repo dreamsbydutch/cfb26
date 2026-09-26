@@ -24,6 +24,8 @@
 | `CFBD_API_KEY`      | Convex football-data synchronization | Yes           | Authorizes CollegeFootballData games, Elo, ratings, advanced stats, talent, and returning-production requests. |
 | `CFB26_ADMIN_KEY`   | Convex owner administration          | Yes           | Password exchanged for a revocable 12-hour owner session; minimum 24 characters and distinct per deployment.   |
 
+`LIVE_SCORES_ENABLED=true` enables shared scoreboard polling in the target Convex deployment. Keep development/previews disabled except for explicit verification; see [live scoring](live-scoring.md) for quotas and pause behavior. This is server configuration, not a browser variable.
+
 No local environment file is required for public reads. A browser override belongs in `.env.local` or provider-managed environment settings. `CFBD_API_KEY` and `CFB26_ADMIN_KEY` belong only in the target Convex deployment environment; never place either in a tracked file or a `VITE_*` variable. Configure the admin key without putting it in shell history:
 
 ```powershell

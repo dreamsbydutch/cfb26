@@ -43,7 +43,7 @@ TanStack Start owns routing and rendering. Convex owns validation, transactions,
 
 ## Build/deployment
 
-`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 43 tables; the two additions hold Michigan revision and owner audit state. Both recorded deployments still run the 41-table contract from the 2026-09-07 backed-up cutover. The source delta and web release remain separately authorized operations under the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
+`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 44 tables, including Michigan revision, owner audit, and live-scoreboard request-budget state. The 2026-09-07 backed-up 41-table cutover remains the migration baseline. Backend and web releases remain authorized operations under the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
 
 ## Deliberate boundaries
 

@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import { gameEvidenceValidator } from './evidenceFields'
+import { liveScoreValidator } from './scoreboardFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -548,6 +549,7 @@ export default defineSchema({
     .index('by_programId_and_year', ['programId', 'year']),
 
   collegeGames: defineTable({
+    liveScore: v.optional(liveScoreValidator),
     ratingEvidence: v.optional(gameEvidenceValidator),
     canceled: v.optional(v.boolean()),
     cancellationSource: v.optional(v.string()),
@@ -974,6 +976,21 @@ export default defineSchema({
     ),
     warnings: v.array(v.string()),
   }).index('by_kind_and_startedAt', ['kind', 'startedAt']),
+
+  scoreboardSyncState: defineTable({
+    key: v.literal('fbs'),
+    month: v.string(),
+    day: v.string(),
+    monthRequests: v.number(),
+    dayRequests: v.number(),
+    nextPollAt: v.number(),
+    lastAttemptAt: v.number(),
+    lastSuccessAt: v.optional(v.number()),
+    allowanceCheckedAt: v.optional(v.number()),
+    remainingCalls: v.optional(v.number()),
+    consecutiveFailures: v.number(),
+    lastError: v.optional(v.string()),
+  }).index('by_key', ['key']),
 
   teamDataSyncState: defineTable({
     acceptedRows: v.optional(v.number()),

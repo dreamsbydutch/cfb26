@@ -15,7 +15,7 @@ const game = (id, extras = {}) => ({
   ...extras,
 })
 
-test('upcoming games precede started games and final results regardless of interest', () => {
+test('games underway precede upcoming games and final results regardless of interest', () => {
   const sections = scheduleSections(
     [
       game('final', {
@@ -33,7 +33,7 @@ test('upcoming games precede started games and final results regardless of inter
   )
   assert.deepEqual(
     sections.map((s) => s.groups[0].games[0].id),
-    ['upcoming', 'started', 'final'],
+    ['started', 'upcoming', 'final'],
   )
 })
 

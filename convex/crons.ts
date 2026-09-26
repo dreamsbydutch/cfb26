@@ -3,6 +3,13 @@ import { internal } from './_generated/api'
 
 const crons = cronJobs()
 
+crons.interval(
+  'refresh live FBS scoreboard during game windows',
+  { minutes: 5 },
+  internal.scoreboard.refresh,
+  {},
+)
+
 crons.daily(
   'refresh team-level football data',
   { hourUTC: 10, minuteUTC: 17 },

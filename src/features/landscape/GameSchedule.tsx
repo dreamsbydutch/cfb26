@@ -84,6 +84,16 @@ export function GameSchedule({ data }: { data: Schedule }) {
 function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
   const status = gameStatus(game, now)
   const final = status === 'Final'
+  const live =
+    !game.completed && game.liveScore?.status !== 'scheduled'
+      ? game.liveScore
+      : undefined
+  const homePoints = live?.homePoints ?? game.homePoints
+  const awayPoints = live?.awayPoints ?? game.awayPoints
+  const showScore = final || live?.status === 'in_progress'
+  const minutesAgo = live
+    ? Math.max(0, Math.floor((now - live.updatedAt) / 60_000))
+    : 0
   const projectedMargin = status === 'Upcoming' ? game.projectedMargin : null
   const highlightsMichigan = [game.homeSourceName, game.awaySourceName].some(
     (name) => name === 'Michigan',
@@ -118,8 +128,13 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
                 ? projectedMargin
                 : undefined
             }
-            score={final ? game.awayPoints : undefined}
-            winner={final && game.awayPoints! > game.homePoints!}
+            score={showScore ? awayPoints : undefined}
+            winner={
+              final &&
+              awayPoints !== undefined &&
+              homePoints !== undefined &&
+              awayPoints > homePoints
+            }
           />
           <ScheduleTeam
             name={game.homeSourceName}
@@ -130,14 +145,33 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
                 : undefined
             }
             marker={game.neutralSite ? 'vs' : '@'}
-            score={final ? game.homePoints : undefined}
-            winner={final && game.homePoints! > game.awayPoints!}
+            score={showScore ? homePoints : undefined}
+            winner={
+              final &&
+              awayPoints !== undefined &&
+              homePoints !== undefined &&
+              homePoints > awayPoints
+            }
           />
           {status === 'Upcoming' && game.tvOutlets?.length ? (
             <p className="mt-1 pl-5 text-[11px] text-white/45">
               {game.tvOutlets.join(', ')}
             </p>
           ) : null}
+          {live?.status === 'in_progress' && (
+            <p className="mt-1 pl-5 text-[11px] text-white/45">
+              {live.period
+                ? live.period > 4
+                  ? `OT${live.period > 5 ? ` ${live.period - 4}` : ''}`
+                  : `Q${live.period}`
+                : 'In progress'}
+              {live.clock ? ` · ${live.clock}` : ''}
+              {' · '}
+              {minutesAgo === 0
+                ? 'Updated just now'
+                : `Updated ${minutesAgo}m ago`}
+            </p>
+          )}
         </div>
         <ChevronDown
           aria-hidden="true"
@@ -157,6 +191,15 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
         {status === 'Started' && (
           <p className="mt-2">
             Kickoff has passed. A live score is not available.
+          </p>
+        )}
+        {(status === 'Live' || status === 'Score delayed') && (
+          <p className="mt-2">
+            Scores refresh about every five minutes during games. The displayed
+            clock is from the latest update.
+            {status === 'Score delayed'
+              ? ' Updates are delayed; showing the last reported score.'
+              : ''}
           </p>
         )}
         {status === 'Result pending' && (

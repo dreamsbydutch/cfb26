@@ -18,6 +18,14 @@ type ScheduledGame = {
   canceled?: boolean
   homePoints?: number
   awayPoints?: number
+  liveScore?: {
+    status: 'scheduled' | 'in_progress' | 'completed'
+    homePoints: number | null
+    awayPoints: number | null
+    period: number | null
+    clock: string | null
+    updatedAt: number
+  }
   landscapeRating: number
   michiganRating: number
 }
@@ -28,6 +36,13 @@ export function gameStatus(game: ScheduledGame, now: number) {
     return Number.isFinite(game.homePoints) && Number.isFinite(game.awayPoints)
       ? 'Final'
       : 'Result pending'
+  }
+  if (game.liveScore?.status === 'completed') return 'Final'
+  if (game.liveScore?.status === 'in_progress') {
+    if (now - game.liveScore.updatedAt <= 15 * 60_000) return 'Live'
+    return now - game.startTime >= 8 * 60 * 60_000
+      ? 'Result pending'
+      : 'Score delayed'
   }
   if (game.startTime > now) return 'Upcoming'
   // Kickoff alone cannot establish live status or a final result.
@@ -43,14 +58,20 @@ export function scheduleSections<T extends ScheduledGame>(
 ) {
   const field = lens === 'landscape' ? 'landscapeRating' : 'michiganRating'
   const sections = [
+    { label: 'Live & started', games: [] as Array<T> },
     { label: 'Upcoming', games: [] as Array<T> },
-    { label: 'Started', games: [] as Array<T> },
     { label: 'Past games & results', games: [] as Array<T> },
   ]
   for (const game of games) {
     const status = gameStatus(game, now)
     sections[
-      status === 'Upcoming' ? 0 : status === 'Started' ? 1 : 2
+      status === 'Upcoming'
+        ? 1
+        : status === 'Started' ||
+            status === 'Live' ||
+            status === 'Score delayed'
+          ? 0
+          : 2
     ].games.push(game)
   }
   return sections

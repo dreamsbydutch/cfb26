@@ -4,7 +4,7 @@
 
 The public app is read-only. `/` opens the Michigan Matrix and `/games` opens National Games; their companion views use canonical routes rather than an in-page prototype switcher. `/admin/roster` is a desktop-only, private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, audit, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
 
-The 41-table contract was promoted to development and production through a backed-up, exact-target cutover on 2026-09-07. Current source defines 43 tables by adding Michigan data revision and owner audit state; those additions and the new web application remain undeployed until separately authorized. See [Deployment](docs/wiki/guides/deployment.md) and the [cutover record](docs/wiki/operations/convex-v2-cutover-2026-09-07.md).
+The 41-table contract was promoted to development and production through a backed-up, exact-target cutover on 2026-09-07. Current source defines 44 tables, including Michigan data revision, owner audit state, and the shared live-scoreboard request budget. Production web releases follow the Convex-first Vercel build. See [Deployment](docs/wiki/guides/deployment.md) and the [cutover record](docs/wiki/operations/convex-v2-cutover-2026-09-07.md).
 
 ## Quick start
 
