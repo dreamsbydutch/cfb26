@@ -735,7 +735,7 @@ export type WeeklyMatchupScore = {
   matchupQuality: number
   playoffImportance: number
   playoffLeverage: number
-  projectedMargin: number
+  projectedMargin: number | null
 }
 
 function rankingLeverage(rank: number | undefined) {
@@ -744,28 +744,36 @@ function rankingLeverage(rank: number | undefined) {
 }
 
 export function scoreWeeklyMatchup(input: {
-  awayPower: number
+  awayPower: number | null
   awayPowerRank?: number
   awayResumeRank?: number
   conferenceGame: boolean
   homeFieldAdvantage: number
-  homePower: number
+  homePower: number | null
   homePowerRank?: number
   homeResumeRank?: number
   neutralSite: boolean
 }): WeeklyMatchupScore {
   const projectedMargin =
-    input.homePower -
-    input.awayPower +
-    (input.neutralSite ? 0 : input.homeFieldAdvantage)
-  const competitiveness = clamp(100 - Math.abs(projectedMargin) * 4, 0, 100)
-  const homeStrength = clamp(50 + input.homePower * 2, 0, 100)
-  const awayStrength = clamp(50 + input.awayPower * 2, 0, 100)
+    input.homePower === null || input.awayPower === null
+      ? null
+      : input.homePower -
+        input.awayPower +
+        (input.neutralSite ? 0 : input.homeFieldAdvantage)
+  // Missing evidence earns no quality/closeness credit; it is not average Power.
+  const competitiveness =
+    projectedMargin === null
+      ? 0
+      : clamp(100 - Math.abs(projectedMargin) * 4, 0, 100)
+  const homeStrength =
+    input.homePower === null ? 0 : clamp(50 + input.homePower * 2, 0, 100)
+  const awayStrength =
+    input.awayPower === null ? 0 : clamp(50 + input.awayPower * 2, 0, 100)
   const pairedStrength =
     Math.max(homeStrength, awayStrength) * 0.35 +
     Math.min(homeStrength, awayStrength) * 0.65
   const matchupQuality = clamp(
-    pairedStrength * 0.45 + competitiveness * 0.55,
+    pairedStrength * 0.7 + competitiveness * 0.3,
     0,
     100,
   )
@@ -792,7 +800,7 @@ export function scoreWeeklyMatchup(input: {
     100,
   )
   const landscapeRating = clamp(
-    competitiveness * 0.55 + pairedStrength * 0.3 + playoffLeverage * 0.15,
+    pairedStrength * 0.5 + playoffLeverage * 0.3 + competitiveness * 0.2,
     0,
     100,
   )
@@ -802,7 +810,8 @@ export function scoreWeeklyMatchup(input: {
     matchupQuality: round(matchupQuality),
     playoffImportance: round(playoffImportance),
     playoffLeverage: round(playoffLeverage),
-    projectedMargin: round(projectedMargin, 1),
+    projectedMargin:
+      projectedMargin === null ? null : round(projectedMargin, 1),
   }
 }
 

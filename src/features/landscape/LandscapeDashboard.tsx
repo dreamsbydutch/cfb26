@@ -241,8 +241,9 @@ function Games({
         <p className="mt-1.5 text-[11px] text-white/40 sm:text-xs">
           Eastern broadcast windows · exact kickoffs shown in your local time ·
           sorted by {lensLabels[lens].toLowerCase()} rating. Landscape rewards
-          close, strong matchups; Michigan follows the Wolverines’ schedule,
-          rivals, rank bands, and shared opponents.
+          team quality and national stakes, with a bonus for close matchups;
+          Michigan follows the Wolverines’ schedule, rivals, rank bands, and
+          shared opponents.
         </p>
       </div>
       <section
@@ -452,10 +453,7 @@ function MobileGameRow({
             tone="michigan"
             value={game.michiganRating}
           />
-          <GameMetric
-            label="Margin"
-            value={`${game.projectedMargin > 0 ? '+' : ''}${game.projectedMargin.toFixed(1)}`}
-          />
+          <GameMetric label="Margin" value={signed(game.projectedMargin)} />
         </div>
         <p className="mt-1 text-[10px] text-white/35">
           Week {game.week} ·{' '}
@@ -476,7 +474,7 @@ function MobileScheduleTeam({
   marker?: '@' | 'vs'
   name: string
   rank?: number
-  rating: number
+  rating: number | null
 }) {
   const highlightsMichigan = isMichiganProgram(name)
   return (
@@ -1317,7 +1315,8 @@ function isMichiganProgram(name: string) {
   return normalized === 'michigan' || normalized === 'michigan wolverines'
 }
 
-function signed(value: number) {
+function signed(value: number | null) {
+  if (value === null) return 'N/A'
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
 }
 

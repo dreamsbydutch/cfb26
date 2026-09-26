@@ -2437,6 +2437,10 @@ export const getWeeklyDashboard = query({
     const ratingByProgram = new Map(
       ratings.map((row) => [String(row.programId), row]),
     )
+    // Hidden FCS snapshots still inform game projections, never the FBS table.
+    const matchupRatingByProgram = new Map(
+      snapshotRows.map((row) => [String(row.programId), row]),
+    )
     const recordCutoffGames = seasonSchedule.filter((game) => {
       if (
         !game.completed ||
@@ -2492,20 +2496,32 @@ export const getWeeklyDashboard = query({
     }
 
     const scoredGames = games.map((game) => {
-      const homeRatingRow = ratingByProgram.get(String(game.homeProgramId))
-      const awayRatingRow = ratingByProgram.get(String(game.awayProgramId))
+      const homeFallback = ratingByProgram.get(String(game.homeProgramId))
+      const awayFallback = ratingByProgram.get(String(game.awayProgramId))
+      const homeRatingRow =
+        matchupRatingByProgram.get(String(game.homeProgramId)) ??
+        (homeFallback?.rankingBasis === 'neutral_baseline'
+          ? undefined
+          : homeFallback)
+      const awayRatingRow =
+        matchupRatingByProgram.get(String(game.awayProgramId)) ??
+        (awayFallback?.rankingBasis === 'neutral_baseline'
+          ? undefined
+          : awayFallback)
       const homeElo =
         eloByProgram.get(String(game.homeProgramId)) ??
         game.homePregameElo ??
-        game.homePostgameElo ??
-        1500
+        null
       const awayElo =
         eloByProgram.get(String(game.awayProgramId)) ??
         game.awayPregameElo ??
-        game.awayPostgameElo ??
-        1500
-      const homeRating = homeRatingRow?.power ?? (homeElo - 1500) / 25
-      const awayRating = awayRatingRow?.power ?? (awayElo - 1500) / 25
+        null
+      const homeRating =
+        homeRatingRow?.power ??
+        (homeElo === null ? null : (homeElo - 1500) / 25)
+      const awayRating =
+        awayRatingRow?.power ??
+        (awayElo === null ? null : (awayElo - 1500) / 25)
       const matchup = scoreWeeklyMatchup({
         awayPower: awayRating,
         awayPowerRank: awayRatingRow?.powerRank,

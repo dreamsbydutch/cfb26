@@ -110,23 +110,18 @@ Regularized logistic calibration learns the probability curve from projected mar
 
 ## Weekly importance
 
-Team strength and weekly importance remain separate. Each game receives three sortable scores rather than one overloaded score. Power ratings are used when available and converted Elo remains the migration fallback.
+**Current source:** Team strength and weekly importance remain separate. Games expose Landscape and Michigan orderings; matchup quality and playoff context remain supporting metrics.
 
-1. Project the home margin from both Power Ratings plus the home team's regularized home-field value; neutral games receive no venue adjustment.
-2. Competitiveness is `100 - 4 × abs(projected margin)`, bounded to 0–100.
-3. Paired strength weights the weaker team 60% and stronger team 40%, preventing one elite team from making a mismatch look like a premium matchup. Matchup quality is `70% paired strength + 30% competitiveness`.
-4. Playoff leverage uses the best available Power or visible Résumé rank for each team, weighting the stronger contender 60%, the other team 30%, and adding 10 points for a conference game.
-5. Playoff importance is `55% matchup quality + 45% playoff leverage`. This is a transparent chase heuristic, not a simulated playoff probability.
+1. Project the home margin from both Power Ratings plus the home team's regularized home-field value; neutral games receive no venue adjustment. Use available unpublished FCS snapshots for opponents without adding them to the FBS rankings. Evidence-backed fallback ratings or stored/pre-game Elo converted as `(Elo - 1500) / 25` are usable when Power is absent. A neutral placeholder is not rating evidence, and postgame Elo is not a pregame fallback.
+2. Competitiveness is `100 - 4 × abs(projected margin)`, bounded to 0–100. If either rating is missing, the margin is unavailable and no competitiveness credit is awarded. A measured zero Power remains valid.
+3. Team strength is `50 + 2 × Power`, bounded to 0–100. Missing ratings earn no strength credit. Paired strength weights the weaker team 65% and stronger team 35%. Matchup quality is `70% paired strength + 30% competitiveness`.
+4. National stakes use the best available Power or visible Résumé rank for each team. Each rank receives `103.5 - 3.5 × rank`, bounded to 0–100; missing ranks receive no credit. Playoff leverage weights the stronger contender 60%, the other team 30%, and adds 10 points for a conference game.
+5. **Landscape is `50% paired strength + 30% playoff leverage + 20% competitiveness`.** Quality and stakes lead; closeness is a bounded bonus. Ordinary evenly matched games no longer routinely outrank top-25 meetings. There is no team-name or conference-brand bonus.
+6. Supporting playoff importance is `55% matchup quality + 45% playoff leverage`. This is a transparent chase heuristic, not a simulated playoff probability.
 
-The Michigan lens then applies the strongest relationship:
+All scores are bounded to 0–100. These are editorial game-interest weights, not learned forecast coefficients. Screenshot-based regression inputs put Georgia–Oklahoma ahead of TCU–UCF and Boise State–Western Michigan; a separate synthetic test covers the reported Ohio State–Illinois versus unknown-opponent mismatch. Unavailable ratings and margins display as `N/A`.
 
-| Relationship                          | Score                            |
-| ------------------------------------- | -------------------------------- |
-| Michigan is playing                   | `100`                            |
-| Both teams appear on Michigan's slate | `75 + 20% of playoff importance` |
-| One team appears on Michigan's slate  | `48 + 35% of playoff importance` |
-| At least one team is in the Big Ten   | `25 + 30% of playoff importance` |
-| Other national game                   | `15% of playoff importance`      |
+The Michigan lens considers direct Michigan games, rivalry, one or two opponents from Michigan's full season schedule, Big Ten conference games, teams around Michigan's rank, and a bounded Landscape contribution. Its relationship rules and explanations remain independent of the national ordering; see [Game ratings](three-team-ratings.md#game-ratings).
 
 The schedule sync separately requests CFBD's `/games/media` television rows. Available outlets appear with the game; missing or inaccessible media never blocks schedule ingestion.
 
