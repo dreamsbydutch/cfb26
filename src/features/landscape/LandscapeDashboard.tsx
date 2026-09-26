@@ -118,7 +118,7 @@ export function LandscapeDashboard({
           </div>
           <div className="ml-auto text-right text-xs text-white/40">
             {data?.edition
-              ? `Updated ${new Date(data.edition.generatedAt).toLocaleString()}`
+              ? `Updated ${new Date(data.edition.generatedAt).toLocaleString([], { hour12: true })}`
               : data
                 ? 'Fallback ratings'
                 : 'Loading…'}
@@ -895,7 +895,9 @@ function Methodology({
               label="Cutoff"
               value={
                 edition
-                  ? new Date(edition.cutoffAt).toLocaleString()
+                  ? new Date(edition.cutoffAt).toLocaleString([], {
+                      hour12: true,
+                    })
                   : 'Live fallback evidence'
               }
             />

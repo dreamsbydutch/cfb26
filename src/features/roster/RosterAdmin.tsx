@@ -207,10 +207,12 @@ function AuthenticatedAdmin({
             <p className="mt-3 text-xs text-white/35">
               Session expires{' '}
               {session.data?.expiresAt
-                ? new Date(session.data.expiresAt).toLocaleString()
+                ? new Date(session.data.expiresAt).toLocaleString([], {
+                    hour12: true,
+                  })
                 : 'after 12 hours'}
               {session.data?.lastUsedAt
-                ? ` · Last owner write ${new Date(session.data.lastUsedAt).toLocaleString()}`
+                ? ` · Last owner write ${new Date(session.data.lastUsedAt).toLocaleString([], { hour12: true })}`
                 : ''}
               {' · '}
               {dirty ? 'Unsaved form changes' : 'All submitted changes saved'}
@@ -586,7 +588,10 @@ function OwnerDashboard({
                       {humanizeAdmin(row.action)}
                     </strong>
                     <small className="block truncate text-white/35">
-                      {new Date(row.startedAt).toLocaleString()} · {row.target}
+                      {new Date(row.startedAt).toLocaleString([], {
+                        hour12: true,
+                      })}{' '}
+                      · {row.target}
                     </small>
                   </div>
                   <span className="text-xs font-bold uppercase text-white/45">
@@ -1848,7 +1853,7 @@ function PlayerGameForm({
         </p>
         <p className="mt-2 text-xs font-bold text-[#ffcb05]">
           {record
-            ? `Updating saved stats from ${new Date(record.updatedAt).toLocaleString()}`
+            ? `Updating saved stats from ${new Date(record.updatedAt).toLocaleString([], { hour12: true })}`
             : 'No stats entered yet for this game.'}
         </p>
       </div>

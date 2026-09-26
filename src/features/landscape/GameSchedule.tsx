@@ -84,6 +84,7 @@ export function GameSchedule({ data }: { data: Schedule }) {
 function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
   const status = gameStatus(game, now)
   const final = status === 'Final'
+  const projectedMargin = status === 'Upcoming' ? game.projectedMargin : null
   const highlightsMichigan = [game.homeSourceName, game.awaySourceName].some(
     (name) => name === 'Michigan',
   )
@@ -98,6 +99,7 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
             <time dateTime={kickoff.toISOString()}>
               {kickoff.toLocaleTimeString([], {
                 hour: 'numeric',
+                hour12: true,
                 minute: '2-digit',
               })}
             </time>
@@ -111,12 +113,22 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
           <ScheduleTeam
             name={game.awaySourceName}
             rank={game.awayRank}
+            projectedSpread={
+              projectedMargin !== null && projectedMargin < 0
+                ? projectedMargin
+                : undefined
+            }
             score={final ? game.awayPoints : undefined}
             winner={final && game.awayPoints! > game.homePoints!}
           />
           <ScheduleTeam
             name={game.homeSourceName}
             rank={game.homeRank}
+            projectedSpread={
+              projectedMargin !== null && projectedMargin > 0
+                ? -projectedMargin
+                : undefined
+            }
             marker={game.neutralSite ? 'vs' : '@'}
             score={final ? game.homePoints : undefined}
             winner={final && game.homePoints! > game.awayPoints!}
@@ -138,7 +150,7 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
           {game.venue ?? 'Venue TBD'}
           {game.neutralSite ? ' · Neutral site' : ''}
         </p>
-        <p>Scheduled kickoff: {kickoff.toLocaleString()}</p>
+        <p>Scheduled kickoff: {kickoff.toLocaleString([], { hour12: true })}</p>
         {status !== 'Upcoming' && game.tvOutlets?.length ? (
           <p>{game.tvOutlets.join(', ')}</p>
         ) : null}
@@ -190,12 +202,14 @@ function ScheduleTeam({
   marker,
   score,
   winner,
+  projectedSpread,
 }: {
   name: string
   rank?: number
   marker?: string
   score?: number
   winner: boolean
+  projectedSpread?: number
 }) {
   return (
     <div className="flex items-baseline gap-1 py-0.5 text-sm sm:text-base">
@@ -209,6 +223,15 @@ function ScheduleTeam({
           </span>
         )}
         {name}
+        {projectedSpread !== undefined && (
+          <span
+            className="ml-2 inline-block text-xs font-normal tabular-nums text-white/40"
+            aria-label={`Projected to win by ${Math.abs(projectedSpread).toFixed(1)} points`}
+            title="Projected winning margin"
+          >
+            {projectedSpread.toFixed(1)}
+          </span>
+        )}
       </span>
       {score !== undefined && (
         <span
