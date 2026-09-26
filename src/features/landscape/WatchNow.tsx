@@ -5,19 +5,18 @@ import {
   tvSlotMemory,
   watchBoard,
 } from './watchRating'
-import type { TvSlot, WatchGame } from './watchRating'
-import type { ReactNode } from 'react'
+import { CompactWatchGame } from './CompactWatchGame'
+import type { TvSlot } from './watchRating'
+import type { CompactGame } from './CompactWatchGame'
 
-type TelevisionGame = WatchGame & { tvOutlets?: Array<string> }
+type TelevisionGame = CompactGame
 
 export function WatchNow<T extends TelevisionGame>({
   games,
   now,
-  renderGame,
 }: {
   games: Array<T>
   now: number
-  renderGame: (game: T) => ReactNode
 }) {
   const board = watchBoard(games, now)
   const [memory, setMemory] = useState<Array<TvSlot>>([])
@@ -73,156 +72,72 @@ export function WatchNow<T extends TelevisionGame>({
   ]
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-2xl font-bold text-white">
-          Your TV lineup
-        </h2>
-        <span className="text-xs text-white/50">
-          Michigan first. Best finishes next.
-        </span>
-      </div>
-      <div className="mb-3 grid gap-3 md:grid-cols-3">
+      <h2 className="font-display mb-3 text-xl font-bold text-white">
+        Your TV lineup
+      </h2>
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
         {assignments.map((tv) => (
           <section
             key={tv.label}
             aria-label={tv.label}
-            className={`app-card min-w-0 p-4 ${tv.main && isMichiganGame(tv.main.game) ? 'michigan-highlight' : ''}`}
+            className={`app-card min-w-0 p-3 ${tv.label === 'Main TV' ? 'col-span-2 md:col-span-1' : ''} ${tv.main && isMichiganGame(tv.main.game) ? 'michigan-highlight' : ''}`}
           >
-            <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-white/60">
+            <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wide text-white/50">
               {tv.label}
             </h3>
             {tv.main ? (
-              <Pick row={tv.main} now={now} />
+              <CompactWatchGame game={tv.main.game} now={now} />
             ) : (
-              <p className="text-sm text-white/50">No game available</p>
+              <p className="text-xs text-white/40">No game available</p>
             )}
             {(tv.label !== 'Main TV' ||
-              (tv.main && !isMichiganGame(tv.main.game))) && (
-              <div className="mt-4 border-t border-white/10 pt-3">
-                <p className="mb-2 text-[11px] font-bold uppercase text-white/40">
-                  {tv.label === 'Main TV' ? 'Commercial-break pick' : 'Flip to'}
-                </p>
-                {tv.backup ? (
-                  <Pick row={tv.backup} now={now} />
-                ) : (
-                  <p className="text-xs text-white/40">No backup available</p>
-                )}
-              </div>
-            )}
+              (tv.main && !isMichiganGame(tv.main.game))) &&
+              tv.backup && (
+                <div className="mt-3 border-t border-white/10 pt-2">
+                  <p className="mb-1 text-[10px] font-semibold uppercase text-white/40">
+                    Flip to
+                  </p>
+                  <CompactWatchGame game={tv.backup.game} now={now} />
+                </div>
+              )}
           </section>
         ))}
       </div>
-      <p className="mb-6 text-xs text-white/45">
-        Updates with scores about every five minutes. Clock is the last reported
-        game clock.
-      </p>
-      {board.active.length > 0 && (
-        <section aria-label="Watch now rankings" className="mb-6">
-          <h2 className="font-display mb-3 text-2xl font-bold text-white">
-            On now · ranked across all kickoffs
-          </h2>
-          <div className="app-card overflow-hidden p-0">
-            {board.active.map((row) => renderGame(row.game))}
-          </div>
-        </section>
-      )}
-      {board.next.length > 0 && (
-        <section aria-label="Next games">
-          <h2 className="font-display mb-3 text-2xl font-bold text-white">
-            Up next
-          </h2>
-          <div className="app-card overflow-hidden p-0">
-            {board.next.map((row) => renderGame(row.game))}
-          </div>
-        </section>
-      )}
       {!board.active.length && !board.next.length && (
-        <p className="py-6 text-sm text-white/50">
+        <p className="py-4 text-sm text-white/50">
           No live or upcoming games in this week. Choose another week or view
           results in Landscape.
         </p>
       )}
-      <details className="mt-5 text-xs text-white/50">
+      {ranked.length > 0 && (
+        <details className="mt-4 text-xs text-white/50">
+          <summary className="cursor-pointer py-2 focus-visible:outline-2">
+            All games ({ranked.length})
+          </summary>
+          <div className="app-card mt-2 divide-y divide-white/10 p-0">
+            {ranked.map((row) => (
+              <div key={row.game._id} className="px-3 py-2">
+                <CompactWatchGame game={row.game} now={now} />
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+      <details className="mt-1 text-xs text-white/50">
         <summary className="cursor-pointer py-2 focus-visible:outline-2">
           How Watch now works
         </summary>
         <p className="max-w-2xl leading-relaxed">
-          Landscape sets the starting score. Close finishes and overtime rise,
-          late blowouts fall, and recent comebacks get a boost. Michigan always
-          takes the main TV while playing, even in a blowout. The main TV keeps
-          its game while it stays in the top three. B and C keep their games and
-          networks as ranks change within the next four picks. A sixth game is
-          the commercial-break pick for the main TV, except Michigan has no
-          backup. Upcoming games fill empty slots from the next kickoff window.
-          Delayed scores are provisional and rank below fresh live scores,
-          except Michigan. These are viewing recommendations, not win
-          probabilities.
+          Landscape sets the starting score. Close finishes, overtime, and
+          comebacks rise; blowouts fall. Michigan always takes the main TV with
+          no backup. Otherwise the main TV keeps its game while it stays in the
+          top three, with a sixth game for commercial breaks. B and C preserve
+          their games and networks within the next four picks. Upcoming games
+          fill empty slots. Assignments are remembered in this browser. Scores
+          refresh about every five minutes; delayed scores are provisional. Open
+          a game for timing, ratings, and projection details.
         </p>
       </details>
-    </div>
-  )
-}
-
-function Pick({
-  row,
-  now,
-}: {
-  now: number
-  row: NonNullable<
-    ReturnType<typeof watchBoard<TelevisionGame>>['assignments'][number]['main']
-  >
-}) {
-  const { game } = row
-  const live =
-    game.liveScore?.status === 'in_progress' ? game.liveScore : undefined
-  const kickoff = new Date(game.startTime)
-  return (
-    <div>
-      <p className="mb-2 text-xl font-extrabold tracking-tight text-white">
-        {game.tvOutlets?.length ? game.tvOutlets.join(' / ') : 'Network TBD'}
-      </p>
-      <p className="mb-1 text-[11px] font-semibold text-white/50">
-        {row.state === 'upcoming' ? (
-          <>
-            Up next ·{' '}
-            {kickoff.toLocaleString([], {
-              month: 'short',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            })}
-          </>
-        ) : row.state === 'live' ? (
-          'Live'
-        ) : (
-          'Awaiting fresh score'
-        )}
-        {' · '}Watch {row.score}
-      </p>
-      <p className="flex justify-between gap-2 text-sm font-semibold text-white">
-        <span>{game.awaySourceName}</span>
-        <span>{live?.awayPoints}</span>
-      </p>
-      <p className="flex justify-between gap-2 text-sm font-semibold text-white">
-        <span>{game.homeSourceName}</span>
-        <span>{live?.homePoints}</span>
-      </p>
-      {live && (
-        <p className="mt-1 text-[11px] text-white/50">
-          {live.period
-            ? live.period > 4
-              ? 'OT'
-              : `Q${live.period}`
-            : 'In progress'}
-          {live.clock ? ` · ${live.clock}` : ''} · Updated{' '}
-          {Math.max(0, Math.floor((now - live.updatedAt) / 60_000))}m ago
-        </p>
-      )}
-      <p className="mt-2 text-xs font-semibold text-white/65">
-        {isMichiganGame(game) ? 'Michigan priority · ' : ''}
-        {row.reason}
-      </p>
     </div>
   )
 }

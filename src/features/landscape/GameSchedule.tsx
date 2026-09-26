@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { gameStatus, scheduleSections } from './gameTimeSlots'
 import { WatchNow } from './WatchNow'
-import { watchRating } from './watchRating'
 import type { FunctionReturnType } from 'convex/server'
 import type { api } from '../../../convex/_generated/api'
 
@@ -42,19 +41,13 @@ export function GameSchedule({ data }: { data: Schedule }) {
             </button>
           ))}
         </div>
-        <span className="text-xs text-white/40 sm:ml-auto">
-          Kickoffs in your local time
-        </span>
+        {lens !== 'watch' && (
+          <span className="text-xs text-white/40 sm:ml-auto">
+            Kickoffs in your local time
+          </span>
+        )}
       </div>
-      {lens === 'watch' && (
-        <WatchNow
-          games={data.games}
-          now={now}
-          renderGame={(game) => (
-            <GameRow key={game._id} game={game} lens={lens} now={now} />
-          )}
-        />
-      )}
+      {lens === 'watch' && <WatchNow games={data.games} now={now} />}
       {lens !== 'watch' && sections.length === 0 && (
         <p className="py-8 text-center text-sm text-white/50">
           No games scheduled for this week.
@@ -183,12 +176,6 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
               {minutesAgo === 0
                 ? 'Updated just now'
                 : `Updated ${minutesAgo}m ago`}
-            </p>
-          )}
-          {lens === 'watch' && (
-            <p className="mt-1 pl-5 text-xs text-white/60">
-              Watch {watchRating(game, now).score} ·{' '}
-              {watchRating(game, now).reason}
             </p>
           )}
         </div>
