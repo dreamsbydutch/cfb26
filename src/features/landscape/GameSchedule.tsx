@@ -12,6 +12,18 @@ type Lens = 'landscape' | 'michigan' | 'watch'
 export function GameSchedule({ data }: { data: Schedule }) {
   const [lens, setLens] = useState<Lens>('watch')
   const [now, setNow] = useState(data.generatedAt)
+  const lastScoreUpdate = Math.max(
+    0,
+    ...data.games.map((game) =>
+      game.liveScore && game.liveScore.status !== 'scheduled'
+        ? game.liveScore.updatedAt
+        : 0,
+    ),
+  )
+  const scoreAgeMinutes = Math.max(
+    0,
+    Math.floor((now - lastScoreUpdate) / 60_000),
+  )
   useEffect(() => {
     const refresh = () => setNow(Date.now())
     refresh()
@@ -47,6 +59,29 @@ export function GameSchedule({ data }: { data: Schedule }) {
           </span>
         )}
       </div>
+      <p className="mb-3 text-[11px] text-white/45">
+        {lastScoreUpdate > 0 ? (
+          <>
+            Latest score update:{' '}
+            <time
+              dateTime={new Date(lastScoreUpdate).toISOString()}
+              title={new Date(lastScoreUpdate).toLocaleString([], {
+                hour12: true,
+              })}
+            >
+              {scoreAgeMinutes === 0
+                ? 'just now'
+                : scoreAgeMinutes < 60
+                  ? `${scoreAgeMinutes}m ago`
+                  : scoreAgeMinutes < 1440
+                    ? `${Math.floor(scoreAgeMinutes / 60)}h ago`
+                    : `${Math.floor(scoreAgeMinutes / 1440)}d ago`}
+            </time>
+          </>
+        ) : (
+          'Waiting for score updates'
+        )}
+      </p>
       {lens === 'watch' && <WatchNow games={data.games} now={now} />}
       {lens !== 'watch' && sections.length === 0 && (
         <p className="py-8 text-center text-sm text-white/50">
@@ -97,9 +132,6 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
   const homePoints = live?.homePoints ?? game.homePoints
   const awayPoints = live?.awayPoints ?? game.awayPoints
   const showScore = final || live?.status === 'in_progress'
-  const minutesAgo = live
-    ? Math.max(0, Math.floor((now - live.updatedAt) / 60_000))
-    : 0
   const projectedMargin = status === 'Upcoming' ? game.projectedMargin : null
   const highlightsMichigan = [game.homeSourceName, game.awaySourceName].some(
     (name) => name === 'Michigan',
@@ -172,10 +204,6 @@ function GameRow({ game, lens, now }: { game: Game; lens: Lens; now: number }) {
                   : `Q${live.period}`
                 : 'In progress'}
               {live.clock ? ` · ${live.clock}` : ''}
-              {' · '}
-              {minutesAgo === 0
-                ? 'Updated just now'
-                : `Updated ${minutesAgo}m ago`}
             </p>
           )}
         </div>

@@ -96,8 +96,7 @@ export function CompactWatchGame({
                 ? 'OT'
                 : `Q${live.period}`
               : 'In progress'}
-            {live.clock ? ` · ${live.clock}` : ''} · Updated{' '}
-            {Math.max(0, Math.floor((now - live.updatedAt) / 60_000))}m ago
+            {live.clock ? ` · ${live.clock}` : ''}
           </p>
         )}
         <p>
