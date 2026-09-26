@@ -1,8 +1,13 @@
 import { ChevronDown } from 'lucide-react'
 import { watchRating } from './watchRating'
+import { scoreboardStatus } from './scoreboardGames'
 import type { WatchGame } from './watchRating'
 
-export type CompactGame = WatchGame & { projectedMargin?: number | null }
+export type CompactGame = WatchGame & {
+  projectedMargin?: number | null
+  homeRank?: number
+  awayRank?: number
+}
 
 export function CompactWatchGame({
   game,
@@ -29,14 +34,19 @@ export function CompactWatchGame({
             className="h-3 w-3 shrink-0 text-white/40 transition-transform group-open/game:rotate-180"
           />
         </div>
+        <p className="mb-1 text-[11px] font-medium tabular-nums text-white/60">
+          {scoreboardStatus(game, now).label}
+        </p>
         {[
           {
             name: game.awaySourceName,
+            rank: game.awayRank,
             score: live?.awayPoints,
             spread: margin != null && margin < 0 ? margin : null,
           },
           {
             name: game.homeSourceName,
+            rank: game.homeRank,
             score: live?.homePoints,
             spread: margin != null && margin > 0 ? -margin : null,
           },
@@ -49,6 +59,11 @@ export function CompactWatchGame({
               className={`min-w-0 font-semibold ${team.name === 'Michigan' ? 'michigan-accent' : 'text-white'}`}
             >
               {team.name}
+              {team.rank != null && (
+                <span className="ml-1 inline-block text-[11px] font-normal text-white/50">
+                  #{team.rank}
+                </span>
+              )}
               {team.spread !== null && (
                 <span
                   className="ml-1 inline-block text-[11px] font-normal tabular-nums text-white/40"

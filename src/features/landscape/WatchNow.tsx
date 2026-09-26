@@ -8,6 +8,7 @@ import {
 } from './watchRating'
 import { CompactWatchGame } from './CompactWatchGame'
 import { TvOverrideEditor } from './TvOverrideEditor'
+import { WatchScoreboard } from './WatchScoreboard'
 import type { ManualTvEvent, TvOverrides, TvSlot } from './watchRating'
 import type { CompactGame } from './CompactWatchGame'
 
@@ -190,20 +191,11 @@ export function WatchNow<T extends TelevisionGame>({
             results in Landscape.
           </p>
         )}
-      {ranked.length > 0 && (
-        <details className="mt-4 text-xs text-white/50">
-          <summary className="cursor-pointer py-2 focus-visible:outline-2">
-            All games ({ranked.length})
-          </summary>
-          <div className="app-card mt-2 divide-y divide-white/10 p-0">
-            {ranked.map((row) => (
-              <div key={row.game._id} className="px-3 py-2">
-                <CompactWatchGame game={row.game} now={now} />
-              </div>
-            ))}
-          </div>
-        </details>
-      )}
+      <WatchScoreboard
+        games={games}
+        assignedIds={new Set(slots.flatMap((game) => (game ? [game._id] : [])))}
+        now={now}
+      />
       <details className="mt-1 text-xs text-white/50">
         <summary className="cursor-pointer py-2 focus-visible:outline-2">
           How Watch now works
@@ -216,11 +208,11 @@ export function WatchNow<T extends TelevisionGame>({
           C preserve their games and networks within the next four picks.
           Upcoming games fill empty slots. Assignments are remembered in this
           browser. Scores refresh about every five minutes; delayed scores are
-          provisional. Open a game for timing, ratings, and projection details.
-          Manual events reserve their slots until cleared. A manual main event
-          can disable flipping on that TV. Automatic football fills the
-          remaining slots, with Michigan taking the first available main slot.
-          Manual selections take priority.
+          provisional. Open a game for ratings and projection details. Manual
+          events reserve their slots until cleared. A manual main event can
+          disable flipping on that TV. Automatic football fills the remaining
+          slots, with Michigan taking the first available main slot. Manual
+          selections take priority.
         </p>
       </details>
     </div>

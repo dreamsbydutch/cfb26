@@ -12,6 +12,18 @@ type Lens = 'landscape' | 'michigan' | 'watch'
 export function GameSchedule({ data }: { data: Schedule }) {
   const [lens, setLens] = useState<Lens>('watch')
   const [now, setNow] = useState(data.generatedAt)
+  const resumeRanks = new Map(
+    data.ratings.map((team) => [team.programId, team.resumeRank]),
+  )
+  const watchGames = data.games.map((game) => ({
+    ...game,
+    homeRank: data.resumeVisible
+      ? resumeRanks.get(game.homeProgramId)
+      : game.homeRank,
+    awayRank: data.resumeVisible
+      ? resumeRanks.get(game.awayProgramId)
+      : game.awayRank,
+  }))
   const lastScoreUpdate = Math.max(
     0,
     ...data.games.map((game) =>
@@ -82,7 +94,7 @@ export function GameSchedule({ data }: { data: Schedule }) {
           'Waiting for score updates'
         )}
       </p>
-      {lens === 'watch' && <WatchNow games={data.games} now={now} />}
+      {lens === 'watch' && <WatchNow games={watchGames} now={now} />}
       {lens !== 'watch' && sections.length === 0 && (
         <p className="py-8 text-center text-sm text-white/50">
           No games scheduled for this week.
