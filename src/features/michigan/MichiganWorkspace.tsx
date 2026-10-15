@@ -350,7 +350,7 @@ function RosterMatrixTable({
     <Surface className="overflow-hidden p-0">
       <div
         aria-label="Michigan depth chart, scroll horizontally to see all roles"
-        className="overflow-x-auto focus-visible:outline-offset-[-3px]"
+        className="relative overflow-x-auto focus-visible:outline-offset-[-3px]"
         role="region"
         tabIndex={0}
       >
