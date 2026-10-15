@@ -9,7 +9,6 @@ import {
   GitCompareArrows,
   Search,
   SlidersHorizontal,
-  UserRoundPlus,
   X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -18,7 +17,6 @@ import type { ReactNode } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { RosterEntry } from '~/features/roster/useMichiganRoster'
 import {
-  ContextBar,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -33,6 +31,8 @@ import {
   useMichiganRoster,
   useSeasonalStats,
 } from '~/features/roster/useMichiganRoster'
+import { RosterSheet } from '~/features/michigan/RosterSheet'
+import { collegeYear } from '~/features/michigan/rosterSheetModel'
 
 const CURRENT_SEASON = new Date().getFullYear()
 const ROOM_ORDER = [
@@ -82,6 +82,7 @@ export function MichiganMatrix() {
   const [quality, setQuality] = useState('all')
   const comparison = useComparisonTray()
   const filterCount = [
+    room,
     role,
     availability,
     experience,
@@ -94,7 +95,10 @@ export function MichiganMatrix() {
   const entries = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
     return activeEntries(dashboard.data?.entries ?? []).filter((entry) => {
-      const years = Math.max(season - entry.player.entrySeason + 1, 1)
+      const years = collegeYear(
+        entry.season.eligibilityEvidence.enrollmentSeason,
+        season,
+      )
       const entryQuality = entry.season.dataQuality
       return (
         (!normalizedSearch ||
@@ -110,7 +114,9 @@ export function MichiganMatrix() {
             ? entry.season.depthStatus === 'available'
             : entry.season.depthStatus !== 'available')) &&
         (experience === 'all' ||
-          (experience === 'new' ? years === 1 : years >= Number(experience))) &&
+          (experience === 'new'
+            ? years === 1
+            : years !== null && years >= Number(experience))) &&
         (scholarship === 'all' ||
           entry.season.scholarshipStatus === scholarship) &&
         (entryMethod === 'all' || entry.player.entryMethod === entryMethod) &&
@@ -138,12 +144,13 @@ export function MichiganMatrix() {
 
   return (
     <PublicShell active="matrix" context="michigan">
-      <PageFrame>
-        <PageHero
-          eyebrow={`${season} Michigan · Personnel matrix`}
-          title="Michigan roster"
-          actions={<SeasonSelect season={season} onChange={setSeason} />}
-        />
+      <main className="mx-auto w-full max-w-[1920px] px-2 py-3 sm:px-4 lg:px-6">
+        <header className="mb-2 flex items-center justify-between gap-3">
+          <h1 className="m-0 text-2xl font-extrabold text-[#00274c] sm:text-3xl">
+            Michigan roster
+          </h1>
+          <SeasonSelect season={season} onChange={setSeason} />
+        </header>
         {dashboard.isLoading ? (
           <LoadingState label="Building the Michigan matrix" />
         ) : dashboard.isError ? (
@@ -154,8 +161,8 @@ export function MichiganMatrix() {
           <EmptyState>No Michigan roster exists for {season}.</EmptyState>
         ) : (
           <>
-            <ContextBar sticky={false}>
-              <label className="relative min-w-0 basis-full sm:basis-48 sm:flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <label className="relative min-w-0 flex-1">
                 <Search
                   aria-hidden="true"
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"
@@ -165,18 +172,10 @@ export function MichiganMatrix() {
                 <input
                   className={`${controlClass} w-full pl-10`}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Player, number, or position"
+                  placeholder="Player, #, position"
                   value={search}
                 />
               </label>
-              <FilterSelect label="Room" onChange={setRoom} value={room}>
-                <option value="all">All rooms</option>
-                {ROOM_ORDER.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </FilterSelect>
               <button
                 aria-controls="roster-filters"
                 aria-expanded={moreOpen}
@@ -196,7 +195,7 @@ export function MichiganMatrix() {
                   size={15}
                 />
               </button>
-              {(search || room !== 'all' || filterCount > 0) && (
+              {(search || filterCount > 0) && (
                 <button
                   className="min-h-11 rounded-lg px-2 text-sm font-semibold text-[#00274c] hover:underline"
                   onClick={() => {
@@ -221,6 +220,14 @@ export function MichiganMatrix() {
                 id="roster-filters"
               >
                 <div className="flex flex-wrap gap-2">
+                  <FilterSelect label="Room" onChange={setRoom} value={room}>
+                    <option value="all">All rooms</option>
+                    {ROOM_ORDER.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </FilterSelect>
                   <FilterSelect label="Role" onChange={setRole} value={role}>
                     <option value="all">All roles</option>
                     {ROLES.map((item) => (
@@ -291,252 +298,56 @@ export function MichiganMatrix() {
                   </FilterSelect>
                 </div>
               </div>
-            </ContextBar>
+            </div>
             {dashboard.data.warnings.length > 0 && (
-              <Surface className="mb-5 flex items-start gap-3 border-amber-300/20 bg-amber-300/[0.055] p-4">
-                <CircleAlert
-                  aria-hidden="true"
-                  className="mt-0.5 shrink-0 text-amber-700"
-                  size={18}
-                />
-                <div>
-                  <p className="m-0 text-sm font-bold text-amber-900">
-                    {dashboard.data.warnings.length} roster exception
-                    {dashboard.data.warnings.length === 1 ? '' : 's'} affect
-                    this view
-                  </p>
-                  <p className="m-0 mt-1 text-xs text-amber-800">
-                    {dashboard.data.warnings.slice(0, 2).join(' ')}
-                  </p>
-                </div>
-              </Surface>
+              <details className="mb-2 rounded border border-amber-300/40 bg-amber-50 px-2 text-xs text-amber-900">
+                <summary className="min-h-8 cursor-pointer py-2 font-semibold">
+                  <CircleAlert
+                    aria-hidden="true"
+                    className="mr-1 inline"
+                    size={13}
+                  />
+                  {dashboard.data.warnings.length} roster exception
+                  {dashboard.data.warnings.length === 1 ? '' : 's'}
+                </summary>
+                <ul className="mb-2 mt-0 grid gap-1 pl-4">
+                  {dashboard.data.warnings.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+              </details>
             )}
             <p
               aria-live="polite"
-              className="mb-3 text-xs font-semibold text-white/40"
+              className="mb-2 text-xs font-semibold text-white/40"
             >
-              Showing {entries.length} of {dashboard.data.entries.length}{' '}
-              players
+              Showing {entries.length} of{' '}
+              {activeEntries(dashboard.data.entries).length} enrolled players
             </p>
-            {entries.length > 0 ? (
-              <RosterMatrixTable
-                comparison={comparison}
-                entries={entries}
-                season={season}
-              />
-            ) : (
-              <EmptyState title="No players match">
-                Clear one or more filters to reopen the matrix.
-              </EmptyState>
-            )}
+            <RosterSheet
+              comparison={comparison}
+              entries={entries}
+              filters={{
+                availability,
+                eligibility,
+                entryMethod,
+                experience,
+                quality,
+                role,
+                room,
+                scholarship,
+                search,
+              }}
+              rosterPlayerIds={activeEntries(dashboard.data.entries).map(
+                (entry) => String(entry.player._id),
+              )}
+              season={season}
+            />
             <ComparisonTray comparison={comparison} season={season} />
           </>
         )}
-      </PageFrame>
+      </main>
     </PublicShell>
-  )
-}
-
-function RosterMatrixTable({
-  comparison,
-  entries,
-  season,
-}: {
-  comparison: ReturnType<typeof useComparisonTray>
-  entries: Array<ActiveEntry>
-  season: number
-}) {
-  return (
-    <Surface className="overflow-hidden p-0">
-      <div
-        aria-label="Michigan depth chart, scroll horizontally to see all roles"
-        className="relative overflow-x-auto focus-visible:outline-offset-[-3px]"
-        role="region"
-        tabIndex={0}
-      >
-        <table className="w-full min-w-[52rem] table-fixed border-collapse text-left">
-          <caption className="sr-only">
-            {season} Michigan roster by listed position and assigned role. Depth
-            includes reserve and unassigned players. Each player lists height,
-            weight, experience, and participation.
-          </caption>
-          <colgroup>
-            <col className="w-24" />
-            <col />
-            <col />
-            <col />
-          </colgroup>
-          <thead>
-            <tr className="border-b border-[var(--app-line)] bg-[var(--app-surface-strong)]">
-              <th
-                className="sticky left-0 z-10 bg-[var(--app-surface-strong)] px-3 py-3 text-xs font-bold"
-                scope="col"
-              >
-                Position
-              </th>
-              {['Starters', 'Rotation', 'Depth'].map((label) => (
-                <th
-                  className="border-l border-[var(--app-line)] px-3 py-3 text-xs font-bold text-[#00274c]"
-                  key={label}
-                  scope="col"
-                >
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          {ROOM_ORDER.map((room) => {
-            const roomEntries = entries.filter(
-              (entry) => entry.season.positionRoom === room,
-            )
-            if (roomEntries.length === 0) return null
-            const positions = [
-              ...new Set(
-                roomEntries.map((entry) => entry.season.listedPosition),
-              ),
-            ]
-            return (
-              <tbody key={room}>
-                <tr className="border-y border-[var(--app-line)] bg-[#00274c]/[0.045]">
-                  <th
-                    className="px-3 py-2 text-xs font-bold text-[#00274c]"
-                    colSpan={4}
-                    scope="rowgroup"
-                  >
-                    <span className="sticky left-3">
-                      {room}
-                      <span className="ml-2 font-normal text-[var(--app-muted)]">
-                        {roomEntries.length}
-                      </span>
-                    </span>
-                  </th>
-                </tr>
-                {positions.map((position) => (
-                  <tr
-                    className="border-b border-[var(--app-line)] last:border-b-0"
-                    key={position}
-                  >
-                    <th
-                      className="sticky left-0 z-10 bg-[var(--app-surface-raised)] px-3 py-4 align-top text-sm font-extrabold text-[#00274c]"
-                      scope="row"
-                    >
-                      {position}
-                    </th>
-                    {ROLES.slice(0, 3).map((role) => {
-                      const players = roomEntries.filter(
-                        (entry) =>
-                          entry.season.listedPosition === position &&
-                          (role === 'reserve'
-                            ? entry.season.role === 'reserve' ||
-                              entry.season.role === 'unassigned'
-                            : entry.season.role === role),
-                      )
-                      return (
-                        <td
-                          className={`border-l border-[var(--app-line)] px-3 py-1 align-top ${role === 'starter' ? 'bg-[#ffcb05]/[0.055]' : ''}`}
-                          key={role}
-                        >
-                          {players.length > 0 ? (
-                            <ul className="m-0 list-none divide-y divide-[var(--app-line)] p-0">
-                              {players.map((entry) => (
-                                <li key={entry.season._id}>
-                                  <MatrixPlayer
-                                    comparison={comparison}
-                                    entry={entry}
-                                    season={season}
-                                  />
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <span className="block py-3 text-xs text-[var(--app-muted)]">
-                              <span aria-hidden="true">—</span>
-                              <span className="sr-only">
-                                No assigned players
-                              </span>
-                            </span>
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            )
-          })}
-        </table>
-      </div>
-    </Surface>
-  )
-}
-
-function MatrixPlayer({
-  comparison,
-  entry,
-  season,
-}: {
-  comparison: ReturnType<typeof useComparisonTray>
-  entry: ActiveEntry
-  season: number
-}) {
-  const selected = comparison.ids.includes(String(entry.player._id))
-  const experience = Math.max(season - entry.player.entrySeason + 1, 1)
-  return (
-    <div className="group flex items-start gap-1 py-2">
-      <Link
-        className="min-w-0 flex-1 rounded-sm py-1 hover:underline"
-        params={{ playerId: String(entry.player._id) }}
-        search={{ season }}
-        to="/michigan/players/$playerId"
-      >
-        <strong className="block text-sm leading-5 text-[#00274c]">
-          <span className="mr-1.5 text-xs font-medium tabular-nums text-[var(--app-muted)]">
-            {entry.season.jerseyNumber === null
-              ? '—'
-              : `#${entry.season.jerseyNumber}`}
-          </span>
-          {entry.player.displayName}
-        </strong>
-        <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs font-semibold tabular-nums text-[var(--app-text)]">
-          <span>
-            <span className="sr-only">Height: </span>
-            {entry.season.heightInches == null
-              ? 'Ht —'
-              : `${Math.floor(entry.season.heightInches / 12)}′ ${entry.season.heightInches % 12}″`}
-          </span>
-          <span>
-            <span className="sr-only">Weight: </span>
-            {entry.season.weightPounds == null
-              ? 'Wt —'
-              : `${entry.season.weightPounds} lb`}
-          </span>
-        </span>
-        <span className="mt-0.5 block text-[11px] leading-4 text-[var(--app-muted)]">
-          Year {experience} · {entry.season.starts} starts /{' '}
-          {entry.season.gamesPlayed} games
-        </span>
-        {entry.season.depthStatus !== 'available' && (
-          <span className="mt-1 inline-block text-[10px] font-bold uppercase tracking-wider text-amber-700">
-            {humanize(entry.season.depthStatus)}
-          </span>
-        )}
-        {entry.season.role === 'unassigned' && (
-          <span className="mt-1 block text-[10px] font-semibold text-[var(--app-muted)]">
-            Role unassigned
-          </span>
-        )}
-      </Link>
-      <button
-        aria-label={`${selected ? 'Remove' : 'Add'} ${entry.player.displayName} ${selected ? 'from' : 'to'} comparison`}
-        aria-pressed={selected}
-        className={`grid min-h-11 w-9 shrink-0 place-items-center rounded-lg transition disabled:opacity-35 ${selected ? 'bg-[#ffcb05] text-[#071421]' : 'text-white/25 hover:bg-white/10 hover:text-white'}`}
-        disabled={!selected && comparison.ids.length >= 4}
-        onClick={() => comparison.toggle(String(entry.player._id))}
-        type="button"
-      >
-        {selected ? <X size={16} /> : <UserRoundPlus size={16} />}
-      </button>
-    </div>
   )
 }
 
