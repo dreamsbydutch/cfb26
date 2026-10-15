@@ -81,6 +81,15 @@ export function MichiganMatrix() {
   const [eligibility, setEligibility] = useState('all')
   const [quality, setQuality] = useState('all')
   const comparison = useComparisonTray()
+  const filterCount = [
+    role,
+    availability,
+    experience,
+    scholarship,
+    entryMethod,
+    eligibility,
+    quality,
+  ].filter((value) => value !== 'all').length
 
   const entries = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
@@ -145,8 +154,8 @@ export function MichiganMatrix() {
           <EmptyState>No Michigan roster exists for {season}.</EmptyState>
         ) : (
           <>
-            <ContextBar>
-              <label className="relative min-w-[15rem] flex-1">
+            <ContextBar sticky={false}>
+              <label className="relative min-w-0 basis-full sm:basis-48 sm:flex-1">
                 <Search
                   aria-hidden="true"
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"
@@ -168,46 +177,77 @@ export function MichiganMatrix() {
                   </option>
                 ))}
               </FilterSelect>
-              <FilterSelect label="Role" onChange={setRole} value={role}>
-                <option value="all">All roles</option>
-                {ROLES.map((item) => (
-                  <option key={item} value={item}>
-                    {ROLE_LABELS[item]}
-                  </option>
-                ))}
-              </FilterSelect>
-              <FilterSelect
-                label="Availability"
-                onChange={setAvailability}
-                value={availability}
-              >
-                <option value="all">Any availability</option>
-                <option value="available">Available</option>
-                <option value="exception">Has exception</option>
-              </FilterSelect>
-              <FilterSelect
-                label="Experience"
-                onChange={setExperience}
-                value={experience}
-              >
-                <option value="all">Any experience</option>
-                <option value="new">First season</option>
-                <option value="3">3+ seasons</option>
-                <option value="5">5+ seasons</option>
-              </FilterSelect>
               <button
+                aria-controls="roster-filters"
+                aria-expanded={moreOpen}
                 className={controlClass}
                 onClick={() => setMoreOpen((value) => !value)}
                 type="button"
               >
-                <SlidersHorizontal size={16} /> More
+                <SlidersHorizontal aria-hidden="true" size={16} /> Filters
+                {filterCount > 0 && (
+                  <span className="rounded-full bg-[#ffcb05]/20 px-1.5 text-xs text-[#00274c]">
+                    {filterCount}
+                  </span>
+                )}
                 <ChevronDown
+                  aria-hidden="true"
                   className={moreOpen ? 'rotate-180' : ''}
                   size={15}
                 />
               </button>
-              {moreOpen && (
-                <div className="grid w-full gap-2 border-t border-white/10 pt-3 sm:grid-cols-2 xl:grid-cols-4">
+              {(search || room !== 'all' || filterCount > 0) && (
+                <button
+                  className="min-h-11 rounded-lg px-2 text-sm font-semibold text-[#00274c] hover:underline"
+                  onClick={() => {
+                    setSearch('')
+                    setRoom('all')
+                    setRole('all')
+                    setAvailability('all')
+                    setExperience('all')
+                    setScholarship('all')
+                    setEntryMethod('all')
+                    setEligibility('all')
+                    setQuality('all')
+                  }}
+                  type="button"
+                >
+                  Clear filters
+                </button>
+              )}
+              <div
+                className="w-full border-t border-white/10 pt-3"
+                hidden={!moreOpen}
+                id="roster-filters"
+              >
+                <div className="flex flex-wrap gap-2">
+                  <FilterSelect label="Role" onChange={setRole} value={role}>
+                    <option value="all">All roles</option>
+                    {ROLES.map((item) => (
+                      <option key={item} value={item}>
+                        {ROLE_LABELS[item]}
+                      </option>
+                    ))}
+                  </FilterSelect>
+                  <FilterSelect
+                    label="Availability"
+                    onChange={setAvailability}
+                    value={availability}
+                  >
+                    <option value="all">Any availability</option>
+                    <option value="available">Available</option>
+                    <option value="exception">Has exception</option>
+                  </FilterSelect>
+                  <FilterSelect
+                    label="Experience"
+                    onChange={setExperience}
+                    value={experience}
+                  >
+                    <option value="all">Any experience</option>
+                    <option value="new">First season</option>
+                    <option value="3">3+ seasons</option>
+                    <option value="5">5+ seasons</option>
+                  </FilterSelect>
                   <FilterSelect
                     label="Scholarship"
                     onChange={setScholarship}
@@ -250,7 +290,7 @@ export function MichiganMatrix() {
                     <option value="needs_review">Needs review</option>
                   </FilterSelect>
                 </div>
-              )}
+              </div>
             </ContextBar>
             {dashboard.data.warnings.length > 0 && (
               <Surface className="mb-5 flex items-start gap-3 border-amber-300/20 bg-amber-300/[0.055] p-4">
@@ -271,28 +311,20 @@ export function MichiganMatrix() {
                 </div>
               </Surface>
             )}
-            <p className="mb-4 text-xs font-semibold text-white/40">
+            <p
+              aria-live="polite"
+              className="mb-3 text-xs font-semibold text-white/40"
+            >
               Showing {entries.length} of {dashboard.data.entries.length}{' '}
               players
             </p>
-            <div className="grid gap-4">
-              {ROOM_ORDER.map((positionRoom) => {
-                const roomEntries = entries.filter(
-                  (entry) => entry.season.positionRoom === positionRoom,
-                )
-                if (roomEntries.length === 0) return null
-                return (
-                  <RoomMatrix
-                    comparison={comparison}
-                    entries={roomEntries}
-                    key={positionRoom}
-                    room={positionRoom}
-                    season={season}
-                  />
-                )
-              })}
-            </div>
-            {entries.length === 0 && (
+            {entries.length > 0 ? (
+              <RosterMatrixTable
+                comparison={comparison}
+                entries={entries}
+                season={season}
+              />
+            ) : (
               <EmptyState title="No players match">
                 Clear one or more filters to reopen the matrix.
               </EmptyState>
@@ -305,82 +337,140 @@ export function MichiganMatrix() {
   )
 }
 
-function RoomMatrix({
+function RosterMatrixTable({
   comparison,
   entries,
-  room,
   season,
 }: {
   comparison: ReturnType<typeof useComparisonTray>
   entries: Array<ActiveEntry>
-  room: string
   season: number
 }) {
-  const [open, setOpen] = useState(true)
   return (
     <Surface className="overflow-hidden p-0">
-      <button
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3 text-left sm:px-5 lg:pointer-events-none"
-        onClick={() => setOpen((value) => !value)}
-        type="button"
+      <div
+        aria-label="Michigan depth chart, scroll horizontally to see all roles"
+        className="overflow-x-auto focus-visible:outline-offset-[-3px]"
+        role="region"
+        tabIndex={0}
       >
-        <span>
-          <span className="font-display text-xl font-extrabold uppercase tracking-wide">
-            {room}
-          </span>
-          <span className="ml-2 text-xs font-semibold text-white/35">
-            {entries.length}
-          </span>
-        </span>
-        <ChevronDown
-          aria-hidden="true"
-          className={`transition lg:hidden ${open ? 'rotate-180' : ''}`}
-          size={18}
-        />
-      </button>
-      {open && (
-        <div className="grid gap-px bg-white/[0.07] xl:grid-cols-[1fr_1fr_1.2fr]">
-          {ROLES.slice(0, 3).map((role, index) => {
-            const roleEntries = entries.filter((entry) =>
-              index === 2
-                ? entry.season.role === 'reserve' ||
-                  entry.season.role === 'unassigned'
-                : entry.season.role === role,
+        <table className="w-full min-w-[52rem] table-fixed border-collapse text-left">
+          <caption className="sr-only">
+            {season} Michigan roster by listed position and assigned role. Depth
+            includes reserve and unassigned players. Each player lists height,
+            weight, experience, and participation.
+          </caption>
+          <colgroup>
+            <col className="w-24" />
+            <col />
+            <col />
+            <col />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-[var(--app-line)] bg-[var(--app-surface-strong)]">
+              <th
+                className="sticky left-0 z-10 bg-[var(--app-surface-strong)] px-3 py-3 text-xs font-bold"
+                scope="col"
+              >
+                Position
+              </th>
+              {['Starters', 'Rotation', 'Depth'].map((label) => (
+                <th
+                  className="border-l border-[var(--app-line)] px-3 py-3 text-xs font-bold text-[#00274c]"
+                  key={label}
+                  scope="col"
+                >
+                  {label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          {ROOM_ORDER.map((room) => {
+            const roomEntries = entries.filter(
+              (entry) => entry.season.positionRoom === room,
             )
+            if (roomEntries.length === 0) return null
+            const positions = [
+              ...new Set(
+                roomEntries.map((entry) => entry.season.listedPosition),
+              ),
+            ]
             return (
-              <section className="min-w-0 bg-[#091725] p-3" key={role}>
-                <div className="mb-2 flex items-center justify-between px-1">
-                  <h3 className="app-label m-0">{ROLE_LABELS[role]}</h3>
-                  <span className="text-xs tabular-nums text-white/30">
-                    {roleEntries.length}
-                  </span>
-                </div>
-                <div className="grid gap-2">
-                  {roleEntries.map((entry) => (
-                    <PlayerTile
-                      comparison={comparison}
-                      entry={entry}
-                      key={entry.season._id}
-                      season={season}
-                    />
-                  ))}
-                  {roleEntries.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-white/10 px-3 py-5 text-center text-xs text-white/25">
-                      No assigned players
-                    </div>
-                  )}
-                </div>
-              </section>
+              <tbody key={room}>
+                <tr className="border-y border-[var(--app-line)] bg-[#00274c]/[0.045]">
+                  <th
+                    className="px-3 py-2 text-xs font-bold text-[#00274c]"
+                    colSpan={4}
+                    scope="rowgroup"
+                  >
+                    <span className="sticky left-3">
+                      {room}
+                      <span className="ml-2 font-normal text-[var(--app-muted)]">
+                        {roomEntries.length}
+                      </span>
+                    </span>
+                  </th>
+                </tr>
+                {positions.map((position) => (
+                  <tr
+                    className="border-b border-[var(--app-line)] last:border-b-0"
+                    key={position}
+                  >
+                    <th
+                      className="sticky left-0 z-10 bg-[var(--app-surface-raised)] px-3 py-4 align-top text-sm font-extrabold text-[#00274c]"
+                      scope="row"
+                    >
+                      {position}
+                    </th>
+                    {ROLES.slice(0, 3).map((role) => {
+                      const players = roomEntries.filter(
+                        (entry) =>
+                          entry.season.listedPosition === position &&
+                          (role === 'reserve'
+                            ? entry.season.role === 'reserve' ||
+                              entry.season.role === 'unassigned'
+                            : entry.season.role === role),
+                      )
+                      return (
+                        <td
+                          className={`border-l border-[var(--app-line)] px-3 py-1 align-top ${role === 'starter' ? 'bg-[#ffcb05]/[0.055]' : ''}`}
+                          key={role}
+                        >
+                          {players.length > 0 ? (
+                            <ul className="m-0 list-none divide-y divide-[var(--app-line)] p-0">
+                              {players.map((entry) => (
+                                <li key={entry.season._id}>
+                                  <MatrixPlayer
+                                    comparison={comparison}
+                                    entry={entry}
+                                    season={season}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span className="block py-3 text-xs text-[var(--app-muted)]">
+                              <span aria-hidden="true">—</span>
+                              <span className="sr-only">
+                                No assigned players
+                              </span>
+                            </span>
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
             )
           })}
-        </div>
-      )}
+        </table>
+      </div>
     </Surface>
   )
 }
 
-function PlayerTile({
+function MatrixPlayer({
   comparison,
   entry,
   season,
@@ -392,39 +482,61 @@ function PlayerTile({
   const selected = comparison.ids.includes(String(entry.player._id))
   const experience = Math.max(season - entry.player.entrySeason + 1, 1)
   return (
-    <article className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-white/[0.045] p-3 transition hover:bg-white/[0.075]">
-      <span className="font-display grid h-10 w-10 place-items-center rounded-xl bg-black/20 text-lg font-extrabold tabular-nums text-[#ffcb05]">
-        {entry.season.jerseyNumber ?? '—'}
-      </span>
+    <div className="group flex items-start gap-1 py-2">
       <Link
-        className="min-w-0 rounded-lg outline-none"
+        className="min-w-0 flex-1 rounded-sm py-1 hover:underline"
         params={{ playerId: String(entry.player._id) }}
         search={{ season }}
         to="/michigan/players/$playerId"
       >
-        <strong className="block truncate text-sm text-white group-hover:text-[#ffe16a]">
+        <strong className="block text-sm leading-5 text-[#00274c]">
+          <span className="mr-1.5 text-xs font-medium tabular-nums text-[var(--app-muted)]">
+            {entry.season.jerseyNumber === null
+              ? '—'
+              : `#${entry.season.jerseyNumber}`}
+          </span>
           {entry.player.displayName}
         </strong>
-        <span className="mt-1 block truncate text-[11px] text-white/40">
-          {entry.season.listedPosition} · Year {experience} ·{' '}
-          {entry.season.starts} starts / {entry.season.gamesPlayed} games
+        <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs font-semibold tabular-nums text-[var(--app-text)]">
+          <span>
+            <span className="sr-only">Height: </span>
+            {entry.season.heightInches == null
+              ? 'Ht —'
+              : `${Math.floor(entry.season.heightInches / 12)}′ ${entry.season.heightInches % 12}″`}
+          </span>
+          <span>
+            <span className="sr-only">Weight: </span>
+            {entry.season.weightPounds == null
+              ? 'Wt —'
+              : `${entry.season.weightPounds} lb`}
+          </span>
+        </span>
+        <span className="mt-0.5 block text-[11px] leading-4 text-[var(--app-muted)]">
+          Year {experience} · {entry.season.starts} starts /{' '}
+          {entry.season.gamesPlayed} games
         </span>
         {entry.season.depthStatus !== 'available' && (
-          <span className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wider text-amber-700">
+          <span className="mt-1 inline-block text-[10px] font-bold uppercase tracking-wider text-amber-700">
             {humanize(entry.season.depthStatus)}
+          </span>
+        )}
+        {entry.season.role === 'unassigned' && (
+          <span className="mt-1 block text-[10px] font-semibold text-[var(--app-muted)]">
+            Role unassigned
           </span>
         )}
       </Link>
       <button
         aria-label={`${selected ? 'Remove' : 'Add'} ${entry.player.displayName} ${selected ? 'from' : 'to'} comparison`}
-        className={`grid h-9 w-9 place-items-center rounded-xl transition ${selected ? 'bg-[#ffcb05] text-[#071421]' : 'text-white/25 hover:bg-white/10 hover:text-white'}`}
+        aria-pressed={selected}
+        className={`grid min-h-11 w-9 shrink-0 place-items-center rounded-lg transition disabled:opacity-35 ${selected ? 'bg-[#ffcb05] text-[#071421]' : 'text-white/25 hover:bg-white/10 hover:text-white'}`}
         disabled={!selected && comparison.ids.length >= 4}
         onClick={() => comparison.toggle(String(entry.player._id))}
         type="button"
       >
         {selected ? <X size={16} /> : <UserRoundPlus size={16} />}
       </button>
-    </article>
+    </div>
   )
 }
 
