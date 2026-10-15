@@ -29,7 +29,13 @@ export function getRouter() {
       context: { queryClient },
       scrollRestoration: true,
       defaultPreloadStaleTime: 0, // Let React Query handle all caching
-      defaultErrorComponent: (err) => <p>{err.error.stack}</p>,
+      defaultErrorComponent: ({ error }) => (
+        <p>
+          {error instanceof Error
+            ? error.message
+            : 'This page could not be loaded.'}
+        </p>
+      ),
       defaultNotFoundComponent: () => <p>not found</p>,
       Wrap: ({ children }) => (
         <ConvexProvider client={convexQueryClient.convexClient}>

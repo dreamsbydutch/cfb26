@@ -53,6 +53,8 @@ The command rejects a modified envelope, a version-3 envelope without an integer
 
 `vercel.json` runs `npx convex deploy --cmd 'npm run build'`. A failed Convex step means the web release is not releasable. Preview publication follows the [$preview-pr workflow](preview-pull-request.md) and never authorizes production.
 
+**Current source:** TanStack Start requires `@tanstack/react-start` 1.168.60 or later and a resolved `@tanstack/start-server-core` 1.169.39 or later to address [CVE-2026-102989](https://github.com/TanStack/router/security/advisories/GHSA-qx66-fv34-fjm8). Keep the direct React Router dependency aligned with Start, update the lockfile, and run `npm run check` before redeploying. Vercel blocks affected versions; upgrade the dependencies rather than overriding that block.
+
 ## Rollback
 
 - Application rollback deploys a known-good commit through the same pipeline.

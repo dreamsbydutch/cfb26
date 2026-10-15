@@ -4,7 +4,7 @@
 
 ## Framework
 
-React 19 runs through TanStack Start and file-based routing. `src/router.tsx` connects React Query to Convex and wraps the generated route tree in `ConvexProvider`. Route files may render on the server, so browser APIs remain in handlers or client-safe initialization. `src/routeTree.gen.ts` and `convex/_generated/` are generated boundaries.
+React 19 runs through TanStack Start and file-based routing. `src/router.tsx` connects React Query to Convex and wraps the generated route tree in `ConvexProvider`. Its default route-error fallback narrows unknown errors before showing a message, with a generic fallback for other thrown values. Route files may render on the server, so browser APIs remain in handlers or client-safe initialization. `src/routeTree.gen.ts` and `convex/_generated/` are generated boundaries.
 
 ## Routes and data
 
