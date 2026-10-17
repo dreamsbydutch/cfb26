@@ -39,6 +39,8 @@ Sync state is set to running before an external request and succeeded/failed aft
 
 ## Domain invariants
 
+Player Seasons optionally retain cumulative `participationTotals` for offense, defense, and special teams. Each snapshot contains phase games/snaps, the team-games cutoff, source image fingerprint, and import time; offense may include the four snap subcategories. These snapshots do not alter overall games played, eligibility, game logs, or grades. Authenticated imports require a current backup and preview revision, preserve other phases, and reject stale or decreasing totals. See [screenshot participation imports](../guides/screenshot-participation-imports.md).
+
 - Commitment and enrollment are separate. Decommitting never creates a roster stint.
 - Player Seasons carry exact listed position and derived room, explicit scholarship/availability states, eligibility evidence, and optional override.
 - `0` snaps means confirmed no participation; `null` means unknown. A grade with explicit zero snaps is rejected.

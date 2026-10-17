@@ -855,6 +855,48 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
               </div>
             </ProfileSection>
             <ProfileSection id="performance" title="Performance">
+              {selectedSeason?.participationTotals && (
+                <div className="mb-4 grid gap-3 sm:grid-cols-3">
+                  {(['offense', 'defense', 'specialTeams'] as const).map(
+                    (phase) => {
+                      const totals = selectedSeason.participationTotals?.[phase]
+                      if (!totals) return null
+                      return (
+                        <div
+                          className="rounded-xl border border-[var(--app-line)] p-3"
+                          key={phase}
+                        >
+                          <h3 className="m-0 text-sm font-semibold">
+                            {phase === 'specialTeams'
+                              ? 'Special teams'
+                              : humanize(phase)}{' '}
+                            participation
+                          </h3>
+                          <p className="my-1 text-lg font-bold tabular-nums">
+                            {totals.snaps} snaps · {totals.gamesPlayed} GP
+                          </p>
+                          <p className="m-0 text-xs text-[var(--app-muted)]">
+                            {season} · through {totals.throughTeamGames} team
+                            games. GP counts appearances in this phase.
+                          </p>
+                          {totals.offenseBreakdown && (
+                            <dl className="mt-2 grid grid-cols-2 gap-x-2 text-xs tabular-nums">
+                              <dt>Pass</dt>
+                              <dd>{totals.offenseBreakdown.pass}</dd>
+                              <dt>Pass block</dt>
+                              <dd>{totals.offenseBreakdown.passBlock}</dd>
+                              <dt>Run</dt>
+                              <dd>{totals.offenseBreakdown.run}</dd>
+                              <dt>Run block</dt>
+                              <dd>{totals.offenseBreakdown.runBlock}</dd>
+                            </dl>
+                          )}
+                        </div>
+                      )
+                    },
+                  )}
+                </div>
+              )}
               <div className="grid gap-3 sm:grid-cols-2">
                 <GradeCard
                   label={`${season} overall`}

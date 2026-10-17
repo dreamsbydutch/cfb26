@@ -14,6 +14,7 @@ import {
   collegeYear,
   rosterEligibilityBand,
   rosterGroup,
+  rosterParticipation,
 } from '~/features/michigan/rosterSheetModel'
 import { EmptyState } from '~/components/AppShell'
 
@@ -100,7 +101,8 @@ type SheetRow = {
   position: string
   group: RosterGroup
   roleUnassigned: boolean
-  starts: number | null
+  snaps: number | null
+  participationNote: string | null
   status: string | null
   weight: number | null
   year: number | null
@@ -133,38 +135,42 @@ export function RosterSheet({
   season: number
 }) {
   const incoming = useMichiganRoster(season + 1)
-  const rows: Array<SheetRow> = entries.map((entry) => ({
-    band: rosterEligibilityBand({
-      eligibleThroughSeason: entry.eligibility.eligibleThroughSeason,
-      enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
-      season,
-    }),
-    eligibleThrough: entry.eligibility.eligibleThroughSeason,
-    games: entry.season.gamesPlayed,
-    height: entry.season.heightInches,
-    id: String(entry.season._id),
-    incomingSeason: null,
-    name: entry.player.displayName,
-    number: entry.season.jerseyNumber,
-    playerId: String(entry.player._id),
-    position: entry.season.listedPosition.trim().toUpperCase(),
-    group: rosterGroup({
-      enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
-      role: entry.season.role,
-      season,
-    }),
-    roleUnassigned: entry.season.role === 'unassigned',
-    starts: entry.season.starts,
-    status:
-      entry.season.depthStatus === 'available'
-        ? null
-        : entry.season.depthStatus.replaceAll('_', ' '),
-    weight: entry.season.weightPounds,
-    year: collegeYear(
-      entry.season.eligibilityEvidence.enrollmentSeason,
-      season,
-    ),
-  }))
+  const rows: Array<SheetRow> = entries.map((entry) => {
+    const participation = rosterParticipation(entry.season)
+    return {
+      band: rosterEligibilityBand({
+        eligibleThroughSeason: entry.eligibility.eligibleThroughSeason,
+        enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
+        season,
+      }),
+      eligibleThrough: entry.eligibility.eligibleThroughSeason,
+      games: participation.games,
+      height: entry.season.heightInches,
+      id: String(entry.season._id),
+      incomingSeason: null,
+      name: entry.player.displayName,
+      number: entry.season.jerseyNumber,
+      playerId: String(entry.player._id),
+      position: entry.season.listedPosition.trim().toUpperCase(),
+      group: rosterGroup({
+        enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
+        role: entry.season.role,
+        season,
+      }),
+      roleUnassigned: entry.season.role === 'unassigned',
+      snaps: participation.snaps,
+      participationNote: participation.description,
+      status:
+        entry.season.depthStatus === 'available'
+          ? null
+          : entry.season.depthStatus.replaceAll('_', ' '),
+      weight: entry.season.weightPounds,
+      year: collegeYear(
+        entry.season.eligibilityEvidence.enrollmentSeason,
+        season,
+      ),
+    }
+  })
   const enrolled = new Set(rosterPlayerIds)
   const seenRecruits = new Set<string>()
   const search = filters.search.trim().toLowerCase()
@@ -224,7 +230,8 @@ export function RosterSheet({
         position,
         group: 'recruit',
         roleUnassigned: false,
-        starts: null,
+        snaps: null,
+        participationNote: null,
         status: null,
         weight: annual?.weightPounds ?? null,
         year: null,
@@ -282,6 +289,12 @@ export function RosterSheet({
           not establish meaningful playing time. Unassigned roles are
           provisional; unknown college year stays on the bench.
         </p>
+        <p className="my-1">
+          GP and Snaps use offense or defense by position, and special teams for
+          specialists. Imported values show participation through their saved
+          cutoff. When phase totals are unavailable, GP uses the annual overall
+          count and Snaps stays unknown.
+        </p>
       </details>
       {showRecruits && incoming.isLoading && (
         <p className="my-2 text-xs text-[var(--app-muted)]" role="status">
@@ -324,7 +337,7 @@ export function RosterSheet({
                 role="region"
                 tabIndex={0}
               >
-                <table className="w-[552px] table-fixed border-collapse text-left text-xs tabular-nums sm:w-full sm:min-w-[660px]">
+                <table className="w-[568px] table-fixed border-collapse text-left text-xs tabular-nums sm:w-full sm:min-w-[676px]">
                   <caption className="sr-only">
                     {season} {position} roster. Row colors follow the
                     eligibility legend. Year means college year from first
@@ -335,10 +348,10 @@ export function RosterSheet({
                     <col className="w-7" />
                     <col className="w-28 sm:w-44" />
                     <col className="w-[5.5rem]" />
+                    <col className="w-8" />
+                    <col className="w-12" />
                     <col className="w-9" />
                     <col className="w-[4.5rem]" />
-                    <col className="w-8" />
-                    <col className="w-8" />
                     <col className="w-14" />
                     <col className="w-16" />
                     <col className="w-8" />
@@ -366,20 +379,26 @@ export function RosterSheet({
                         </abbr>
                       </th>
                       <th className="px-1 py-1 text-center" scope="col">
-                        Year
-                      </th>
-                      <th className="px-1 py-1" scope="col">
-                        Group
-                      </th>
-                      <th className="px-1 py-1 text-center" scope="col">
-                        <abbr className="no-underline" title="Games played">
+                        <abbr
+                          className="no-underline"
+                          title="Games played in the main phase when imported; otherwise overall games played"
+                        >
                           GP
                         </abbr>
                       </th>
                       <th className="px-1 py-1 text-center" scope="col">
-                        <abbr className="no-underline" title="Games started">
-                          GS
+                        <abbr
+                          className="no-underline"
+                          title="Main-phase snaps: offense or defense by position; special teams for specialists"
+                        >
+                          Snaps
                         </abbr>
+                      </th>
+                      <th className="px-1 py-1 text-center" scope="col">
+                        Year
+                      </th>
+                      <th className="px-1 py-1" scope="col">
+                        Group
                       </th>
                       <th className="px-1 py-1 text-center" scope="col">
                         <abbr
@@ -492,6 +511,18 @@ function SheetPlayer({
         <span className="sr-only">Weight in pounds: </span>
         {row.weight ?? '—'}
       </td>
+      <td
+        className="px-1 text-center"
+        title={row.participationNote ?? undefined}
+      >
+        {row.games ?? '—'}
+      </td>
+      <td
+        className="px-1 text-center"
+        title={row.participationNote ?? undefined}
+      >
+        {row.snaps ?? '—'}
+      </td>
       <td className="px-1 text-center">{row.year ?? '—'}</td>
       <td
         className="px-1 text-[11px]"
@@ -508,8 +539,6 @@ function SheetPlayer({
           </span>
         )}
       </td>
-      <td className="px-1 text-center">{row.games ?? '—'}</td>
-      <td className="px-1 text-center">{row.starts ?? '—'}</td>
       <td className="px-1 text-center">{row.eligibleThrough ?? '—'}</td>
       <td className="px-1 text-[11px] capitalize">{row.status ?? '—'}</td>
       <td>

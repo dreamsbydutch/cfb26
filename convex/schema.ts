@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import { gameEvidenceValidator } from './evidenceFields'
 import { liveScoreValidator } from './scoreboardFields'
+import { participationSnapshot } from './participationFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -220,6 +221,13 @@ export default defineSchema({
     .index('by_programId_and_status', ['programId', 'status']),
 
   playerSeasons: defineTable({
+    participationTotals: v.optional(
+      v.object({
+        offense: v.optional(participationSnapshot),
+        defense: v.optional(participationSnapshot),
+        specialTeams: v.optional(participationSnapshot),
+      }),
+    ),
     availabilityNote: v.optional(v.string()),
     captain: v.boolean(),
     dataQuality,

@@ -18,7 +18,8 @@
     "check": "npm test && npm run lint && npm run docs:check && vite build",
     "format": "prettier --write .",
     "lint": "npm run typecheck && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "node --experimental-strip-types --test",
+    "test": "node --experimental-strip-types --test && vitest run",
+    "test:participation": "node --experimental-strip-types --test tests/participation-import.test.mjs && vitest run convex/participation.spec.ts",
     "test:cfbd": "node --experimental-strip-types --test tests/cfbd-*.test.mjs",
     "test:ratings": "node --experimental-strip-types --test tests/rating-*.test.mjs",
     "ratings:evaluate": "node --experimental-strip-types scripts/evaluate-power.mjs"
@@ -41,16 +42,19 @@
   },
   "devDependencies": {
     "@convex-dev/eslint-plugin": "^4.0.0",
+    "@edge-runtime/vm": "^5.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/eslint-config": "^0.4.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitejs/plugin-react": "^6.0.5",
+    "convex-test": "^0.0.62",
     "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vite": "^8.2.0",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.5"
   }
 }

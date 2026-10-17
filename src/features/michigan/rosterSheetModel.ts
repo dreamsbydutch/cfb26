@@ -1,6 +1,49 @@
 export type RosterEligibilityBand =
   'final' | 'nfl_window' | 'underclassman' | 'incoming' | 'unknown'
 
+type ParticipationPhase = 'offense' | 'defense' | 'specialTeams'
+type ParticipationSnapshot = {
+  gamesPlayed: number
+  snaps: number
+  throughTeamGames: number
+}
+
+const ROOM_PHASES: Readonly<Partial<Record<string, ParticipationPhase>>> = {
+  Quarterbacks: 'offense',
+  Backs: 'offense',
+  Receivers: 'offense',
+  'Offensive line': 'offense',
+  'Defensive line': 'defense',
+  Linebackers: 'defense',
+  Secondary: 'defense',
+  Specialists: 'specialTeams',
+}
+
+export function rosterParticipation({
+  gamesPlayed,
+  participationTotals,
+  positionRoom,
+}: {
+  gamesPlayed: number
+  participationTotals?: Partial<
+    Record<ParticipationPhase, ParticipationSnapshot>
+  >
+  positionRoom: string
+}) {
+  const phase = ROOM_PHASES[positionRoom] ?? null
+  const snapshot = phase ? participationTotals?.[phase] : undefined
+  // Phase GP can overlap; cumulative snapshots must not be added to game logs.
+  return {
+    games: snapshot?.gamesPlayed ?? gamesPlayed,
+    snaps: snapshot?.snaps ?? null,
+    phase,
+    throughTeamGames: snapshot?.throughTeamGames ?? null,
+    description: snapshot
+      ? `${phase === 'specialTeams' ? 'Special teams' : phase === 'offense' ? 'Offense' : 'Defense'} participation through ${snapshot.throughTeamGames} team games`
+      : 'Overall games played; main-phase snap totals are unavailable',
+  }
+}
+
 export function collegeYear(enrollmentSeason: number | null, season: number) {
   return enrollmentSeason === null || enrollmentSeason > season
     ? null

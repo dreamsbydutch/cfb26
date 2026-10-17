@@ -1,0 +1,13 @@
+.git
+.env*
+node_modules
+.tmp
+.cache
+.output
+.nitro
+.tanstack
+.vercel
+dist
+test-results
+playwright-report
+blob-report

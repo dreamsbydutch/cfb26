@@ -21,6 +21,8 @@ import type * as games from "../games.js";
 import type * as migrationV2 from "../migrationV2.js";
 import type * as migrations from "../migrations.js";
 import type * as nflverse from "../nflverse.js";
+import type * as participationFields from "../participationFields.js";
+import type * as participationModel from "../participationModel.js";
 import type * as playerDomain from "../playerDomain.js";
 import type * as players from "../players.js";
 import type * as powerBenchmarks from "../powerBenchmarks.js";
@@ -78,6 +80,8 @@ declare const fullApi: ApiFromModules<{
   migrationV2: typeof migrationV2;
   migrations: typeof migrations;
   nflverse: typeof nflverse;
+  participationFields: typeof participationFields;
+  participationModel: typeof participationModel;
   playerDomain: typeof playerDomain;
   players: typeof players;
   powerBenchmarks: typeof powerBenchmarks;

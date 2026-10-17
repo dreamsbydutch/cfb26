@@ -1,11 +1,178 @@
 import { v } from 'convex/values'
 import { env, mutation, query } from './_generated/server'
 import { derivePositionRoom } from './playerDomain'
+import {
+  participationCounts,
+  participationImport,
+  participationSnapshot,
+} from './participationFields'
+import {
+  assertSnapshotCanReplace,
+  normalizeParticipationName,
+  sameParticipationCounts,
+  validateParticipationImport,
+} from './participationModel'
+import type { Infer } from 'convex/values'
 import type { Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 
 const SESSION_DURATION_MS = 12 * 60 * 60 * 1000
 const MAX_BULK_ROWS = 100
+
+const participationInput = v.object(participationImport)
+const participationPlanRow = v.object({
+  playerSeasonId: v.id('playerSeasons'),
+  playerId: v.id('players'),
+  name: v.string(),
+  before: v.union(participationSnapshot, v.null()),
+  after: v.object(participationCounts),
+})
+
+async function planParticipationImport(
+  ctx: QueryCtx | MutationCtx,
+  input: Infer<typeof participationInput>,
+) {
+  validateParticipationImport(input)
+  const program = await getProgram(ctx, 'michigan')
+  const seasons = await ctx.db
+    .query('playerSeasons')
+    .withIndex('by_programId_and_season_and_room', (q) =>
+      q.eq('programId', program._id).eq('season', input.season),
+    )
+    .take(501)
+  if (seasons.length > 500)
+    throw new Error('Roster exceeds the import planning limit.')
+  const roster = await Promise.all(
+    seasons.map(async (season) => ({
+      season,
+      player: await ctx.db.get('players', season.playerId),
+    })),
+  )
+  const errors: Array<string> = []
+  const rows: Array<Infer<typeof participationPlanRow>> = []
+  const seen = new Set<string>()
+  for (const row of input.rows) {
+    const name = normalizeParticipationName(row.name)
+    const candidates = roster.filter(
+      ({ season, player }) =>
+        player &&
+        (row.playerId
+          ? player._id === row.playerId
+          : season.jerseyNumber === row.jerseyNumber &&
+            [player.canonicalName, player.displayName].some(
+              (value) => normalizeParticipationName(value) === name,
+            )),
+    )
+    if (candidates.length !== 1 || !candidates[0].player) {
+      errors.push(
+        `${row.name} #${row.jerseyNumber}: expected one roster match, found ${candidates.length}. Review name/number and supply an explicit playerId if needed.`,
+      )
+      continue
+    }
+    const { season, player } = candidates[0]
+    if (seen.has(player._id)) {
+      errors.push(`${row.name}: duplicate canonical player.`)
+      continue
+    }
+    seen.add(player._id)
+    const before = season.participationTotals?.[input.phase] ?? null
+    try {
+      assertSnapshotCanReplace(
+        { ...row, throughTeamGames: input.throughTeamGames },
+        before ?? undefined,
+      )
+    } catch (error) {
+      errors.push(
+        `${row.name}: ${error instanceof Error ? error.message : 'Invalid replacement'}`,
+      )
+      continue
+    }
+    rows.push({
+      playerSeasonId: season._id,
+      playerId: player._id,
+      name: player.displayName,
+      before,
+      after: {
+        gamesPlayed: row.gamesPlayed,
+        snaps: row.snaps,
+        ...(row.offenseBreakdown
+          ? { offenseBreakdown: row.offenseBreakdown }
+          : {}),
+      },
+    })
+  }
+  return { errors, rows }
+}
+
+export const previewParticipationImport = query({
+  args: { ...participationImport, sessionToken: v.string() },
+  returns: v.object({
+    errors: v.array(v.string()),
+    rows: v.array(participationPlanRow),
+    dataRevision: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    await requireOwnerSession(ctx, args.sessionToken)
+    return {
+      ...(await planParticipationImport(ctx, args)),
+      dataRevision: await getMichiganDataRevision(ctx),
+    }
+  },
+})
+
+export const applyParticipationImport = mutation({
+  args: {
+    ...participationImport,
+    sessionToken: v.string(),
+    backupManifestId: v.id('backupManifests'),
+    expectedRevision: v.number(),
+  },
+  returns: v.object({ updated: v.number(), dataRevision: v.number() }),
+  handler: async (ctx, args) => {
+    const session = await requireOwnerSession(ctx, args.sessionToken)
+    await requireCurrentBackup(ctx, args.backupManifestId)
+    if ((await getMichiganDataRevision(ctx)) !== args.expectedRevision)
+      throw new Error('Roster changed after preview. Preview again.')
+    const plan = await planParticipationImport(ctx, args)
+    if (plan.errors.length) throw new Error(plan.errors.join('\n'))
+    let updated = 0
+    for (const row of plan.rows) {
+      const snapshot = {
+        ...row.after,
+        throughTeamGames: args.throughTeamGames,
+        sourceLabel: args.sourceLabel,
+        sourceImageSha256: args.sourceImageSha256,
+      }
+      const before = row.before
+      if (
+        before &&
+        before.sourceImageSha256 === snapshot.sourceImageSha256 &&
+        before.sourceLabel === snapshot.sourceLabel &&
+        before.throughTeamGames === snapshot.throughTeamGames &&
+        sameParticipationCounts(before, snapshot)
+      )
+        continue
+      const season = await ctx.db.get('playerSeasons', row.playerSeasonId)
+      if (!season) throw new Error('Player season disappeared.')
+      await ctx.db.patch('playerSeasons', row.playerSeasonId, {
+        participationTotals: {
+          ...season.participationTotals,
+          [args.phase]: { ...snapshot, importedAt: Date.now() },
+        },
+      })
+      updated += 1
+    }
+    const dataRevision = updated
+      ? await advanceMichiganDataRevision(ctx, {
+          action: 'import_season_participation',
+          sessionId: session._id,
+          backupManifestId: args.backupManifestId,
+          target: `${args.season}:${args.phase}:through-${args.throughTeamGames}:${args.sourceImageSha256}`,
+        })
+      : args.expectedRevision
+    return { updated, dataRevision }
+  },
+})
 
 const entryMethod = v.union(
   v.literal('high_school'),
@@ -614,7 +781,10 @@ export const upsertPlayerSeason = mutation({
       )
       .unique()
     if (existing) {
-      await ctx.db.replace('playerSeasons', existing._id, document)
+      await ctx.db.replace('playerSeasons', existing._id, {
+        ...document,
+        participationTotals: existing.participationTotals,
+      })
       return existing._id
     }
     return ctx.db.insert('playerSeasons', document)
@@ -1230,6 +1400,7 @@ export const applyRollover = mutation({
       await ctx.db.insert('playerSeasons', {
         ...values,
         captain: false,
+        participationTotals: undefined,
         gamesPlayed: 0,
         honors: [],
         season: args.fromSeason + 1,

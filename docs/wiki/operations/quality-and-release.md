@@ -6,6 +6,8 @@
 
 The repository has strict TypeScript, TanStack/Convex ESLint rules, Prettier, production builds, a local Markdown-link checker, and offline Node tests for the CFBD seams plus the rating backtest, calibration, and promotion contracts. It does **not** yet have broader query integration coverage, end-to-end, accessibility, performance, or CI automation.
 
+Season participation adds focused `convex-test` integration coverage under Vitest's edge runtime: owner-session rejection, atomic import failure, revision/backup checks, replay behavior, other-phase preservation, annual edits, and rollover. `npm test` runs both the existing Node suite and the Convex specs; `npm run test:participation` runs just the screenshot validation and import integration checks. `vitest.config.ts` owns this test environment, and Convex specs use the `.spec.ts` suffix so Node's test discovery does not execute them.
+
 Do not describe typecheck/build output as “tests.” Name the check that actually ran.
 
 ## Commands and evidence

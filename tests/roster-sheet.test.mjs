@@ -4,7 +4,78 @@ import {
   collegeYear,
   rosterEligibilityBand,
   rosterGroup,
+  rosterParticipation,
 } from '../src/features/michigan/rosterSheetModel.ts'
+
+test('roster participation displays the saved phase GP and snaps instead of stale annual zeroes', () => {
+  const participation = rosterParticipation({
+    gamesPlayed: 0,
+    positionRoom: 'Quarterbacks',
+    participationTotals: {
+      offense: { gamesPlayed: 5, snaps: 299, throughTeamGames: 5 },
+    },
+  })
+  assert.equal(participation.games, 5)
+  assert.equal(participation.snaps, 299)
+  assert.equal(participation.phase, 'offense')
+  assert.equal(participation.throughTeamGames, 5)
+})
+
+test('roster participation uses the main phase without summing overlapping GP or special-teams snaps', () => {
+  const participationTotals = {
+    offense: { gamesPlayed: 5, snaps: 156, throughTeamGames: 5 },
+    defense: { gamesPlayed: 4, snaps: 120, throughTeamGames: 5 },
+    specialTeams: { gamesPlayed: 3, snaps: 30, throughTeamGames: 4 },
+  }
+  for (const [positionRoom, phase, games, snaps] of [
+    ['Backs', 'offense', 5, 156],
+    ['Receivers', 'offense', 5, 156],
+    ['Offensive line', 'offense', 5, 156],
+    ['Defensive line', 'defense', 4, 120],
+    ['Linebackers', 'defense', 4, 120],
+    ['Secondary', 'defense', 4, 120],
+    ['Specialists', 'specialTeams', 3, 30],
+  ]) {
+    const participation = rosterParticipation({
+      gamesPlayed: 6,
+      positionRoom,
+      participationTotals,
+    })
+    assert.equal(participation.phase, phase)
+    assert.equal(participation.games, games)
+    assert.equal(participation.snaps, snaps)
+  }
+})
+
+test('roster participation preserves explicit zeroes and never invents snaps for an unknown phase', () => {
+  const zero = rosterParticipation({
+    gamesPlayed: 3,
+    positionRoom: 'Quarterbacks',
+    participationTotals: {
+      offense: { gamesPlayed: 0, snaps: 0, throughTeamGames: 5 },
+    },
+  })
+  assert.equal(zero.games, 0)
+  assert.equal(zero.snaps, 0)
+  for (const positionRoom of ['Backs', 'Other']) {
+    const missing = rosterParticipation({
+      gamesPlayed: 3,
+      positionRoom,
+      participationTotals: {
+        specialTeams: { gamesPlayed: 2, snaps: 20, throughTeamGames: 5 },
+      },
+    })
+    assert.equal(missing.games, 3)
+    assert.equal(missing.snaps, null)
+    assert.equal(missing.throughTeamGames, null)
+  }
+  const historical = rosterParticipation({
+    gamesPlayed: 12,
+    positionRoom: 'Quarterbacks',
+  })
+  assert.equal(historical.games, 12)
+  assert.equal(historical.snaps, null)
+})
 
 test('starting and meaningful rotation roles take precedence over college year', () => {
   for (const role of ['starter', 'rotation']) {

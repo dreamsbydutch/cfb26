@@ -1,0 +1,419 @@
+{
+  "throughTeamGames": 5,
+  "sourceLabel": "Owner-provided offensive participation screenshot, 2026 through five games",
+  "sourceImageSha256": "d6efed0f5d6d62fb8af23d71d8fd80b65d23ab23f984245c197eb2b11a198b8b",
+  "phase": "offense",
+  "season": 2026,
+  "rows": [
+    {
+      "gamesPlayed": 1,
+      "name": "Tommy Carr",
+      "jerseyNumber": 14,
+      "offenseBreakdown": {
+        "runBlock": 6,
+        "run": 3,
+        "pass": 2,
+        "passBlock": 0
+      },
+      "snaps": 11
+    },
+    {
+      "gamesPlayed": 3,
+      "name": "Manuel Beigel",
+      "jerseyNumber": 96,
+      "offenseBreakdown": {
+        "runBlock": 54,
+        "run": 0,
+        "pass": 1,
+        "passBlock": 29
+      },
+      "snaps": 84
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "JJ Buchanan",
+      "jerseyNumber": 6,
+      "offenseBreakdown": {
+        "runBlock": 150,
+        "run": 0,
+        "pass": 132,
+        "passBlock": 0
+      },
+      "snaps": 282
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Andrew Marsh",
+      "jerseyNumber": 3,
+      "offenseBreakdown": {
+        "runBlock": 132,
+        "run": 2,
+        "pass": 129,
+        "passBlock": 0
+      },
+      "snaps": 263
+    },
+    {
+      "gamesPlayed": 4,
+      "name": "Evan Link",
+      "jerseyNumber": 71,
+      "offenseBreakdown": {
+        "runBlock": 122,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 111
+      },
+      "snaps": 233
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Brady Norton",
+      "jerseyNumber": 70,
+      "offenseBreakdown": {
+        "runBlock": 162,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 134
+      },
+      "snaps": 296
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Jordan Marshall",
+      "jerseyNumber": 23,
+      "offenseBreakdown": {
+        "runBlock": 23,
+        "run": 56,
+        "pass": 39,
+        "passBlock": 38
+      },
+      "snaps": 156
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Blake Frazier",
+      "jerseyNumber": 77,
+      "offenseBreakdown": {
+        "runBlock": 159,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 136
+      },
+      "snaps": 295
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Avery Gach",
+      "playerId": "jh76gkbjm3xd8431de8xtetccx8bbd1g",
+      "jerseyNumber": 74,
+      "offenseBreakdown": {
+        "runBlock": 52,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 29
+      },
+      "snaps": 81
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Savion Hiter",
+      "jerseyNumber": 5,
+      "offenseBreakdown": {
+        "runBlock": 21,
+        "run": 49,
+        "pass": 29,
+        "passBlock": 14
+      },
+      "snaps": 113
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Nathan Efobi",
+      "jerseyNumber": 55,
+      "offenseBreakdown": {
+        "runBlock": 154,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 120
+      },
+      "snaps": 274
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Bryce Underwood",
+      "jerseyNumber": 19,
+      "offenseBreakdown": {
+        "runBlock": 117,
+        "run": 45,
+        "pass": 137,
+        "passBlock": 0
+      },
+      "snaps": 299
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Dan Taraboi",
+      "jerseyNumber": 66,
+      "offenseBreakdown": {
+        "runBlock": 3,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 0
+      },
+      "snaps": 3
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Jake Guarnera",
+      "jerseyNumber": 53,
+      "offenseBreakdown": {
+        "runBlock": 162,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 137
+      },
+      "snaps": 299
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Crandall Quinn",
+      "jerseyNumber": 46,
+      "offenseBreakdown": {
+        "runBlock": 3,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 0
+      },
+      "snaps": 3
+    },
+    {
+      "gamesPlayed": 2,
+      "name": "Andrew Sprague",
+      "jerseyNumber": 54,
+      "offenseBreakdown": {
+        "runBlock": 66,
+        "run": 0,
+        "pass": 1,
+        "passBlock": 48
+      },
+      "snaps": 115
+    },
+    {
+      "gamesPlayed": 2,
+      "name": "Marky Walbridge",
+      "jerseyNumber": 78,
+      "offenseBreakdown": {
+        "runBlock": 13,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 4
+      },
+      "snaps": 17
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Houston Ka\u0027aha\u0027aina-Torres",
+      "jerseyNumber": 67,
+      "offenseBreakdown": {
+        "runBlock": 9,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 2
+      },
+      "snaps": 11
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Jimmy Pisani",
+      "jerseyNumber": 40,
+      "offenseBreakdown": {
+        "runBlock": 1,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 0
+      },
+      "snaps": 1
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "James Kavouklis",
+      "jerseyNumber": 64,
+      "offenseBreakdown": {
+        "runBlock": 2,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 0
+      },
+      "snaps": 2
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Peter Donini",
+      "jerseyNumber": 72,
+      "offenseBreakdown": {
+        "runBlock": 3,
+        "run": 0,
+        "pass": 0,
+        "passBlock": 0
+      },
+      "snaps": 3
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Tomas O\u0027Maera",
+      "playerId": "jh796dwshymym19st7cxmqrrsn8bawjq",
+      "jerseyNumber": 36,
+      "offenseBreakdown": {
+        "runBlock": 2,
+        "run": 1,
+        "pass": 0,
+        "passBlock": 1
+      },
+      "snaps": 4
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Donovan Johnson",
+      "jerseyNumber": 26,
+      "offenseBreakdown": {
+        "runBlock": 1,
+        "run": 1,
+        "pass": 0,
+        "passBlock": 0
+      },
+      "snaps": 2
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Bryson Kuzdzal",
+      "jerseyNumber": 24,
+      "offenseBreakdown": {
+        "runBlock": 7,
+        "run": 11,
+        "pass": 10,
+        "passBlock": 6
+      },
+      "snaps": 34
+    },
+    {
+      "gamesPlayed": 3,
+      "name": "Hogan Hansen",
+      "jerseyNumber": 80,
+      "offenseBreakdown": {
+        "runBlock": 25,
+        "run": 0,
+        "pass": 27,
+        "passBlock": 1
+      },
+      "snaps": 53
+    },
+    {
+      "gamesPlayed": 4,
+      "name": "Travis Johnson",
+      "jerseyNumber": 13,
+      "offenseBreakdown": {
+        "runBlock": 14,
+        "run": 1,
+        "pass": 18,
+        "passBlock": 0
+      },
+      "snaps": 33
+    },
+    {
+      "gamesPlayed": 3,
+      "name": "Mason Bonner",
+      "jerseyNumber": 18,
+      "offenseBreakdown": {
+        "runBlock": 1,
+        "run": 0,
+        "pass": 4,
+        "passBlock": 0
+      },
+      "snaps": 5
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Salesi Moa",
+      "jerseyNumber": 12,
+      "offenseBreakdown": {
+        "runBlock": 30,
+        "run": 1,
+        "pass": 38,
+        "passBlock": 0
+      },
+      "snaps": 69
+    },
+    {
+      "gamesPlayed": 3,
+      "name": "Jaime Ffrench Jr.",
+      "jerseyNumber": 10,
+      "offenseBreakdown": {
+        "runBlock": 10,
+        "run": 0,
+        "pass": 8,
+        "passBlock": 0
+      },
+      "snaps": 18
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Eli Owens",
+      "jerseyNumber": 44,
+      "offenseBreakdown": {
+        "runBlock": 41,
+        "run": 1,
+        "pass": 19,
+        "passBlock": 4
+      },
+      "snaps": 65
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Channing Goodwin",
+      "jerseyNumber": 9,
+      "offenseBreakdown": {
+        "runBlock": 32,
+        "run": 0,
+        "pass": 30,
+        "passBlock": 0
+      },
+      "snaps": 62
+    },
+    {
+      "gamesPlayed": 1,
+      "name": "Kendrick Bell",
+      "jerseyNumber": 0,
+      "offenseBreakdown": {
+        "runBlock": 4,
+        "run": 0,
+        "pass": 2,
+        "passBlock": 0
+      },
+      "snaps": 6
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Jalen Hoffman",
+      "jerseyNumber": 42,
+      "offenseBreakdown": {
+        "runBlock": 96,
+        "run": 0,
+        "pass": 43,
+        "passBlock": 8
+      },
+      "snaps": 147
+    },
+    {
+      "gamesPlayed": 5,
+      "name": "Zack Marshall",
+      "jerseyNumber": 83,
+      "offenseBreakdown": {
+        "runBlock": 31,
+        "run": 0,
+        "pass": 26,
+        "passBlock": 12
+      },
+      "snaps": 69
+    }
+  ]
+}
