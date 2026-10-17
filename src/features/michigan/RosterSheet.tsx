@@ -8,10 +8,10 @@ import type {
 } from '~/features/michigan/rosterSheetModel'
 import { useMichiganRoster } from '~/features/roster/useMichiganRoster'
 import {
-  collegeYear,
   ROSTER_GROUPS,
   ROSTER_GROUP_DESCRIPTIONS,
   ROSTER_GROUP_LABELS,
+  collegeYear,
   rosterEligibilityBand,
   rosterGroup,
 } from '~/features/michigan/rosterSheetModel'

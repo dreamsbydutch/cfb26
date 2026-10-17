@@ -33,9 +33,9 @@ import {
 } from '~/features/roster/useMichiganRoster'
 import { RosterSheet } from '~/features/michigan/RosterSheet'
 import {
-  collegeYear,
   ROSTER_GROUPS,
   ROSTER_GROUP_LABELS,
+  collegeYear,
   rosterGroup,
 } from '~/features/michigan/rosterSheetModel'
 
