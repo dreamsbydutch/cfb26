@@ -32,7 +32,12 @@ import {
   useSeasonalStats,
 } from '~/features/roster/useMichiganRoster'
 import { RosterSheet } from '~/features/michigan/RosterSheet'
-import { collegeYear } from '~/features/michigan/rosterSheetModel'
+import {
+  collegeYear,
+  ROSTER_GROUPS,
+  ROSTER_GROUP_LABELS,
+  rosterGroup,
+} from '~/features/michigan/rosterSheetModel'
 
 const CURRENT_SEASON = new Date().getFullYear()
 const ROOM_ORDER = [
@@ -46,13 +51,6 @@ const ROOM_ORDER = [
   'Specialists',
   'Other',
 ] as const
-const ROLES = ['starter', 'rotation', 'reserve', 'unassigned'] as const
-const ROLE_LABELS = {
-  reserve: 'Reserve',
-  rotation: 'Rotation',
-  starter: 'Starter',
-  unassigned: 'Reserve / unassigned',
-} as const
 const BASELINE_TARGETS = {
   Backs: 8,
   'Defensive line': 17,
@@ -108,7 +106,12 @@ export function MichiganMatrix() {
             .includes(normalizedSearch) ||
           String(entry.season.jerseyNumber ?? '').includes(normalizedSearch)) &&
         (room === 'all' || entry.season.positionRoom === room) &&
-        (role === 'all' || entry.season.role === role) &&
+        (role === 'all' ||
+          rosterGroup({
+            enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
+            role: entry.season.role,
+            season,
+          }) === role) &&
         (availability === 'all' ||
           (availability === 'available'
             ? entry.season.depthStatus === 'available'
@@ -228,11 +231,11 @@ export function MichiganMatrix() {
                       </option>
                     ))}
                   </FilterSelect>
-                  <FilterSelect label="Role" onChange={setRole} value={role}>
-                    <option value="all">All roles</option>
-                    {ROLES.map((item) => (
+                  <FilterSelect label="Group" onChange={setRole} value={role}>
+                    <option value="all">All groups</option>
+                    {ROSTER_GROUPS.map((item) => (
                       <option key={item} value={item}>
-                        {ROLE_LABELS[item]}
+                        {ROSTER_GROUP_LABELS[item]}
                       </option>
                     ))}
                   </FilterSelect>

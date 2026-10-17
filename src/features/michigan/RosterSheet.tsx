@@ -2,11 +2,18 @@ import { Link } from '@tanstack/react-router'
 import { CircleAlert, UserRoundPlus, X } from 'lucide-react'
 import { derivePositionRoom } from '../../../convex/playerDomain'
 import type { RosterEntry } from '~/features/roster/useMichiganRoster'
-import type { RosterEligibilityBand } from '~/features/michigan/rosterSheetModel'
+import type {
+  RosterEligibilityBand,
+  RosterGroup,
+} from '~/features/michigan/rosterSheetModel'
 import { useMichiganRoster } from '~/features/roster/useMichiganRoster'
 import {
   collegeYear,
+  ROSTER_GROUPS,
+  ROSTER_GROUP_DESCRIPTIONS,
+  ROSTER_GROUP_LABELS,
   rosterEligibilityBand,
+  rosterGroup,
 } from '~/features/michigan/rosterSheetModel'
 import { EmptyState } from '~/components/AppShell'
 
@@ -80,14 +87,6 @@ const ELIGIBILITY = {
   { color: string; label: string; description: string }
 >
 
-const ROLE_LABEL = {
-  starter: 'Starter',
-  rotation: 'Rotation',
-  reserve: 'Depth',
-  unassigned: 'Unassigned',
-  recruit: 'Incoming',
-}
-
 type SheetRow = {
   band: RosterEligibilityBand
   eligibleThrough: number | null
@@ -99,7 +98,8 @@ type SheetRow = {
   number: number | null
   playerId: string
   position: string
-  role: keyof typeof ROLE_LABEL
+  group: RosterGroup
+  roleUnassigned: boolean
   starts: number | null
   status: string | null
   weight: number | null
@@ -148,7 +148,12 @@ export function RosterSheet({
     number: entry.season.jerseyNumber,
     playerId: String(entry.player._id),
     position: entry.season.listedPosition.trim().toUpperCase(),
-    role: entry.season.role,
+    group: rosterGroup({
+      enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
+      role: entry.season.role,
+      season,
+    }),
+    roleUnassigned: entry.season.role === 'unassigned',
     starts: entry.season.starts,
     status:
       entry.season.depthStatus === 'available'
@@ -163,13 +168,14 @@ export function RosterSheet({
   const enrolled = new Set(rosterPlayerIds)
   const seenRecruits = new Set<string>()
   const search = filters.search.trim().toLowerCase()
-  const showRecruits = [
-    filters.availability,
-    filters.eligibility,
-    filters.experience,
-    filters.role,
-    filters.scholarship,
-  ].every((value) => value === 'all')
+  const showRecruits =
+    [
+      filters.availability,
+      filters.eligibility,
+      filters.experience,
+      filters.scholarship,
+    ].every((value) => value === 'all') &&
+    (filters.role === 'all' || filters.role === 'recruit')
   if (showRecruits) {
     for (const { commitment, player } of incoming.data?.commitments ?? []) {
       if (
@@ -216,7 +222,8 @@ export function RosterSheet({
         number: null,
         playerId: String(player._id),
         position,
-        role: 'recruit',
+        group: 'recruit',
+        roleUnassigned: false,
         starts: null,
         status: null,
         weight: annual?.weightPounds ?? null,
@@ -256,6 +263,26 @@ export function RosterSheet({
           </span>
         ))}
       </div>
+      <details className="mb-2 text-[11px] text-[#00274c]">
+        <summary className="w-fit cursor-pointer py-1 font-semibold">
+          Roster group definitions
+        </summary>
+        <dl className="my-1 grid gap-1 sm:grid-cols-2">
+          {ROSTER_GROUPS.map((group) => (
+            <div key={group}>
+              <dt className="inline font-bold">
+                {ROSTER_GROUP_LABELS[group]}:{' '}
+              </dt>
+              <dd className="m-0 inline">{ROSTER_GROUP_DESCRIPTIONS[group]}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="my-1">
+          Starting and rotation roles are owner-assigned. Games played alone do
+          not establish meaningful playing time. Unassigned roles are
+          provisional; unknown college year stays on the bench.
+        </p>
+      </details>
       {showRecruits && incoming.isLoading && (
         <p className="my-2 text-xs text-[var(--app-muted)]" role="status">
           Loading incoming recruits…
@@ -297,7 +324,7 @@ export function RosterSheet({
                 role="region"
                 tabIndex={0}
               >
-                <table className="w-full min-w-[660px] table-fixed border-collapse text-left text-xs tabular-nums">
+                <table className="w-[552px] table-fixed border-collapse text-left text-xs tabular-nums sm:w-full sm:min-w-[660px]">
                   <caption className="sr-only">
                     {season} {position} roster. Row colors follow the
                     eligibility legend. Year means college year from first
@@ -306,7 +333,7 @@ export function RosterSheet({
                   </caption>
                   <colgroup>
                     <col className="w-7" />
-                    <col className="w-44" />
+                    <col className="w-28 sm:w-44" />
                     <col className="w-[5.5rem]" />
                     <col className="w-9" />
                     <col className="w-[4.5rem]" />
@@ -342,7 +369,7 @@ export function RosterSheet({
                         Year
                       </th>
                       <th className="px-1 py-1" scope="col">
-                        Role
+                        Group
                       </th>
                       <th className="px-1 py-1 text-center" scope="col">
                         <abbr className="no-underline" title="Games played">
@@ -370,16 +397,39 @@ export function RosterSheet({
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {players.map((row) => (
-                      <SheetPlayer
-                        comparison={comparison}
-                        key={row.id}
-                        row={row}
-                        season={season}
-                      />
-                    ))}
-                  </tbody>
+                  {ROSTER_GROUPS.map((group) => {
+                    const members = players.filter((row) => row.group === group)
+                    if (members.length === 0) return null
+                    return (
+                      <tbody
+                        aria-label={`${position} ${ROSTER_GROUP_LABELS[group]}`}
+                        key={group}
+                      >
+                        <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
+                          <th
+                            className="px-0 py-0.5 text-left"
+                            colSpan={10}
+                            scope="rowgroup"
+                          >
+                            <span
+                              className="sticky left-0 inline-block px-2 text-[10px] font-bold uppercase tracking-wide"
+                              title={ROSTER_GROUP_DESCRIPTIONS[group]}
+                            >
+                              {ROSTER_GROUP_LABELS[group]} · {members.length}
+                            </span>
+                          </th>
+                        </tr>
+                        {members.map((row) => (
+                          <SheetPlayer
+                            comparison={comparison}
+                            key={row.id}
+                            row={row}
+                            season={season}
+                          />
+                        ))}
+                      </tbody>
+                    )
+                  })}
                 </table>
               </div>
             </section>
@@ -402,20 +452,18 @@ function SheetPlayer({
   const selected = comparison.ids.includes(row.playerId)
   const band = ELIGIBILITY[row.band]
   return (
-    <tr
-      className={`border-t border-[#00274c]/10 ${row.band === 'incoming' ? 'border-t-[#00274c]/35' : ''} ${band.color}`}
-    >
+    <tr className={`border-t border-[#00274c]/10 ${band.color}`}>
       <td
         className={`sticky left-0 z-10 px-1 text-center text-[11px] text-[#00274c]/70 ${band.color}`}
       >
         {row.number ?? '—'}
       </td>
       <th
-        className={`sticky left-7 z-10 px-1 text-[13px] font-semibold ${band.color}`}
+        className={`sticky left-7 z-10 px-1 text-xs font-semibold sm:text-[13px] ${band.color}`}
         scope="row"
       >
         <Link
-          className="block min-h-8 content-center whitespace-nowrap py-1 text-[#00274c] hover:underline"
+          className="block min-h-8 content-center py-1 leading-tight break-words text-[#00274c] hover:underline sm:whitespace-nowrap"
           params={{ playerId: row.playerId }}
           search={{ season: row.incomingSeason ?? season }}
           to="/michigan/players/$playerId"
@@ -445,7 +493,21 @@ function SheetPlayer({
         {row.weight ?? '—'}
       </td>
       <td className="px-1 text-center">{row.year ?? '—'}</td>
-      <td className="px-1 text-[11px]">{ROLE_LABEL[row.role]}</td>
+      <td
+        className="px-1 text-[11px]"
+        title={
+          row.roleUnassigned
+            ? 'Playing role unassigned; provisional group uses college year. Unknown college year stays on the bench.'
+            : ROSTER_GROUP_DESCRIPTIONS[row.group]
+        }
+      >
+        {ROSTER_GROUP_LABELS[row.group]}
+        {row.roleUnassigned && (
+          <span className="block text-[10px] text-[#00274c]/70">
+            Unassigned
+          </span>
+        )}
+      </td>
       <td className="px-1 text-center">{row.games ?? '—'}</td>
       <td className="px-1 text-center">{row.starts ?? '—'}</td>
       <td className="px-1 text-center">{row.eligibleThrough ?? '—'}</td>

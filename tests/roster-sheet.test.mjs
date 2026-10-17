@@ -3,7 +3,49 @@ import test from 'node:test'
 import {
   collegeYear,
   rosterEligibilityBand,
+  rosterGroup,
 } from '../src/features/michigan/rosterSheetModel.ts'
+
+test('starting and meaningful rotation roles take precedence over college year', () => {
+  for (const role of ['starter', 'rotation']) {
+    for (const enrollmentSeason of [2026, 2025, 2022, null]) {
+      assert.equal(rosterGroup({ role, enrollmentSeason, season: 2026 }), role)
+    }
+  }
+})
+
+test('limited-participation players are prospects only in their first two college years', () => {
+  for (const role of ['reserve', 'unassigned']) {
+    for (const enrollmentSeason of [2026, 2025]) {
+      assert.equal(
+        rosterGroup({ role, enrollmentSeason, season: 2026 }),
+        'prospect',
+      )
+    }
+    for (const enrollmentSeason of [2024, 2023, 2022, null, 2027]) {
+      assert.equal(
+        rosterGroup({ role, enrollmentSeason, season: 2026 }),
+        'bench',
+      )
+    }
+  }
+})
+
+test('prospects advance to bench with college experience, including transfers', () => {
+  assert.equal(
+    rosterGroup({ role: 'reserve', enrollmentSeason: 2025, season: 2026 }),
+    'prospect',
+  )
+  assert.equal(
+    rosterGroup({ role: 'reserve', enrollmentSeason: 2025, season: 2027 }),
+    'bench',
+  )
+  // A transfer arriving at Michigan in 2026 still has four college years.
+  assert.equal(
+    rosterGroup({ role: 'reserve', enrollmentSeason: 2023, season: 2026 }),
+    'bench',
+  )
+})
 
 test('roster colors use college enrollment, including transfers, rather than Michigan entry', () => {
   assert.equal(collegeYear(2022, 2026), 5)
