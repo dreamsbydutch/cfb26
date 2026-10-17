@@ -170,7 +170,11 @@ test('benchmark commands refuse the old unverified snapshot contract before writ
   ]) {
     assert.throws(
       () =>
-        execFileSync(process.execPath, [script, ...args], { stdio: 'pipe' }),
+        execFileSync(
+          process.execPath,
+          ['--experimental-strip-types', script, ...args],
+          { stdio: 'pipe' },
+        ),
       (error) => error.stderr.toString().includes('unverified'),
     )
     assert.equal(existsSync(output), false)
