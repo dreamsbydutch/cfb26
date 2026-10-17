@@ -1,0 +1,377 @@
+{
+  "season": 2026,
+  "phase": "specialTeams",
+  "throughTeamGames": 5,
+  "sourceLabel": "Michigan special teams screenshots (top then continuation), 2026 through five team games",
+  "sourceImageSha256": "361acc92218d3695b0bbe04f0a97cb421cee84d712975b09a7e4a44d55b5b943",
+  "rows": [
+    {
+      "name": "Zeke Berry",
+      "jerseyNumber": 10,
+      "gamesPlayed": 3,
+      "snaps": 30
+    },
+    {
+      "name": "Lugard Edokpayi Jr.",
+      "jerseyNumber": 88,
+      "gamesPlayed": 4,
+      "snaps": 17
+    },
+    {
+      "name": "Logan Forbes",
+      "jerseyNumber": 85,
+      "gamesPlayed": 3,
+      "snaps": 20
+    },
+    {
+      "name": "Max Alford",
+      "jerseyNumber": 30,
+      "gamesPlayed": 5,
+      "snaps": 44
+    },
+    {
+      "name": "Chase Taylor",
+      "jerseyNumber": 4,
+      "gamesPlayed": 5,
+      "snaps": 33
+    },
+    {
+      "name": "Nico Crawford",
+      "jerseyNumber": 49,
+      "gamesPlayed": 5,
+      "snaps": 41
+    },
+    {
+      "name": "Channing Goodwin",
+      "jerseyNumber": 9,
+      "gamesPlayed": 5,
+      "snaps": 39
+    },
+    {
+      "name": "Ted Hammond",
+      "jerseyNumber": 92,
+      "gamesPlayed": 4,
+      "snaps": 13
+    },
+    {
+      "name": "Travis Johnson",
+      "jerseyNumber": 13,
+      "gamesPlayed": 4,
+      "snaps": 15
+    },
+    {
+      "name": "I'Marion Stewart",
+      "jerseyNumber": 20,
+      "gamesPlayed": 2,
+      "snaps": 7,
+      "playerId": "jh7009k7675m6frxwx5hkvn7g58baw64"
+    },
+    {
+      "name": "Nico Andrighetto",
+      "jerseyNumber": 31,
+      "gamesPlayed": 5,
+      "snaps": 44
+    },
+    {
+      "name": "Eli Owens",
+      "jerseyNumber": 44,
+      "gamesPlayed": 5,
+      "snaps": 43
+    },
+    {
+      "name": "Aden Reeder",
+      "jerseyNumber": 15,
+      "gamesPlayed": 5,
+      "snaps": 21
+    },
+    {
+      "name": "Marky Walbridge",
+      "jerseyNumber": 78,
+      "gamesPlayed": 5,
+      "snaps": 17
+    },
+    {
+      "name": "Nate Marshall",
+      "jerseyNumber": 94,
+      "gamesPlayed": 5,
+      "snaps": 31
+    },
+    {
+      "name": "Houston Ka'aha'aina-Torres",
+      "jerseyNumber": 67,
+      "gamesPlayed": 5,
+      "snaps": 17
+    },
+    {
+      "name": "Nathaniel Owusu-Boateng",
+      "jerseyNumber": 12,
+      "gamesPlayed": 5,
+      "snaps": 31,
+      "playerId": "jh7fckxs8tqp8djm4ax8gwq4h58ba2z3"
+    },
+    {
+      "name": "Manuel Beigel",
+      "jerseyNumber": 96,
+      "gamesPlayed": 3,
+      "snaps": 12
+    },
+    {
+      "name": "Jyaire Hill",
+      "jerseyNumber": 0,
+      "gamesPlayed": 5,
+      "snaps": 33
+    },
+    {
+      "name": "Peter Donini",
+      "jerseyNumber": 72,
+      "gamesPlayed": 5,
+      "snaps": 17
+    },
+    {
+      "name": "Cam Brown",
+      "jerseyNumber": 33,
+      "gamesPlayed": 5,
+      "snaps": 41,
+      "playerId": "jh7826btfg1qpy5dcg75vs570d8baxv5"
+    },
+    {
+      "name": "Jalen Hoffman",
+      "jerseyNumber": 42,
+      "gamesPlayed": 5,
+      "snaps": 46
+    },
+    {
+      "name": "Kendrick Bell",
+      "jerseyNumber": 0,
+      "gamesPlayed": 5,
+      "snaps": 64
+    },
+    {
+      "name": "Bobby Kanka",
+      "jerseyNumber": 99,
+      "gamesPlayed": 5,
+      "snaps": 19
+    },
+    {
+      "name": "Rod Moore Jr.",
+      "jerseyNumber": 1,
+      "gamesPlayed": 5,
+      "snaps": 17
+    },
+    {
+      "name": "Jacob Baggett",
+      "jerseyNumber": 97,
+      "gamesPlayed": 5,
+      "snaps": 22
+    },
+    {
+      "name": "Nathaniel Staehling",
+      "jerseyNumber": 44,
+      "gamesPlayed": 5,
+      "snaps": 21
+    },
+    {
+      "name": "Deakon Tonielli",
+      "jerseyNumber": 88,
+      "gamesPlayed": 4,
+      "snaps": 38
+    },
+    {
+      "name": "Deyvid Palepale",
+      "jerseyNumber": 54,
+      "gamesPlayed": 3,
+      "snaps": 6
+    },
+    {
+      "name": "Andrew Marsh",
+      "jerseyNumber": 3,
+      "gamesPlayed": 5,
+      "snaps": 31
+    },
+    {
+      "name": "Dom Nichols",
+      "jerseyNumber": 8,
+      "gamesPlayed": 3,
+      "snaps": 9,
+      "playerId": "jh72nnwq3xn91dna47dw22pqas8bbv2j"
+    },
+    {
+      "name": "John Henry Daley",
+      "jerseyNumber": 90,
+      "gamesPlayed": 4,
+      "snaps": 12
+    },
+    {
+      "name": "Benny Patterson III",
+      "jerseyNumber": 93,
+      "gamesPlayed": 3,
+      "snaps": 7
+    },
+    {
+      "name": "Smith Snowden",
+      "jerseyNumber": 3,
+      "gamesPlayed": 5,
+      "snaps": 12
+    },
+    {
+      "name": "Zack Marshall",
+      "jerseyNumber": 83,
+      "gamesPlayed": 5,
+      "snaps": 60
+    },
+    {
+      "name": "Trey Butkowski",
+      "jerseyNumber": 99,
+      "gamesPlayed": 5,
+      "snaps": 17
+    },
+    {
+      "name": "Enow Etta",
+      "jerseyNumber": 17,
+      "gamesPlayed": 4,
+      "snaps": 14
+    },
+    {
+      "name": "Aisea Moa",
+      "jerseyNumber": 13,
+      "gamesPlayed": 4,
+      "snaps": 8
+    },
+    {
+      "name": "Markel Dabney",
+      "jerseyNumber": 23,
+      "gamesPlayed": 1,
+      "snaps": 1
+    },
+    {
+      "name": "JJ Buchanan",
+      "jerseyNumber": 6,
+      "gamesPlayed": 1,
+      "snaps": 1
+    },
+    {
+      "name": "Jordan Marshall",
+      "jerseyNumber": 23,
+      "gamesPlayed": 1,
+      "snaps": 1
+    },
+    {
+      "name": "Max Reyes",
+      "jerseyNumber": 39,
+      "gamesPlayed": 1,
+      "snaps": 1
+    },
+    {
+      "name": "Carter Meadows",
+      "jerseyNumber": 14,
+      "gamesPlayed": 2,
+      "snaps": 2
+    },
+    {
+      "name": "Tomas O'Meara",
+      "jerseyNumber": 36,
+      "gamesPlayed": 5,
+      "snaps": 18
+    },
+    {
+      "name": "Trey Pierce",
+      "jerseyNumber": 95,
+      "gamesPlayed": 5,
+      "snaps": 17
+    },
+    {
+      "name": "Cam Brandt",
+      "jerseyNumber": 9,
+      "gamesPlayed": 2,
+      "snaps": 3,
+      "playerId": "jh74gy1z9962q224hb8gs9begd8baw4d"
+    },
+    {
+      "name": "Hogan Hansen",
+      "jerseyNumber": 80,
+      "gamesPlayed": 3,
+      "snaps": 12
+    },
+    {
+      "name": "Chris Bracy",
+      "jerseyNumber": 7,
+      "gamesPlayed": 5,
+      "snaps": 45,
+      "playerId": "jh725bkhjm1078hf1d535gekfs8bab25"
+    },
+    {
+      "name": "Jonah Lea'ea",
+      "jerseyNumber": 91,
+      "gamesPlayed": 4,
+      "snaps": 6
+    },
+    {
+      "name": "Troy Bowles",
+      "jerseyNumber": 18,
+      "gamesPlayed": 5,
+      "snaps": 37
+    },
+    {
+      "name": "Tariq Boney",
+      "jerseyNumber": 41,
+      "gamesPlayed": 5,
+      "snaps": 24
+    },
+    {
+      "name": "Mason Bonner",
+      "jerseyNumber": 18,
+      "gamesPlayed": 3,
+      "snaps": 8
+    },
+    {
+      "name": "Mason Curtis",
+      "jerseyNumber": 25,
+      "gamesPlayed": 5,
+      "snaps": 82
+    },
+    {
+      "name": "Bryson Kuzdzal",
+      "jerseyNumber": 24,
+      "gamesPlayed": 5,
+      "snaps": 56
+    },
+    {
+      "name": "Avery Gach",
+      "jerseyNumber": 74,
+      "gamesPlayed": 5,
+      "snaps": 17,
+      "playerId": "jh76gkbjm3xd8431de8xtetccx8bbd1g"
+    },
+    {
+      "name": "Jo'Ziah Edmond",
+      "jerseyNumber": 16,
+      "gamesPlayed": 4,
+      "snaps": 20
+    },
+    {
+      "name": "Ernest Nunley",
+      "jerseyNumber": 27,
+      "gamesPlayed": 2,
+      "snaps": 2
+    },
+    {
+      "name": "Jordan Young",
+      "jerseyNumber": 6,
+      "gamesPlayed": 5,
+      "snaps": 48
+    },
+    {
+      "name": "Shamari Earls",
+      "jerseyNumber": 2,
+      "gamesPlayed": 5,
+      "snaps": 30
+    },
+    {
+      "name": "Jamarion Vincent",
+      "jerseyNumber": 45,
+      "gamesPlayed": 2,
+      "snaps": 6,
+      "playerId": "jh77q3sarfj8tkey5c274f40td8bbam3"
+    }
+  ]
+}

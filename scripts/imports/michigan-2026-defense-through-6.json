@@ -1,0 +1,411 @@
+{
+  "season": 2026,
+  "phase": "defense",
+  "throughTeamGames": 6,
+  "sourceLabel": "Michigan defense screenshot, 2026 through six team games",
+  "sourceImageSha256": "6ed77000aa6cc5a158ebe76a8df162cf9ae05f8f923481ac7404dcbc3d2a2843",
+  "rows": [
+    {
+      "name": "Jonah Lea'ea",
+      "jerseyNumber": 91,
+      "gamesPlayed": 6,
+      "snaps": 131,
+      "defenseBreakdown": {
+        "runDefense": 66,
+        "passRush": 65,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Tariq Boney",
+      "jerseyNumber": 41,
+      "gamesPlayed": 5,
+      "snaps": 70,
+      "defenseBreakdown": {
+        "runDefense": 32,
+        "passRush": 35,
+        "coverage": 3
+      }
+    },
+    {
+      "name": "Dom Nichols",
+      "jerseyNumber": 8,
+      "gamesPlayed": 6,
+      "snaps": 200,
+      "defenseBreakdown": {
+        "runDefense": 90,
+        "passRush": 99,
+        "coverage": 11
+      },
+      "playerId": "jh72nnwq3xn91dna47dw22pqas8bbv2j"
+    },
+    {
+      "name": "Nathaniel Staehling",
+      "jerseyNumber": 44,
+      "gamesPlayed": 6,
+      "snaps": 253,
+      "defenseBreakdown": {
+        "runDefense": 122,
+        "passRush": 25,
+        "coverage": 106
+      }
+    },
+    {
+      "name": "Chris Bracy",
+      "jerseyNumber": 7,
+      "gamesPlayed": 6,
+      "snaps": 322,
+      "defenseBreakdown": {
+        "runDefense": 149,
+        "passRush": 6,
+        "coverage": 167
+      },
+      "playerId": "jh725bkhjm1078hf1d535gekfs8bab25"
+    },
+    {
+      "name": "John Henry Daley",
+      "jerseyNumber": 90,
+      "gamesPlayed": 6,
+      "snaps": 261,
+      "defenseBreakdown": {
+        "runDefense": 119,
+        "passRush": 122,
+        "coverage": 20
+      }
+    },
+    {
+      "name": "Benny Patterson III",
+      "jerseyNumber": 93,
+      "gamesPlayed": 5,
+      "snaps": 70,
+      "defenseBreakdown": {
+        "runDefense": 37,
+        "passRush": 30,
+        "coverage": 3
+      }
+    },
+    {
+      "name": "Troy Bowles",
+      "jerseyNumber": 18,
+      "gamesPlayed": 6,
+      "snaps": 303,
+      "defenseBreakdown": {
+        "runDefense": 141,
+        "passRush": 23,
+        "coverage": 139
+      }
+    },
+    {
+      "name": "Max Alford",
+      "jerseyNumber": 30,
+      "gamesPlayed": 3,
+      "snaps": 14,
+      "defenseBreakdown": {
+        "runDefense": 8,
+        "passRush": 2,
+        "coverage": 4
+      }
+    },
+    {
+      "name": "Lugard Edokpayi Jr.",
+      "jerseyNumber": 88,
+      "gamesPlayed": 1,
+      "snaps": 9,
+      "defenseBreakdown": {
+        "runDefense": 5,
+        "passRush": 4,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Jacob Oden",
+      "jerseyNumber": 5,
+      "gamesPlayed": 1,
+      "snaps": 13,
+      "defenseBreakdown": {
+        "runDefense": 6,
+        "passRush": 0,
+        "coverage": 7
+      }
+    },
+    {
+      "name": "Trey Pierce",
+      "jerseyNumber": 95,
+      "gamesPlayed": 6,
+      "snaps": 226,
+      "defenseBreakdown": {
+        "runDefense": 115,
+        "passRush": 111,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Jyaire Hill",
+      "jerseyNumber": 0,
+      "gamesPlayed": 6,
+      "snaps": 333,
+      "defenseBreakdown": {
+        "runDefense": 157,
+        "passRush": 3,
+        "coverage": 173
+      }
+    },
+    {
+      "name": "Deyvid Palepale",
+      "jerseyNumber": 54,
+      "gamesPlayed": 3,
+      "snaps": 24,
+      "defenseBreakdown": {
+        "runDefense": 13,
+        "passRush": 11,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Aisea Moa",
+      "jerseyNumber": 13,
+      "gamesPlayed": 6,
+      "snaps": 146,
+      "defenseBreakdown": {
+        "runDefense": 89,
+        "passRush": 15,
+        "coverage": 42
+      }
+    },
+    {
+      "name": "Enow Etta",
+      "jerseyNumber": 17,
+      "gamesPlayed": 6,
+      "snaps": 225,
+      "defenseBreakdown": {
+        "runDefense": 105,
+        "passRush": 120,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Nico Andrighetto",
+      "jerseyNumber": 31,
+      "gamesPlayed": 1,
+      "snaps": 1,
+      "defenseBreakdown": {
+        "runDefense": 0,
+        "passRush": 0,
+        "coverage": 1
+      }
+    },
+    {
+      "name": "Smith Snowden",
+      "jerseyNumber": 3,
+      "gamesPlayed": 6,
+      "snaps": 310,
+      "defenseBreakdown": {
+        "runDefense": 138,
+        "passRush": 0,
+        "coverage": 172
+      }
+    },
+    {
+      "name": "Rod Moore Jr.",
+      "jerseyNumber": 1,
+      "gamesPlayed": 6,
+      "snaps": 280,
+      "defenseBreakdown": {
+        "runDefense": 130,
+        "passRush": 2,
+        "coverage": 148
+      }
+    },
+    {
+      "name": "Ted Hammond",
+      "jerseyNumber": 92,
+      "gamesPlayed": 1,
+      "snaps": 4,
+      "defenseBreakdown": {
+        "runDefense": 1,
+        "passRush": 3,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Nathaniel Owusu-Boateng",
+      "jerseyNumber": 12,
+      "gamesPlayed": 6,
+      "snaps": 67,
+      "defenseBreakdown": {
+        "runDefense": 25,
+        "passRush": 10,
+        "coverage": 32
+      },
+      "playerId": "jh7fckxs8tqp8djm4ax8gwq4h58ba2z3"
+    },
+    {
+      "name": "Markel Dabney",
+      "jerseyNumber": 23,
+      "gamesPlayed": 1,
+      "snaps": 4,
+      "defenseBreakdown": {
+        "runDefense": 1,
+        "passRush": 1,
+        "coverage": 2
+      }
+    },
+    {
+      "name": "Jordan Young",
+      "jerseyNumber": 6,
+      "gamesPlayed": 6,
+      "snaps": 66,
+      "defenseBreakdown": {
+        "runDefense": 31,
+        "passRush": 0,
+        "coverage": 35
+      }
+    },
+    {
+      "name": "Bobby Kanka",
+      "jerseyNumber": 99,
+      "gamesPlayed": 6,
+      "snaps": 48,
+      "defenseBreakdown": {
+        "runDefense": 22,
+        "passRush": 26,
+        "coverage": 0
+      }
+    },
+    {
+      "name": "Jo'Ziah Edmond",
+      "jerseyNumber": 16,
+      "gamesPlayed": 1,
+      "snaps": 14,
+      "defenseBreakdown": {
+        "runDefense": 8,
+        "passRush": 0,
+        "coverage": 6
+      }
+    },
+    {
+      "name": "Zeke Berry",
+      "jerseyNumber": 10,
+      "gamesPlayed": 5,
+      "snaps": 134,
+      "defenseBreakdown": {
+        "runDefense": 48,
+        "passRush": 5,
+        "coverage": 81
+      }
+    },
+    {
+      "name": "Shamari Earls",
+      "jerseyNumber": 2,
+      "gamesPlayed": 4,
+      "snaps": 88,
+      "defenseBreakdown": {
+        "runDefense": 43,
+        "passRush": 0,
+        "coverage": 45
+      }
+    },
+    {
+      "name": "I'Marion Stewart",
+      "jerseyNumber": 20,
+      "gamesPlayed": 1,
+      "snaps": 10,
+      "defenseBreakdown": {
+        "runDefense": 5,
+        "passRush": 0,
+        "coverage": 5
+      },
+      "playerId": "jh7009k7675m6frxwx5hkvn7g58baw64"
+    },
+    {
+      "name": "Chase Taylor",
+      "jerseyNumber": 4,
+      "gamesPlayed": 6,
+      "snaps": 173,
+      "defenseBreakdown": {
+        "runDefense": 69,
+        "passRush": 20,
+        "coverage": 84
+      }
+    },
+    {
+      "name": "Jamarion Vincent",
+      "jerseyNumber": 45,
+      "gamesPlayed": 1,
+      "snaps": 4,
+      "defenseBreakdown": {
+        "runDefense": 1,
+        "passRush": 0,
+        "coverage": 3
+      },
+      "playerId": "jh77q3sarfj8tkey5c274f40td8bbam3"
+    },
+    {
+      "name": "Ernest Nunley",
+      "jerseyNumber": 27,
+      "gamesPlayed": 1,
+      "snaps": 4,
+      "defenseBreakdown": {
+        "runDefense": 1,
+        "passRush": 0,
+        "coverage": 3
+      }
+    },
+    {
+      "name": "Mason Curtis",
+      "jerseyNumber": 25,
+      "gamesPlayed": 6,
+      "snaps": 84,
+      "defenseBreakdown": {
+        "runDefense": 37,
+        "passRush": 2,
+        "coverage": 45
+      }
+    },
+    {
+      "name": "Nate Marshall",
+      "jerseyNumber": 94,
+      "gamesPlayed": 5,
+      "snaps": 53,
+      "defenseBreakdown": {
+        "runDefense": 23,
+        "passRush": 27,
+        "coverage": 3
+      }
+    },
+    {
+      "name": "Cam Brandt",
+      "jerseyNumber": 9,
+      "gamesPlayed": 6,
+      "snaps": 56,
+      "defenseBreakdown": {
+        "runDefense": 34,
+        "passRush": 22,
+        "coverage": 0
+      },
+      "playerId": "jh74gy1z9962q224hb8gs9begd8baw4d"
+    },
+    {
+      "name": "Carter Meadows",
+      "jerseyNumber": 14,
+      "gamesPlayed": 2,
+      "snaps": 22,
+      "defenseBreakdown": {
+        "runDefense": 9,
+        "passRush": 12,
+        "coverage": 1
+      }
+    },
+    {
+      "name": "Aden Reeder",
+      "jerseyNumber": 15,
+      "gamesPlayed": 1,
+      "snaps": 4,
+      "defenseBreakdown": {
+        "runDefense": 1,
+        "passRush": 1,
+        "coverage": 2
+      }
+    }
+  ]
+}

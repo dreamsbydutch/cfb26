@@ -20,11 +20,11 @@ import { EmptyState } from '~/components/AppShell'
 
 const POSITION_ORDER = [
   'QB',
-  'RB',
   'HB',
   'FB',
   'WR',
   'SLOT',
+  'TE',
   'OT',
   'LT',
   'RT',
@@ -33,7 +33,6 @@ const POSITION_ORDER = [
   'RG',
   'OC',
   'C',
-  'TE',
   'DL',
   'DT',
   'NT',
@@ -53,6 +52,11 @@ const POSITION_ORDER = [
   'LS',
   'ATH',
 ]
+
+function sheetPosition(value: string) {
+  const position = value.trim().toUpperCase()
+  return position === 'RB' ? 'HB' : position
+}
 
 const ELIGIBILITY = {
   final: {
@@ -90,7 +94,6 @@ const ELIGIBILITY = {
 
 type SheetRow = {
   band: RosterEligibilityBand
-  eligibleThrough: number | null
   games: number | null
   height: number | null
   id: string
@@ -100,8 +103,9 @@ type SheetRow = {
   playerId: string
   position: string
   group: RosterGroup
-  roleUnassigned: boolean
   snaps: number | null
+  specialTeamsSnaps: number | null
+  specialTeamsNote: string | null
   participationNote: string | null
   status: string | null
   weight: number | null
@@ -143,7 +147,6 @@ export function RosterSheet({
         enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
         season,
       }),
-      eligibleThrough: entry.eligibility.eligibleThroughSeason,
       games: participation.games,
       height: entry.season.heightInches,
       id: String(entry.season._id),
@@ -151,14 +154,18 @@ export function RosterSheet({
       name: entry.player.displayName,
       number: entry.season.jerseyNumber,
       playerId: String(entry.player._id),
-      position: entry.season.listedPosition.trim().toUpperCase(),
+      position: sheetPosition(entry.season.listedPosition),
       group: rosterGroup({
         enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
         role: entry.season.role,
         season,
       }),
-      roleUnassigned: entry.season.role === 'unassigned',
       snaps: participation.snaps,
+      specialTeamsSnaps:
+        entry.season.participationTotals?.specialTeams?.snaps ?? null,
+      specialTeamsNote: entry.season.participationTotals?.specialTeams
+        ? `Special teams participation through ${entry.season.participationTotals.specialTeams.throughTeamGames} team games`
+        : null,
       participationNote: participation.description,
       status:
         entry.season.depthStatus === 'available'
@@ -191,7 +198,7 @@ export function RosterSheet({
         seenRecruits.has(String(player._id))
       )
         continue
-      const position = commitment.initialPosition.trim().toUpperCase()
+      const position = sheetPosition(commitment.initialPosition)
       if (
         search &&
         !player.displayName.toLowerCase().includes(search) &&
@@ -219,7 +226,6 @@ export function RosterSheet({
       )?.season
       rows.push({
         band: 'incoming',
-        eligibleThrough: null,
         games: null,
         height: annual?.heightInches ?? null,
         id: String(commitment._id),
@@ -229,8 +235,9 @@ export function RosterSheet({
         playerId: String(player._id),
         position,
         group: 'recruit',
-        roleUnassigned: false,
         snaps: null,
+        specialTeamsSnaps: null,
+        specialTeamsNote: null,
         participationNote: null,
         status: null,
         weight: annual?.weightPounds ?? null,
@@ -293,7 +300,9 @@ export function RosterSheet({
           GP and Snaps use offense or defense by position, and special teams for
           specialists. Imported values show participation through their saved
           cutoff. When phase totals are unavailable, GP uses the annual overall
-          count and Snaps stays unknown.
+          count and Snaps stays unknown. ST Snaps shows separate special-teams
+          participation for offensive and defensive players, using its own saved
+          cutoff.
         </p>
       </details>
       {showRecruits && incoming.isLoading && (
@@ -312,8 +321,9 @@ export function RosterSheet({
           Clear one or more filters to see the roster.
         </EmptyState>
       )}
-      <div className="grid items-start gap-3 xl:grid-cols-2 min-[1800px]:grid-cols-3">
+      <div className="grid items-start gap-3 lg:grid-cols-3">
         {positions.map((position) => {
+          const showSpecialTeams = !['K', 'P', 'LS'].includes(position)
           const players = rows.filter((row) => row.position === position)
           const recruits = players.filter(
             (row) => row.band === 'incoming',
@@ -321,7 +331,7 @@ export function RosterSheet({
           return (
             <section
               aria-label={`${position} position group`}
-              className="min-w-0 overflow-hidden border border-[#00274c]/25 bg-white"
+              className={`min-w-0 overflow-hidden border border-[#00274c]/25 bg-white ${position === 'K' ? 'lg:col-start-1' : ''}`}
               key={position}
             >
               <h2 className="m-0 flex items-center justify-between gap-2 bg-[#00274c] px-2 py-1 font-display text-lg font-bold leading-6 text-[#ffffff]">
@@ -337,7 +347,7 @@ export function RosterSheet({
                 role="region"
                 tabIndex={0}
               >
-                <table className="w-[568px] table-fixed border-collapse text-left text-xs tabular-nums sm:w-full sm:min-w-[676px]">
+                <table className="w-full min-w-[360px] table-fixed border-collapse text-left text-xs tabular-nums">
                   <caption className="sr-only">
                     {season} {position} roster. Row colors follow the
                     eligibility legend. Year means college year from first
@@ -346,14 +356,12 @@ export function RosterSheet({
                   </caption>
                   <colgroup>
                     <col className="w-7" />
-                    <col className="w-28 sm:w-44" />
-                    <col className="w-[5.5rem]" />
+                    <col className="w-28" />
+                    <col className="w-20" />
                     <col className="w-8" />
-                    <col className="w-12" />
+                    <col className="w-10" />
+                    {showSpecialTeams && <col className="w-12" />}
                     <col className="w-9" />
-                    <col className="w-[4.5rem]" />
-                    <col className="w-14" />
-                    <col className="w-16" />
                     <col className="w-8" />
                   </colgroup>
                   <thead className="bg-[#e9edf1] text-[10px] font-bold text-[#00274c]">
@@ -394,22 +402,18 @@ export function RosterSheet({
                           Snaps
                         </abbr>
                       </th>
+                      {showSpecialTeams && (
+                        <th className="px-1 py-1 text-center" scope="col">
+                          <abbr
+                            className="no-underline"
+                            title="Special-teams snaps, separate from offense or defense"
+                          >
+                            ST Snaps
+                          </abbr>
+                        </th>
+                      )}
                       <th className="px-1 py-1 text-center" scope="col">
                         Year
-                      </th>
-                      <th className="px-1 py-1" scope="col">
-                        Group
-                      </th>
-                      <th className="px-1 py-1 text-center" scope="col">
-                        <abbr
-                          className="no-underline"
-                          title="Eligible through season"
-                        >
-                          Elig.
-                        </abbr>
-                      </th>
-                      <th className="px-1 py-1" scope="col">
-                        Status
                       </th>
                       <th scope="col">
                         <span className="sr-only">Compare</span>
@@ -427,7 +431,7 @@ export function RosterSheet({
                         <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
                           <th
                             className="px-0 py-0.5 text-left"
-                            colSpan={10}
+                            colSpan={showSpecialTeams ? 8 : 7}
                             scope="rowgroup"
                           >
                             <span
@@ -444,6 +448,7 @@ export function RosterSheet({
                             key={row.id}
                             row={row}
                             season={season}
+                            showSpecialTeams={showSpecialTeams}
                           />
                         ))}
                       </tbody>
@@ -463,10 +468,12 @@ function SheetPlayer({
   comparison,
   row,
   season,
+  showSpecialTeams,
 }: {
   comparison: Comparison
   row: SheetRow
   season: number
+  showSpecialTeams: boolean
 }) {
   const selected = comparison.ids.includes(row.playerId)
   const band = ELIGIBILITY[row.band]
@@ -482,7 +489,7 @@ function SheetPlayer({
         scope="row"
       >
         <Link
-          className="block min-h-8 content-center py-1 leading-tight break-words text-[#00274c] hover:underline sm:whitespace-nowrap"
+          className="block min-h-8 content-center py-1 leading-tight break-words text-[#00274c] hover:underline"
           params={{ playerId: row.playerId }}
           search={{ season: row.incomingSeason ?? season }}
           to="/michigan/players/$playerId"
@@ -523,24 +530,19 @@ function SheetPlayer({
       >
         {row.snaps ?? '—'}
       </td>
-      <td className="px-1 text-center">{row.year ?? '—'}</td>
-      <td
-        className="px-1 text-[11px]"
-        title={
-          row.roleUnassigned
-            ? 'Playing role unassigned; provisional group uses college year. Unknown college year stays on the bench.'
-            : ROSTER_GROUP_DESCRIPTIONS[row.group]
-        }
-      >
-        {ROSTER_GROUP_LABELS[row.group]}
-        {row.roleUnassigned && (
-          <span className="block text-[10px] text-[#00274c]/70">
-            Unassigned
-          </span>
-        )}
+      {showSpecialTeams && (
+        <td
+          className="px-1 text-center"
+          title={row.specialTeamsNote ?? undefined}
+        >
+          {row.specialTeamsSnaps ?? '—'}
+        </td>
+      )}
+      <td className="px-1 text-center">
+        {row.year === null
+          ? '—'
+          : (['FR', 'SO', 'JR', 'SR', '5TH'][row.year - 1] ?? `${row.year}TH`)}
       </td>
-      <td className="px-1 text-center">{row.eligibleThrough ?? '—'}</td>
-      <td className="px-1 text-[11px] capitalize">{row.status ?? '—'}</td>
       <td>
         <button
           aria-label={`${selected ? 'Remove' : 'Add'} ${row.name} ${selected ? 'from' : 'to'} comparison`}

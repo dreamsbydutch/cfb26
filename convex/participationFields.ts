@@ -9,6 +9,13 @@ export const participationPhase = v.union(
 export const participationCounts = {
   gamesPlayed: v.number(),
   snaps: v.number(),
+  defenseBreakdown: v.optional(
+    v.object({
+      runDefense: v.number(),
+      passRush: v.number(),
+      coverage: v.number(),
+    }),
+  ),
   offenseBreakdown: v.optional(
     v.object({
       pass: v.number(),
@@ -23,7 +30,7 @@ export const participationSnapshot = v.object({
   ...participationCounts,
   throughTeamGames: v.number(),
   sourceLabel: v.string(),
-  sourceImageSha256: v.string(),
+  sourceImageSha256: v.optional(v.string()),
   importedAt: v.number(),
 })
 

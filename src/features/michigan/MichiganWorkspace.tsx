@@ -891,6 +891,16 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
                               <dd>{totals.offenseBreakdown.runBlock}</dd>
                             </dl>
                           )}
+                          {totals.defenseBreakdown && (
+                            <dl className="mt-2 grid grid-cols-2 gap-x-2 text-xs tabular-nums">
+                              <dt>Run defense</dt>
+                              <dd>{totals.defenseBreakdown.runDefense}</dd>
+                              <dt>Pass rush</dt>
+                              <dd>{totals.defenseBreakdown.passRush}</dd>
+                              <dt>Coverage</dt>
+                              <dd>{totals.defenseBreakdown.coverage}</dd>
+                            </dl>
+                          )}
                         </div>
                       )
                     },

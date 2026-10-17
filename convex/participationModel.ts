@@ -2,6 +2,7 @@ export type ParticipationPhase = 'offense' | 'defense' | 'specialTeams'
 export type ParticipationCounts = {
   gamesPlayed: number
   snaps: number
+  defenseBreakdown?: { runDefense: number; passRush: number; coverage: number }
   offenseBreakdown?: {
     pass: number
     passBlock: number
@@ -31,6 +32,9 @@ export function sameParticipationCounts(
   return (
     left.gamesPlayed === right.gamesPlayed &&
     left.snaps === right.snaps &&
+    (['runDefense', 'passRush', 'coverage'] as const).every(
+      (key) => left.defenseBreakdown?.[key] === right.defenseBreakdown?.[key],
+    ) &&
     (['pass', 'passBlock', 'run', 'runBlock'] as const).every(
       (key) => left.offenseBreakdown?.[key] === right.offenseBreakdown?.[key],
     )
@@ -40,6 +44,44 @@ export function sameParticipationCounts(
 function whole(value: number, label: string, maximum: number) {
   if (!Number.isInteger(value) || value < 0 || value > maximum) {
     throw new Error(`${label} must be a whole number from 0 to ${maximum}.`)
+  }
+}
+
+export function validateParticipationCounts(
+  row: ParticipationCounts,
+  phase: ParticipationPhase,
+  throughTeamGames: number,
+  label = 'Player',
+) {
+  whole(throughTeamGames, 'Team games cutoff', 30)
+  if (throughTeamGames === 0)
+    throw new Error('A team games cutoff is required.')
+  whole(row.gamesPlayed, `${label}: games`, throughTeamGames)
+  whole(row.snaps, `${label}: snaps`, throughTeamGames * 200)
+  if (
+    (row.snaps === 0) !== (row.gamesPlayed === 0) ||
+    row.snaps < row.gamesPlayed
+  )
+    throw new Error(`${label}: games and snaps disagree.`)
+  if (row.offenseBreakdown) {
+    if (phase !== 'offense')
+      throw new Error('Offensive breakdown requires offense phase.')
+    const values = Object.values(row.offenseBreakdown)
+    values.forEach((value) =>
+      whole(value, `${label}: snap breakdown`, row.snaps),
+    )
+    if (values.reduce((sum, value) => sum + value, 0) !== row.snaps)
+      throw new Error(`${label}: snap breakdown does not sum to total.`)
+  }
+  if (row.defenseBreakdown) {
+    if (phase !== 'defense')
+      throw new Error('Defensive breakdown requires defense phase.')
+    const values = Object.values(row.defenseBreakdown)
+    values.forEach((value) =>
+      whole(value, `${label}: defensive snap breakdown`, row.snaps),
+    )
+    if (values.reduce((sum, value) => sum + value, 0) !== row.snaps)
+      throw new Error(`${label}: defensive snap breakdown does not sum to total.`)
   }
 }
 
@@ -64,23 +106,12 @@ export function validateParticipationImport(input: ParticipationImport) {
       throw new Error(`Missing or duplicate player: ${row.name}`)
     names.add(name)
     whole(row.jerseyNumber, `${row.name}: jersey`, 99)
-    whole(row.gamesPlayed, `${row.name}: games`, input.throughTeamGames)
-    whole(row.snaps, `${row.name}: snaps`, input.throughTeamGames * 200)
-    if (
-      (row.snaps === 0) !== (row.gamesPlayed === 0) ||
-      row.snaps < row.gamesPlayed
+    validateParticipationCounts(
+      row,
+      input.phase,
+      input.throughTeamGames,
+      row.name,
     )
-      throw new Error(`${row.name}: games and snaps disagree.`)
-    if (row.offenseBreakdown) {
-      if (input.phase !== 'offense')
-        throw new Error('Offensive breakdown requires offense phase.')
-      const values = Object.values(row.offenseBreakdown)
-      values.forEach((value) =>
-        whole(value, `${row.name}: snap breakdown`, row.snaps),
-      )
-      if (values.reduce((sum, value) => sum + value, 0) !== row.snaps)
-        throw new Error(`${row.name}: snap breakdown does not sum to total.`)
-    }
   }
 }
 

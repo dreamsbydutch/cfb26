@@ -1,6 +1,6 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
+import { Link, useBlocker } from '@tanstack/react-router'
 import { useConvex, useMutation } from 'convex/react'
 import {
   Activity,
@@ -17,6 +17,7 @@ import { api } from '../../../convex/_generated/api'
 import type { ReactNode } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
+import { RosterSpreadsheet } from '~/features/roster/RosterSpreadsheet'
 import {
   DbyDMark,
   EmptyState,
@@ -160,6 +161,11 @@ function AuthenticatedAdmin({
   onExpire: () => void
 }) {
   const dirty = useOwnerDirtyState()
+  useBlocker({
+    shouldBlockFn: () =>
+      dirty && !window.confirm('Leave this page and discard unsaved changes?'),
+    enableBeforeUnload: false,
+  })
   const [season, setSeason] = useState(initialOwnerSeason)
   const [notice, setNotice] = useState<Notice>(null)
   const session = useQuery(
@@ -182,6 +188,7 @@ function AuthenticatedAdmin({
   const health = useQuery(
     convexQuery(api.rosterAdmin.getDataHealth, { sessionToken: token }),
   )
+  const saveSpreadsheet = useMutation(api.rosterSpreadsheet.save)
   const logout = useMutation(api.rosterAdmin.logout)
   const revokeAll = useMutation(api.rosterAdmin.revokeAllOwnerSessions)
   if (session.data && !session.data.authenticated) {
@@ -196,12 +203,20 @@ function AuthenticatedAdmin({
       onSignOut={() => void logout({ sessionToken: token }).finally(onExpire)}
     >
       <OwnerShell active={view}>
-        <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
+        <header
+          className={`${view === 'roster' && !playerId ? 'mb-4 pb-4' : 'mb-7 pb-6'} flex flex-wrap items-end justify-between gap-4 border-b border-white/10`}
+        >
           <div>
             <p className="app-kicker">
               Michigan · {data?.season ?? season} season
             </p>
-            <h1 className="app-title mt-2">
+            <h1
+              className={
+                view === 'roster' && !playerId
+                  ? 'font-display mt-1 text-3xl font-extrabold'
+                  : 'app-title mt-2'
+              }
+            >
               {playerId && view === 'roster' ? 'Player record' : viewTitle}
             </h1>
             <p className="mt-3 text-xs text-white/35">
@@ -222,6 +237,12 @@ function AuthenticatedAdmin({
             Season
             <select
               value={season}
+              disabled={dirty}
+              title={
+                dirty
+                  ? 'Save or discard edits before changing season'
+                  : undefined
+              }
               onChange={(event) => {
                 const nextSeason = Number(event.target.value)
                 window.localStorage.setItem(
@@ -273,27 +294,25 @@ function AuthenticatedAdmin({
               data={data ?? null}
               notify={setNotice}
             />
+          ) : roster.isPending ? (
+            <LoadingState />
+          ) : roster.isError || health.isError ? (
+            <ErrorState>
+              Could not load the roster. Reload to try again.
+            </ErrorState>
+          ) : data ? (
+            <RosterSpreadsheet
+              key={season}
+              data={data}
+              revision={health.data?.revision}
+              onSave={(args) =>
+                saveSpreadsheet({ ...args, sessionToken: token })
+              }
+            />
           ) : (
-            <div className="grid gap-6">
-              <RosterTable
-                data={data ?? null}
-                notify={setNotice}
-                token={token}
-              />
-              <details className="app-card p-5">
-                <summary className="cursor-pointer text-sm font-black uppercase tracking-[0.12em] text-white/65 hover:text-white">
-                  Add a player or manage advanced records
-                </summary>
-                <div className="mt-5 border-t border-white/10 pt-5">
-                  <People
-                    token={token}
-                    season={season}
-                    data={data ?? null}
-                    notify={setNotice}
-                  />
-                </div>
-              </details>
-            </div>
+            <EmptyState title="No Michigan roster">
+              Create the Michigan program before adding roster rows.
+            </EmptyState>
           ))}
         {view === 'season' && (
           <div className="grid gap-6">
@@ -345,23 +364,35 @@ function useOwnerDirtyState() {
   const [dirty, setDirty] = useState(false)
   useEffect(() => {
     const markDirty = (event: Event) => {
-      if ((event.target as Element | null)?.closest('.owner-workspace form')) {
+      if (
+        (event.target as Element | null)?.closest(
+          '.owner-workspace form:not([data-roster-spreadsheet])',
+        )
+      ) {
         setDirty(true)
       }
     }
     const markSubmitted = (event: Event) => {
-      if ((event.target as Element | null)?.closest('.owner-workspace form')) {
+      if (
+        (event.target as Element | null)?.closest(
+          '.owner-workspace form:not([data-roster-spreadsheet])',
+        )
+      ) {
         setDirty(false)
       }
     }
+    const spreadsheetDirty = (event: Event) =>
+      setDirty(Boolean((event as CustomEvent<boolean>).detail))
     const protect = (event: BeforeUnloadEvent) => {
       if (!dirty) return
       event.preventDefault()
     }
+    window.addEventListener('owner-spreadsheet-dirty', spreadsheetDirty)
     document.addEventListener('input', markDirty)
     document.addEventListener('submit', markSubmitted)
     window.addEventListener('beforeunload', protect)
     return () => {
+      window.removeEventListener('owner-spreadsheet-dirty', spreadsheetDirty)
       document.removeEventListener('input', markDirty)
       document.removeEventListener('submit', markSubmitted)
       window.removeEventListener('beforeunload', protect)
@@ -1008,351 +1039,6 @@ function People({
         </AdminCard>
       </div>
     </div>
-  )
-}
-
-type SeasonGridChange = {
-  depthStatus: 'available' | 'limited' | 'out' | 'unknown'
-  gamesPlayed: number
-  jerseyNumber: number | null
-  listedPosition: string
-  playerSeasonId: Id<'playerSeasons'>
-  role: 'starter' | 'rotation' | 'reserve' | 'unassigned'
-  roomOrder: number | null
-  rosterStatus: 'active' | 'inactive' | 'departed'
-  scholarshipStatus: 'scholarship' | 'walk_on' | 'exempt' | 'unknown'
-  starts: number
-}
-
-function RosterTable({
-  data,
-  notify,
-  token,
-}: {
-  data: SeasonDashboard | null
-  notify: (notice: Notice) => void
-  token: string
-}) {
-  const apply = useMutation(api.rosterAdmin.applySeasonGrid)
-  const [changes, setChanges] = useState<
-    Partial<Record<string, SeasonGridChange>>
-  >({})
-  const [search, setSearch] = useState('')
-  const [saving, setSaving] = useState(false)
-  useEffect(() => setChanges({}), [data?.season])
-  if (!data)
-    return <EmptyState>No roster is available for this season.</EmptyState>
-  const setField = <TKey extends keyof SeasonGridChange>(
-    entry: SeasonDashboard['entries'][number],
-    key: TKey,
-    nextValue: SeasonGridChange[TKey],
-  ) => {
-    const id = String(entry.season._id)
-    const current = changes[id] ?? {
-      depthStatus: entry.season.depthStatus,
-      gamesPlayed: entry.season.gamesPlayed,
-      jerseyNumber: entry.season.jerseyNumber,
-      listedPosition: entry.season.listedPosition,
-      playerSeasonId: entry.season._id,
-      role: entry.season.role,
-      roomOrder: entry.season.roomOrder,
-      rosterStatus: entry.season.rosterStatus,
-      scholarshipStatus: entry.season.scholarshipStatus,
-      starts: entry.season.starts,
-    }
-    setChanges((stored) => ({
-      ...stored,
-      [id]: { ...current, [key]: nextValue },
-    }))
-  }
-  const rows = Object.values(changes).filter(
-    (row): row is SeasonGridChange => row !== undefined,
-  )
-  const visibleEntries = data.entries.filter((entry) =>
-    entry.player?.displayName
-      .toLowerCase()
-      .includes(search.trim().toLowerCase()),
-  )
-  const saveChanges = () => {
-    if (rows.some((row) => !row.listedPosition.trim())) {
-      notify({ kind: 'error', text: 'Every changed row needs a position.' })
-      return
-    }
-    setSaving(true)
-    void apply({ rows, sessionToken: token })
-      .then((result) => {
-        setChanges({})
-        notify(success(`${result.updated} roster rows saved.`))
-      })
-      .catch((error: unknown) => notify(failure(error)))
-      .finally(() => setSaving(false))
-  }
-  return (
-    <AdminCard title={`${data.season} Michigan roster`}>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <label className="w-full max-w-sm text-xs font-black uppercase tracking-[0.12em]">
-          Find a player
-          <input
-            aria-label="Find a player"
-            className={inputClass}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by name"
-            type="search"
-            value={search}
-          />
-        </label>
-        <p className="text-xs text-white/40">
-          {visibleEntries.length} of {data.entries.length} players
-        </p>
-      </div>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          saveChanges()
-        }}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-            <thead className="app-label">
-              <tr>
-                <th className="p-2">Player</th>
-                <th className="p-2">#</th>
-                <th className="p-2">Position</th>
-                <th className="p-2">Role</th>
-                <th className="p-2">Roster</th>
-                <th className="p-2">Availability</th>
-                <th className="p-2">GP</th>
-                <th className="p-2">GS</th>
-                <th className="p-2 text-right">More</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleEntries.map((entry) => {
-                const row = changes[String(entry.season._id)]
-                const playerName = entry.player?.displayName ?? 'Unknown player'
-                return (
-                  <tr
-                    className={`border-t border-white/[0.07] ${row ? 'bg-[#ffcb05]/[0.045]' : ''}`}
-                    key={entry.season._id}
-                  >
-                    <th className="p-2">
-                      <span className="block font-bold text-white">
-                        {playerName}
-                      </span>
-                      <small className="text-white/35">
-                        {entry.season.positionRoom}
-                      </small>
-                    </th>
-                    <td className="p-2">
-                      <GridNumber
-                        label={`${playerName} jersey number`}
-                        max={99}
-                        onChange={(nextValue) =>
-                          setField(entry, 'jerseyNumber', nextValue)
-                        }
-                        value={row?.jerseyNumber ?? entry.season.jerseyNumber}
-                        width="w-16"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridText
-                        label={`${playerName} position`}
-                        maxLength={16}
-                        onChange={(nextValue) =>
-                          setField(entry, 'listedPosition', nextValue)
-                        }
-                        value={
-                          row?.listedPosition ?? entry.season.listedPosition
-                        }
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridSelect
-                        label={`${playerName} role`}
-                        onChange={(nextValue) =>
-                          setField(
-                            entry,
-                            'role',
-                            nextValue as SeasonGridChange['role'],
-                          )
-                        }
-                        options={[
-                          'starter',
-                          'rotation',
-                          'reserve',
-                          'unassigned',
-                        ]}
-                        value={row?.role ?? entry.season.role}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridSelect
-                        label={`${playerName} roster status`}
-                        onChange={(nextValue) =>
-                          setField(
-                            entry,
-                            'rosterStatus',
-                            nextValue as SeasonGridChange['rosterStatus'],
-                          )
-                        }
-                        options={['active', 'inactive', 'departed']}
-                        value={row?.rosterStatus ?? entry.season.rosterStatus}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridSelect
-                        label={`${playerName} availability`}
-                        onChange={(nextValue) =>
-                          setField(
-                            entry,
-                            'depthStatus',
-                            nextValue as SeasonGridChange['depthStatus'],
-                          )
-                        }
-                        options={['available', 'limited', 'out', 'unknown']}
-                        value={row?.depthStatus ?? entry.season.depthStatus}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridNumber
-                        label={`${playerName} games played`}
-                        max={30}
-                        onChange={(nextValue) =>
-                          setField(entry, 'gamesPlayed', nextValue ?? 0)
-                        }
-                        value={row?.gamesPlayed ?? entry.season.gamesPlayed}
-                        width="w-16"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <GridNumber
-                        label={`${playerName} starts`}
-                        max={row?.gamesPlayed ?? entry.season.gamesPlayed}
-                        onChange={(nextValue) =>
-                          setField(entry, 'starts', nextValue ?? 0)
-                        }
-                        value={row?.starts ?? entry.season.starts}
-                        width="w-16"
-                      />
-                    </td>
-                    <td className="p-2 text-right">
-                      {entry.player && (
-                        <Link
-                          className="text-xs font-bold text-[#ffcb05] hover:text-white"
-                          params={{ playerId: String(entry.player._id) }}
-                          to="/admin/roster/players/$playerId"
-                        >
-                          Player record
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
-          <button
-            className={primaryButton}
-            disabled={rows.length === 0 || saving}
-          >
-            {saving ? 'Saving…' : `Save ${rows.length} changed rows`}
-          </button>
-          <button
-            className={secondaryButton}
-            disabled={rows.length === 0 || saving}
-            onClick={() => setChanges({})}
-            type="button"
-          >
-            Discard changes
-          </button>
-          <p aria-live="polite" className="text-xs text-white/40">
-            {rows.length === 0
-              ? 'No unsaved roster changes.'
-              : `${rows.length} row${rows.length === 1 ? '' : 's'} ready to save.`}
-          </p>
-        </div>
-      </form>
-    </AdminCard>
-  )
-}
-
-function GridText({
-  label,
-  maxLength,
-  onChange,
-  value: selectedValue,
-}: {
-  label: string
-  maxLength?: number
-  onChange: (value: string) => void
-  value: string
-}) {
-  return (
-    <input
-      aria-label={label}
-      className="app-control h-9 w-24 bg-[#0c1b2a] px-2 text-xs font-bold uppercase text-white"
-      maxLength={maxLength}
-      onChange={(event) => onChange(event.target.value)}
-      type="text"
-      value={selectedValue}
-    />
-  )
-}
-
-function GridSelect({
-  label,
-  onChange,
-  options,
-  value: selectedValue,
-}: {
-  label: string
-  onChange: (value: string) => void
-  options: Array<string>
-  value: string
-}) {
-  return (
-    <select
-      aria-label={label}
-      className="app-control min-h-9 bg-[#0c1b2a] px-2 text-xs text-white"
-      onChange={(event) => onChange(event.target.value)}
-      value={selectedValue}
-    >
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option.replaceAll('_', ' ')}
-        </option>
-      ))}
-    </select>
-  )
-}
-
-function GridNumber({
-  label,
-  max,
-  onChange,
-  value: selectedValue,
-  width = 'w-20',
-}: {
-  label: string
-  max?: number
-  onChange: (value: number | null) => void
-  value: number | null
-  width?: string
-}) {
-  return (
-    <input
-      aria-label={label}
-      className={`app-control h-9 ${width} bg-[#0c1b2a] px-2 text-xs text-white`}
-      max={max}
-      min={0}
-      onChange={(event) =>
-        onChange(event.target.value === '' ? null : Number(event.target.value))
-      }
-      type="number"
-      value={selectedValue ?? ''}
-    />
   )
 }
 

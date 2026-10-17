@@ -95,6 +95,9 @@ async function planParticipationImport(
       after: {
         gamesPlayed: row.gamesPlayed,
         snaps: row.snaps,
+        ...(row.defenseBreakdown
+          ? { defenseBreakdown: row.defenseBreakdown }
+          : {}),
         ...(row.offenseBreakdown
           ? { offenseBreakdown: row.offenseBreakdown }
           : {}),
@@ -551,7 +554,7 @@ async function insertInitialSeason(
   })
 }
 
-async function createPersonRecord(
+export async function createPersonRecord(
   ctx: MutationCtx,
   args: NewPerson,
   programId: Id<'programs'>,

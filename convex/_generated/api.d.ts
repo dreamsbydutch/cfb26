@@ -53,6 +53,8 @@ import type * as ratingModel from "../ratingModel.js";
 import type * as ratingSystem from "../ratingSystem.js";
 import type * as ratings from "../ratings.js";
 import type * as rosterAdmin from "../rosterAdmin.js";
+import type * as rosterSpreadsheet from "../rosterSpreadsheet.js";
+import type * as rosterSpreadsheetFields from "../rosterSpreadsheetFields.js";
 import type * as rosters from "../rosters.js";
 import type * as scoreboard from "../scoreboard.js";
 import type * as scoreboardFields from "../scoreboardFields.js";
@@ -112,6 +114,8 @@ declare const fullApi: ApiFromModules<{
   ratingSystem: typeof ratingSystem;
   ratings: typeof ratings;
   rosterAdmin: typeof rosterAdmin;
+  rosterSpreadsheet: typeof rosterSpreadsheet;
+  rosterSpreadsheetFields: typeof rosterSpreadsheetFields;
   rosters: typeof rosters;
   scoreboard: typeof scoreboard;
   scoreboardFields: typeof scoreboardFields;

@@ -126,6 +126,34 @@ async function setup() {
 }
 
 describe('season participation import', () => {
+  test('persists defensive breakdowns and preserves the other phases', async () => {
+    const { t, backupManifestId, seasonId } = await setup()
+    const defenseBreakdown = { runDefense: 10, passRush: 5, coverage: 15 }
+    await t.mutation(api.rosterAdmin.applyParticipationImport, {
+      ...input,
+      phase: 'defense',
+      throughTeamGames: 6,
+      rows: [
+        {
+          name: 'Test Player',
+          jerseyNumber: 10,
+          gamesPlayed: 3,
+          snaps: 30,
+          defenseBreakdown,
+        },
+      ],
+      sessionToken: token,
+      backupManifestId,
+      expectedRevision: 0,
+    })
+    const stored = await t.run((ctx) => ctx.db.get('playerSeasons', seasonId))
+    expect(stored?.participationTotals?.defense?.defenseBreakdown).toEqual(
+      defenseBreakdown,
+    )
+    expect(stored?.participationTotals?.defense?.throughTeamGames).toBe(6)
+    expect(stored?.participationTotals?.specialTeams).toEqual(snapshot)
+    expect(stored?.gamesPlayed).toBe(5)
+  })
   test('requires a valid owner session for both preview and writes', async () => {
     const { t, backupManifestId, sessionId } = await setup()
     for (const sessionToken of [

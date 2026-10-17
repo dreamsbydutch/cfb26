@@ -17,6 +17,31 @@ const screenshot = JSON.parse(
   ),
 )
 
+test('defense screenshot balances 36 players through six games and rejects invalid breakdowns', () => {
+  const defense = JSON.parse(
+    readFileSync(
+      new URL(
+        '../scripts/imports/michigan-2026-defense-through-6.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  )
+  validateParticipationImport(defense)
+  assert.equal(defense.rows.length, 36)
+  assert.equal(
+    defense.rows.reduce((sum, row) => sum + row.snaps, 0),
+    4026,
+  )
+  assert.equal(defense.throughTeamGames, 6)
+  assert.throws(
+    () => validateParticipationImport({ ...defense, phase: 'offense' }),
+    /requires defense/,
+  )
+  defense.rows[0].defenseBreakdown.coverage = 1
+  assert.throws(() => validateParticipationImport(defense), /sum/)
+})
+
 test('the 2026 screenshot contains 34 players with balanced offensive snap counts', () => {
   validateParticipationImport(screenshot)
   assert.equal(screenshot.rows.length, 34)
