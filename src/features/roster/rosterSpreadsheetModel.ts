@@ -21,7 +21,7 @@ export type SheetColumn = {
   label: string
   group: string
   width?: number
-  type?: 'number'
+  type?: 'number' | 'decimal'
   options?: ReadonlyArray<readonly [string, string]>
   history?: boolean
   recruit?: boolean
@@ -127,6 +127,24 @@ export const sheetColumns: Array<SheetColumn> = [
     group: 'Roster',
     width: 240,
     help: 'Separate honors with commas.',
+  },
+  {
+    field: 'recruitingRank',
+    label: 'Overall rank',
+    group: 'Recruiting',
+    type: 'number',
+    width: 110,
+    recruit: true,
+    help: '247Sports Composite overall rank. Edits update the evaluation shown in the public Recruit column; blank clears the rank.',
+  },
+  {
+    field: 'recruitingRating',
+    label: 'Rating (0–1)',
+    group: 'Recruiting',
+    type: 'decimal',
+    width: 125,
+    recruit: true,
+    help: '247Sports Composite decimal rating, e.g. 0.9745. Recruiting evaluation preferred; transfer evaluation used when that is the saved source. Blank clears the rating.',
   },
   {
     field: 'gamesPlayed',
@@ -409,6 +427,8 @@ export function spreadsheetRows(data: SheetData): Array<SheetRow> {
     const values = {
       ...emptySheetValues(data.season),
       ...identity(entry.player),
+      recruitingRank: cell(entry.recruiting?.rank),
+      recruitingRating: cell(entry.recruiting?.rating),
     }
     for (const field of [
       'jerseyNumber',
@@ -488,6 +508,8 @@ export function spreadsheetRows(data: SheetData): Array<SheetRow> {
       values: {
         ...emptySheetValues(data.season, true),
         ...identity(entry.player),
+        recruitingRank: cell(entry.recruiting?.rank),
+        recruitingRating: cell(entry.recruiting?.rating),
         listedPosition: entry.commitment.initialPosition,
         dataQuality: entry.commitment.dataQuality,
       },

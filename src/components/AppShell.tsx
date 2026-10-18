@@ -24,7 +24,7 @@ import { api } from '../../convex/_generated/api'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-export type PublicContext = 'michigan' | 'national'
+export type PublicContext = 'michigan' | 'national' | 'basketball' | 'hockey'
 
 type NavItem = {
   href: string
@@ -98,6 +98,17 @@ const NATIONAL_NAV: Array<NavItem> = [
   },
 ]
 
+const TEAM_NAV: Array<NavItem> = [
+  { href: '/', icon: LayoutDashboard, id: 'football', label: 'Football' },
+  {
+    href: '/michigan/basketball',
+    icon: UsersRound,
+    id: 'basketball',
+    label: 'Basketball',
+  },
+  { href: '/michigan/hockey', icon: UsersRound, id: 'hockey', label: 'Hockey' },
+]
+
 export function PublicShell({
   active,
   children,
@@ -109,7 +120,12 @@ export function PublicShell({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const nav = context === 'michigan' ? MICHIGAN_NAV : NATIONAL_NAV
+  const nav =
+    context === 'michigan'
+      ? [...MICHIGAN_NAV, ...TEAM_NAV.slice(1)]
+      : context === 'national'
+        ? NATIONAL_NAV
+        : TEAM_NAV
   const mobile = nav.slice(0, 3)
 
   useEffect(() => {
@@ -140,15 +156,15 @@ export function PublicShell({
                 DbyD CFB
               </strong>
               <small className="app-label mt-1 block">
-                Football intelligence
+                Michigan sports · National football
               </small>
             </span>
           </Link>
           <nav
-            aria-label="Football context"
+            aria-label="Site context"
             className="ml-2 hidden rounded-full bg-white/[0.045] p-1 sm:flex"
           >
-            <ShellLink active={context === 'michigan'} href="/">
+            <ShellLink active={context !== 'national'} href="/">
               Michigan
             </ShellLink>
             <ShellLink active={context === 'national'} href="/games">
@@ -162,7 +178,7 @@ export function PublicShell({
               className="app-control flex h-10 min-h-10 items-center gap-2 px-3 text-sm text-white/75 transition hover:border-white/35 hover:text-white"
             >
               <Search size={17} aria-hidden="true" />
-              <span className="hidden md:inline">Search players & teams</span>
+              <span className="hidden md:inline">Search football</span>
               <kbd className="hidden rounded-md border border-white/15 bg-black/20 px-1.5 py-0.5 text-[10px] text-white/45 lg:inline">
                 Ctrl K
               </kbd>

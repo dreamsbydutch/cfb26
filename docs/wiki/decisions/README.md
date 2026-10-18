@@ -21,6 +21,8 @@ Architectural decision records explain durable choices and their consequences. O
 
 ## Adding an ADR
 
+[0014: Isolate additional sport rosters](0014-isolate-additional-sport-rosters.md) — Accepted; separate season records while reusing owner authentication and editing conventions.
+
 Use the next four-digit number. Record the context, decision, consequences, and status. Do not rewrite accepted history when a decision changes; supersede it with a new ADR and link both records.
 
 [Back to wiki home](../README.md)

@@ -4,6 +4,7 @@ import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import { gameEvidenceValidator } from './evidenceFields'
 import { liveScoreValidator } from './scoreboardFields'
 import { participationSnapshot } from './participationFields'
+import { teamSport, teamValues } from './teamRosterFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -154,6 +155,25 @@ const perGameUnit = v.object({
 })
 
 export default defineSchema({
+  teamRosterEntries: defineTable({
+    sport: teamSport,
+    season: v.number(),
+    values: teamValues,
+    updatedAt: v.number(),
+  }).index('by_sport_and_season', ['sport', 'season']),
+  teamRosterRevisions: defineTable({
+    sport: teamSport,
+    season: v.number(),
+    revision: v.number(),
+  }).index('by_sport_and_season', ['sport', 'season']),
+  teamRosterAudit: defineTable({
+    sport: teamSport,
+    season: v.number(),
+    revision: v.number(),
+    sessionId: v.id('ownerSessions'),
+    saved: v.number(),
+    createdAt: v.number(),
+  }).index('by_sport_and_season', ['sport', 'season']),
   players: defineTable({
     canonicalName: v.string(),
     dataQuality,

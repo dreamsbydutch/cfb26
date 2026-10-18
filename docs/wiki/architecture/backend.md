@@ -62,6 +62,8 @@ The 41-table model was synchronized to both environments on 2026-09-07; see the 
 
 ## Development loop
 
+**Current source:** `teamRosters.ts` owns independent men's basketball/hockey season records, owner-authenticated transactional saves, and sport/season revisions/audit receipts. These tables do not enter football queries or its JSON export/restore contract. See [team roster persistence](../reference/michigan-team-rosters.md#persistence-and-isolation).
+
 1. Read the owning domain/query module and schema indexes.
 2. Change source, pure invariants, and tests together.
 3. Run `npm run check`.
@@ -71,3 +73,5 @@ The 41-table model was synchronized to both environments on 2026-09-07; see the 
 The scoreboard mutation retains at most six recent in-progress observations per game in optional `liveScoreHistory`, enabling [comeback-aware viewing recommendations](../reference/live-scoring.md#watch-now-and-the-three-tvs) without additional API calls. Schedule imports preserve both the latest score and history.
 
 The season dashboard includes a compact recruiting summary for enrolled players and commitments. It reads the latest 247Sports Composite recruiting evaluation, falling back to transfer, using the `evaluations.by_playerId_kind_provider_evaluatedAt` index with `first()`; no evaluation history or private notes are added to the dashboard payload.
+
+The admin Roster spreadsheet has a Recruiting column group with editable 247Sports Composite overall rank and rating (0�1) for enrolled players and commitments. It loads the same preferred recruiting/transfer evaluation used by the public Recruit column. Saving an edited component preserves the other saved component and appends an owner-verified correction of the same evaluation kind, retaining history. Blank clears that component. Validation, owner authorization, revision checks, and batch audit receipts apply to these edits. New evaluation fields are optional in the mutation payload for older clients.

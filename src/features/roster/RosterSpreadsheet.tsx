@@ -481,7 +481,13 @@ function SheetCell({
       value={row.values[column.field]}
       onChange={(event) => onChange(event.target.value)}
       type="text"
-      inputMode={column.type === 'number' ? 'numeric' : 'text'}
+      inputMode={
+        column.type === 'decimal'
+          ? 'decimal'
+          : column.type === 'number'
+            ? 'numeric'
+            : 'text'
+      }
       autoComplete="off"
       spellCheck={false}
       className={className}

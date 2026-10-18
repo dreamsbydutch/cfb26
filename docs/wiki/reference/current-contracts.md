@@ -1,5 +1,7 @@
 # Current contracts
 
+**Current source:** men's basketball and hockey have separate public and owner roster routes, initially empty season tables, and sport-specific metrics. The [team roster contract](michigan-team-rosters.md) defines the new backend, editing, and backup boundaries.
+
 [Reference index](README.md) · [Wiki home](../README.md)
 
 This page inventories the current source interfaces. Development `adjoining-opossum-710` and production `doting-chipmunk-7` still hold the 41-table backend synchronized during the 2026-09-07 backed-up cutover; the 43-table revision/audit delta and final-form web UI remain separate, undeployed release boundaries.
@@ -83,3 +85,5 @@ The exact hosted cutover sequence lives in [Deployment](../guides/deployment.md)
 Specialist tables (K/P/LS) retain a single Snaps column for special-teams totals. The separate ST Snaps column on offensive/defensive tables uses its own saved cutoff; missing totals remain unknown.
 
 The Matrix Recruit column shows the saved 247Sports Composite overall rank and rating (for example, `#38 (0.9745)` or `#1 (1.000)`). It prefers the latest recruiting evaluation, falling back to the latest transfer evaluation with the source kind identified in the tooltip. Missing rank/rating components remain unknown; 0–100 provider scores are never presented as composite ratings.
+
+The admin Roster spreadsheet has a Recruiting column group with editable 247Sports Composite overall rank and rating (0�1) for enrolled players and commitments. It loads the same preferred recruiting/transfer evaluation used by the public Recruit column. Saving an edited component preserves the other saved component and appends an owner-verified correction of the same evaluation kind, retaining history. Blank clears that component. Validation, owner authorization, revision checks, and batch audit receipts apply to these edits. New evaluation fields are optional in the mutation payload for older clients.

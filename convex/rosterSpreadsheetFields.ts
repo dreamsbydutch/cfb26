@@ -2,6 +2,8 @@ import { v } from 'convex/values'
 
 // Draft cells remain strings until the server validates the edited fields.
 export const rosterSpreadsheetValues = v.object({
+  recruitingRank: v.optional(v.string()),
+  recruitingRating: v.optional(v.string()),
   displayName: v.string(),
   canonicalName: v.string(),
   hometown: v.string(),

@@ -53,6 +53,105 @@ async function setup() {
 }
 
 describe('owner roster spreadsheet', () => {
+  test('edits recruiting values, preserves history and the untouched value, and supports clearing', async () => {
+    const { t, row, edit, args } = await setup()
+    if (!row.playerId) throw new Error('Missing player')
+    const playerId = row.playerId
+    await t.run((ctx) =>
+      ctx.db.insert('evaluations', {
+        playerId,
+        provider: '247Sports Composite',
+        kind: 'transfer',
+        direction: 'inbound',
+        rank: 38,
+        score: 0.9745,
+        scale: '0-1',
+        evaluatedAt: 1,
+        dataQuality: 'source_verified',
+      }),
+    )
+    const getRows = async () => {
+      const data = await t.query(api.rosters.getSeasonDashboard, {
+        season: 2026,
+      })
+      if (!data) throw new Error('Missing roster')
+      return spreadsheetRows(data)
+    }
+    expect((await getRows())[0].values.recruitingRating).toBe('0.9745')
+    await t.mutation(api.rosterSpreadsheet.save, {
+      ...args,
+      rows: [edit({ recruitingRank: '37' })],
+    })
+    expect((await getRows())[0].values).toMatchObject({
+      recruitingRank: '37',
+      recruitingRating: '0.9745',
+    })
+    const history = await t.run((ctx) =>
+      ctx.db
+        .query('evaluations')
+        .withIndex('by_playerId_and_evaluatedAt', (q) =>
+          q.eq('playerId', playerId),
+        )
+        .take(10),
+    )
+    expect(history).toHaveLength(2)
+    expect(history[0].rank).toBe(38)
+    expect(history[1].kind).toBe('transfer')
+    for (const recruitingRating of ['97.45', '-0.1', 'NaN']) {
+      await expect(
+        t.mutation(api.rosterSpreadsheet.save, {
+          ...args,
+          expectedRevision: 2,
+          rows: [edit({ recruitingRating })],
+        }),
+      ).rejects.toThrow(/rating/)
+    }
+    await t.mutation(api.rosterSpreadsheet.save, {
+      ...args,
+      expectedRevision: 2,
+      rows: [edit({ recruitingRating: '' })],
+    })
+    expect((await getRows())[0].values).toMatchObject({
+      recruitingRank: '37',
+      recruitingRating: '',
+    })
+  })
+
+  test('adds recruiting evaluations for incoming recruits', async () => {
+    const { t, args } = await setup()
+    const values = {
+      ...emptySheetValues(2026, true),
+      displayName: 'New Recruit',
+      canonicalName: 'New Recruit',
+      listedPosition: 'QB',
+      recruitingRank: '1',
+      recruitingRating: '1.000',
+    }
+    await t.mutation(api.rosterSpreadsheet.save, {
+      ...args,
+      rows: [
+        {
+          values,
+          changedFields: [
+            'displayName',
+            'listedPosition',
+            'recruitingRank',
+            'recruitingRating',
+          ],
+        },
+      ],
+    })
+    const data = await t.query(api.rosters.getSeasonDashboard, { season: 2026 })
+    if (!data) throw new Error('Missing roster')
+    const recruit = spreadsheetRows(data).find(
+      (r) => r.values.displayName === 'New Recruit',
+    )
+    expect(recruit?.commitmentId).toBeDefined()
+    expect(recruit?.values).toMatchObject({
+      recruitingRank: '1',
+      recruitingRating: '1',
+    })
+  })
   test('requires a valid, unrevoked, unexpired owner session', async () => {
     const { t, sessionId, edit, args } = await setup()
     for (const sessionToken of [

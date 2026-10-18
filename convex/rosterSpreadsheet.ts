@@ -9,6 +9,7 @@ import {
   requireOwnerSession,
 } from './rosterAdmin'
 import { validateParticipationCounts } from './participationModel'
+import { findRecruitingEvaluation } from './rosters'
 import type { Infer } from 'convex/values'
 import type { Doc } from './_generated/dataModel'
 
@@ -89,7 +90,9 @@ function number(
     result < min ||
     result > max
   )
-    throw new ConvexError(`${label}: enter a whole number from ${min} to ${max}.`)
+    throw new ConvexError(
+      `${label}: enter a whole number from ${min} to ${max}.`,
+    )
   return result
 }
 
@@ -110,7 +113,8 @@ function option<const T extends string>(
   label: string,
 ): T {
   const result = options.find((candidate) => candidate === value)
-  if (result === undefined) throw new ConvexError(`${label}: choose a listed value.`)
+  if (result === undefined)
+    throw new ConvexError(`${label}: choose a listed value.`)
   return result
 }
 
@@ -140,7 +144,9 @@ function sources(
       parsed.username ||
       parsed.password
     )
-      throw new ConvexError('Source URLs must use HTTP or HTTPS without credentials.')
+      throw new ConvexError(
+        'Source URLs must use HTTP or HTTPS without credentials.',
+      )
     return (
       previous.find((source) => source.url === url) ?? {
         label: 'Owner source',
@@ -170,7 +176,7 @@ function phaseSnapshot(
       : phase === 'defense'
         ? defenseFields
         : specialTeamsFields
-  if (fields.every((field) => !values[field].trim())) return undefined
+  if (fields.every((field) => !(values[field] ?? '').trim())) return undefined
   const phaseName = phase === 'specialTeams' ? 'Special teams' : phase
   const gamesPlayed = requiredNumber(
     values[`${phase}Games`],
@@ -367,7 +373,9 @@ export const save = mutation({
         (row.commitmentId && !commitment) ||
         (row.playerSeasonId && row.commitmentId)
       )
-        throw new ConvexError('Choose one existing roster or commitment record.')
+        throw new ConvexError(
+          'Choose one existing roster or commitment record.',
+        )
       if (isNew) {
         annual = await ctx.db
           .query('playerSeasons')
@@ -406,6 +414,8 @@ export const save = mutation({
               ...identityFields,
               'listedPosition',
               'dataQuality',
+              'recruitingRank',
+              'recruitingRating',
             ].includes(key),
         )
       )
@@ -413,6 +423,42 @@ export const save = mutation({
           'Recruits can edit identity and position; enroll the player before adding annual or participation data.',
         )
 
+      if (has('recruitingRank') || has('recruitingRating')) {
+        const previous = await findRecruitingEvaluation(ctx, playerId)
+        const rank = has('recruitingRank')
+          ? number(
+              values.recruitingRank ?? '',
+              'Recruiting overall rank',
+              1,
+              100000,
+              true,
+            )
+          : (previous?.rank ?? null)
+        let score = previous?.scale === '0-1' ? previous.score : null
+        if (has('recruitingRating')) {
+          const input = (values.recruitingRating ?? '').trim()
+          score = input ? Number(input) : null
+          if (
+            score !== null &&
+            (!Number.isFinite(score) || score < 0 || score > 1)
+          )
+            throw new ConvexError(
+              'Recruiting rating: enter a decimal from 0 to 1, or leave blank.',
+            )
+        }
+        await ctx.db.insert('evaluations', {
+          playerId,
+          provider: '247Sports Composite',
+          kind: previous?.kind ?? 'recruiting',
+          direction: previous?.direction ?? 'inbound',
+          scale: '0-1',
+          rank,
+          score,
+          evaluatedAt: Math.max(Date.now(), (previous?.evaluatedAt ?? 0) + 1),
+          dataQuality: 'owner_verified',
+          notes: 'Owner correction from roster spreadsheet.',
+        })
+      }
       const profile: Partial<Doc<'players'>> = {}
       if (has('canonicalName')) {
         const canonicalName = text(
@@ -425,7 +471,8 @@ export const save = mutation({
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-|-$/g, '')
-        if (!slug) throw new ConvexError('Canonical name needs letters or numbers.')
+        if (!slug)
+          throw new ConvexError('Canonical name needs letters or numbers.')
         const duplicate = await ctx.db
           .query('players')
           .withIndex('by_slug', (q) => q.eq('slug', slug))

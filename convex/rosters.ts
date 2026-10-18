@@ -5,7 +5,10 @@ import { comparePositionRooms, derivePositionRoom } from './playerDomain'
 import type { QueryCtx } from './_generated/server'
 import type { Id } from './_generated/dataModel'
 
-async function recruitingSummary(ctx: QueryCtx, playerId: Id<'players'>) {
+export async function findRecruitingEvaluation(
+  ctx: QueryCtx,
+  playerId: Id<'players'>,
+) {
   const find = (kind: 'recruiting' | 'transfer') =>
     ctx.db
       .query('evaluations')
@@ -17,7 +20,11 @@ async function recruitingSummary(ctx: QueryCtx, playerId: Id<'players'>) {
       )
       .order('desc')
       .first()
-  const evaluation = (await find('recruiting')) ?? (await find('transfer'))
+  return (await find('recruiting')) ?? (await find('transfer'))
+}
+
+async function recruitingSummary(ctx: QueryCtx, playerId: Id<'players'>) {
+  const evaluation = await findRecruitingEvaluation(ctx, playerId)
   if (!evaluation) return null
   return {
     rank: evaluation.rank,

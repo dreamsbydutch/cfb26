@@ -61,6 +61,8 @@ import type * as scoreboardFields from "../scoreboardFields.js";
 import type * as scoreboardModel from "../scoreboardModel.js";
 import type * as seasonalStats from "../seasonalStats.js";
 import type * as teamData from "../teamData.js";
+import type * as teamRosterFields from "../teamRosterFields.js";
+import type * as teamRosters from "../teamRosters.js";
 
 import type {
   ApiFromModules,
@@ -122,6 +124,8 @@ declare const fullApi: ApiFromModules<{
   scoreboardModel: typeof scoreboardModel;
   seasonalStats: typeof seasonalStats;
   teamData: typeof teamData;
+  teamRosterFields: typeof teamRosterFields;
+  teamRosters: typeof teamRosters;
 }>;
 
 /**

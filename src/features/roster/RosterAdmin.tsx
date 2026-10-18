@@ -14,10 +14,12 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
+import { seasonLabel } from '../../../convex/teamRosterFields'
 import type { ReactNode } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import { RosterSpreadsheet } from '~/features/roster/RosterSpreadsheet'
+import { TeamRosterEditor } from '~/features/teams/TeamRosterEditor'
 import {
   DbyDMark,
   EmptyState,
@@ -31,7 +33,13 @@ import {
 } from '~/features/roster/adminWorkflow'
 
 export type AdminView =
-  'dashboard' | 'data' | 'operations' | 'roster' | 'season'
+  | 'dashboard'
+  | 'data'
+  | 'operations'
+  | 'roster'
+  | 'season'
+  | 'basketball'
+  | 'hockey'
 type Notice = { kind: 'error' | 'success'; text: string } | null
 const CURRENT_SEASON = new Date().getFullYear()
 const OWNER_SEASON_KEY = 'cfb26-owner-season'
@@ -62,6 +70,8 @@ type SeasonStats = FunctionReturnType<typeof api.seasonalStats.listBySeason>
 type PlayerGameRecord = SeasonStats[number]['playerGames'][number]
 
 const OWNER_VIEW_TITLES: Record<AdminView, string> = {
+  basketball: 'Men’s basketball roster',
+  hockey: 'Men’s hockey roster',
   dashboard: 'Owner dashboard',
   data: 'Data',
   operations: 'Operations',
@@ -161,6 +171,7 @@ function AuthenticatedAdmin({
   onExpire: () => void
 }) {
   const dirty = useOwnerDirtyState()
+  const teamSport = view === 'basketball' || view === 'hockey' ? view : null
   useBlocker({
     shouldBlockFn: () =>
       dirty && !window.confirm('Leave this page and discard unsaved changes?'),
@@ -208,7 +219,9 @@ function AuthenticatedAdmin({
         >
           <div>
             <p className="app-kicker">
-              Michigan · {data?.season ?? season} season
+              Michigan ·{' '}
+              {teamSport ? seasonLabel(season) : (data?.season ?? season)}{' '}
+              season
             </p>
             <h1
               className={
@@ -253,9 +266,17 @@ function AuthenticatedAdmin({
               }}
               className="app-control bg-[#0c1b2a] px-3 py-2 text-sm text-white"
             >
-              <option>{CURRENT_SEASON + 1}</option>
+              <option value={CURRENT_SEASON + 1}>
+                {teamSport
+                  ? seasonLabel(CURRENT_SEASON + 1)
+                  : CURRENT_SEASON + 1}
+              </option>
               {Array.from({ length: CURRENT_SEASON - 2014 }, (_, index) => (
-                <option key={index}>{CURRENT_SEASON - index}</option>
+                <option key={index} value={CURRENT_SEASON - index}>
+                  {teamSport
+                    ? seasonLabel(CURRENT_SEASON - index)
+                    : CURRENT_SEASON - index}
+                </option>
               ))}
             </select>
           </label>
@@ -282,6 +303,14 @@ function AuthenticatedAdmin({
           </div>
         </header>
         {notice && <NoticeBox notice={notice} />}
+        {teamSport && (
+          <TeamRosterEditor
+            key={`${teamSport}-${season}`}
+            sport={teamSport}
+            season={season}
+            token={token}
+          />
+        )}
         {view === 'dashboard' && (
           <OwnerDashboard data={data ?? null} health={health.data} />
         )}
@@ -451,12 +480,24 @@ const OWNER_NAV: Array<{
   id: AdminView
   label: string
 }> = [
+  {
+    href: '/admin/roster/basketball',
+    icon: UsersRound,
+    id: 'basketball',
+    label: 'Basketball roster',
+  },
+  {
+    href: '/admin/roster/hockey',
+    icon: UsersRound,
+    id: 'hockey',
+    label: 'Hockey roster',
+  },
   { href: '/admin/roster', icon: Gauge, id: 'dashboard', label: 'Dashboard' },
   {
     href: '/admin/roster/players',
     icon: UsersRound,
     id: 'roster',
-    label: 'Roster',
+    label: 'Football roster',
   },
   {
     href: '/admin/roster/season',

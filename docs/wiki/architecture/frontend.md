@@ -8,6 +8,8 @@ React 19 runs through TanStack Start and file-based routing. `src/router.tsx` co
 
 ## Routes and data
 
+**Current source:** `/michigan/basketball` and `/michigan/hockey` present men's team rosters through `features/teams/TeamRoster.tsx`. Their `/admin/roster/basketball` and `/admin/roster/hockey` editors reuse the owner shell/session with a sport-configured spreadsheet. See [team rosters](../reference/michigan-team-rosters.md) for fields, keyboard behavior, season semantics, and current limits.
+
 | Route family                       | Feature module                              | Main reads/writes                                                                                       |
 | ---------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | `/`, `/michigan/*`                 | `features/michigan/MichiganWorkspace.tsx`   | Matrix, Overview, Movement, player intelligence, comparison, and NFL alumni                             |
@@ -62,3 +64,5 @@ Watch now supports browser-local manual network/event overrides via each TV's Ed
 Specialist tables (K/P/LS) retain a single Snaps column for special-teams totals. The separate ST Snaps column on offensive/defensive tables uses its own saved cutoff; missing totals remain unknown.
 
 The Matrix Recruit column shows the saved 247Sports Composite overall rank and rating (for example, `#38 (0.9745)` or `#1 (1.000)`). It prefers the latest recruiting evaluation, falling back to the latest transfer evaluation with the source kind identified in the tooltip. Missing rank/rating components remain unknown; 0–100 provider scores are never presented as composite ratings.
+
+The admin Roster spreadsheet has a Recruiting column group with editable 247Sports Composite overall rank and rating (0�1) for enrolled players and commitments. It loads the same preferred recruiting/transfer evaluation used by the public Recruit column. Saving an edited component preserves the other saved component and appends an owner-verified correction of the same evaluation kind, retaining history. Blank clears that component. Validation, owner authorization, revision checks, and batch audit receipts apply to these edits. New evaluation fields are optional in the mutation payload for older clients.
