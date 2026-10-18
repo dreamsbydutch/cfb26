@@ -294,6 +294,12 @@ export default defineSchema({
     sourceUrl: v.optional(v.string()),
   })
     .index('by_playerId_and_evaluatedAt', ['playerId', 'evaluatedAt'])
+    .index('by_playerId_kind_provider_evaluatedAt', [
+      'playerId',
+      'kind',
+      'provider',
+      'evaluatedAt',
+    ])
     .index('by_provider_and_evaluatedAt', ['provider', 'evaluatedAt']),
 
   providerIdentities: defineTable({

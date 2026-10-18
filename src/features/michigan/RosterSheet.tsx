@@ -104,6 +104,7 @@ type SheetRow = {
   position: string
   group: RosterGroup
   snaps: number | null
+  recruiting: RosterEntry['recruiting']
   specialTeamsSnaps: number | null
   specialTeamsNote: string | null
   participationNote: string | null
@@ -161,6 +162,7 @@ export function RosterSheet({
         season,
       }),
       snaps: participation.snaps,
+      recruiting: entry.recruiting,
       specialTeamsSnaps:
         entry.season.participationTotals?.specialTeams?.snaps ?? null,
       specialTeamsNote: entry.season.participationTotals?.specialTeams
@@ -190,7 +192,8 @@ export function RosterSheet({
     ].every((value) => value === 'all') &&
     (filters.role === 'all' || filters.role === 'recruit')
   if (showRecruits) {
-    for (const { commitment, player } of incoming.data?.commitments ?? []) {
+    for (const { commitment, player, recruiting } of incoming.data
+      ?.commitments ?? []) {
       if (
         !player ||
         commitment.status !== 'committed' ||
@@ -236,6 +239,7 @@ export function RosterSheet({
         position,
         group: 'recruit',
         snaps: null,
+        recruiting,
         specialTeamsSnaps: null,
         specialTeamsNote: null,
         participationNote: null,
@@ -362,6 +366,7 @@ export function RosterSheet({
                     <col className="w-10" />
                     {showSpecialTeams && <col className="w-12" />}
                     <col className="w-9" />
+                    <col className="w-24" />
                     <col className="w-8" />
                   </colgroup>
                   <thead className="bg-[#e9edf1] text-[10px] font-bold text-[#00274c]">
@@ -416,6 +421,9 @@ export function RosterSheet({
                         Year
                       </th>
                       <th scope="col">
+                        <span className="px-1">Recruit</span>
+                      </th>
+                      <th scope="col">
                         <span className="sr-only">Compare</span>
                       </th>
                     </tr>
@@ -431,7 +439,7 @@ export function RosterSheet({
                         <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
                           <th
                             className="px-0 py-0.5 text-left"
-                            colSpan={showSpecialTeams ? 8 : 7}
+                            colSpan={showSpecialTeams ? 9 : 8}
                             scope="rowgroup"
                           >
                             <span
@@ -542,6 +550,18 @@ function SheetPlayer({
         {row.year === null
           ? '—'
           : (['FR', 'SO', 'JR', 'SR', '5TH'][row.year - 1] ?? `${row.year}TH`)}
+      </td>
+      <td
+        className="whitespace-nowrap px-1 text-[11px]"
+        title={
+          row.recruiting
+            ? `${row.recruiting.provider} · ${row.recruiting.kind === 'transfer' ? 'Transfer' : 'Recruiting'} overall rank and rating`
+            : 'Recruiting evaluation unavailable'
+        }
+      >
+        {row.recruiting
+          ? `${row.recruiting.rank === null ? '—' : `#${row.recruiting.rank}`} (${row.recruiting.rating === null ? '—' : row.recruiting.rating.toFixed(row.recruiting.rating === 1 ? 3 : 4)})`
+          : '—'}
       </td>
       <td>
         <button

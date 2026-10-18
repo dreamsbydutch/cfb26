@@ -16,6 +16,8 @@ All routes include responsive navigation, semantic controls, visible focus treat
 
 ## Public Convex reads
 
+**Current source:** `/?view=lineup` complements the complete Matrix with active offense/defense Starters and Rotation by listed position, plus independent ST contributors. Non-specialist ST core/rotation thresholds are 10+/5+ snaps per saved team game; K/P/LS leaders are inferred within their listed position, with tied leaders retained and no promotion caused by filters. Limited ST appearances are optional, unknown totals remain unknown, and assigned offensive/defensive roles are never inferred from snaps. The view switch and season survive reload through URL parameters; search, common filters, player links, and comparison remain available.
+
 | Family               | Principal exports                                                                                                                                                                                        |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Players              | `players.search`, bounded `players.searchCatalog`, `players.getProfile`, `players.compare`, `players.listNflAlumni`                                                                                      |
@@ -79,3 +81,5 @@ Direct CFBD requests supply national programs, games, features, recruiting/talen
 The exact hosted cutover sequence lives in [Deployment](../guides/deployment.md).
 
 Specialist tables (K/P/LS) retain a single Snaps column for special-teams totals. The separate ST Snaps column on offensive/defensive tables uses its own saved cutoff; missing totals remain unknown.
+
+The Matrix Recruit column shows the saved 247Sports Composite overall rank and rating (for example, `#38 (0.9745)` or `#1 (1.000)`). It prefers the latest recruiting evaluation, falling back to the latest transfer evaluation with the source kind identified in the tooltip. Missing rank/rating components remain unknown; 0–100 provider scores are never presented as composite ratings.

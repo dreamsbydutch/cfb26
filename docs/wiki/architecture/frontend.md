@@ -23,6 +23,8 @@ The selected owner season persists across nested admin routes. Enrollment and de
 
 ## Presentation system
 
+**Current source:** the roster's Full matrix / Team lineup switch is URL-backed (`/?view=lineup`). Team lineup places offense and defense side by side on wide screens, with listed positions down the rows and assigned Starters / Rotation in separate columns. It excludes inactive/departed players and unassigned/reserve offensive or defensive roles, retains availability exceptions, and shares season/search and common filters with the Matrix. The Matrix-only Group filter does not restrict ST contributors. Special teams independently includes non-specialists averaging at least five saved ST snaps per team game (rotation) or ten (core). Specialists are ranked within K/P/LS by ST snaps per team game; tied leaders remain together, and filtering cannot promote a backup. Limited appearances can be expanded. Counts use each snapshot's own team-games cutoff; missing totals stay unknown, and usage groups do not claim confirmed unit-specific starting assignments. Player cards retain eligibility colors, measurements, college year, phase participation, profile links, and comparison selection.
+
 **Current source:** player profiles display imported season participation separately from game-derived grades, including phase games played, snaps, cutoff, and an available offensive snap breakdown. These cumulative snapshots are not summed with individual game records. See [screenshot participation imports](../guides/screenshot-participation-imports.md).
 
 **Current source:** below 640px, Matrix tables reserve 28px for jersey numbers and 112px for player names. Names use 12px type and wrap in full; the fixed 568px table keeps the frozen identity columns from expanding into the horizontally scrolling metrics. Wider layouts retain the existing name sizing.
@@ -58,3 +60,5 @@ Games shows one Latest score update timestamp above the list in every lens, usin
 Watch now supports browser-local manual network/event overrides via each TV's Edit panel. Main and flip-to slots can be reserved independently; a manual main can turn flipping off. Remaining automatic football slots are recomputed while preserving channel stability. Explicit manual slots take priority over Michigan placement. See [manual TV events](../reference/live-scoring.md#manual-tv-events).
 
 Specialist tables (K/P/LS) retain a single Snaps column for special-teams totals. The separate ST Snaps column on offensive/defensive tables uses its own saved cutoff; missing totals remain unknown.
+
+The Matrix Recruit column shows the saved 247Sports Composite overall rank and rating (for example, `#38 (0.9745)` or `#1 (1.000)`). It prefers the latest recruiting evaluation, falling back to the latest transfer evaluation with the source kind identified in the tooltip. Missing rank/rating components remain unknown; 0–100 provider scores are never presented as composite ratings.

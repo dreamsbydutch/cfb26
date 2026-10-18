@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 44 tables and 106 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 44 tables and 107 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -69,3 +69,5 @@ The 41-table model was synchronized to both environments on 2026-09-07; see the 
 5. Only with exact-target authorization, push once to development and inspect generated types and live behavior before production.
 
 The scoreboard mutation retains at most six recent in-progress observations per game in optional `liveScoreHistory`, enabling [comeback-aware viewing recommendations](../reference/live-scoring.md#watch-now-and-the-three-tvs) without additional API calls. Schedule imports preserve both the latest score and history.
+
+The season dashboard includes a compact recruiting summary for enrolled players and commitments. It reads the latest 247Sports Composite recruiting evaluation, falling back to transfer, using the `evaluations.by_playerId_kind_provider_evaluatedAt` index with `first()`; no evaluation history or private notes are added to the dashboard payload.

@@ -126,6 +126,67 @@ async function setup() {
 }
 
 describe('season participation import', () => {
+  test('dashboard recruiting summary keeps composite rank and rating from one evaluation', async () => {
+    const { t, playerId } = await setup()
+    const recruitingIds = await t.run(async (ctx) => {
+      const base = {
+        playerId,
+        dataQuality: 'source_verified' as const,
+        direction: 'inbound' as const,
+        provider: '247Sports Composite',
+        scale: '0-1',
+      }
+      await ctx.db.insert('evaluations', {
+        ...base,
+        kind: 'transfer',
+        evaluatedAt: 3,
+        rank: 5,
+        score: 0.98,
+      })
+      await ctx.db.insert('evaluations', {
+        ...base,
+        kind: 'recruiting',
+        provider: '247Sports',
+        scale: '0-100',
+        evaluatedAt: 4,
+        rank: 2,
+        score: 99,
+      })
+      return Promise.all([
+        ctx.db.insert('evaluations', {
+          ...base,
+          kind: 'recruiting',
+          evaluatedAt: 1,
+          rank: 40,
+          score: 0.97,
+        }),
+        ctx.db.insert('evaluations', {
+          ...base,
+          kind: 'recruiting',
+          evaluatedAt: 2,
+          rank: 38,
+          score: 0.9745,
+        }),
+      ])
+    })
+    const dashboard = () =>
+      t.query(api.rosters.getSeasonDashboard, { season: 2026 })
+    expect((await dashboard())?.entries[0].recruiting).toEqual({
+      rank: 38,
+      rating: 0.9745,
+      kind: 'recruiting',
+      provider: '247Sports Composite',
+    })
+    await t.run(async (ctx) => {
+      for (const id of recruitingIds) await ctx.db.delete('evaluations', id)
+    })
+    expect((await dashboard())?.entries[0].recruiting).toEqual({
+      rank: 5,
+      rating: 0.98,
+      kind: 'transfer',
+      provider: '247Sports Composite',
+    })
+  })
   test('persists defensive breakdowns and preserves the other phases', async () => {
     const { t, backupManifestId, seasonId } = await setup()
     const defenseBreakdown = { runDefense: 10, passRush: 5, coverage: 15 }

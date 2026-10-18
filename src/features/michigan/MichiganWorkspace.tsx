@@ -32,6 +32,7 @@ import {
   useSeasonalStats,
 } from '~/features/roster/useMichiganRoster'
 import { RosterSheet } from '~/features/michigan/RosterSheet'
+import { TeamLineup } from '~/features/michigan/TeamLineup'
 import {
   ROSTER_GROUPS,
   ROSTER_GROUP_LABELS,
@@ -67,6 +68,10 @@ type RosterPreset = 'experience' | 'lifecycle' | 'performance' | 'roster'
 
 export function MichiganMatrix() {
   const { season, setSeason } = useSeasonParam()
+  const [view, setView] = useUrlEnum<'matrix' | 'lineup'>('view', 'matrix', [
+    'matrix',
+    'lineup',
+  ])
   const dashboard = useMichiganRoster(season)
   const [search, setSearch] = useState('')
   const [room, setRoom] = useState('all')
@@ -81,7 +86,7 @@ export function MichiganMatrix() {
   const comparison = useComparisonTray()
   const filterCount = [
     room,
-    role,
+    view === 'lineup' ? 'all' : role,
     availability,
     experience,
     scholarship,
@@ -106,7 +111,8 @@ export function MichiganMatrix() {
             .includes(normalizedSearch) ||
           String(entry.season.jerseyNumber ?? '').includes(normalizedSearch)) &&
         (room === 'all' || entry.season.positionRoom === room) &&
-        (role === 'all' ||
+        (view === 'lineup' ||
+          role === 'all' ||
           rosterGroup({
             enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
             role: entry.season.role,
@@ -143,6 +149,7 @@ export function MichiganMatrix() {
     scholarship,
     search,
     season,
+    view,
   ])
 
   return (
@@ -164,6 +171,28 @@ export function MichiganMatrix() {
           <EmptyState>No Michigan roster exists for {season}.</EmptyState>
         ) : (
           <>
+            <div
+              role="group"
+              aria-label="Roster view"
+              className="mb-2 inline-flex rounded-lg border border-[#00274c]/25 bg-[#edf3f8] p-1"
+            >
+              {(
+                [
+                  ['matrix', 'Full matrix'],
+                  ['lineup', 'Team lineup'],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={view === value}
+                  onClick={() => setView(value)}
+                  className={`min-h-9 rounded-md px-3 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c] ${view === value ? 'bg-[#00274c] text-[#ffffff]' : 'text-[#00274c] hover:bg-[#00274c]/5'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <label className="relative min-w-0 flex-1">
                 <Search
@@ -231,14 +260,16 @@ export function MichiganMatrix() {
                       </option>
                     ))}
                   </FilterSelect>
-                  <FilterSelect label="Group" onChange={setRole} value={role}>
-                    <option value="all">All groups</option>
-                    {ROSTER_GROUPS.map((item) => (
-                      <option key={item} value={item}>
-                        {ROSTER_GROUP_LABELS[item]}
-                      </option>
-                    ))}
-                  </FilterSelect>
+                  {view === 'matrix' && (
+                    <FilterSelect label="Group" onChange={setRole} value={role}>
+                      <option value="all">All groups</option>
+                      {ROSTER_GROUPS.map((item) => (
+                        <option key={item} value={item}>
+                          {ROSTER_GROUP_LABELS[item]}
+                        </option>
+                      ))}
+                    </FilterSelect>
+                  )}
                   <FilterSelect
                     label="Availability"
                     onChange={setAvailability}
@@ -320,32 +351,43 @@ export function MichiganMatrix() {
                 </ul>
               </details>
             )}
-            <p
-              aria-live="polite"
-              className="mb-2 text-xs font-semibold text-white/40"
-            >
-              Showing {entries.length} of{' '}
-              {activeEntries(dashboard.data.entries).length} enrolled players
-            </p>
-            <RosterSheet
-              comparison={comparison}
-              entries={entries}
-              filters={{
-                availability,
-                eligibility,
-                entryMethod,
-                experience,
-                quality,
-                role,
-                room,
-                scholarship,
-                search,
-              }}
-              rosterPlayerIds={activeEntries(dashboard.data.entries).map(
-                (entry) => String(entry.player._id),
-              )}
-              season={season}
-            />
+            {view === 'matrix' && (
+              <p
+                aria-live="polite"
+                className="mb-2 text-xs font-semibold text-white/40"
+              >
+                Showing {entries.length} of{' '}
+                {activeEntries(dashboard.data.entries).length} enrolled players
+              </p>
+            )}
+            {view === 'lineup' ? (
+              <TeamLineup
+                rosterEntries={dashboard.data.entries}
+                entries={entries}
+                season={season}
+                comparison={comparison}
+              />
+            ) : (
+              <RosterSheet
+                comparison={comparison}
+                entries={entries}
+                filters={{
+                  availability,
+                  eligibility,
+                  entryMethod,
+                  experience,
+                  quality,
+                  role,
+                  room,
+                  scholarship,
+                  search,
+                }}
+                rosterPlayerIds={activeEntries(dashboard.data.entries).map(
+                  (entry) => String(entry.player._id),
+                )}
+                season={season}
+              />
+            )}
             <ComparisonTray comparison={comparison} season={season} />
           </>
         )}

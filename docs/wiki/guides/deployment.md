@@ -63,3 +63,9 @@ The command rejects a modified envelope, a version-3 envelope without an integer
 - If the web build fails after a backend change, first determine backward compatibility; do not blindly deploy an older schema over migrated data.
 
 Record the commit, source fingerprints, counts, operation timestamps, direct URLs, and smoke results after every hosted cutover.
+
+## Roster table release — 2026-10-18
+
+**Hosted current:** [production deployment](https://cfb-64zk28u4d-dreamsbydutchs-projects.vercel.app), aliased to [the production site](https://cfb-hazel.vercel.app/), was published from the reviewed working tree based on `d342145`. This includes the three-column position layout, college-year labels, separate ST Snaps for offensive/defensive players, and the Recruit composite rank/rating column. Convex production `doting-chipmunk-7` received the indexed recruiting summary query after successful development verification on `adjoining-opossum-710`.
+
+The pre-deployment snapshot `production-before-recruit-column-20261018.zip` is retained outside Git in `Documents/cfb26-backups`. Tests, TypeScript, lint, Markdown links, local build, and hosted build passed. Live verification at desktop and mobile widths confirmed the position order, removed columns, specialist-only Snaps behavior, and saved recruiting values (Bryce Underwood: `#1 (0.9998)`), with no browser console errors or page overflow. No player data import, commit, or push was performed for this release.

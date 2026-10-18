@@ -2,6 +2,30 @@ import { v } from 'convex/values'
 import { query } from './_generated/server'
 import { resolvePlayerSeasonEligibility } from './eligibility'
 import { comparePositionRooms, derivePositionRoom } from './playerDomain'
+import type { QueryCtx } from './_generated/server'
+import type { Id } from './_generated/dataModel'
+
+async function recruitingSummary(ctx: QueryCtx, playerId: Id<'players'>) {
+  const find = (kind: 'recruiting' | 'transfer') =>
+    ctx.db
+      .query('evaluations')
+      .withIndex('by_playerId_kind_provider_evaluatedAt', (q) =>
+        q
+          .eq('playerId', playerId)
+          .eq('kind', kind)
+          .eq('provider', '247Sports Composite'),
+      )
+      .order('desc')
+      .first()
+  const evaluation = (await find('recruiting')) ?? (await find('transfer'))
+  if (!evaluation) return null
+  return {
+    rank: evaluation.rank,
+    rating: evaluation.scale === '0-1' ? evaluation.score : null,
+    kind: evaluation.kind,
+    provider: evaluation.provider,
+  }
+}
 
 const boundedLimit = (limit: number | undefined, fallback: number) =>
   Math.min(Math.max(Math.floor(limit ?? fallback), 1), 500)
@@ -67,10 +91,21 @@ export const getSeasonDashboard = query({
         )
       ).filter((entry) => entry[1] !== null),
     )
+    const recruiting = new Map(
+      await Promise.all(
+        [
+          ...new Set([...seasons, ...commitments].map((row) => row.playerId)),
+        ].map(
+          async (playerId) =>
+            [playerId, await recruitingSummary(ctx, playerId)] as const,
+        ),
+      ),
+    )
     const entries = seasons
       .map((storedSeason) => ({
         eligibility: resolvePlayerSeasonEligibility(storedSeason, rule),
         player: players.get(storedSeason.playerId) ?? null,
+        recruiting: recruiting.get(storedSeason.playerId) ?? null,
         season: {
           ...storedSeason,
           positionRoom: derivePositionRoom(storedSeason.listedPosition),
@@ -118,6 +153,7 @@ export const getSeasonDashboard = query({
       commitments: await Promise.all(
         commitments.map(async (commitment) => ({
           commitment,
+          recruiting: recruiting.get(commitment.playerId) ?? null,
           player: await ctx.db.get('players', commitment.playerId),
         })),
       ),
