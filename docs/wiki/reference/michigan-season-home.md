@@ -4,6 +4,14 @@
 
 **Current source:** `/michigan/basketball` and `/michigan/hockey` open a season home page. The starting-year `season` parameter selects the season: `?season=2025` means 2025–26. Season home includes the summary, contributors, postseason results, and complete schedule on one page. Roster & stats (`view=roster`) and Schedule & results (`view=schedule`) remain direct views; existing links continue to work. Section links jump to contributors, postseason, or schedule on the home page. The view controls wrap on narrow screens, and tables scroll with visible keyboard focus and frozen player names.
 
+## Compact presentation
+
+**Current source:** the page uses the football matrix's compact heading scale and page gutters. A single summary band prioritizes the record and postseason finish; conference record, coach, venue splits, and scoring rates are secondary. Championship tags use restrained maize accents. View controls use an underline for the active selection.
+
+At widths of 1280px and above, contributors and the full schedule sit side by side; smaller screens stack them. Leader totals appear in one compact strip above dense player tables. Short rows, navy column headers, subtle row striping, and frozen player names keep values traceable. The full roster view uses the same compact table spacing.
+
+The postseason game log, season notes, and sources expand on demand. Schedule rows prioritize date, opponent, home/away/neutral designation, result/time, and game notes. Each row's keyboard-operable Details disclosure contains location, tournament, box-score, and recap links. Schedule conventions and import timestamp remain in the schedule's notes disclosure. No stored facts, filters, links, or result states are removed by the density change.
+
 ## Season facts and accomplishments
 
 `src/features/teams/seasonHistory.ts` retains 42 reviewed historical summaries for 2005–06 through 2025–26, retrieved from Michigan Athletics' [basketball year-by-year results](https://mgoblue.com/sports/2017/6/16/michigan-mens-basketball-year-by-year-results) and [hockey year-by-year results](https://mgoblue.com/sports/2017/6/16/michigan-ice-hockey-year-by-year-results) on 2026-10-18. These checked-in historical facts include the head coach, final overall and conference records, conference affiliation/finish, conference tournament finish, and national postseason result. This is a read-only source snapshot, not a new database table or owner editor. Raw HTML and the extraction review are retained outside Git at `C:/Users/choug/.t3/artifacts/michigan-season-history-20261018`.

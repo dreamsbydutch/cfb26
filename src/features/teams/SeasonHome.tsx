@@ -17,7 +17,7 @@ import type {
   ScheduleState,
   SeasonPlayer,
 } from './teamSeasonModel'
-import { EmptyState, ErrorState, LoadingState } from '~/components/AppShell'
+import { ErrorState, LoadingState } from '~/components/AppShell'
 
 export function SeasonHome({
   sport,
@@ -66,68 +66,44 @@ export function SeasonHome({
           ? 'Postseason not yet decided'
           : 'Not recorded'
   return (
-    <div className="space-y-8">
-      <nav
-        aria-label="Season sections"
-        className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-[#00274c]"
+    <div className="space-y-3">
+      <section
+        aria-label="Season summary"
+        className="border-y border-[#00274c]/20 py-2"
       >
-        <a className="underline underline-offset-4" href="#season-contributors">
-          Player contributions
-        </a>
-        <a className="underline underline-offset-4" href="#season-postseason">
-          Postseason
-        </a>
-        <a className="underline underline-offset-4" href="#season-schedule">
-          Schedule &amp; results
-        </a>
-      </nav>
-      <section aria-label="Season summary" className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <SummaryFact
-            label={history ? 'Final record' : 'Season record'}
-            value={history?.overall ?? (results ? results.record : '—')}
-            detail={
-              history
-                ? 'Completed season'
-                : schedule.isPending
-                  ? 'Loading results'
-                  : schedule.isError
-                    ? 'Results unavailable'
-                    : results?.played
-                      ? `${results.played} games played`
-                      : results
-                        ? 'No recorded regular-season results'
-                        : 'No schedule recorded'
-            }
-          />
-          <SummaryFact
-            label={history?.conference ?? 'Conference'}
-            value={
-              history?.conferenceRecord ?? (results ? results.conference : '—')
-            }
-            detail={
-              history
-                ? `${placeLabel(history.conferenceFinish)} in ${history.conference}`
-                : 'Conference games only'
-            }
-          />
-          <SummaryFact label="Postseason result" value={postseason} />
-          <SummaryFact
-            label="Head coach"
-            value={coach?.name ?? '—'}
-            detail={coach ? 'Season coaching staff' : 'Not recorded'}
-            sourceHref={coach?.sourceUrl}
-          />
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <div>
+              <span className="sr-only">
+                {history ? 'Final record' : 'Season record'}:{' '}
+              </span>
+              <strong className="text-2xl font-extrabold tabular-nums text-[#00274c]">
+                {history?.overall ?? results?.record ?? '\u2014'}
+              </strong>
+            </div>
+            <p className="m-0 text-xs text-slate-600">
+              <strong className="tabular-nums text-[#00274c]">
+                {history?.conferenceRecord ?? results?.conference ?? '\u2014'}
+              </strong>{' '}
+              {history?.conference ?? 'Conference'}
+              {history ? ` \u00b7 ${placeLabel(history.conferenceFinish)}` : ''}
+            </p>
+            <p className="m-0 text-xs text-slate-600">
+              <span className="text-slate-500">Coach </span>
+              {coach?.name ?? '\u2014'}
+            </p>
+          </div>
+          <p className="m-0 text-sm font-bold text-[#00274c]">{postseason}</p>
         </div>
         {!!honors.length && (
           <ul
             aria-label="Season accomplishments"
-            className="m-0 flex list-none flex-wrap gap-2 p-0"
+            className="m-0 mt-1.5 flex list-none flex-wrap gap-1.5 p-0"
           >
             {honors.map((honor) => (
               <li
                 key={honor}
-                className="rounded-lg border border-[#d5ad00] bg-[#ffcb05]/20 px-3 py-2 text-sm font-extrabold text-[#00274c]"
+                className="rounded border border-[#d5ad00]/50 bg-[#ffcb05]/15 px-2 py-0.5 text-[11px] font-bold text-[#00274c]"
               >
                 {honor}
               </li>
@@ -135,168 +111,260 @@ export function SeasonHome({
           </ul>
         )}
         {results && (
-          <dl className="grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3 lg:grid-cols-5">
+          <dl className="mb-0 mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-200 pt-1.5 text-[11px]">
             {[
               ['Home', results.home],
               ['Away', results.away],
               ['Neutral', results.neutral],
               [
-                sport === 'hockey' ? 'Goals / game' : 'Points / game',
-                results.scoringFor?.toFixed(sport === 'hockey' ? 2 : 1) ?? '—',
+                sport === 'hockey' ? 'GF/G' : 'PPG',
+                results.scoringFor?.toFixed(sport === 'hockey' ? 2 : 1) ??
+                  '\u2014',
               ],
               [
-                sport === 'hockey'
-                  ? 'Goals allowed / game'
-                  : 'Points allowed / game',
+                sport === 'hockey' ? 'GA/G' : 'Opp PPG',
                 results.scoringAgainst?.toFixed(sport === 'hockey' ? 2 : 1) ??
-                  '—',
+                  '\u2014',
               ],
             ].map(([label, value]) => (
-              <div key={label}>
-                <dt className="text-xs font-semibold text-slate-500">
-                  {label}
-                </dt>
-                <dd className="m-0 mt-1 font-bold tabular-nums text-[#00274c]">
+              <div key={label} className="flex gap-1">
+                <dt className="text-slate-500">{label}</dt>
+                <dd className="m-0 font-semibold tabular-nums text-[#00274c]">
                   {value}
                 </dd>
               </div>
             ))}
           </dl>
         )}
-        {results && (
-          <p className="text-xs text-slate-500">
-            Records exclude exhibitions. Scoring averages cover{' '}
-            {results.scoredGames} games with recorded scores.
-            {sport === 'hockey'
-              ? ' Shootout games retain the official tie.'
-              : ''}
-          </p>
-        )}
       </section>
-
-      <section
-        id="season-contributors"
-        className="scroll-mt-24 space-y-4 lg:scroll-mt-36"
+      <nav
+        aria-label="Season sections"
+        className="flex flex-wrap gap-x-4 text-xs font-semibold text-[#00274c]"
       >
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-black text-[#00274c]">
-              Players who contributed
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Players with recorded appearances in this season.
-            </p>
-          </div>
-          <button
-            className="app-control px-3 py-2 text-sm font-bold"
-            onClick={onRoster}
-            type="button"
+        <a
+          className="inline-flex min-h-8 items-center hover:underline"
+          href="#season-contributors"
+        >
+          Players
+        </a>
+        <a
+          className="inline-flex min-h-8 items-center hover:underline"
+          href="#season-postseason"
+        >
+          Postseason
+        </a>
+        <a
+          className="inline-flex min-h-8 items-center hover:underline"
+          href="#season-schedule"
+        >
+          Schedule &amp; results
+        </a>
+      </nav>
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div className="min-w-0 space-y-3">
+          <section
+            id="season-contributors"
+            className="scroll-mt-24 space-y-2 lg:scroll-mt-36"
           >
-            Full roster &amp; stats
-          </button>
-        </div>
-        {roster.isPending ? (
-          <LoadingState label="Loading player contributions" />
-        ) : roster.isError ? (
-          <ErrorState>
-            Could not load player contributions. The schedule is still available
-            below.
-          </ErrorState>
-        ) : !contributors.length ? (
-          <EmptyState title="No player appearances recorded">
-            The full roster is available separately. Contributions appear when
-            games played and season statistics are recorded.
-          </EmptyState>
-        ) : (
-          <>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {leaderFields.map(({ label, keys }) => {
-                const leader = seasonLeaders(
-                  sport === 'hockey' ? skaters : contributors,
-                  keys,
-                )
-                return (
-                  <SummaryFact
-                    key={label}
-                    label={`${label} leader${leader && leader.names.length > 1 ? 's' : ''}`}
-                    value={leader?.names.join(' / ') ?? '—'}
-                    detail={
-                      leader
-                        ? `${leader.total} ${label.toLowerCase()} · season total`
-                        : 'Not recorded'
-                    }
-                  />
-                )
-              })}
+            <div className="flex items-center justify-between gap-2 border-b border-[#00274c]/20">
+              <h2 className="m-0 text-sm font-extrabold text-[#00274c]">
+                Contributors{' '}
+                <span className="ml-1 text-xs font-normal text-slate-500">
+                  {contributors.length || ''}
+                </span>
+              </h2>
+              <button
+                className="min-h-8 text-xs font-semibold text-[#00274c] hover:underline"
+                onClick={onRoster}
+                type="button"
+              >
+                Full roster &amp; stats
+              </button>
             </div>
-            {sport === 'basketball' ? (
-              <ContributionTable
-                sport={sport}
-                rows={contributors}
-                goalie={false}
-              />
+            {roster.isPending ? (
+              <LoadingState label="Loading player contributions" />
+            ) : roster.isError ? (
+              <ErrorState>
+                Could not load player contributions. The schedule is still
+                available.
+              </ErrorState>
+            ) : !contributors.length ? (
+              <p className="rounded border border-dashed border-slate-300 px-2 py-1.5 text-xs text-slate-500">
+                No player appearances recorded. View the full roster for this
+                season's players.
+              </p>
             ) : (
               <>
-                {!!skaters.length && (
+                <dl className="m-0 grid grid-cols-3 divide-x divide-slate-200 bg-slate-50 text-[11px]">
+                  {leaderFields.map(({ label, keys }) => {
+                    const leader = seasonLeaders(
+                      sport === 'hockey' ? skaters : contributors,
+                      keys,
+                    )
+                    return (
+                      <div key={label} className="min-w-0 px-2 py-1.5">
+                        <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                          {label} leader
+                          {leader && leader.names.length > 1 ? 's' : ''}
+                        </dt>
+                        <dd className="m-0 mt-0.5 leading-snug text-[#00274c]">
+                          {leader?.names.join(' / ') ?? '\u2014'}
+                          {leader && (
+                            <strong className="ml-1 tabular-nums">
+                              {leader.total}
+                            </strong>
+                          )}
+                        </dd>
+                      </div>
+                    )
+                  })}
+                </dl>
+                {sport === 'basketball' ? (
                   <ContributionTable
                     sport={sport}
-                    rows={skaters}
+                    rows={contributors}
                     goalie={false}
                   />
-                )}
-                {!!goalies.length && (
-                  <ContributionTable sport={sport} rows={goalies} goalie />
+                ) : (
+                  <>
+                    {!!skaters.length && (
+                      <ContributionTable
+                        sport={sport}
+                        rows={skaters}
+                        goalie={false}
+                      />
+                    )}
+                    {!!goalies.length && (
+                      <ContributionTable sport={sport} rows={goalies} goalie />
+                    )}
+                  </>
                 )}
               </>
             )}
-            <p className="text-xs text-slate-500">
-              {contributors.length} players with recorded appearances. A dash
-              means unknown; a recorded zero remains zero.{' '}
-              {sport === 'basketball'
-                ? 'Ordered by total minutes. MPG, PPG, RPG and APG are per game.'
-                : 'Skaters are ordered by points; goalies by minutes played. SV% and GAA use saved goaltending totals.'}
-            </p>
-          </>
-        )}
-      </section>
-
-      <section
-        id="season-postseason"
-        className="scroll-mt-24 space-y-4 lg:scroll-mt-36"
-      >
-        <h2 className="text-xl font-black text-[#00274c]">
-          Postseason &amp; accomplishments
-        </h2>
-        <div className="rounded-xl border border-slate-200 p-4 sm:p-5">
-          <p className="m-0 text-lg font-extrabold text-[#00274c]">
-            {postseason}
-          </p>
-          {history && (
-            <p className="mt-2 text-sm text-slate-600">
-              {history.conference} tournament:{' '}
-              {history.tournamentFinish
-                ? placeLabel(history.tournamentFinish)
-                : 'Cancelled'}
-              .
-            </p>
-          )}
-          {history?.note && (
-            <p className="mt-2 text-sm text-slate-600">{history.note}</p>
-          )}
-          {history && (
-            <p className="mt-3 text-xs text-slate-500">
-              <a
-                className="underline underline-offset-2"
-                href={seasonHistorySources[sport]}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Michigan Athletics season history
-              </a>
-              {history.detailUrl && (
-                <>
-                  {' '}
-                  ·{' '}
+          </section>
+          <section
+            id="season-postseason"
+            className="scroll-mt-24 space-y-1 lg:scroll-mt-36"
+          >
+            <h2 className="m-0 border-b border-[#00274c]/20 py-1 text-sm font-extrabold text-[#00274c]">
+              Postseason
+            </h2>
+            {history && (
+              <p className="m-0 py-1 text-xs text-slate-600">
+                {history.conference} tournament:{' '}
+                <strong>
+                  {history.tournamentFinish
+                    ? placeLabel(history.tournamentFinish)
+                    : 'Cancelled'}
+                </strong>
+                .
+              </p>
+            )}
+            {history?.note && (
+              <p className="m-0 text-xs leading-relaxed text-slate-600">
+                {history.note}
+              </p>
+            )}
+            {!!results?.postseason.length && (
+              <details className="border-b border-slate-200 text-xs">
+                <summary className="min-h-8 cursor-pointer py-2 font-semibold text-[#00274c]">
+                  Postseason game log{' '}
+                  <span className="font-normal text-slate-500">
+                    ({results.postseason.length})
+                  </span>
+                </summary>
+                <ol className="m-0 list-none divide-y divide-slate-200 p-0">
+                  {results.postseason.map((game) => (
+                    <li
+                      key={game.sourceGameId}
+                      className="flex items-center justify-between gap-3 py-1.5"
+                    >
+                      <div className="min-w-0">
+                        <span className="mr-2 text-[11px] text-slate-500">
+                          <time dateTime={game.date}>
+                            {new Date(
+                              `${game.date}T12:00:00Z`,
+                            ).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              timeZone: 'UTC',
+                            })}
+                          </time>
+                        </span>
+                        <strong className="text-[#00274c]">
+                          {game.opponent}
+                        </strong>
+                        <span className="block text-[10px] text-slate-500">
+                          {game.tournament || 'Postseason'}
+                        </span>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <strong className="tabular-nums">
+                          {game.status === 'final' && game.result
+                            ? `${game.result} ${game.michiganScore}\u2013${game.opponentScore}`
+                            : game.status.replaceAll('_', ' ')}
+                        </strong>
+                        {game.recapUrl && (
+                          <a
+                            className="ml-2 inline-flex min-h-8 items-center text-[11px] text-slate-500 hover:underline"
+                            href={game.recapUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Recap
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
+          </section>
+          <details className="text-[11px] text-slate-500">
+            <summary className="min-h-8 cursor-pointer py-2 font-semibold">
+              Season notes &amp; sources
+            </summary>
+            <div className="space-y-2 pb-2">
+              <p className="m-0">
+                Contributors have recorded appearances. A dash means unknown;
+                zero remains zero.{' '}
+                {sport === 'basketball'
+                  ? 'Players are ordered by total minutes; MPG, PPG, RPG and APG are per game.'
+                  : 'Skaters are ordered by points and goalies by minutes. SV% and GAA use recorded goaltending totals.'}{' '}
+                Leaders use season totals.
+              </p>
+              {results && (
+                <p className="m-0">
+                  Records exclude exhibitions. Scoring averages cover{' '}
+                  {results.scoredGames} games with recorded scores.
+                  {sport === 'hockey'
+                    ? ' Shootout games retain the official tie.'
+                    : ''}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                {history && (
+                  <a
+                    className="underline underline-offset-2"
+                    href={seasonHistorySources[sport]}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Michigan Athletics season history
+                  </a>
+                )}
+                {coach && (
+                  <a
+                    className="underline underline-offset-2"
+                    href={coach.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Coach source
+                  </a>
+                )}
+                {history?.detailUrl && (
                   <a
                     className="underline underline-offset-2"
                     href={history.detailUrl}
@@ -305,97 +373,18 @@ export function SeasonHome({
                   >
                     Season details
                   </a>
-                </>
-              )}
-            </p>
-          )}
+                )}
+              </div>
+            </div>
+          </details>
         </div>
-        {!!results?.postseason.length && (
-          <ol className="m-0 list-none divide-y divide-slate-200 rounded-xl border border-slate-200 px-4">
-            {results.postseason.map((game) => (
-              <li
-                key={game.sourceGameId}
-                className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
-              >
-                <div>
-                  <p className="m-0 text-xs text-slate-500">
-                    <time dateTime={game.date}>
-                      {new Date(`${game.date}T12:00:00Z`).toLocaleDateString(
-                        'en-US',
-                        { month: 'short', day: 'numeric', timeZone: 'UTC' },
-                      )}
-                    </time>{' '}
-                    · {game.tournament || 'Postseason'}
-                  </p>
-                  <p className="m-0 mt-1 font-bold text-[#00274c]">
-                    {game.opponent}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="m-0 font-extrabold tabular-nums">
-                    {game.status === 'final' && game.result
-                      ? `${game.result} ${game.michiganScore}–${game.opponentScore}`
-                      : game.status.replaceAll('_', ' ')}
-                  </p>
-                  {game.recapUrl && (
-                    <a
-                      className="text-xs underline underline-offset-2"
-                      href={game.recapUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Game recap
-                    </a>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      <div id="season-schedule" className="scroll-mt-24 lg:scroll-mt-36">
-        <TeamSchedule sport={sport} season={season} schedule={schedule} />
+        <div
+          id="season-schedule"
+          className="min-w-0 scroll-mt-24 lg:scroll-mt-36"
+        >
+          <TeamSchedule sport={sport} season={season} schedule={schedule} />
+        </div>
       </div>
-    </div>
-  )
-}
-
-function SummaryFact({
-  label,
-  value,
-  detail,
-  sourceHref,
-}: {
-  label: string
-  value: string
-  detail?: string
-  sourceHref?: string
-}) {
-  return (
-    <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
-      <p className="m-0 text-xs font-bold uppercase tracking-wide text-slate-500">
-        {label}
-      </p>
-      <p className="m-0 mt-2 text-xl font-extrabold leading-tight text-[#00274c]">
-        {value}
-      </p>
-      {detail && (
-        <p className="m-0 mt-2 text-xs text-slate-500">
-          {sourceHref ? (
-            <a
-              className="underline underline-offset-2"
-              href={sourceHref}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {detail}
-            </a>
-          ) : (
-            detail
-          )}
-        </p>
-      )}
     </div>
   )
 }
@@ -426,13 +415,13 @@ function ContributionTable({
       role="region"
       aria-label={title}
       tabIndex={0}
-      className="overflow-x-auto rounded-xl border border-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="overflow-x-auto rounded border border-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2"
     >
-      <table className="w-full whitespace-nowrap text-left text-sm tabular-nums">
-        <caption className="bg-slate-50 px-3 py-2 text-left text-sm font-bold text-[#00274c]">
+      <table className="w-full whitespace-nowrap text-left text-xs tabular-nums">
+        <caption className="bg-slate-100 px-2 py-1 text-left text-[11px] font-bold text-[#00274c]">
           {title}
         </caption>
-        <thead className="bg-[#00274c] text-xs text-white">
+        <thead className="bg-[#00274c] text-[10px] text-white">
           <tr>
             {[
               'Player',
@@ -444,7 +433,7 @@ function ContributionTable({
               <th
                 key={label}
                 scope="col"
-                className={`px-3 py-2 ${label === 'Player' ? 'sticky left-0 z-10 bg-[#00274c]' : ''}`}
+                className={`px-2 py-1 ${label === 'Player' ? 'sticky left-0 z-10 bg-[#00274c]' : ''}`}
               >
                 {label}
               </th>
@@ -453,20 +442,20 @@ function ContributionTable({
         </thead>
         <tbody className="divide-y divide-slate-200">
           {rows.map(({ _id, values }) => (
-            <tr key={_id}>
+            <tr key={_id} className="odd:bg-white even:bg-slate-50">
               <th
                 scope="row"
-                className="sticky left-0 z-10 min-w-36 whitespace-normal bg-white px-3 py-3 font-semibold text-[#00274c]"
+                className="sticky left-0 z-10 min-w-28 max-w-40 whitespace-normal bg-inherit px-2 py-1.5 font-semibold text-[#00274c]"
               >
                 {values.name}
               </th>
-              <td className="px-3 py-3">{values.position ?? '—'}</td>
-              <td className="px-3 py-3">{values.games ?? '—'}</td>
+              <td className="px-2 py-1.5">{values.position ?? '—'}</td>
+              <td className="px-2 py-1.5">{values.games ?? '—'}</td>
               {goalie && (
-                <td className="px-3 py-3">{values.goalieMinutes ?? '—'}</td>
+                <td className="px-2 py-1.5">{values.goalieMinutes ?? '—'}</td>
               )}
               {metricValues(sport, goalie, values).map((value, i) => (
-                <td key={metrics[i]} className="px-3 py-3">
+                <td key={metrics[i]} className="px-2 py-1.5">
                   {value}
                 </td>
               ))}

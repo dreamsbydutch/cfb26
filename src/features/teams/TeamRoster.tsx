@@ -52,17 +52,16 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
   const known = definition.groups.flatMap((group) => group.positions)
   return (
     <PublicShell context={sport} active={sport}>
-      <main className="mx-auto max-w-[1680px] px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="app-kicker">Michigan · {seasonLabel(season)}</p>
-            <h1 className="app-title mt-2">{definition.name}</h1>
-          </div>
-          <div className="flex flex-wrap gap-3">
+      <main className="mx-auto w-full max-w-[1680px] px-2 py-1.5 sm:px-4 lg:px-6">
+        <header className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h1 className="m-0 text-2xl font-extrabold text-[#00274c] sm:text-3xl">
+            Michigan {sport === 'basketball' ? 'basketball' : 'hockey'}
+          </h1>
+          <div className="flex flex-wrap items-center gap-2">
             <label className="text-xs font-bold">
               Season
               <select
-                className="app-control ml-2 px-3 py-2"
+                className="min-h-9 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs ml-2"
                 value={season}
                 onChange={(event) => {
                   setSeason(Number(event.target.value))
@@ -82,7 +81,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
             {view === 'roster' && (
               <input
                 aria-label="Search roster"
-                className="app-control px-3 py-2 text-sm"
+                className="min-h-9 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs"
                 placeholder="Find a player"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -92,7 +91,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
         </header>
         {
           <div
-            className="mb-6 flex flex-wrap gap-2"
+            className="mb-2 flex flex-wrap gap-1 border-b border-slate-200"
             role="group"
             aria-label={`${sport} view`}
           >
@@ -101,7 +100,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                 key={value}
                 type="button"
                 aria-pressed={view === value}
-                className={`rounded-lg border px-4 py-2 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 ${view === value ? 'border-[#00274c] bg-[#00274c] text-white' : 'border-slate-300 bg-white text-slate-700'}`}
+                className={`min-h-9 border-b-2 px-3 py-1.5 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 ${view === value ? 'border-[#00274c] text-[#00274c]' : 'border-transparent text-slate-500 hover:text-[#00274c]'}`}
                 onClick={() => changeView(value)}
               >
                 {value === 'season'
@@ -144,7 +143,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
               : `No roster is available for ${seasonLabel(season)}.`}
           </EmptyState>
         ) : (
-          <div className="grid items-start gap-5 xl:grid-cols-2">
+          <div className="grid items-start gap-3 xl:grid-cols-2">
             {groups.map((group) => {
               const rows = entries
                 .filter((entry) =>
@@ -166,11 +165,11 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
               return (
                 <section
                   key={group.name}
-                  className="overflow-hidden rounded-xl border border-slate-200"
+                  className="overflow-hidden rounded border border-slate-200"
                 >
-                  <h2 className="flex justify-between bg-[#00274c] px-4 py-3 font-bold text-[#ffffff]">
+                  <h2 className="flex justify-between bg-[#00274c] px-2 py-1.5 text-xs font-bold text-[#ffffff]">
                     {group.name}
-                    <span className="text-sm font-normal">
+                    <span className="text-[11px] font-normal">
                       {rows.length} players
                     </span>
                   </h2>
@@ -198,7 +197,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                           ].map((label) => (
                             <th
                               key={label}
-                              className={`px-2 py-2 ${label === 'Player' ? 'sticky left-0 z-10 bg-slate-100' : ''}`}
+                              className={`px-2 py-1 ${label === 'Player' ? 'sticky left-0 z-10 bg-slate-100' : ''}`}
                             >
                               {label}
                             </th>
@@ -211,12 +210,12 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                             key={row._id}
                             className="border-t border-slate-200 bg-white"
                           >
-                            <td className="px-2 py-3">
+                            <td className="px-2 py-1.5">
                               {row.values.jersey ?? '—'}
                             </td>
                             <th
                               scope="row"
-                              className="sticky left-0 z-10 min-w-28 max-w-40 whitespace-normal bg-white px-2 py-3 text-sm"
+                              className="sticky left-0 z-10 min-w-28 max-w-40 whitespace-normal bg-white px-2 py-1.5 text-xs"
                             >
                               {row.values.name}
                               <span className="block text-[10px] font-normal text-slate-500">
@@ -275,7 +274,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
           </div>
         )}
         {view === 'roster' && !!entries.length && (
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-2 text-[11px] text-slate-500">
             {sport === 'basketball'
               ? 'Minutes, points, rebounds and assists are per game. Shooting percentages use a 0–100 scale.'
               : 'Goalie save percentage and goals-against average are calculated from saved totals.'}{' '}
