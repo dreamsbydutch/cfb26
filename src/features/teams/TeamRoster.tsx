@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { seasonLabel, teamDefinitions } from '../../../convex/teamRosterFields'
 import { metricValues } from './teamRosterModel'
+import { compareSeasonPlayers } from './teamSeasonModel'
 import { TeamSchedule } from './TeamSchedule'
 import { SeasonHome } from './SeasonHome'
 import { useTeamSchedule } from './useTeamSchedule'
@@ -151,9 +152,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                     ? !known.includes(String(entry.values.position))
                     : group.positions.includes(String(entry.values.position)),
                 )
-                .sort((a, b) =>
-                  String(a.values.name).localeCompare(String(b.values.name)),
-                )
+                .sort((a, b) => compareSeasonPlayers(sport, a, b))
               if (!rows.length) return null
               const goalie = sport === 'hockey' && group.name === 'Goalies'
               const metrics =
@@ -276,8 +275,8 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
         {view === 'roster' && !!entries.length && (
           <p className="mt-2 text-[11px] text-slate-500">
             {sport === 'basketball'
-              ? 'Minutes, points, rebounds and assists are per game. Shooting percentages use a 0–100 scale.'
-              : 'Goalie save percentage and goals-against average are calculated from saved totals.'}{' '}
+              ? 'Sorted by total minutes. Minutes, points, rebounds and assists are per game. Shooting percentages use a 0–100 scale.'
+              : 'Skaters are sorted by points; goalies by minutes. Goalie save percentage and goals-against average are calculated from saved totals.'}{' '}
             A dash means unknown.
           </p>
         )}

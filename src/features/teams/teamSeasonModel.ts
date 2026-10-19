@@ -100,27 +100,33 @@ export function seasonContributors(
       (entry) =>
         typeof entry.values.games === 'number' && entry.values.games > 0,
     )
-    .sort((a, b) => {
-      const total = (values: TeamValues) => {
-        if (sport === 'basketball') return numeric(values.minutes)
-        if (values.position === 'G') return numeric(values.goalieMinutes)
-        const goals = numeric(values.goals)
-        const assists = numeric(values.assists)
-        return goals === null || assists === null ? null : goals + assists
-      }
-      const left = total(a.values)
-      const right = total(b.values)
-      return (
-        (left === null
-          ? right === null
-            ? 0
-            : 1
-          : right === null
-            ? -1
-            : right - left) ||
-        String(a.values.name).localeCompare(String(b.values.name))
-      )
-    })
+    .sort((a, b) => compareSeasonPlayers(sport, a, b))
+}
+
+export function compareSeasonPlayers(
+  sport: TeamSport,
+  a: SeasonPlayer,
+  b: SeasonPlayer,
+) {
+  const total = (values: TeamValues) => {
+    if (sport === 'basketball') return numeric(values.minutes)
+    if (values.position === 'G') return numeric(values.goalieMinutes)
+    const goals = numeric(values.goals)
+    const assists = numeric(values.assists)
+    return goals === null || assists === null ? null : goals + assists
+  }
+  const left = total(a.values)
+  const right = total(b.values)
+  return (
+    (left === null
+      ? right === null
+        ? 0
+        : 1
+      : right === null
+        ? -1
+        : right - left) ||
+    String(a.values.name).localeCompare(String(b.values.name))
+  )
 }
 
 export function seasonLeaders(

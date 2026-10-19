@@ -5,6 +5,7 @@ import {
   getSeasonHistory,
 } from '../src/features/teams/seasonHistory.ts'
 import {
+  compareSeasonPlayers,
   seasonContributors,
   seasonHonors,
   seasonLeaders,
@@ -35,6 +36,57 @@ const game = (overrides = {}) => ({
   ...overrides,
 })
 const player = (id, values) => ({ _id: id, values: { name: id, ...values } })
+
+test('full hockey roster sorts by total points with zero ahead of unknown, retaining players without appearance totals', () => {
+  const rows = [
+    player('Unknown', { position: 'F', goals: null, assists: null }),
+    player('Incomplete', { position: 'F', goals: 99, assists: null }),
+    player('Zero', { position: 'F', goals: 0, assists: 0 }),
+    player('T.J. Hughes', { position: 'F', goals: 22, assists: 35 }),
+    player('Michael Hage', { position: 'F', goals: 13, assists: 39 }),
+    player('Tie B', { position: 'F', goals: 10, assists: 10 }),
+    player('Tie A', { position: 'F', goals: 5, assists: 15 }),
+  ]
+  assert.deepEqual(
+    rows
+      .toSorted((a, b) => compareSeasonPlayers('hockey', a, b))
+      .map((row) => row._id),
+    [
+      'T.J. Hughes',
+      'Michael Hage',
+      'Tie A',
+      'Tie B',
+      'Zero',
+      'Incomplete',
+      'Unknown',
+    ],
+  )
+})
+
+test('full basketball roster and hockey goalies sort by total minutes rather than points, appearances, or per-game usage', () => {
+  const basketball = [
+    player('Scorer', { minutes: 100, points: 500, games: 1 }),
+    player('Most minutes', { minutes: 900, points: 20, games: 40 }),
+    player('Unknown', { minutes: null }),
+  ]
+  assert.deepEqual(
+    basketball
+      .toSorted((a, b) => compareSeasonPlayers('basketball', a, b))
+      .map((row) => row._id),
+    ['Most minutes', 'Scorer', 'Unknown'],
+  )
+  const goalies = [
+    player('Backup', { position: 'G', goalieMinutes: 300 }),
+    player('Unrecorded', { position: 'G', goalieMinutes: null }),
+    player('Starter', { position: 'G', goalieMinutes: 2000 }),
+  ]
+  assert.deepEqual(
+    goalies
+      .toSorted((a, b) => compareSeasonPlayers('hockey', a, b))
+      .map((row) => row._id),
+    ['Starter', 'Backup', 'Unrecorded'],
+  )
+})
 
 test('season records exclude exhibitions and unplayed games, preserve hockey ties, and separate conference games', () => {
   const games = [
