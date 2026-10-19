@@ -29,7 +29,7 @@ The selected owner season persists across nested admin routes. Enrollment and de
 
 ## Presentation system
 
-**Current source:** basketball and hockey season pages share the football matrix's compact heading scale, gutters, short table rows, and navy headers. One summary band prioritizes record and postseason outcome. Contributors and schedule sit side by side from 1280px; narrow screens stack them. Leader totals are compact, game details expand within rows, and supporting notes/sources use disclosures. See [season home presentation](../reference/michigan-season-home.md#compact-presentation).
+**Current source:** basketball and hockey season pages share the football matrix's compact heading scale, gutters, short table rows, and navy headers. One summary band prioritizes record and postseason outcome. Contributors and schedule sit side by side from 1280px; narrow screens stack them. Leader totals are compact, game details expand within rows, and supporting data notes use disclosures. See [season home presentation](../reference/michigan-season-home.md#compact-presentation).
 
 **Current source:** player profiles display imported season participation separately from game-derived grades, including phase games played, snaps, cutoff, and an available offensive snap breakdown. These cumulative snapshots are not summed with individual game records. See [screenshot participation imports](../guides/screenshot-participation-imports.md).
 
@@ -73,6 +73,8 @@ The admin Roster spreadsheet has a Recruiting column group with editable 247Spor
 
 Hockey schedules from 2025-26 also read `api.hockeyNpi.forSchedule`. A compact expandable national table and opponent column distinguish Current NPI from Final NPI; both apply to the selected season as a whole, never rank at game time. See [hockey NPI](../reference/michigan-hockey-npi.md).
 
-Hockey roster tables use a compact NHL draft column with expandable drafting-team/source details instead of recruiting. Its separate query leaves roster statistics available if draft history fails. The hockey owner editor omits recruiting inputs. See [hockey draft history](../reference/michigan-hockey-drafts.md).
+Hockey roster tables use a compact NHL draft column with expandable drafting-team details instead of recruiting. Its separate query leaves roster statistics available if draft history fails. The hockey owner editor omits recruiting inputs. See [hockey draft history](../reference/michigan-hockey-drafts.md).
 
 The hockey NHL draft cell can also show a dated Elite Prospects consolidated projection for the upcoming draft year. It uses the existing season draft query, labels projections explicitly, and gives completed selections priority. See [hockey draft history](../reference/michigan-hockey-drafts.md).
+
+**Public sports presentation:** show the actual data with compact labels. Routine source citations, collection timestamps, and provenance explanations stay internal. NHL projections keep their projected-status/year label; NPI keeps current/final labels. Box-score and recap links remain available as useful game actions.

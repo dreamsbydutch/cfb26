@@ -193,7 +193,7 @@ export function TeamSchedule({
                       {npi &&
                         (game.opponentPrefix || /^#/.test(game.opponent)) && (
                           <p className="m-0">
-                            Michigan Athletics listed opponent:{' '}
+                            Listed opponent:{' '}
                             {game.opponentPrefix} {game.opponent}
                           </p>
                         )}
@@ -237,34 +237,14 @@ export function TeamSchedule({
       </div>
       <details className="mt-1 text-[11px] text-slate-500">
         <summary className="min-h-8 cursor-pointer py-2 font-semibold">
-          Schedule notes &amp; source
+          Schedule notes
         </summary>
         <p className="m-0 mb-2">
           Scores list Michigan first; records exclude exhibitions.{' '}
           {sport === 'hockey' &&
             'Shootout outcomes remain in the notes; tied games retain the official tie. '}
-          Upcoming games have no score. Times are as listed by Michigan
-          Athletics.
+          Upcoming games have no score. Times are as scheduled.
         </p>
-        {schedule.data.sourceUrl && (
-          <p className="m-0 mb-2">
-            <a
-              className="underline underline-offset-2"
-              href={schedule.data.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Michigan Athletics schedule
-            </a>
-            {schedule.data.importedAt !== null && (
-              <>
-                {' '}
-                · Updated{' '}
-                {new Date(schedule.data.importedAt).toLocaleDateString('en-US')}
-              </>
-            )}
-          </p>
-        )}
       </details>
     </section>
   )

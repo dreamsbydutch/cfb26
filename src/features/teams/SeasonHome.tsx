@@ -1,8 +1,4 @@
-import {
-  getSeasonCoach,
-  getSeasonHistory,
-  seasonHistorySources,
-} from './seasonHistory'
+import { getSeasonCoach, getSeasonHistory } from './seasonHistory'
 import { metricValues } from './teamRosterModel'
 import {
   seasonContributors,
@@ -323,7 +319,7 @@ export function SeasonHome({
           </section>
           <details className="text-[11px] text-slate-500">
             <summary className="min-h-8 cursor-pointer py-2 font-semibold">
-              Season notes &amp; sources
+              Season notes
             </summary>
             <div className="space-y-2 pb-2">
               <p className="m-0">
@@ -343,38 +339,6 @@ export function SeasonHome({
                     : ''}
                 </p>
               )}
-              <div className="flex flex-wrap gap-x-3 gap-y-1">
-                {history && (
-                  <a
-                    className="underline underline-offset-2"
-                    href={seasonHistorySources[sport]}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Michigan Athletics season history
-                  </a>
-                )}
-                {coach && (
-                  <a
-                    className="underline underline-offset-2"
-                    href={coach.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Coach source
-                  </a>
-                )}
-                {history?.detailUrl && (
-                  <a
-                    className="underline underline-offset-2"
-                    href={history.detailUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Season details
-                  </a>
-                )}
-              </div>
             </div>
           </details>
         </div>

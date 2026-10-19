@@ -6,13 +6,13 @@
 
 The schedule displays calendar dates and date ranges, opponents and listed ranks, home/away/neutral designation, location, Michigan-first scores, W/L/T, time as published, tournament notes, and available box score/recap links. Exhibitions remain visible but do not count toward the displayed record. Shootout wins/losses remain in notes; an official tie stays a tie. Cancellations, postponements, no-contests, upcoming games, and finals without a published score retain their distinct states. Missing scores remain unknown. Conditional postseason placeholders are retained exactly as scheduled; they do not assert tournament qualification.
 
-**Current presentation:** dense schedule rows keep opponent and result prominent. Location, tournament, box-score and recap links expand under each game's Details control; notes and source timestamps expand below the table.
+**Current presentation:** dense schedule rows keep opponent and result prominent. Location, tournament, box-score and recap links expand under each game's Details control; brief schedule conventions expand below the table. Routine source links and import timestamps stay internal.
 
 The [season home page](michigan-season-home.md) also embeds the complete schedule below the season summary, player contributions, and postseason results. Existing `view=schedule` links continue to open the dedicated schedule.
 
 ## Storage and import
 
-`hockeyScheduleGames` stores one Michigan game observation per official game ID and season. `hockeyScheduleImports` appends the source URL/hash, count, revision, import time, and owner-session receipt. Both tables use `by_season` indexes. `hockeySchedules.list` returns at most 81 rows for a season; imports enforce a maximum of 80. The public view exposes the source and import date, not owner-session metadata. Empty seasons show an empty state.
+`hockeyScheduleGames` stores one Michigan game observation per official game ID and season. `hockeyScheduleImports` appends the source URL/hash, count, revision, import time, and owner-session receipt. Both tables use `by_season` indexes. `hockeySchedules.list` returns at most 81 rows for a season; imports enforce a maximum of 80. Source and import dates remain in the data contract but are omitted from the public display. Empty seasons show an empty state.
 
 `hockeySchedules.importSeason` requires an owner session and expected season revision. It validates unique official IDs, calendar dates within the July–June season, paired nonnegative scores, consistent W/L/T, HTTPS links, and scoreless unplayed states. A repeated identical import is a no-op. Corrections update existing IDs. Imports cannot silently remove previously recorded games. An invalid row aborts the batch. These tables are isolated from roster/player statistics and football's Michigan data revision and JSON backup contract. Use a full Convex export for complete deployment recovery.
 

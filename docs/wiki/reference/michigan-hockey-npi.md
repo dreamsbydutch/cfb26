@@ -2,7 +2,7 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-**Current source:** hockey season schedules show Michigan's NPI and an opponent NPI column. The active season uses the latest saved rankings for every game, including completed games. Completed seasons use only final rankings. Labels explicitly distinguish Current NPI and Final NPI; neither represents the rank at game time. Expand the compact Michigan NPI line to see the national table, collection date, and source. Exhibitions and unmatched/unlisted teams show a dash, not an invented rank.
+**Current source:** hockey season schedules show Michigan's NPI and an opponent NPI column. The active season uses the latest saved rankings for every game, including completed games. Completed seasons use only final rankings. Labels explicitly distinguish Current NPI and Final NPI; neither represents the rank at game time. Expand the compact Michigan NPI line to see the national table. Collection dates and source links stay internal. Exhibitions and unmatched/unlisted teams show a dash, not an invented rank.
 
 ## Refresh and retention
 
@@ -14,7 +14,7 @@ The same job checks the preceding season until a final table is saved. Starting 
 
 Fetches have a 20-second timeout. A failed attempt preserves the last valid table and schedules at most two retries, 15 minutes apart. Leases prevent concurrent workers, stale completions cannot overwrite a newer worker, and successful repeat runs within the same UTC week are no-ops. Validation requires the correct page season, a complete 40–100-team table, unique school identities and contiguous ranks, finite NPI values, and Michigan's CHN identity. A changed format fails closed. School matching uses canonical names and explicit aliases; CHN team IDs are never joined to unrelated Michigan Athletics IDs.
 
-Michigan Athletics' listed opponent ranks remain available under each game's Details control when NPI is shown. They are separate source facts and are never relabeled as NPI. If the latest refresh fails, the expanded ranking disclosure identifies the failure and the date of the retained valid table.
+Michigan Athletics' listed opponent ranks remain available under each game's Details control when NPI is shown. They are separate source facts and are never relabeled as NPI. If the latest refresh fails, the expanded ranking disclosure shows a brief delayed-update status.
 
 ## Verification and operations
 

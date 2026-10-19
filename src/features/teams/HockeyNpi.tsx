@@ -9,8 +9,8 @@ export function HockeyNpi({ state }: { state: ScheduleState['npi'] }) {
         {state.isPending
           ? 'Loading NPI rankings…'
           : state.isError || state.data?.refreshFailed
-            ? 'NPI rankings unavailable. The weekly refresh will retry.'
-            : 'NPI rankings have not been collected for this season.'}
+            ? 'NPI rankings unavailable.'
+            : 'No NPI rankings for this season.'}
       </p>
     )
   return (
@@ -20,32 +20,11 @@ export function HockeyNpi({ state }: { state: ScheduleState['npi'] }) {
           Michigan #{latest.michiganRank ?? '—'} ·{' '}
           {latest.final ? 'Final NPI' : 'Current NPI'}
         </strong>
-        {' · '}
-        {new Date(latest.observedAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          timeZone: 'UTC',
-        })}
         {' · All rankings'}
       </summary>
-      <p className="mb-2 mt-0">
-        {latest.final
-          ? 'End-of-season rankings from the CHN season archive.'
-          : 'Refreshed Mondays at 13:07 UTC. All games show the latest saved ranks, including games already played.'}{' '}
-        These are not rankings at game time. A dash means unavailable or
-        exhibition.
-        {state.data?.refreshFailed &&
-          ' Refresh failed; showing the last valid rankings.'}{' '}
-        <a
-          className="underline"
-          href={latest.sourceUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          College Hockey News
-        </a>
-      </p>
+      {state.data?.refreshFailed && (
+        <p className="mb-2 mt-0">Rankings update delayed.</p>
+      )}
       <div
         className="max-h-64 max-w-md overflow-auto border border-slate-200"
         role="region"

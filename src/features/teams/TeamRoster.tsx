@@ -313,9 +313,6 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
             {sport === 'hockey' && (
               <>
                 {' '}
-                NHL draft shows career selections, which may postdate the
-                selected season. Expand a pick for its drafting team and source.
-                EP projections are labeled separately with their draft year.{' '}
                 {hockeyDrafts.isError
                   ? 'Draft history could not load; reload to retry.'
                   : hockeyDrafts.isPending

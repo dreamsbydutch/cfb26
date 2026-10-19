@@ -10,7 +10,7 @@
 
 At widths of 1280px and above, contributors and the full schedule sit side by side; smaller screens stack them. Leader totals appear in one compact strip above dense player tables. Short rows, navy column headers, subtle row striping, and frozen player names keep values traceable. The full roster view uses the same compact table spacing.
 
-The postseason game log, season notes, and sources expand on demand. Schedule rows prioritize date, opponent, home/away/neutral designation, result/time, and game notes. Each row's keyboard-operable Details disclosure contains location, tournament, box-score, and recap links. Schedule conventions and import timestamp remain in the schedule's notes disclosure. No stored facts, filters, links, or result states are removed by the density change.
+The postseason game log and season notes expand on demand. Schedule rows prioritize date, opponent, home/away/neutral designation, result/time, and game notes. Each row's keyboard-operable Details disclosure contains location, tournament, box-score, and recap links. Brief schedule conventions remain in the schedule's notes disclosure. Routine source citations and collection timestamps are omitted from public sports pages; source records remain stored internally. Functional game links, stored facts, filters, and result states are preserved.
 
 ## Season facts and accomplishments
 
@@ -22,7 +22,7 @@ The explicit [2026–27 basketball staff](https://mgoblue.com/sports/mens-basket
 
 Historical tournament naming is normalized to field size where needed. Michigan's year-by-year basketball table incorrectly labels 2010–11 as Sweet 16; the [contemporary Duke recap](https://mgoblue.com/news/2011/3/20/michigan_rally_falls_short_against_duke_in_ncaa_third_round_thriller) establishes the Round of 32 loss. The 2011–12 second-round label means the Round of 64 under that era's naming. The 2015–16 entry distinguishes a First Four win from a Round of 64 exit.
 
-Both 2019–20 seasons explicitly record [COVID cancellations](https://mgoblue.com/news/2020/3/11/michigan-athletics-covid-19-response-and-updates). Hockey's 2020–21 NCAA berth is distinguished from participation: Michigan [was removed before its opening game](https://mgoblue.com/news/2021/3/26/ice-hockey-removed-from-ncaa-tournament-due-to-covid-protocols). The page links the relevant official source beside these exceptions.
+Both 2019–20 seasons explicitly record [COVID cancellations](https://mgoblue.com/news/2020/3/11/michigan-athletics-covid-19-response-and-updates). Hockey's 2020–21 NCAA berth is distinguished from participation: Michigan [was removed before its opening game](https://mgoblue.com/news/2021/3/26/ice-hockey-removed-from-ncaa-tournament-due-to-covid-protocols). These facts remain visible; their source evidence stays in the documentation and source records.
 
 ## Schedule and player evidence
 
