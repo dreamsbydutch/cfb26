@@ -74,3 +74,5 @@ The admin Roster spreadsheet has a Recruiting column group with editable 247Spor
 Hockey schedules from 2025-26 also read `api.hockeyNpi.forSchedule`. A compact expandable national table and opponent column distinguish Current NPI from Final NPI; both apply to the selected season as a whole, never rank at game time. See [hockey NPI](../reference/michigan-hockey-npi.md).
 
 Hockey roster tables use a compact NHL draft column with expandable drafting-team/source details instead of recruiting. Its separate query leaves roster statistics available if draft history fails. The hockey owner editor omits recruiting inputs. See [hockey draft history](../reference/michigan-hockey-drafts.md).
+
+The hockey NHL draft cell can also show a dated Elite Prospects consolidated projection for the upcoming draft year. It uses the existing season draft query, labels projections explicitly, and gives completed selections priority. See [hockey draft history](../reference/michigan-hockey-drafts.md).

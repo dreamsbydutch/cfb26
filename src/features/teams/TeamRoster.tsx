@@ -53,6 +53,9 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
   const draftByPlayer = new Map(
     hockeyDrafts.data?.map((player) => [player.playerKey, player.selections]),
   )
+  const projectionByPlayer = new Map(
+    hockeyDrafts.data?.map((player) => [player.playerKey, player.projection]),
+  )
   const definition = teamDefinitions[sport]
   const entries =
     roster.data?.entries.filter(
@@ -268,6 +271,11 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                             <td className="px-2">
                               {sport === 'hockey' ? (
                                 <HockeyDraftCell
+                                  projection={projectionByPlayer.get(
+                                    hockeyPlayerKey(
+                                      String(row.values.name ?? ''),
+                                    ),
+                                  )}
                                   selections={draftByPlayer.get(
                                     hockeyPlayerKey(
                                       String(row.values.name ?? ''),
@@ -306,7 +314,8 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
               <>
                 {' '}
                 NHL draft shows career selections, which may postdate the
-                selected season. Expand a pick for its drafting team and source.{' '}
+                selected season. Expand a pick for its drafting team and source.
+                EP projections are labeled separately with their draft year.{' '}
                 {hockeyDrafts.isError
                   ? 'Draft history could not load; reload to retry.'
                   : hockeyDrafts.isPending

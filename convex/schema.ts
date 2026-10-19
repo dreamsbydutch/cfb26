@@ -9,7 +9,7 @@ import { teamSport, teamValues } from './teamRosterFields'
 import { hockeyGame } from './hockeyScheduleFields'
 import { basketballGame } from './basketballScheduleFields'
 import { npiTeam } from './hockeyNpiFields'
-import { hockeyDraft } from './hockeyDraftFields'
+import { hockeyDraft, hockeyDraftProjection } from './hockeyDraftFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -1063,6 +1063,11 @@ export default defineSchema({
     importedAt: v.number(),
     sessionId: v.id('ownerSessions'),
   }).index('by_season', ['season']),
+
+  hockeyDraftProjections: defineTable({
+    ...hockeyDraftProjection.fields,
+    playerKey: v.string(),
+  }).index('by_playerKey_and_year', ['playerKey', 'draftYear']),
 
   hockeyDraftSelections: defineTable({
     ...hockeyDraft.fields,

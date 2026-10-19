@@ -1,7 +1,8 @@
 import type { Infer } from 'convex/values'
-import type { hockeyDraft } from './hockeyDraftFields'
+import type { hockeyDraft, hockeyDraftProjection } from './hockeyDraftFields'
 
 export type HockeyDraft = Infer<typeof hockeyDraft>
+export type HockeyDraftProjection = Infer<typeof hockeyDraftProjection>
 // Reviewed full-name/nickname variants only; no last-name or fuzzy joins.
 const aliases: Record<string, string> = {
   joececconi: 'josephcecconi',

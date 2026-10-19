@@ -3,7 +3,11 @@ import { convexTest } from 'convex-test'
 import { describe, expect, test } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
-import { HOCKEY_DRAFT_SOURCE } from './hockeyDraftFields'
+import {
+  HOCKEY_DRAFT_RANKING_SOURCE,
+  HOCKEY_DRAFT_SOURCE,
+} from './hockeyDraftFields'
+import type { HockeyDraftProjection } from './hockeyDraftModel'
 
 const modules = import.meta.glob('./**/*.ts')
 const draft = {
@@ -18,6 +22,121 @@ const draft = {
 }
 
 describe('sourced hockey NHL draft history', () => {
+  test('keeps draft projections separate, season-scoped, replayable, and hidden after an actual selection', async () => {
+    const t = convexTest(schema, modules)
+    const [id, unrelated] = await t.run(async (ctx) => [
+      await ctx.db.insert('teamRosterEntries', {
+        sport: 'hockey',
+        season: 2026,
+        values: { name: 'Landon DuPont', goals: 2 },
+        updatedAt: 1,
+      }),
+      await ctx.db.insert('teamRosterEntries', {
+        sport: 'hockey',
+        season: 2026,
+        values: { name: 'Brandt Harper' },
+        updatedAt: 1,
+      }),
+    ])
+    const projection: HockeyDraftProjection = {
+      playerName: 'Landon DuPont',
+      draftYear: 2027,
+      rank: 1,
+      sourceUrl: HOCKEY_DRAFT_RANKING_SOURCE,
+      sourcePlayerUrl:
+        'https://www.eliteprospects.com/player/701503/landon-dupont',
+      observedAt: Date.now() - 1000,
+      sourceSha256: 'b'.repeat(64),
+    }
+    const args = { projection, rosterIds: [id], expectedObservedAt: null }
+    const before = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+    })
+    expect(await t.mutation(internal.hockeyDrafts.importProjection, args)).toBe(
+      true,
+    )
+    expect(await t.mutation(internal.hockeyDrafts.importProjection, args)).toBe(
+      false,
+    )
+    const data = await t.query(api.hockeyDrafts.forSeason, { season: 2026 })
+    expect(data.find((player) => player.playerKey === 'landondupont')).toEqual({
+      playerKey: 'landondupont',
+      selections: [],
+      projection,
+    })
+    expect(
+      data.find((player) => player.playerKey === 'brandtharper')?.projection,
+    ).toBeNull()
+    expect(await t.query(api.hockeyDrafts.forSeason, { season: 2025 })).toEqual(
+      [],
+    )
+    expect(
+      await t.query(api.teamRosters.list, { sport: 'hockey', season: 2026 }),
+    ).toEqual(before)
+    await expect(
+      t.mutation(internal.hockeyDrafts.importProjection, {
+        ...args,
+        rosterIds: [unrelated],
+      }),
+    ).rejects.toThrow('match')
+    await expect(
+      t.mutation(internal.hockeyDrafts.importProjection, {
+        ...args,
+        projection: {
+          ...projection,
+          rank: 2,
+          observedAt: projection.observedAt - 1,
+        },
+      }),
+    ).rejects.toThrow('changed')
+    await expect(
+      t.mutation(internal.hockeyDrafts.importProjection, {
+        ...args,
+        projection: { ...projection, rank: 0 },
+      }),
+    ).rejects.toThrow('Invalid')
+    await t.mutation(internal.hockeyDrafts.importProjection, {
+      ...args,
+      expectedObservedAt: projection.observedAt,
+      projection: {
+        ...projection,
+        rank: 2,
+        observedAt: projection.observedAt + 1,
+      },
+    })
+    expect(
+      (await t.query(api.hockeyDrafts.forSeason, { season: 2026 })).find(
+        (player) => player.playerKey === 'landondupont',
+      )?.projection?.rank,
+    ).toBe(2)
+    await t.mutation(internal.hockeyDrafts.importMatched, {
+      rows: [
+        {
+          draft: {
+            ...draft,
+            playerName: 'Landon DuPont',
+            year: 2027,
+            overallPick: 1,
+            round: 1,
+          },
+          rosterIds: [id],
+        },
+      ],
+    })
+    expect(
+      (await t.query(api.hockeyDrafts.forSeason, { season: 2026 })).find(
+        (player) => player.playerKey === 'landondupont',
+      )?.projection,
+    ).toBeNull()
+    await expect(
+      t.mutation(internal.hockeyDrafts.importProjection, {
+        ...args,
+        projection: { ...projection, observedAt: projection.observedAt + 2 },
+      }),
+    ).rejects.toThrow('completed')
+  })
+
   test('one selection follows a player across seasons without changing roster fields or revisions', async () => {
     const t = convexTest(schema, modules)
     const ids = await t.run(async (ctx) => {

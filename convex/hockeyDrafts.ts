@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { internalMutation, query } from './_generated/server'
-import { hockeyDraft } from './hockeyDraftFields'
+import { hockeyDraft, hockeyDraftProjection } from './hockeyDraftFields'
 import { hockeyPlayerKey, validateHockeyDraft } from './hockeyDraftModel'
 
 export const importMatched = internalMutation({
@@ -89,10 +89,97 @@ export const importMatched = internalMutation({
   },
 })
 
+export const importProjection = internalMutation({
+  args: {
+    projection: hockeyDraftProjection,
+    rosterIds: v.array(v.id('teamRosterEntries')),
+    expectedObservedAt: v.union(v.number(), v.null()),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, { projection, rosterIds, expectedObservedAt }) => {
+    const playerKey = hockeyPlayerKey(projection.playerName)
+    const profile = new URL(projection.sourcePlayerUrl)
+    if (
+      !projection.playerName.trim() ||
+      projection.playerName.length > 100 ||
+      !Number.isInteger(projection.draftYear) ||
+      projection.draftYear < 2027 ||
+      projection.draftYear > 2200 ||
+      !Number.isInteger(projection.rank) ||
+      projection.rank < 1 ||
+      projection.rank > 100 ||
+      !Number.isFinite(projection.observedAt) ||
+      projection.observedAt < Date.UTC(2026, 0, 1) ||
+      projection.observedAt > Date.now() + 60_000 ||
+      !/^[a-f0-9]{64}$/.test(projection.sourceSha256) ||
+      profile.origin !== 'https://www.eliteprospects.com' ||
+      profile.username ||
+      profile.password ||
+      profile.search ||
+      profile.hash ||
+      !/^\/player\/\d+\/[a-z0-9-]+$/.test(profile.pathname) ||
+      hockeyPlayerKey(profile.pathname.split('/').at(-1) ?? '') !== playerKey ||
+      !rosterIds.length ||
+      rosterIds.length > 30 ||
+      new Set(rosterIds).size !== rosterIds.length
+    )
+      throw new Error('Invalid sourced NHL draft projection.')
+    for (const id of rosterIds) {
+      const player = await ctx.db.get('teamRosterEntries', id)
+      if (
+        !player ||
+        player.sport !== 'hockey' ||
+        hockeyPlayerKey(String(player.values.name ?? '')) !== playerKey ||
+        player.season + 1 !== projection.draftYear
+      )
+        throw new Error(
+          'Projection must match a saved hockey player in the draft season.',
+        )
+    }
+    const drafted = await ctx.db
+      .query('hockeyDraftSelections')
+      .withIndex('by_playerKey_and_year', (q) => q.eq('playerKey', playerKey))
+      .first()
+    if (drafted)
+      throw new Error('Player already has a completed NHL selection.')
+    const previous = await ctx.db
+      .query('hockeyDraftProjections')
+      .withIndex('by_playerKey_and_year', (q) =>
+        q.eq('playerKey', playerKey).eq('draftYear', projection.draftYear),
+      )
+      .unique()
+    if (
+      previous &&
+      Object.entries(projection).every(
+        ([field, value]) =>
+          previous[field as keyof typeof projection] === value,
+      )
+    )
+      return false
+    if (
+      (previous?.observedAt ?? null) !== expectedObservedAt ||
+      (previous && projection.observedAt <= previous.observedAt)
+    )
+      throw new Error('Draft projection changed or observation is stale.')
+    if (previous)
+      await ctx.db.patch('hockeyDraftProjections', previous._id, projection)
+    else
+      await ctx.db.insert('hockeyDraftProjections', {
+        ...projection,
+        playerKey,
+      })
+    return true
+  },
+})
+
 export const forSeason = query({
   args: { season: v.number() },
   returns: v.array(
-    v.object({ playerKey: v.string(), selections: v.array(hockeyDraft) }),
+    v.object({
+      playerKey: v.string(),
+      selections: v.array(hockeyDraft),
+      projection: v.union(hockeyDraftProjection, v.null()),
+    }),
   ),
   handler: async (ctx, { season }) => {
     if (!Number.isInteger(season) || season < 1900 || season > 2200)
@@ -119,8 +206,28 @@ export const forSeason = query({
           )
           .order('desc')
           .take(5)
+        const projectionRow = rows.length
+          ? null
+          : await ctx.db
+              .query('hockeyDraftProjections')
+              .withIndex('by_playerKey_and_year', (q) =>
+                q.eq('playerKey', playerKey).eq('draftYear', season + 1),
+              )
+              .unique()
+        const projection = projectionRow
+          ? {
+              playerName: projectionRow.playerName,
+              draftYear: projectionRow.draftYear,
+              rank: projectionRow.rank,
+              sourceUrl: projectionRow.sourceUrl,
+              sourcePlayerUrl: projectionRow.sourcePlayerUrl,
+              observedAt: projectionRow.observedAt,
+              sourceSha256: projectionRow.sourceSha256,
+            }
+          : null
         return {
           playerKey,
+          projection,
           selections: rows.map(
             ({
               playerName,

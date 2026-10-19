@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 53 tables and 117 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 54 tables and 118 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

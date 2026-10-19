@@ -97,3 +97,5 @@ The admin Roster spreadsheet has a Recruiting column group with editable 247Spor
 **Hockey NPI:** `hockeyNpi.forSchedule` exposes the selected season's current or final national NPI table and refresh availability. Internal `hockeyNpi.refresh` runs Mondays at 13:07 UTC, replaces current rankings, and retains one final table per completed season. See [hockey NPI](michigan-hockey-npi.md).
 
 **Hockey talent indicator:** `hockeyDrafts.forSeason` provides sourced NHL career selections for players on the selected saved roster. Hockey uses NHL draft pick/year/round instead of recruiting fields; basketball retains recruiting. See [hockey draft history](michigan-hockey-drafts.md).
+
+**Upcoming hockey draft:** `hockeyDrafts.forSeason` includes a nullable dated Elite Prospects projection for each matching player in the season preceding that draft. Internal compare-and-set imports preserve completed selections and annual roster values. See [hockey draft history](michigan-hockey-drafts.md).
