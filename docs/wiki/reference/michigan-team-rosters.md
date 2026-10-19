@@ -2,7 +2,7 @@
 
 [Reference index](README.md) · [Wiki home](../README.md)
 
-**Current source:** men’s basketball and men’s hockey have independent season rosters populated through owner saves and the reviewed imports recorded below. New seasons start empty. Public routes are `/michigan/basketball` and `/michigan/hockey`; owner routes are `/admin/roster/basketball` and `/admin/roster/hockey`.
+**Current source:** men’s basketball and men’s hockey have independent season rosters populated through owner saves and the reviewed imports recorded below. New seasons start empty. Public routes `/michigan/basketball` and `/michigan/hockey` now default to [season home pages](michigan-season-home.md), with full rosters under `view=roster`; owner routes are `/admin/roster/basketball` and `/admin/roster/hockey`.
 
 The season key is the starting year: `2026` displays as `2026–27`. Switching seasons does not copy players or statistics. These rosters do not yet provide automatic rollover, player career profiles, recruiting history, game logs, or external imports.
 

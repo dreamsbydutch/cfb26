@@ -1,56 +1,21 @@
-import { convexQuery } from '@convex-dev/react-query'
-import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api } from '../../../convex/_generated/api'
 import { seasonLabel } from '../../../convex/teamRosterFields'
 import {
   scheduleOpponentKey,
   scheduleOpponentOptions,
 } from './teamScheduleModel'
-import type { Infer } from 'convex/values'
-import type { teamGame } from '../../../convex/teamScheduleFields'
+import type { ScheduleState } from './teamSeasonModel'
 import type { TeamSport } from '../../../convex/teamRosterFields'
 import { EmptyState, ErrorState, LoadingState } from '~/components/AppShell'
 
 export function TeamSchedule({
   sport,
   season,
-}: {
-  sport: TeamSport
-  season: number
-}) {
-  return sport === 'hockey' ? (
-    <HockeySchedule season={season} />
-  ) : (
-    <BasketballSchedule season={season} />
-  )
-}
-function HockeySchedule({ season }: { season: number }) {
-  const schedule = useQuery(convexQuery(api.hockeySchedules.list, { season }))
-  return <ScheduleView sport="hockey" season={season} schedule={schedule} />
-}
-function BasketballSchedule({ season }: { season: number }) {
-  const schedule = useQuery(
-    convexQuery(api.basketballSchedules.list, { season }),
-  )
-  return <ScheduleView sport="basketball" season={season} schedule={schedule} />
-}
-function ScheduleView({
-  sport,
-  season,
   schedule,
 }: {
   sport: TeamSport
   season: number
-  schedule: {
-    isPending: boolean
-    isError: boolean
-    data?: {
-      games: Array<Infer<typeof teamGame>>
-      sourceUrl: string | null
-      importedAt: number | null
-    }
-  }
+  schedule: ScheduleState
 }) {
   const [opponent, setOpponent] = useState('')
   if (schedule.isPending)

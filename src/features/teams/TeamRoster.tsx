@@ -5,6 +5,8 @@ import { api } from '../../../convex/_generated/api'
 import { seasonLabel, teamDefinitions } from '../../../convex/teamRosterFields'
 import { metricValues } from './teamRosterModel'
 import { TeamSchedule } from './TeamSchedule'
+import { SeasonHome } from './SeasonHome'
+import { useTeamSchedule } from './useTeamSchedule'
 import type { TeamSport, TeamValues } from '../../../convex/teamRosterFields'
 import {
   EmptyState,
@@ -26,12 +28,18 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
       : new Date().getFullYear()
   })
   const [search, setSearch] = useState('')
-  const [view, setView] = useState<'roster' | 'schedule'>(() =>
-    typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('view') === 'schedule'
-      ? 'schedule'
-      : 'roster',
-  )
+  const [view, setView] = useState<'season' | 'roster' | 'schedule'>(() => {
+    const value =
+      typeof window === 'undefined'
+        ? null
+        : new URLSearchParams(window.location.search).get('view')
+    return value === 'roster' || value === 'schedule' ? value : 'season'
+  })
+  const schedule = useTeamSchedule(sport, season)
+  const changeView = (value: 'season' | 'roster' | 'schedule') => {
+    setView(value)
+    updateUrl('view', value)
+  }
   const roster = useQuery(convexQuery(api.teamRosters.list, { sport, season }))
   const definition = teamDefinitions[sport]
   const entries =
@@ -84,31 +92,42 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
         </header>
         {
           <div
-            className="mb-6 flex gap-2"
+            className="mb-6 flex flex-wrap gap-2"
             role="group"
             aria-label={`${sport} view`}
           >
-            {(['roster', 'schedule'] as const).map((value) => (
+            {(['season', 'roster', 'schedule'] as const).map((value) => (
               <button
                 key={value}
                 type="button"
                 aria-pressed={view === value}
                 className={`rounded-lg border px-4 py-2 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 ${view === value ? 'border-[#00274c] bg-[#00274c] text-white' : 'border-slate-300 bg-white text-slate-700'}`}
-                onClick={() => {
-                  setView(value)
-                  updateUrl('view', value)
-                }}
+                onClick={() => changeView(value)}
               >
-                {value === 'roster' ? 'Roster' : 'Schedule & results'}
+                {value === 'season'
+                  ? 'Season home'
+                  : value === 'roster'
+                    ? 'Roster & stats'
+                    : 'Schedule & results'}
               </button>
             ))}
           </div>
         }
-        {view === 'schedule' ? (
+        {view === 'season' ? (
+          <SeasonHome
+            key={`${sport}-${season}`}
+            sport={sport}
+            season={season}
+            roster={roster}
+            schedule={schedule}
+            onRoster={() => changeView('roster')}
+          />
+        ) : view === 'schedule' ? (
           <TeamSchedule
             key={`${sport}-${season}`}
             sport={sport}
             season={season}
+            schedule={schedule}
           />
         ) : roster.isPending ? (
           <LoadingState />
@@ -122,7 +141,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
           >
             {search
               ? 'Try another name.'
-              : `The ${seasonLabel(season)} roster is ready for owner entry.`}
+              : `No roster is available for ${seasonLabel(season)}.`}
           </EmptyState>
         ) : (
           <div className="grid items-start gap-5 xl:grid-cols-2">

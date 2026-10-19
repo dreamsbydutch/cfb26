@@ -6,6 +6,8 @@
 
 The schedule displays calendar dates and date ranges, opponents and listed ranks, home/away/neutral designation, location, Michigan-first scores, W/L/T, time as published, tournament notes, and available box score/recap links. Exhibitions remain visible but do not count toward the displayed record. Shootout wins/losses remain in notes; an official tie stays a tie. Cancellations, postponements, no-contests, upcoming games, and finals without a published score retain their distinct states. Missing scores remain unknown. Conditional postseason placeholders are retained exactly as scheduled; they do not assert tournament qualification.
 
+The [season home page](michigan-season-home.md) also embeds the complete schedule below the season summary, player contributions, and postseason results. Existing `view=schedule` links continue to open the dedicated schedule.
+
 ## Storage and import
 
 `hockeyScheduleGames` stores one Michigan game observation per official game ID and season. `hockeyScheduleImports` appends the source URL/hash, count, revision, import time, and owner-session receipt. Both tables use `by_season` indexes. `hockeySchedules.list` returns at most 81 rows for a season; imports enforce a maximum of 80. The public view exposes the source and import date, not owner-session metadata. Empty seasons show an empty state.

@@ -30,3 +30,5 @@
 - [Additional win/loss signal testing](power-win-loss-testing-2026-09-14.md) — learned result-only components, narrow-win diagnostics, and the decision to retain Power v6.
 
 - [Power factor experiments](power-factor-testing-2026-09-14.md) — six improvement families, historical data expansion, and learned forecast comparisons.
+
+- [Michigan basketball and hockey season home pages](michigan-season-home.md) — season records, coaches, championships, contributors, postseason history, and schedule access.

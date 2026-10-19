@@ -8,6 +8,8 @@ Games display dates/date ranges, opponents and listed ranks, home/away/neutral d
 
 Opponent filters group school-name variants and ignore source rank/seed labels for matching, while retaining the original game labels in the table. Shared source IDs for different tournament rounds remain separate filter choices. The same rule applies to hockey.
 
+The [season home page](michigan-season-home.md) also embeds the complete schedule below the season summary, player contributions, and postseason results. Existing `view=schedule` links continue to open the dedicated schedule.
+
 ## Persistence and import
 
 `basketballScheduleGames` and `basketballScheduleImports` are independent of hockey schedules, roster entries, player statistics, and football's Michigan revision and JSON backup contract. Both use `by_season` indexes. `basketballSchedules.list/importSeason` uses the same bounded, owner-authenticated, revision-checked official-ID reconciliation as [hockey schedules](michigan-hockey-schedules.md). Reads return at most 81 games; imports enforce 1–80. Repeated identical imports are no-ops; corrections retain game IDs, and previously recorded games cannot silently disappear.
