@@ -10,6 +10,8 @@
 
 At widths of 1280px and above, contributors and the full schedule sit side by side; smaller screens stack them. Leader totals appear in one compact strip above dense player tables. Short rows, navy column headers, subtle row striping, and frozen player names keep values traceable. The full roster view uses the same compact table spacing.
 
+Navy table headers use explicit white text so the light theme's legacy `text-white` remapping cannot reduce their contrast. This applies to contributor tables and the shared season schedule.
+
 The postseason game log and season notes expand on demand. Schedule rows prioritize date, opponent, home/away/neutral designation, result/time, and game notes. Each row's keyboard-operable Details disclosure contains location, tournament, box-score, and recap links. Brief schedule conventions remain in the schedule's notes disclosure. Routine source citations and collection timestamps are omitted from public sports pages; source records remain stored internally. Functional game links, stored facts, filters, and result states are preserved.
 
 ## Season facts and accomplishments

@@ -91,7 +91,7 @@ export function TeamSchedule({
             Michigan first. Expand game details for location, tournament, box
             score and recap.
           </caption>
-          <thead className="bg-[#00274c] text-[10px] text-white">
+          <thead className="bg-[#00274c] text-[10px] text-[#ffffff]">
             <tr>
               {[
                 'Date',

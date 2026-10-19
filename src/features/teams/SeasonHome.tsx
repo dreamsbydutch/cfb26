@@ -385,7 +385,7 @@ function ContributionTable({
         <caption className="bg-slate-100 px-2 py-1 text-left text-[11px] font-bold text-[#00274c]">
           {title}
         </caption>
-        <thead className="bg-[#00274c] text-[10px] text-white">
+        <thead className="bg-[#00274c] text-[10px] text-[#ffffff]">
           <tr>
             {[
               'Player',
