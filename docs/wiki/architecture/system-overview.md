@@ -21,7 +21,7 @@ TanStack Start owns routing and rendering. Convex owns validation, transactions,
 
 ### Public exploration
 
-1. `/` requests one bounded Michigan season dashboard and only fetches profiles/comparisons/grade/NFL detail needed by the selected view.
+1. `/` requests one bounded Michigan season dashboard and fetches player profile, grade, and NFL detail only when a player profile opens.
 2. `/games` and `/national/*` request one season/week edition dashboard; Résumé/SOS/playoff/team/matchup/ballot detail is rendered on its canonical route.
 3. All evidence is normalized server-side. Historical views select stored edition cutoffs rather than recomputing with future facts.
 
@@ -43,7 +43,7 @@ TanStack Start owns routing and rendering. Convex owns validation, transactions,
 
 ## Build/deployment
 
-`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 44 tables, including Michigan revision, owner audit, and live-scoreboard request-budget state. The 2026-09-07 backed-up 41-table cutover remains the migration baseline. Backend and web releases remain authorized operations under the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
+`vercel.json` runs `npx convex deploy --cmd 'npm run build'`; Nitro packages the TanStack app. Source currently defines 51 tables, including Michigan revision, owner audit, live-scoreboard request-budget state, independent team rosters, and basketball/hockey schedules and import receipts. The 2026-09-07 backed-up 41-table cutover remains the migration baseline. Backend and web releases remain authorized operations under the exact-target [deployment and migration runbook](../guides/deployment.md), development first.
 
 ## Deliberate boundaries
 

@@ -411,9 +411,11 @@ function LineupPlayerRow({
 }) {
   const selected = comparison.ids.includes(player.id)
   const year =
-    player.year === null
+    player.listedClass ??
+    (player.year === null
       ? 'Year unknown'
-      : (['FR', 'SO', 'JR', 'SR', '5TH'][player.year - 1] ?? `${player.year}TH`)
+      : (['FR', 'SO', 'JR', 'SR', '5TH'][player.year - 1] ??
+        `${player.year}TH`))
   const participation = specialTeams ? player.specialTeams : null
   return (
     <article

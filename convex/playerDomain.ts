@@ -200,10 +200,13 @@ const POSITION_ROOMS: Readonly<Record<string, string>> = {
   P: 'Specialists',
   QB: 'Quarterbacks',
   RB: 'Backs',
+  RLB: 'Linebackers',
   RG: 'Offensive line',
   RT: 'Offensive line',
   S: 'Secondary',
   SLOT: 'Receivers',
+  SR: 'Receivers',
+  PK: 'Specialists',
   SS: 'Secondary',
   TE: 'Receivers',
   WR: 'Receivers',
@@ -221,7 +224,9 @@ const POSITION_ROOM_ORDER = [
 ] as const
 
 export function derivePositionRoom(listedPosition: string) {
-  return POSITION_ROOMS[listedPosition.trim().toUpperCase()] ?? 'Other'
+  return (
+    POSITION_ROOMS[listedPosition.trim().toUpperCase().split('/')[0]] ?? 'Other'
+  )
 }
 
 export function comparePositionRooms(left: string, right: string) {

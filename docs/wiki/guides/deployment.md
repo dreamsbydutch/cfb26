@@ -69,3 +69,13 @@ Record the commit, source fingerprints, counts, operation timestamps, direct URL
 **Hosted current:** [production deployment](https://cfb-64zk28u4d-dreamsbydutchs-projects.vercel.app), aliased to [the production site](https://cfb-hazel.vercel.app/), was published from the reviewed working tree based on `d342145`. This includes the three-column position layout, college-year labels, separate ST Snaps for offensive/defensive players, and the Recruit composite rank/rating column. Convex production `doting-chipmunk-7` received the indexed recruiting summary query after successful development verification on `adjoining-opossum-710`.
 
 The pre-deployment snapshot `production-before-recruit-column-20261018.zip` is retained outside Git in `Documents/cfb26-backups`. Tests, TypeScript, lint, Markdown links, local build, and hosted build passed. Live verification at desktop and mobile widths confirmed the position order, removed columns, specialist-only Snaps behavior, and saved recruiting values (Bryce Underwood: `#1 (0.9998)`), with no browser console errors or page overflow. No player data import, commit, or push was performed for this release.
+
+## Sports archive and navigation release ? 2026-10-18
+
+**Hosted backend:** development `adjoining-opossum-710` and production `doting-chipmunk-7` now validate the 51-table source contract, including independent basketball and hockey schedule storage. The verified production snapshot `production-before-sports-release-20261018-231444.zip` is retained in `Documents/cfb26-backups`, outside Git. No existing index was deleted during promotion.
+
+Production contains 912 hockey and 816 basketball schedule entries for 2005?06 through 2026?27. Every saved field was verified against the reviewed import. Roster values, the other sport's schedules, and football revision 61 remained unchanged during each import. See [hockey schedules](../reference/michigan-hockey-schedules.md) and [basketball schedules](../reference/michigan-basketball-schedules.md) for receipts and source limits.
+
+**Current source:** Michigan navigation switches between Football, Basketball, and Hockey. Football opens the roster matrix; retired Overview, Movement, Alumni, Compare, Matrix-alias, and lineup URLs return to Football while retaining season. Player profiles remain available. The web release target is Vercel project `cfb` and [the production site](https://cfb-hazel.vercel.app/).
+
+`npm run check` passed 215 Node tests, 28 Convex tests, TypeScript, ESLint, Markdown links, and the production build. Browser visual verification is unavailable in this session; hosted HTTP and deployment-state checks supplement the automated checks.

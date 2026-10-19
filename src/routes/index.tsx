@@ -1,32 +1,31 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
   MichiganError,
+  MichiganFootball,
   MichiganLoading,
-  MichiganMatrix,
 } from '~/features/michigan/MichiganWorkspace'
+import {
+  footballUrl,
+  hasRetiredFootballControls,
+} from '~/features/michigan/footballNavigation'
 
 export const Route = createFileRoute('/')({
   ssr: false,
   beforeLoad: ({ location }) => {
-    const search = new URLSearchParams(location.searchStr)
-    const legacyVariant = search.get('variant')?.toUpperCase()
-    if (!legacyVariant) return
-
-    search.delete('variant')
-    const query = search.toString()
-    const pathname = legacyVariant === 'B' ? '/michigan/overview' : '/'
-    throw redirect({ href: `${pathname}${query ? `?${query}` : ''}` })
+    if (hasRetiredFootballControls(location.searchStr)) {
+      throw redirect({ href: footballUrl(location.searchStr), replace: true })
+    }
   },
-  component: MichiganMatrix,
+  component: MichiganFootball,
   pendingComponent: MichiganLoading,
   errorComponent: MichiganError,
   head: () => ({
     meta: [
-      { title: 'DbyD CFB | Michigan Roster Intelligence' },
+      { title: 'Michigan Football | DbyD' },
       {
         name: 'description',
         content:
-          "Dreams by Dutch's live Michigan roster construction, movement, development, and player intelligence workspace.",
+          'Michigan football roster matrix, season history, and player intelligence.',
       },
     ],
   }),

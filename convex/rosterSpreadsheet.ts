@@ -287,7 +287,7 @@ export const save = mutation({
   }),
   handler: async (ctx, args) => {
     const session = await requireOwnerSession(ctx, args.sessionToken)
-    const season = requiredNumber(String(args.season), 'Season', 2015, 2100)
+    const season = requiredNumber(String(args.season), 'Season', 2005, 2100)
     if (args.rows.length < 1 || args.rows.length > 200)
       throw new ConvexError('Save between 1 and 200 changed rows at a time.')
     if ((await getMichiganDataRevision(ctx)) !== args.expectedRevision)
@@ -328,7 +328,7 @@ export const save = mutation({
           requiredNumber(
             values.entrySeason,
             'Michigan entry season',
-            2015,
+            2005,
             2100,
           ) !== season
         )
@@ -567,6 +567,7 @@ export const save = mutation({
         )
       if (has('starts'))
         patch.starts = requiredNumber(values.starts, 'Starts', 0, 30)
+      if (has('gamesPlayed') || has('starts')) patch.rosterOnly = false
       if (
         (patch.starts ?? annual.starts) >
         (patch.gamesPlayed ?? annual.gamesPlayed)

@@ -1,23 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import {
-  MichiganError,
-  MichiganLoading,
-  MichiganOverview,
-} from '~/features/michigan/MichiganWorkspace'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { footballUrl } from '~/features/michigan/footballNavigation'
 
 export const Route = createFileRoute('/michigan/overview')({
-  ssr: false,
-  component: MichiganOverview,
-  pendingComponent: MichiganLoading,
-  errorComponent: MichiganError,
-  head: () => ({
-    meta: [
-      { title: 'Michigan Roster Overview | DbyD CFB' },
-      {
-        name: 'description',
-        content:
-          'Michigan roster readiness, construction, performance, and lifecycle intelligence.',
-      },
-    ],
-  }),
+  beforeLoad: ({ location }) => {
+    throw redirect({ href: footballUrl(location.searchStr), replace: true })
+  },
 })

@@ -3,15 +3,12 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import {
   ArrowLeft,
-  ArrowRight,
   ChevronDown,
   CircleAlert,
-  GitCompareArrows,
   Search,
   SlidersHorizontal,
-  X,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import type { ReactNode } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
@@ -20,19 +17,13 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  Metric,
   PageFrame,
-  PageHero,
   PublicShell,
   StatusPill,
   Surface,
 } from '~/components/AppShell'
-import {
-  useMichiganRoster,
-  useSeasonalStats,
-} from '~/features/roster/useMichiganRoster'
+import { useMichiganRoster } from '~/features/roster/useMichiganRoster'
 import { RosterSheet } from '~/features/michigan/RosterSheet'
-import { TeamLineup } from '~/features/michigan/TeamLineup'
 import {
   ROSTER_GROUPS,
   ROSTER_GROUP_LABELS,
@@ -52,26 +43,11 @@ const ROOM_ORDER = [
   'Specialists',
   'Other',
 ] as const
-const BASELINE_TARGETS = {
-  Backs: 8,
-  'Defensive line': 17,
-  Linebackers: 14,
-  'Offensive line': 18,
-  Quarterbacks: 5,
-  Receivers: 20,
-  Secondary: 18,
-  Specialists: 5,
-} as const
 
 type ActiveEntry = RosterEntry & { player: NonNullable<RosterEntry['player']> }
-type RosterPreset = 'experience' | 'lifecycle' | 'performance' | 'roster'
 
-export function MichiganMatrix() {
+export function MichiganFootball() {
   const { season, setSeason } = useSeasonParam()
-  const [view, setView] = useUrlEnum<'matrix' | 'lineup'>('view', 'matrix', [
-    'matrix',
-    'lineup',
-  ])
   const dashboard = useMichiganRoster(season)
   const [search, setSearch] = useState('')
   const [room, setRoom] = useState('all')
@@ -83,10 +59,9 @@ export function MichiganMatrix() {
   const [entryMethod, setEntryMethod] = useState('all')
   const [eligibility, setEligibility] = useState('all')
   const [quality, setQuality] = useState('all')
-  const comparison = useComparisonTray()
   const filterCount = [
     room,
-    view === 'lineup' ? 'all' : role,
+    role,
     availability,
     experience,
     scholarship,
@@ -111,8 +86,7 @@ export function MichiganMatrix() {
             .includes(normalizedSearch) ||
           String(entry.season.jerseyNumber ?? '').includes(normalizedSearch)) &&
         (room === 'all' || entry.season.positionRoom === room) &&
-        (view === 'lineup' ||
-          role === 'all' ||
+        (role === 'all' ||
           rosterGroup({
             enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
             role: entry.season.role,
@@ -149,20 +123,19 @@ export function MichiganMatrix() {
     scholarship,
     search,
     season,
-    view,
   ])
 
   return (
-    <PublicShell active="matrix" context="michigan">
+    <PublicShell active="football" context="michigan">
       <main className="mx-auto w-full max-w-[1920px] px-2 py-3 sm:px-4 lg:px-6">
         <header className="mb-2 flex items-center justify-between gap-3">
           <h1 className="m-0 text-2xl font-extrabold text-[#00274c] sm:text-3xl">
-            Michigan roster
+            Michigan football
           </h1>
           <SeasonSelect season={season} onChange={setSeason} />
         </header>
         {dashboard.isLoading ? (
-          <LoadingState label="Building the Michigan matrix" />
+          <LoadingState label="Loading Michigan football" />
         ) : dashboard.isError ? (
           <ErrorState>
             Michigan roster data is temporarily unavailable.
@@ -171,28 +144,6 @@ export function MichiganMatrix() {
           <EmptyState>No Michigan roster exists for {season}.</EmptyState>
         ) : (
           <>
-            <div
-              role="group"
-              aria-label="Roster view"
-              className="mb-2 inline-flex rounded-lg border border-[#00274c]/25 bg-[#edf3f8] p-1"
-            >
-              {(
-                [
-                  ['matrix', 'Full matrix'],
-                  ['lineup', 'Team lineup'],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={view === value}
-                  onClick={() => setView(value)}
-                  className={`min-h-9 rounded-md px-3 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c] ${view === value ? 'bg-[#00274c] text-[#ffffff]' : 'text-[#00274c] hover:bg-[#00274c]/5'}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <label className="relative min-w-0 flex-1">
                 <Search
@@ -260,16 +211,14 @@ export function MichiganMatrix() {
                       </option>
                     ))}
                   </FilterSelect>
-                  {view === 'matrix' && (
-                    <FilterSelect label="Group" onChange={setRole} value={role}>
-                      <option value="all">All groups</option>
-                      {ROSTER_GROUPS.map((item) => (
-                        <option key={item} value={item}>
-                          {ROSTER_GROUP_LABELS[item]}
-                        </option>
-                      ))}
-                    </FilterSelect>
-                  )}
+                  <FilterSelect label="Group" onChange={setRole} value={role}>
+                    <option value="all">All groups</option>
+                    {ROSTER_GROUPS.map((item) => (
+                      <option key={item} value={item}>
+                        {ROSTER_GROUP_LABELS[item]}
+                      </option>
+                    ))}
+                  </FilterSelect>
                   <FilterSelect
                     label="Availability"
                     onChange={setAvailability}
@@ -351,413 +300,34 @@ export function MichiganMatrix() {
                 </ul>
               </details>
             )}
-            {view === 'matrix' && (
-              <p
-                aria-live="polite"
-                className="mb-2 text-xs font-semibold text-white/40"
-              >
-                Showing {entries.length} of{' '}
-                {activeEntries(dashboard.data.entries).length} enrolled players
-              </p>
-            )}
-            {view === 'lineup' ? (
-              <TeamLineup
-                rosterEntries={dashboard.data.entries}
-                entries={entries}
-                season={season}
-                comparison={comparison}
-              />
-            ) : (
-              <RosterSheet
-                comparison={comparison}
-                entries={entries}
-                filters={{
-                  availability,
-                  eligibility,
-                  entryMethod,
-                  experience,
-                  quality,
-                  role,
-                  room,
-                  scholarship,
-                  search,
-                }}
-                rosterPlayerIds={activeEntries(dashboard.data.entries).map(
-                  (entry) => String(entry.player._id),
-                )}
-                season={season}
-              />
-            )}
-            <ComparisonTray comparison={comparison} season={season} />
+            <p
+              aria-live="polite"
+              className="mb-2 text-xs font-semibold text-white/40"
+            >
+              Showing {entries.length} of{' '}
+              {activeEntries(dashboard.data.entries).length} enrolled players
+            </p>
+            <RosterSheet
+              entries={entries}
+              filters={{
+                availability,
+                eligibility,
+                entryMethod,
+                experience,
+                quality,
+                role,
+                room,
+                scholarship,
+                search,
+              }}
+              rosterPlayerIds={activeEntries(dashboard.data.entries).map(
+                (entry) => String(entry.player._id),
+              )}
+              season={season}
+            />
           </>
         )}
       </main>
-    </PublicShell>
-  )
-}
-
-export function MichiganOverview() {
-  const { season, setSeason } = useSeasonParam()
-  const [preset, setPreset] = useUrlEnum<RosterPreset>('preset', 'roster', [
-    'roster',
-    'experience',
-    'performance',
-    'lifecycle',
-  ])
-  const dashboard = useMichiganRoster(season)
-  const performance = useSeasonalStats(season)
-  const entries = activeEntries(dashboard.data?.entries ?? [])
-  const gradeByPlayer = new Map(
-    (performance.data ?? []).map((row) => [
-      String(row.player?._id),
-      row.overall,
-    ]),
-  )
-  const readiness = buildReadiness(entries, dashboard.data?.rosterLimit ?? null)
-
-  return (
-    <PublicShell active="overview" context="michigan">
-      <PageFrame>
-        <PageHero
-          actions={<SeasonSelect onChange={setSeason} season={season} />}
-          eyebrow={`${season} Michigan · Overview`}
-          title="Overview"
-        />
-        {dashboard.isLoading ? (
-          <LoadingState label="Reading roster construction" />
-        ) : !dashboard.data ? (
-          <EmptyState>No Michigan roster exists for {season}.</EmptyState>
-        ) : (
-          <>
-            <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <Metric
-                label="Active roster"
-                note={`${dashboard.data.scholarship.counted} counted scholarships`}
-                value={entries.length}
-              />
-              <Metric
-                label="Returning production"
-                note={`${dashboard.data.returningProduction.players} tracked players`}
-                value={formatPercent(dashboard.data.returningProduction.rate)}
-              />
-              <Metric
-                label="Roster limit"
-                note="Targets scale to this season"
-                value={dashboard.data.rosterLimit ?? '—'}
-              />
-              <Metric
-                label="Known graded snaps"
-                note="All phases, selected season"
-                value={(performance.data ?? []).reduce(
-                  (sum, row) => sum + row.overall.gradedSnaps,
-                  0,
-                )}
-              />
-            </div>
-            <Surface className="mb-5 p-5">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <p className="app-kicker">DbyD roster template</p>
-                  <h2 className="mt-1 text-2xl font-bold">Room readiness</h2>
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {readiness.map((item) => (
-                  <ReadinessCard item={item} key={item.room} />
-                ))}
-              </div>
-            </Surface>
-            <Surface className="overflow-hidden p-0">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-4">
-                <div>
-                  <p className="app-kicker">Roster intelligence</p>
-                  <h2 className="mt-1 text-2xl font-bold">Sortable evidence</h2>
-                </div>
-                <div className="scrollbar-none flex max-w-full gap-1 overflow-x-auto rounded-2xl bg-white/[0.035] p-1">
-                  {(
-                    [
-                      ['roster', 'Roster'],
-                      ['experience', 'Experience'],
-                      ['performance', 'Performance'],
-                      ['lifecycle', 'Lifecycle'],
-                    ] as const
-                  ).map(([id, label]) => (
-                    <button
-                      className={`min-h-10 rounded-xl px-3 text-xs font-extrabold uppercase tracking-wider ${preset === id ? 'bg-[#ffcb05] text-[#071421]' : 'text-white/45 hover:text-white'}`}
-                      key={id}
-                      onClick={() => setPreset(id)}
-                      type="button"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <RosterTable
-                entries={entries}
-                gradeByPlayer={gradeByPlayer}
-                preset={preset}
-                season={season}
-              />
-            </Surface>
-          </>
-        )}
-      </PageFrame>
-    </PublicShell>
-  )
-}
-
-function ReadinessCard({
-  item,
-}: {
-  item: ReturnType<typeof buildReadiness>[number]
-}) {
-  const tone =
-    item.status === 'On target'
-      ? 'success'
-      : item.status === 'Monitor'
-        ? 'maize'
-        : item.status === 'Critical'
-          ? 'danger'
-          : 'neutral'
-  return (
-    <div className="rounded-2xl bg-white/[0.035] p-4">
-      <div className="flex items-start justify-between gap-2">
-        <strong className="text-sm">{item.room}</strong>
-        <StatusPill tone={tone}>{item.status}</StatusPill>
-      </div>
-      <div className="mt-4 flex items-end justify-between gap-3">
-        <span className="font-display text-3xl font-extrabold tabular-nums">
-          {item.actual}
-          <small className="text-base text-white/30">/{item.target}</small>
-        </span>
-        <span className="text-xs font-bold tabular-nums text-white/40">
-          {Math.round(item.rate * 100)}%
-        </span>
-      </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/30">
-        <div
-          className="h-full rounded-full bg-[#ffcb05]"
-          style={{ width: `${Math.min(item.rate * 100, 100)}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function RosterTable({
-  entries,
-  gradeByPlayer,
-  preset,
-  season,
-}: {
-  entries: Array<ActiveEntry>
-  gradeByPlayer: Map<
-    string,
-    { band: string; gradedSnaps: number; weightedGrade: number | null }
-  >
-  preset: RosterPreset
-  season: number
-}) {
-  const sorted = [...entries].sort((left, right) => {
-    if (preset === 'performance') {
-      return (
-        (gradeByPlayer.get(String(right.player._id))?.weightedGrade ?? -1) -
-        (gradeByPlayer.get(String(left.player._id))?.weightedGrade ?? -1)
-      )
-    }
-    if (preset === 'experience') {
-      return left.player.entrySeason - right.player.entrySeason
-    }
-    if (preset === 'lifecycle') {
-      return (
-        (left.eligibility.eligibleThroughSeason ?? 9999) -
-        (right.eligibility.eligibleThroughSeason ?? 9999)
-      )
-    }
-    return (
-      ROOM_ORDER.indexOf(
-        left.season.positionRoom as (typeof ROOM_ORDER)[number],
-      ) -
-        ROOM_ORDER.indexOf(
-          right.season.positionRoom as (typeof ROOM_ORDER)[number],
-        ) || right.season.starts - left.season.starts
-    )
-  })
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-        <thead className="app-label bg-black/15">
-          <tr>
-            <th className="px-4 py-3">Player</th>
-            <th className="px-4 py-3">Room / role</th>
-            <th className="px-4 py-3">Experience</th>
-            <th className="px-4 py-3">Games / starts</th>
-            {preset === 'performance' && <th className="px-4 py-3">Overall</th>}
-            {preset === 'lifecycle' && (
-              <th className="px-4 py-3">Eligible through</th>
-            )}
-            {preset === 'roster' && <th className="px-4 py-3">Scholarship</th>}
-            {preset === 'experience' && <th className="px-4 py-3">Entry</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((entry) => {
-            const grade = gradeByPlayer.get(String(entry.player._id))
-            return (
-              <tr
-                className="border-t border-white/[0.065] hover:bg-white/[0.025]"
-                key={entry.season._id}
-              >
-                <td className="px-4 py-3">
-                  <Link
-                    className="font-bold hover:text-[#ffcb05]"
-                    params={{ playerId: String(entry.player._id) }}
-                    search={{ season }}
-                    to="/michigan/players/$playerId"
-                  >
-                    <span className="mr-2 text-[#ffcb05]">
-                      {entry.season.jerseyNumber ?? '—'}
-                    </span>
-                    {entry.player.displayName}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-white/55">
-                  {entry.season.positionRoom} · {humanize(entry.season.role)}
-                </td>
-                <td className="px-4 py-3 tabular-nums text-white/55">
-                  Year {Math.max(season - entry.player.entrySeason + 1, 1)}
-                </td>
-                <td className="px-4 py-3 tabular-nums text-white/55">
-                  {entry.season.gamesPlayed} / {entry.season.starts}
-                </td>
-                {preset === 'performance' && (
-                  <td className="px-4 py-3 tabular-nums">
-                    {grade?.weightedGrade ?? '—'}
-                    {grade && (
-                      <small className="ml-2 text-white/35">
-                        {grade.band} · {grade.gradedSnaps} snaps
-                      </small>
-                    )}
-                  </td>
-                )}
-                {preset === 'lifecycle' && (
-                  <td className="px-4 py-3 tabular-nums text-white/55">
-                    {entry.eligibility.eligibleThroughSeason ?? '—'}
-                  </td>
-                )}
-                {preset === 'roster' && (
-                  <td className="px-4 py-3 text-white/55">
-                    {humanize(entry.season.scholarshipStatus)}
-                  </td>
-                )}
-                {preset === 'experience' && (
-                  <td className="px-4 py-3 text-white/55">
-                    {entry.player.entrySeason} ·{' '}
-                    {humanize(entry.player.entryMethod)}
-                  </td>
-                )}
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-export function MichiganMovement() {
-  const { season, setSeason } = useSeasonParam()
-  const movements = useQuery(
-    convexQuery(api.rosters.listMovements, {
-      limit: 300,
-      programKey: 'michigan',
-      season,
-    }),
-  )
-  return (
-    <PublicShell active="movement" context="michigan">
-      <PageFrame>
-        <PageHero
-          actions={<SeasonSelect onChange={setSeason} season={season} />}
-          eyebrow={`${season} Michigan · Movement`}
-          title="Roster movement"
-        />
-        {movements.isLoading ? (
-          <LoadingState label="Reading movement history" />
-        ) : movements.data?.length ? (
-          <Surface className="overflow-hidden p-0">
-            <div className="divide-y divide-white/[0.07]">
-              {[...movements.data]
-                .sort(
-                  (left, right) =>
-                    right.event._creationTime - left.event._creationTime,
-                )
-                .map((row) => (
-                  <article
-                    className="grid gap-2 px-4 py-4 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-center"
-                    key={row.event._id}
-                  >
-                    <time className="text-xs tabular-nums text-white/35">
-                      {new Date(row.event._creationTime).toLocaleDateString()}
-                    </time>
-                    <div>
-                      <strong>
-                        {row.player?.displayName ?? 'Unknown player'}
-                      </strong>
-                      <p className="m-0 mt-1 text-xs text-white/40">
-                        {row.event.note ??
-                          `${humanize(row.event.kind)} recorded`}
-                      </p>
-                    </div>
-                    <StatusPill tone={movementTone(row.event.kind)}>
-                      {humanize(row.event.kind)}
-                    </StatusPill>
-                  </article>
-                ))}
-            </div>
-          </Surface>
-        ) : (
-          <EmptyState>No movement is recorded for {season}.</EmptyState>
-        )}
-      </PageFrame>
-    </PublicShell>
-  )
-}
-
-export function MichiganAlumni() {
-  const alumni = useQuery(
-    convexQuery(api.players.listNflAlumni, { fromSeason: 2015, limit: 200 }),
-  )
-  return (
-    <PublicShell active="alumni" context="michigan">
-      <PageFrame>
-        <PageHero eyebrow="Michigan · NFL alumni" title="NFL alumni" />
-        {alumni.isLoading ? (
-          <LoadingState label="Loading NFL alumni" />
-        ) : alumni.data?.length ? (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {alumni.data.map((row) => (
-              <Surface className="p-4" key={row.identity._id}>
-                <Link
-                  className="text-lg font-bold hover:text-[#ffcb05]"
-                  params={{ playerId: String(row.player?._id) }}
-                  search={{ season: undefined }}
-                  to="/michigan/players/$playerId"
-                >
-                  {row.player?.displayName}
-                </Link>
-                <p className="m-0 mt-2 text-sm text-white/50">
-                  {row.latestWeek?.team ?? 'No current weekly team'} ·{' '}
-                  {humanize(row.latestWeek?.status ?? row.identity.entryPath)}
-                </p>
-              </Surface>
-            ))}
-          </div>
-        ) : (
-          <EmptyState>No linked NFL alumni are available.</EmptyState>
-        )}
-      </PageFrame>
     </PublicShell>
   )
 }
@@ -767,7 +337,7 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
   const profile = useQuery(convexQuery(api.players.getProfile, { playerId }))
   if (profile.isLoading) {
     return (
-      <PublicShell active="matrix" context="michigan">
+      <PublicShell active="football" context="michigan">
         <PageFrame>
           <LoadingState label="Opening player intelligence" />
         </PageFrame>
@@ -776,7 +346,7 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
   }
   if (!profile.data) {
     return (
-      <PublicShell active="matrix" context="michigan">
+      <PublicShell active="football" context="michigan">
         <PageFrame>
           <EmptyState>That player record could not be found.</EmptyState>
         </PageFrame>
@@ -791,13 +361,14 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
     profile.data.overallGrades.bySeason.find((row) => row.season === season) ??
     null
   return (
-    <PublicShell active="matrix" context="michigan">
+    <PublicShell active="football" context="michigan">
       <PageFrame className="xl:pl-[24%]">
         <Link
           className="mb-5 inline-flex items-center gap-2 text-sm font-bold text-white/50 hover:text-white"
           to="/"
+          search={{ season }}
         >
-          <ArrowLeft size={16} /> Back to Matrix
+          <ArrowLeft size={16} /> Back to Football
         </Link>
         <Surface className="overflow-hidden p-0 shadow-2xl">
           <header className="border-b border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-5 sm:p-7">
@@ -994,210 +565,6 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
   )
 }
 
-export function MichiganCompare() {
-  const { season, setSeason } = useSeasonParam()
-  const comparison = useComparisonTray()
-  const playerIds = comparison.ids.slice(0, 4) as Array<Id<'players'>>
-  const compared = useQuery({
-    ...convexQuery(api.players.compare, { playerIds, season }),
-    enabled: playerIds.length > 0,
-  })
-  return (
-    <PublicShell active="compare" context="michigan">
-      <PageFrame>
-        <PageHero
-          actions={<SeasonSelect onChange={setSeason} season={season} />}
-          eyebrow={`${season} Michigan · Comparison`}
-          title="Compare players"
-        />
-        {playerIds.length === 0 ? (
-          <EmptyState title="Comparison tray is empty">
-            Add players from the Matrix. Your tray persists while you move
-            through Michigan views.
-          </EmptyState>
-        ) : compared.isLoading ? (
-          <LoadingState label="Aligning player evidence" />
-        ) : compared.data ? (
-          <Surface className="overflow-x-auto p-0">
-            <table className="w-full min-w-[760px] border-collapse text-left">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="w-48 p-4">
-                    <span className="app-label">Evidence</span>
-                  </th>
-                  {compared.data.map((row) => (
-                    <th className="p-4 align-top" key={row.player._id}>
-                      <button
-                        aria-label={`Remove ${row.player.displayName}`}
-                        className="float-right grid h-8 w-8 place-items-center rounded-lg text-white/30 hover:bg-white/5 hover:text-white"
-                        onClick={() =>
-                          comparison.toggle(String(row.player._id))
-                        }
-                        type="button"
-                      >
-                        <X size={15} />
-                      </button>
-                      <Link
-                        className="text-lg font-bold hover:text-[#ffcb05]"
-                        params={{ playerId: String(row.player._id) }}
-                        search={{ season }}
-                        to="/michigan/players/$playerId"
-                      >
-                        {row.player.displayName}
-                      </Link>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <ComparisonRow
-                  label={`${season} overall`}
-                  values={compared.data.map((row) =>
-                    formatGrade(row.overallGrades.selectedSeason),
-                  )}
-                />
-                <ComparisonRow
-                  label="Career overall"
-                  values={compared.data.map((row) =>
-                    formatGrade(row.overallGrades.career),
-                  )}
-                />
-                <ComparisonRow
-                  label={`${season} role`}
-                  values={compared.data.map((row) => {
-                    const current = row.seasons.find(
-                      (item) => item.season === season,
-                    )
-                    return current
-                      ? `${current.listedPosition} · ${humanize(current.role)}`
-                      : '—'
-                  })}
-                />
-                <ComparisonRow
-                  label="Games / starts"
-                  values={compared.data.map((row) => {
-                    const current = row.seasons.find(
-                      (item) => item.season === season,
-                    )
-                    return current
-                      ? `${current.gamesPlayed} / ${current.starts}`
-                      : '—'
-                  })}
-                />
-                <ComparisonRow
-                  label="Michigan seasons"
-                  values={compared.data.map((row) =>
-                    String(row.seasons.length),
-                  )}
-                />
-                <ComparisonRow
-                  label="NFL seasons"
-                  values={compared.data.map((row) => String(row.nfl.length))}
-                />
-              </tbody>
-            </table>
-          </Surface>
-        ) : (
-          <ErrorState>The player comparison could not be loaded.</ErrorState>
-        )}
-      </PageFrame>
-    </PublicShell>
-  )
-}
-
-function ComparisonRow({
-  label,
-  values,
-}: {
-  label: string
-  values: Array<string>
-}) {
-  return (
-    <tr className="border-t border-white/[0.065]">
-      <th className="p-4 text-xs font-bold uppercase tracking-wider text-white/40">
-        {label}
-      </th>
-      {values.map((value, index) => (
-        <td className="p-4 text-sm text-white/65" key={`${label}:${index}`}>
-          {value}
-        </td>
-      ))}
-    </tr>
-  )
-}
-
-function ComparisonTray({
-  comparison,
-  season,
-}: {
-  comparison: ReturnType<typeof useComparisonTray>
-  season: number
-}) {
-  if (comparison.ids.length === 0) return null
-  return (
-    <aside className="fixed inset-x-3 bottom-[4.75rem] z-30 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-[#ffcb05]/25 bg-[#0b1d2e]/95 p-3 shadow-2xl backdrop-blur-xl lg:bottom-5">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#ffcb05] text-[#071421]">
-        <GitCompareArrows size={18} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <strong className="block text-sm">
-          {comparison.ids.length} of 4 selected
-        </strong>
-        <small className="block text-white/40">
-          Comparison persists across Michigan views
-        </small>
-      </div>
-      <Link
-        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 text-xs font-extrabold text-[#071421]"
-        search={{ players: comparison.ids.join(','), season }}
-        to="/michigan/compare"
-      >
-        Compare <ArrowRight size={15} />
-      </Link>
-    </aside>
-  )
-}
-
-function useComparisonTray() {
-  const [ids, setIds] = useState<Array<string>>(() => {
-    if (typeof window === 'undefined') return []
-    const fromUrl = new URLSearchParams(window.location.search)
-      .get('players')
-      ?.split(',')
-      .filter(Boolean)
-      .slice(0, 4)
-    if (fromUrl?.length) return fromUrl
-    try {
-      const value: unknown = JSON.parse(
-        localStorage.getItem('dbyd-comparison') ?? '[]',
-      )
-      return Array.isArray(value)
-        ? value
-            .filter((item): item is string => typeof item === 'string')
-            .slice(0, 4)
-        : []
-    } catch {
-      return []
-    }
-  })
-  useEffect(() => {
-    localStorage.setItem('dbyd-comparison', JSON.stringify(ids))
-    if (window.location.pathname === '/michigan/compare') {
-      setUrlParam('players', ids.join(','))
-    }
-  }, [ids])
-  return {
-    ids,
-    toggle(id: string) {
-      setIds((current) =>
-        current.includes(id)
-          ? current.filter((item) => item !== id)
-          : [...current, id].slice(0, 4),
-      )
-    },
-  }
-}
-
 function useSeasonParam() {
   const [season, setSeasonState] = useState(() =>
     readNumberParam('season', CURRENT_SEASON),
@@ -1207,25 +574,6 @@ function useSeasonParam() {
     setUrlParam('season', String(value))
   }
   return { season, setSeason }
-}
-
-function useUrlEnum<T extends string>(
-  key: string,
-  fallback: T,
-  values: Array<T>,
-) {
-  const [value, setValueState] = useState<T>(() => {
-    if (typeof window === 'undefined') return fallback
-    const candidate = new URLSearchParams(window.location.search).get(
-      key,
-    ) as T | null
-    return candidate && values.includes(candidate) ? candidate : fallback
-  })
-  const setValue = (next: T) => {
-    setValueState(next)
-    setUrlParam(key, next)
-  }
-  return [value, setValue] as const
 }
 
 function setUrlParam(key: string, value: string) {
@@ -1258,7 +606,7 @@ function SeasonSelect({
         value={season}
       >
         {Array.from(
-          { length: CURRENT_SEASON - 2014 },
+          { length: CURRENT_SEASON - 2004 },
           (_, index) => CURRENT_SEASON - index,
         ).map((year) => (
           <option key={year}>{year}</option>
@@ -1363,63 +711,11 @@ function RecordList({
   )
 }
 
-function buildReadiness(
-  entries: Array<ActiveEntry>,
-  rosterLimit: number | null,
-) {
-  const scale = (rosterLimit ?? 105) / 105
-  return Object.entries(BASELINE_TARGETS).map(([room, baseline]) => {
-    const target = Math.max(1, Math.round(baseline * scale))
-    const actual = entries.filter(
-      (entry) => entry.season.positionRoom === room,
-    ).length
-    const rate = actual / target
-    return { actual, rate, room, status: readinessStatus(rate), target }
-  })
-}
-
-function readinessStatus(rate: number) {
-  if (rate >= 1) return 'On target' as const
-  if (rate >= 0.9) return 'Monitor' as const
-  if (rate >= 0.75) return 'Thin' as const
-  return 'Critical' as const
-}
-
 function activeEntries(entries: Array<RosterEntry>): Array<ActiveEntry> {
   return entries.filter(
     (entry): entry is ActiveEntry =>
       entry.player !== null && entry.season.rosterStatus === 'active',
   )
-}
-
-function formatGrade(
-  summary: {
-    band: string
-    gradedSnaps: number
-    weightedGrade: number | null
-  } | null,
-) {
-  return summary?.weightedGrade === null || !summary
-    ? '—'
-    : `${summary.weightedGrade} · ${summary.band} · ${summary.gradedSnaps} snaps`
-}
-
-function formatPercent(value: number | null) {
-  return value === null ? '—' : `${Math.round(value * 100)}%`
-}
-
-function movementTone(
-  kind: string,
-): 'danger' | 'maize' | 'neutral' | 'success' {
-  if (
-    ['enrolled', 'recruited', 'returned', 'transfer_in', 'walk_on'].includes(
-      kind,
-    )
-  )
-    return 'success'
-  if (['decommitted', 'dismissed', 'retired', 'transfer_out'].includes(kind))
-    return 'danger'
-  return 'neutral'
 }
 
 function humanize(value: string) {

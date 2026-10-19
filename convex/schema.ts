@@ -1,10 +1,13 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { listedClass } from './footballRosterFields'
 import { programSnapshotFields, rankingEditionFields } from './ratingFields'
 import { gameEvidenceValidator } from './evidenceFields'
 import { liveScoreValidator } from './scoreboardFields'
 import { participationSnapshot } from './participationFields'
 import { teamSport, teamValues } from './teamRosterFields'
+import { hockeyGame } from './hockeyScheduleFields'
+import { basketballGame } from './basketballScheduleFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -241,6 +244,8 @@ export default defineSchema({
     .index('by_programId_and_status', ['programId', 'status']),
 
   playerSeasons: defineTable({
+    listedClass: v.optional(listedClass),
+    rosterOnly: v.optional(v.boolean()),
     participationTotals: v.optional(
       v.object({
         offense: v.optional(participationSnapshot),
@@ -1026,6 +1031,36 @@ export default defineSchema({
     consecutiveFailures: v.number(),
     lastError: v.optional(v.string()),
   }).index('by_key', ['key']),
+
+  basketballScheduleGames: defineTable({
+    ...basketballGame.fields,
+    season: v.number(),
+  }).index('by_season', ['season']),
+
+  basketballScheduleImports: defineTable({
+    season: v.number(),
+    revision: v.number(),
+    sourceSha256: v.string(),
+    sourceUrl: v.string(),
+    gameCount: v.number(),
+    importedAt: v.number(),
+    sessionId: v.id('ownerSessions'),
+  }).index('by_season', ['season']),
+
+  hockeyScheduleGames: defineTable({
+    ...hockeyGame.fields,
+    season: v.number(),
+  }).index('by_season', ['season']),
+
+  hockeyScheduleImports: defineTable({
+    season: v.number(),
+    revision: v.number(),
+    sourceSha256: v.string(),
+    sourceUrl: v.string(),
+    gameCount: v.number(),
+    importedAt: v.number(),
+    sessionId: v.id('ownerSessions'),
+  }).index('by_season', ['season']),
 
   teamDataSyncState: defineTable({
     acceptedRows: v.optional(v.number()),

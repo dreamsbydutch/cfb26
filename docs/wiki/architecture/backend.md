@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 44 tables and 107 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 51 tables and 114 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -44,6 +44,7 @@ Player Seasons optionally retain cumulative `participationTotals` for offense, d
 `rosterSpreadsheet.save` accepts 1–200 edited/new rows, validates the owner session and expected Michigan data revision, and checks each existing row's player/program/season membership. Only edited fields are patched. The transaction creates the initial commitment or stint/annual/movement records for new people and emits one revision/audit event for the batch. An invalid row aborts every edit. Existing lifecycle history cannot be rewritten through cells. Participation corrections validate GP/snaps/cutoff and any offensive breakdown, preserve other phases, and may decrease erroneous totals; clearing every cell in a phase removes that snapshot rather than recording zero participation.
 
 - Commitment and enrollment are separate. Decommitting never creates a roster stint.
+- Official football roster reconciliation supports 2005–2026 with an owner session, revision-bound backup, preview fingerprint, and transactional audit. Optional `playerSeasons.listedClass` retains the mapped official class independently of eligibility; `rosterOnly` keeps unprovided GP unknown in public roster views. Existing participation and owner corrections are preserved. See [the import procedure](../guides/official-football-rosters.md).
 - Player Seasons carry exact listed position and derived room, explicit scholarship/availability states, eligibility evidence, and optional override.
 - `0` snaps means confirmed no participation; `null` means unknown. A grade with explicit zero snaps is rejected.
 - Season grade summaries weight only grades with known positive snaps. Unknown-snap grades remain separate coverage.
@@ -63,6 +64,10 @@ The 41-table model was synchronized to both environments on 2026-09-07; see the 
 ## Development loop
 
 **Current source:** `teamRosters.ts` owns independent men's basketball/hockey season records, owner-authenticated transactional saves, and sport/season revisions/audit receipts. These tables do not enter football queries or its JSON export/restore contract. See [team roster persistence](../reference/michigan-team-rosters.md#persistence-and-isolation).
+
+`hockeySchedules.ts` independently owns Michigan hockey games and append-only import receipts. Reads and writes are indexed and bounded per season; owner imports validate scores/states/dates, preserve official game IDs, and reject stale revisions or silent deletions. These two tables also require a full deployment export for backup. See [hockey schedules](../reference/michigan-hockey-schedules.md).
+
+`basketballSchedules.ts` provides the same independent game/import boundary for men's basketball. `teamScheduleFields.ts` shares validation with sport-specific score limits and tie rules; the shared operator importer verifies the other sport's schedules remain unchanged. See [basketball schedules](../reference/michigan-basketball-schedules.md).
 
 1. Read the owning domain/query module and schema indexes.
 2. Change source, pure invariants, and tests together.

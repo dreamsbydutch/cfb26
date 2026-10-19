@@ -24,7 +24,7 @@ export function parseOwnerSeason(
 ) {
   const season = Number(storedValue)
   return Number.isInteger(season) &&
-    season >= 2015 &&
+    season >= 2005 &&
     season <= currentSeason + 1
     ? season
     : currentSeason

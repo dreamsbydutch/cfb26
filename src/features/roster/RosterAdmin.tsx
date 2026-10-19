@@ -271,7 +271,7 @@ function AuthenticatedAdmin({
                   ? seasonLabel(CURRENT_SEASON + 1)
                   : CURRENT_SEASON + 1}
               </option>
-              {Array.from({ length: CURRENT_SEASON - 2014 }, (_, index) => (
+              {Array.from({ length: CURRENT_SEASON - 2004 }, (_, index) => (
                 <option key={index} value={CURRENT_SEASON - index}>
                   {teamSport
                     ? seasonLabel(CURRENT_SEASON - index)

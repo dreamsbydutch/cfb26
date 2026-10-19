@@ -5,7 +5,27 @@ import {
   rosterEligibilityBand,
   rosterGroup,
   rosterParticipation,
+  rosterClassLabel,
 } from '../src/features/michigan/rosterSheetModel.ts'
+
+test('official roster-only observations keep unknown games separate from confirmed zero and classes separate from eligibility', () => {
+  assert.equal(
+    rosterParticipation({
+      gamesPlayed: 0,
+      positionRoom: 'Receivers',
+      rosterOnly: true,
+    }).games,
+    null,
+  )
+  assert.equal(
+    rosterParticipation({ gamesPlayed: 0, positionRoom: 'Receivers' }).games,
+    0,
+  )
+  assert.equal(rosterClassLabel('GR', null), 'GR')
+  assert.equal(rosterClassLabel('SO', 1), 'SO')
+  assert.equal(rosterClassLabel(undefined, 3), 'JR')
+  assert.equal(rosterClassLabel(undefined, null), null)
+})
 
 test('roster participation displays the saved phase GP and snaps instead of stale annual zeroes', () => {
   const participation = rosterParticipation({

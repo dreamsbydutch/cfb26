@@ -560,7 +560,7 @@ export async function createPersonRecord(
   programId: Id<'programs'>,
 ) {
   const canonicalName = requiredText(args.canonicalName, 'Canonical name', 100)
-  const entrySeason = wholeNumber(args.entrySeason, 'Entry season', 2015, 2100)
+  const entrySeason = wholeNumber(args.entrySeason, 'Entry season', 2005, 2100)
   const slug = slugify(canonicalName)
   const duplicate = await ctx.db
     .query('players')
@@ -744,7 +744,7 @@ export const upsertPlayerSeason = mutation({
     if (!player || !stint || stint.playerId !== args.playerId) {
       throw new Error('Player stint was not found.')
     }
-    const season = wholeNumber(args.season, 'Season', 2015, 2100)
+    const season = wholeNumber(args.season, 'Season', 2005, 2100)
     const listedPosition = requiredText(
       args.listedPosition,
       'Position',
@@ -787,6 +787,8 @@ export const upsertPlayerSeason = mutation({
       await ctx.db.replace('playerSeasons', existing._id, {
         ...document,
         participationTotals: existing.participationTotals,
+        listedClass: existing.listedClass,
+        rosterOnly: false,
       })
       return existing._id
     }
@@ -1159,7 +1161,7 @@ export const previewRosterImport = query({
           action: existing ? ('match' as const) : ('create' as const),
           errors: [
             ...(!slug ? ['Canonical name is invalid.'] : []),
-            ...(row.entrySeason < 2015 ? ['Entry season predates scope.'] : []),
+            ...(row.entrySeason < 2005 ? ['Entry season predates scope.'] : []),
           ],
           existingPlayerId: existing?._id ?? null,
           index,

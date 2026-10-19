@@ -36,6 +36,8 @@ test('commitment actions use the matching active commitment record', () => {
 
 test('the owner season persists only supported season values', () => {
   assert.equal(parseOwnerSeason('2027', 2026), 2027)
-  assert.equal(parseOwnerSeason('2014', 2026), 2026)
+  assert.equal(parseOwnerSeason('2014', 2026), 2014)
+  assert.equal(parseOwnerSeason('2005', 2026), 2005)
+  assert.equal(parseOwnerSeason('2004', 2026), 2026)
   assert.equal(parseOwnerSeason('not-a-season', 2026), 2026)
 })

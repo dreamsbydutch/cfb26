@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { CircleAlert, UserRoundPlus, X } from 'lucide-react'
+import { CircleAlert } from 'lucide-react'
 import { derivePositionRoom } from '../../../convex/playerDomain'
 import type { RosterEntry } from '~/features/roster/useMichiganRoster'
 import type {
@@ -12,6 +12,7 @@ import {
   ROSTER_GROUP_DESCRIPTIONS,
   ROSTER_GROUP_LABELS,
   collegeYear,
+  rosterClassLabel,
   rosterEligibilityBand,
   rosterGroup,
   rosterParticipation,
@@ -111,9 +112,9 @@ type SheetRow = {
   status: string | null
   weight: number | null
   year: number | null
+  listedClass?: string
 }
 
-type Comparison = { ids: Array<string>; toggle: (id: string) => void }
 type Filters = {
   availability: string
   eligibility: string
@@ -127,13 +128,11 @@ type Filters = {
 }
 
 export function RosterSheet({
-  comparison,
   entries,
   filters,
   rosterPlayerIds,
   season,
 }: {
-  comparison: Comparison
   entries: Array<RosterEntry & { player: NonNullable<RosterEntry['player']> }>
   filters: Filters
   rosterPlayerIds: Array<string>
@@ -178,6 +177,7 @@ export function RosterSheet({
         entry.season.eligibilityEvidence.enrollmentSeason,
         season,
       ),
+      listedClass: entry.season.listedClass,
     }
   })
   const enrolled = new Set(rosterPlayerIds)
@@ -354,9 +354,9 @@ export function RosterSheet({
                 <table className="w-full min-w-[360px] table-fixed border-collapse text-left text-xs tabular-nums">
                   <caption className="sr-only">
                     {season} {position} roster. Row colors follow the
-                    eligibility legend. Year means college year from first
-                    enrollment. Incoming players are the {season + 1} recruiting
-                    class.
+                    eligibility legend. Year uses the listed class when
+                    available, otherwise college year from first enrollment.
+                    Incoming players are the {season + 1} recruiting class.
                   </caption>
                   <colgroup>
                     <col className="w-7" />
@@ -367,7 +367,6 @@ export function RosterSheet({
                     {showSpecialTeams && <col className="w-12" />}
                     <col className="w-9" />
                     <col className="w-24" />
-                    <col className="w-8" />
                   </colgroup>
                   <thead className="bg-[#e9edf1] text-[10px] font-bold text-[#00274c]">
                     <tr>
@@ -423,9 +422,6 @@ export function RosterSheet({
                       <th scope="col">
                         <span className="px-1">Recruit</span>
                       </th>
-                      <th scope="col">
-                        <span className="sr-only">Compare</span>
-                      </th>
                     </tr>
                   </thead>
                   {ROSTER_GROUPS.map((group) => {
@@ -439,7 +435,7 @@ export function RosterSheet({
                         <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
                           <th
                             className="px-0 py-0.5 text-left"
-                            colSpan={showSpecialTeams ? 9 : 8}
+                            colSpan={showSpecialTeams ? 8 : 7}
                             scope="rowgroup"
                           >
                             <span
@@ -452,7 +448,6 @@ export function RosterSheet({
                         </tr>
                         {members.map((row) => (
                           <SheetPlayer
-                            comparison={comparison}
                             key={row.id}
                             row={row}
                             season={season}
@@ -473,17 +468,14 @@ export function RosterSheet({
 }
 
 function SheetPlayer({
-  comparison,
   row,
   season,
   showSpecialTeams,
 }: {
-  comparison: Comparison
   row: SheetRow
   season: number
   showSpecialTeams: boolean
 }) {
-  const selected = comparison.ids.includes(row.playerId)
   const band = ELIGIBILITY[row.band]
   return (
     <tr className={`border-t border-[#00274c]/10 ${band.color}`}>
@@ -547,9 +539,7 @@ function SheetPlayer({
         </td>
       )}
       <td className="px-1 text-center">
-        {row.year === null
-          ? '—'
-          : (['FR', 'SO', 'JR', 'SR', '5TH'][row.year - 1] ?? `${row.year}TH`)}
+        {rosterClassLabel(row.listedClass, row.year) ?? '—'}
       </td>
       <td
         className="whitespace-nowrap px-1 text-[11px]"
@@ -562,22 +552,6 @@ function SheetPlayer({
         {row.recruiting
           ? `${row.recruiting.rank === null ? '—' : `#${row.recruiting.rank}`} (${row.recruiting.rating === null ? '—' : row.recruiting.rating.toFixed(row.recruiting.rating === 1 ? 3 : 4)})`
           : '—'}
-      </td>
-      <td>
-        <button
-          aria-label={`${selected ? 'Remove' : 'Add'} ${row.name} ${selected ? 'from' : 'to'} comparison`}
-          aria-pressed={selected}
-          className={`grid h-8 w-8 place-items-center disabled:opacity-35 ${selected ? 'bg-[#ffcb05] text-[#00274c]' : 'text-[#00274c]/60 hover:bg-[#00274c]/10'}`}
-          disabled={!selected && comparison.ids.length >= 4}
-          onClick={() => comparison.toggle(row.playerId)}
-          type="button"
-        >
-          {selected ? (
-            <X aria-hidden="true" size={13} />
-          ) : (
-            <UserRoundPlus aria-hidden="true" size={13} />
-          )}
-        </button>
       </td>
     </tr>
   )

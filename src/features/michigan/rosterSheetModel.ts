@@ -23,18 +23,22 @@ export function rosterParticipation({
   gamesPlayed,
   participationTotals,
   positionRoom,
+  rosterOnly = false,
 }: {
   gamesPlayed: number
   participationTotals?: Partial<
     Record<ParticipationPhase, ParticipationSnapshot>
   >
   positionRoom: string
+  rosterOnly?: boolean
 }) {
   const phase = ROOM_PHASES[positionRoom] ?? null
   const snapshot = phase ? participationTotals?.[phase] : undefined
   // Phase GP can overlap; cumulative snapshots must not be added to game logs.
   return {
-    games: snapshot?.gamesPlayed ?? gamesPlayed,
+    games:
+      snapshot?.gamesPlayed ??
+      (rosterOnly && gamesPlayed === 0 ? null : gamesPlayed),
     snaps: snapshot?.snaps ?? null,
     phase,
     throughTeamGames: snapshot?.throughTeamGames ?? null,
@@ -48,6 +52,18 @@ export function collegeYear(enrollmentSeason: number | null, season: number) {
   return enrollmentSeason === null || enrollmentSeason > season
     ? null
     : season - enrollmentSeason + 1
+}
+
+export function rosterClassLabel(
+  listedClass: string | undefined,
+  year: number | null,
+) {
+  return (
+    listedClass ??
+    (year === null
+      ? null
+      : (['FR', 'SO', 'JR', 'SR', '5TH'][year - 1] ?? `${year}TH`))
+  )
 }
 
 export const ROSTER_GROUPS = [

@@ -108,6 +108,7 @@ export function buildLineup(
           entry.season.eligibilityEvidence.enrollmentSeason,
           season,
         ),
+        listedClass: entry.season.listedClass,
         band: rosterEligibilityBand({
           eligibleThroughSeason: entry.eligibility.eligibleThroughSeason,
           enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,

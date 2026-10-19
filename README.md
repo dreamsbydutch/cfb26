@@ -2,7 +2,7 @@
 
 `cfb26` is the source repository for DbyD CFB, a Michigan-first college football intelligence system built with React, TanStack Start, and Convex. The checked-in application covers Michigan player lifecycles, season rosters, game participation and DbyD Player Grades; national programs, schedules, ratings, résumés, playoff projections, and matchups; an identity-blind all-FBS owner ballot; and Michigan-alumni NFL tracking.
 
-The public app is read-only. `/` opens the Michigan Matrix and `/games` opens National Games; their companion views use canonical routes rather than an in-page prototype switcher. `/admin/roster` is a desktop-only, private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, audit, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
+The public app is read-only. `/` opens the Michigan football matrix, labeled Football. The Michigan sport switcher opens Football, Basketball, or Hockey. Player names open profiles; retired football team views redirect to Football. `/games` opens National Games. `/admin/roster` is a desktop-only, private, single-owner workspace for lifecycle, season, game, identity, import, backup, rollover, audit, and data-health workflows. PFF and OpenSheet are not runtime dependencies.
 
 The 41-table contract was promoted to development and production through a backed-up, exact-target cutover on 2026-09-07. Current source defines 44 tables, including Michigan data revision, owner audit state, and the shared live-scoreboard request budget. Production web releases follow the Convex-first Vercel build. See [Deployment](docs/wiki/guides/deployment.md) and the [cutover record](docs/wiki/operations/convex-v2-cutover-2026-09-07.md).
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { seasonLabel, teamDefinitions } from '../../../convex/teamRosterFields'
 import { metricValues } from './teamRosterModel'
+import { TeamSchedule } from './TeamSchedule'
 import type { TeamSport, TeamValues } from '../../../convex/teamRosterFields'
 import {
   EmptyState,
@@ -13,8 +14,24 @@ import {
 } from '~/components/AppShell'
 
 export function TeamRoster({ sport }: { sport: TeamSport }) {
-  const [season, setSeason] = useState(new Date().getFullYear())
+  const [season, setSeason] = useState(() => {
+    const value =
+      typeof window === 'undefined'
+        ? NaN
+        : Number(new URLSearchParams(window.location.search).get('season'))
+    return Number.isInteger(value) &&
+      value >= 2005 &&
+      value <= new Date().getFullYear() + 1
+      ? value
+      : new Date().getFullYear()
+  })
   const [search, setSearch] = useState('')
+  const [view, setView] = useState<'roster' | 'schedule'>(() =>
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('view') === 'schedule'
+      ? 'schedule'
+      : 'roster',
+  )
   const roster = useQuery(convexQuery(api.teamRosters.list, { sport, season }))
   const definition = teamDefinitions[sport]
   const entries =
@@ -39,10 +56,13 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
               <select
                 className="app-control ml-2 px-3 py-2"
                 value={season}
-                onChange={(event) => setSeason(Number(event.target.value))}
+                onChange={(event) => {
+                  setSeason(Number(event.target.value))
+                  updateUrl('season', event.target.value)
+                }}
               >
                 {Array.from(
-                  { length: 12 },
+                  { length: new Date().getFullYear() - 2003 },
                   (_, i) => new Date().getFullYear() + 1 - i,
                 ).map((year) => (
                   <option key={year} value={year}>
@@ -51,16 +71,46 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                 ))}
               </select>
             </label>
-            <input
-              aria-label="Search roster"
-              className="app-control px-3 py-2 text-sm"
-              placeholder="Find a player"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
+            {view === 'roster' && (
+              <input
+                aria-label="Search roster"
+                className="app-control px-3 py-2 text-sm"
+                placeholder="Find a player"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            )}
           </div>
         </header>
-        {roster.isPending ? (
+        {
+          <div
+            className="mb-6 flex gap-2"
+            role="group"
+            aria-label={`${sport} view`}
+          >
+            {(['roster', 'schedule'] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={view === value}
+                className={`rounded-lg border px-4 py-2 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 ${view === value ? 'border-[#00274c] bg-[#00274c] text-white' : 'border-slate-300 bg-white text-slate-700'}`}
+                onClick={() => {
+                  setView(value)
+                  updateUrl('view', value)
+                }}
+              >
+                {value === 'roster' ? 'Roster' : 'Schedule & results'}
+              </button>
+            ))}
+          </div>
+        }
+        {view === 'schedule' ? (
+          <TeamSchedule
+            key={`${sport}-${season}`}
+            sport={sport}
+            season={season}
+          />
+        ) : roster.isPending ? (
           <LoadingState />
         ) : roster.isError ? (
           <ErrorState>
@@ -205,7 +255,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
             })}
           </div>
         )}
-        {!!entries.length && (
+        {view === 'roster' && !!entries.length && (
           <p className="mt-4 text-xs text-slate-500">
             {sport === 'basketball'
               ? 'Minutes, points, rebounds and assists are per game. Shooting percentages use a 0–100 scale.'
@@ -222,4 +272,10 @@ function height(value: TeamValues[string]) {
   return typeof value === 'number'
     ? `${Math.floor(value / 12)}′${value % 12}″`
     : '—'
+}
+
+function updateUrl(key: string, value: string) {
+  const url = new URL(window.location.href)
+  url.searchParams.set(key, value)
+  window.history.replaceState(window.history.state, '', url)
 }

@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as basketballScheduleFields from "../basketballScheduleFields.js";
+import type * as basketballSchedules from "../basketballSchedules.js";
 import type * as cfbdAudit from "../cfbdAudit.js";
 import type * as cfbdClient from "../cfbdClient.js";
 import type * as cfbdHealth from "../cfbdHealth.js";
@@ -15,12 +17,16 @@ import type * as cfbdHealthProbe from "../cfbdHealthProbe.js";
 import type * as crons from "../crons.js";
 import type * as eligibility from "../eligibility.js";
 import type * as evidenceFields from "../evidenceFields.js";
+import type * as footballRosterFields from "../footballRosterFields.js";
 import type * as gameEvidence from "../gameEvidence.js";
 import type * as gameStatus from "../gameStatus.js";
 import type * as games from "../games.js";
+import type * as hockeyScheduleFields from "../hockeyScheduleFields.js";
+import type * as hockeySchedules from "../hockeySchedules.js";
 import type * as migrationV2 from "../migrationV2.js";
 import type * as migrations from "../migrations.js";
 import type * as nflverse from "../nflverse.js";
+import type * as officialFootballRosters from "../officialFootballRosters.js";
 import type * as participationFields from "../participationFields.js";
 import type * as participationModel from "../participationModel.js";
 import type * as playerDomain from "../playerDomain.js";
@@ -63,6 +69,7 @@ import type * as seasonalStats from "../seasonalStats.js";
 import type * as teamData from "../teamData.js";
 import type * as teamRosterFields from "../teamRosterFields.js";
 import type * as teamRosters from "../teamRosters.js";
+import type * as teamScheduleFields from "../teamScheduleFields.js";
 
 import type {
   ApiFromModules,
@@ -71,6 +78,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  basketballScheduleFields: typeof basketballScheduleFields;
+  basketballSchedules: typeof basketballSchedules;
   cfbdAudit: typeof cfbdAudit;
   cfbdClient: typeof cfbdClient;
   cfbdHealth: typeof cfbdHealth;
@@ -78,12 +87,16 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   eligibility: typeof eligibility;
   evidenceFields: typeof evidenceFields;
+  footballRosterFields: typeof footballRosterFields;
   gameEvidence: typeof gameEvidence;
   gameStatus: typeof gameStatus;
   games: typeof games;
+  hockeyScheduleFields: typeof hockeyScheduleFields;
+  hockeySchedules: typeof hockeySchedules;
   migrationV2: typeof migrationV2;
   migrations: typeof migrations;
   nflverse: typeof nflverse;
+  officialFootballRosters: typeof officialFootballRosters;
   participationFields: typeof participationFields;
   participationModel: typeof participationModel;
   playerDomain: typeof playerDomain;
@@ -126,6 +139,7 @@ declare const fullApi: ApiFromModules<{
   teamData: typeof teamData;
   teamRosterFields: typeof teamRosterFields;
   teamRosters: typeof teamRosters;
+  teamScheduleFields: typeof teamScheduleFields;
 }>;
 
 /**

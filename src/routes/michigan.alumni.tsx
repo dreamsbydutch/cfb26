@@ -1,14 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import {
-  MichiganAlumni,
-  MichiganError,
-  MichiganLoading,
-} from '~/features/michigan/MichiganWorkspace'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { footballUrl } from '~/features/michigan/footballNavigation'
 
 export const Route = createFileRoute('/michigan/alumni')({
-  ssr: false,
-  component: MichiganAlumni,
-  pendingComponent: MichiganLoading,
-  errorComponent: MichiganError,
-  head: () => ({ meta: [{ title: 'Michigan NFL Alumni | DbyD CFB' }] }),
+  beforeLoad: ({ location }) => {
+    throw redirect({ href: footballUrl(location.searchStr), replace: true })
+  },
 })

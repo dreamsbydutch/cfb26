@@ -1,6 +1,8 @@
 # Reference
 
 - [Michigan basketball and hockey rosters](michigan-team-rosters.md) — season tables, owner editing, metrics, and isolation from football.
+- [Michigan hockey schedules](michigan-hockey-schedules.md) — game history, scores, opponent filtering, and reviewed archive imports.
+- [Michigan basketball schedules](michigan-basketball-schedules.md) — season game history, scores, exhibitions, and reviewed archive imports.
 
 - [Repository map](repository-map.md) — every maintained directory and important file.
 - [Configuration and commands](configuration.md) — runtime, environment variables, package scripts, and build configuration.

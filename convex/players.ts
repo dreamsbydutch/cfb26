@@ -54,7 +54,7 @@ export const searchCatalog = query({
   }),
   handler: async (ctx) => {
     const [players, programs, programAliases] = await Promise.all([
-      ctx.db.query('players').withIndex('by_slug').take(500),
+      ctx.db.query('players').withIndex('by_slug').take(2_000),
       ctx.db.query('programs').withIndex('by_key').take(1_000),
       ctx.db.query('programAliases').withIndex('by_sourceKey').take(2_000),
     ])

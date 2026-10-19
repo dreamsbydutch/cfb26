@@ -2,6 +2,8 @@
 
 [Product index](README.md) · [Implementation backlog](implementation-backlog.md) · [Wiki home](../README.md)
 
+**Current navigation:** Michigan exposes Football (the roster matrix), Basketball, and Hockey through a sport switcher. Overview, Movement, Alumni, Compare, and the former lineup view are retired; their URLs return to Football with the selected season. Player profiles remain available from roster names.
+
 ## Status and purpose
 
 **Current source — approved and implemented 2026-09-06; hosted backend cutover 2026-09-07:** CFB26 is a Michigan-first college football intelligence system. It joins Michigan recruiting, roster, development, game, departure, draft, and NFL-career history with national team, schedule, rating, résumé, playoff, and matchup analysis. The Convex migration and production backend promotion are complete; web delivery remains a separate operation.
@@ -118,7 +120,7 @@ PFF is outside the product. Source no longer contains `SnapCounts.json`, the PFF
 The public application will provide:
 
 - Michigan season rosters from 2015 onward;
-- complete player profiles and comparisons of up to four players;
+- complete player profiles;
 - position-room, scholarship, eligibility, roster-limit, development, and returning-production views;
 - game pages with pregame context, postgame results, participation, grades, and conventional statistics; and
 - Michigan alumni draft and NFL-career tracking.

@@ -9,7 +9,6 @@ import {
   CircleUserRound,
   Command,
   Gamepad2,
-  GitCompareArrows,
   LayoutDashboard,
   ListFilter,
   Menu,
@@ -32,34 +31,6 @@ type NavItem = {
   id: string
   label: string
 }
-
-const MICHIGAN_NAV: Array<NavItem> = [
-  { href: '/', icon: LayoutDashboard, id: 'matrix', label: 'Matrix' },
-  {
-    href: '/michigan/overview',
-    icon: BarChart3,
-    id: 'overview',
-    label: 'Overview',
-  },
-  {
-    href: '/michigan/movement',
-    icon: ListFilter,
-    id: 'movement',
-    label: 'Movement',
-  },
-  {
-    href: '/michigan/alumni',
-    icon: UsersRound,
-    id: 'alumni',
-    label: 'Alumni',
-  },
-  {
-    href: '/michigan/compare',
-    icon: GitCompareArrows,
-    id: 'compare',
-    label: 'Compare',
-  },
-]
 
 const NATIONAL_NAV: Array<NavItem> = [
   { href: '/games', icon: CalendarDays, id: 'games', label: 'Games' },
@@ -120,12 +91,9 @@ export function PublicShell({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const nav =
-    context === 'michigan'
-      ? [...MICHIGAN_NAV, ...TEAM_NAV.slice(1)]
-      : context === 'national'
-        ? NATIONAL_NAV
-        : TEAM_NAV
+  const nav = context === 'national' ? NATIONAL_NAV : TEAM_NAV
+  const navigationLabel =
+    context === 'national' ? 'National navigation' : 'Michigan sports'
   const mobile = nav.slice(0, 3)
 
   useEffect(() => {
@@ -202,7 +170,7 @@ export function PublicShell({
         </div>
         <div className="hidden border-t border-white/[0.06] lg:block">
           <nav
-            aria-label={`${context} navigation`}
+            aria-label={navigationLabel}
             className="scrollbar-none mx-auto flex max-w-[1680px] gap-1 overflow-x-auto px-8 py-2"
           >
             {nav.map((item) => (
@@ -216,11 +184,11 @@ export function PublicShell({
         </div>
         {menuOpen && (
           <nav
-            aria-label={`${context} navigation`}
+            aria-label={navigationLabel}
             className="app-shell-menu grid gap-1 border-t border-white/10 p-3 lg:hidden"
           >
             <div className="mb-2 flex gap-1 rounded-full bg-white/[0.045] p-1 sm:hidden">
-              <ShellLink active={context === 'michigan'} href="/">
+              <ShellLink active={context !== 'national'} href="/">
                 Michigan
               </ShellLink>
               <ShellLink active={context === 'national'} href="/games">
@@ -240,19 +208,21 @@ export function PublicShell({
       </header>
       {children}
       <nav
-        aria-label="Mobile primary navigation"
-        className="app-shell-mobile-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-white/10 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        aria-label={`Mobile ${navigationLabel}`}
+        className={`app-shell-mobile-nav fixed inset-x-0 bottom-0 z-40 grid ${context === 'national' ? 'grid-cols-4' : 'grid-cols-3'} border-t border-white/10 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden`}
       >
         {mobile.map((item) => (
           <MobileLink key={item.id} item={item} active={active === item.id} />
         ))}
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          className="flex min-h-16 flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white/55"
-        >
-          <Menu size={19} aria-hidden="true" /> More
-        </button>
+        {context === 'national' && (
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="flex min-h-16 flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white/55"
+          >
+            <Menu size={19} aria-hidden="true" /> More
+          </button>
+        )}
       </nav>
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
