@@ -16,7 +16,7 @@ The team season selectors reach 2005–06. The shared `TeamSchedule.tsx` adds Sc
 
 | Route family                       | Feature module                              | Main reads/writes                                                                                       |
 | ---------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `/`, `/michigan/*`                 | `features/michigan/MichiganWorkspace.tsx`   | Football roster matrix and player intelligence                             |
+| `/`, `/michigan/*`                 | `features/michigan/MichiganWorkspace.tsx`   | Football roster matrix and player intelligence                                                          |
 | `/games`, `/national/*`            | `features/landscape/LandscapeDashboard.tsx` | Games, Program, Power, Résumé, Playoff, teams, matchup simulation, ballot, and methodology              |
 | `/admin/roster`, `/admin/roster/*` | `features/roster/RosterAdmin.tsx`           | Owner Dashboard, Roster, Player Stats, Data, Operations, session, health, revision, and audit workflows |
 
@@ -30,7 +30,6 @@ The selected owner season persists across nested admin routes. Enrollment and de
 ## Presentation system
 
 **Current source:** basketball and hockey season pages share the football matrix's compact heading scale, gutters, short table rows, and navy headers. One summary band prioritizes record and postseason outcome. Contributors and schedule sit side by side from 1280px; narrow screens stack them. Leader totals are compact, game details expand within rows, and supporting notes/sources use disclosures. See [season home presentation](../reference/michigan-season-home.md#compact-presentation).
-
 
 **Current source:** player profiles display imported season participation separately from game-derived grades, including phase games played, snaps, cutoff, and an available offensive snap breakdown. These cumulative snapshots are not summed with individual game records. See [screenshot participation imports](../guides/screenshot-participation-imports.md).
 
@@ -71,3 +70,5 @@ Specialist tables (K/P/LS) retain a single Snaps column for special-teams totals
 The Matrix Recruit column shows the saved 247Sports Composite overall rank and rating (for example, `#38 (0.9745)` or `#1 (1.000)`). It prefers the latest recruiting evaluation, falling back to the latest transfer evaluation with the source kind identified in the tooltip. Missing rank/rating components remain unknown; 0–100 provider scores are never presented as composite ratings.
 
 The admin Roster spreadsheet has a Recruiting column group with editable 247Sports Composite overall rank and rating (0�1) for enrolled players and commitments. It loads the same preferred recruiting/transfer evaluation used by the public Recruit column. Saving an edited component preserves the other saved component and appends an owner-verified correction of the same evaluation kind, retaining history. Blank clears that component. Validation, owner authorization, revision checks, and batch audit receipts apply to these edits. New evaluation fields are optional in the mutation payload for older clients.
+
+Hockey schedules from 2025-26 also read `api.hockeyNpi.forSchedule`. A compact expandable national table and opponent column distinguish Current NPI from Final NPI; both apply to the selected season as a whole, never rank at game time. See [hockey NPI](../reference/michigan-hockey-npi.md).

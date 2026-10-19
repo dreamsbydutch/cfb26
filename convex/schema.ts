@@ -8,6 +8,7 @@ import { participationSnapshot } from './participationFields'
 import { teamSport, teamValues } from './teamRosterFields'
 import { hockeyGame } from './hockeyScheduleFields'
 import { basketballGame } from './basketballScheduleFields'
+import { npiTeam } from './hockeyNpiFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -1060,6 +1061,19 @@ export default defineSchema({
     gameCount: v.number(),
     importedAt: v.number(),
     sessionId: v.id('ownerSessions'),
+  }).index('by_season', ['season']),
+
+  hockeyNpiSeasons: defineTable({
+    season: v.number(),
+    teams: v.array(npiTeam),
+    final: v.boolean(),
+    observedAt: v.union(v.number(), v.null()),
+    sourceUrl: v.string(),
+    sourceSha256: v.string(),
+    lastAttemptAt: v.number(),
+    lastError: v.union(v.string(), v.null()),
+    leaseToken: v.number(),
+    leaseUntil: v.number(),
   }).index('by_season', ['season']),
 
   teamDataSyncState: defineTable({

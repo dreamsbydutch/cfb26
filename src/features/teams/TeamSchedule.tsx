@@ -1,5 +1,7 @@
 ﻿import { useState } from 'react'
 import { seasonLabel } from '../../../convex/teamRosterFields'
+import { npiTeamKey } from '../../../convex/hockeyNpiModel'
+import { HockeyNpi } from './HockeyNpi'
 import {
   scheduleOpponentKey,
   scheduleOpponentOptions,
@@ -33,6 +35,11 @@ export function TeamSchedule({
       </EmptyState>
     )
   const games = schedule.data.games
+  const npi = sport === 'hockey' && season >= 2025 ? schedule.npi : undefined
+  const ranks = new Map(
+    npi?.data?.latest?.teams.map((team) => [team.teamKey, team.rank]),
+  )
+  const rankLabel = npi?.data?.latest?.final ? 'Final NPI' : 'Current NPI'
   const opponents = scheduleOpponentOptions(games)
   const rows = games.filter(
     (game) => !opponent || scheduleOpponentKey(game) === opponent,
@@ -71,6 +78,7 @@ export function TeamSchedule({
           </select>
         </label>
       </div>
+      <HockeyNpi state={npi} />
       <div
         role="region"
         aria-label={`${sport} games`}
@@ -85,7 +93,13 @@ export function TeamSchedule({
           </caption>
           <thead className="bg-[#00274c] text-[10px] text-white">
             <tr>
-              {['Date', 'Opponent', 'Result / time', 'Details'].map((label) => (
+              {[
+                'Date',
+                'Opponent',
+                ...(npi ? [rankLabel] : []),
+                'Result / time',
+                'Details',
+              ].map((label) => (
                 <th key={label} scope="col" className="px-2 py-1.5">
                   {label}
                 </th>
@@ -119,8 +133,13 @@ export function TeamSchedule({
                           ? 'vs'
                           : ''}
                   </span>
-                  {game.opponentPrefix && `${game.opponentPrefix} `}
-                  {game.opponent}
+                  {!npi && game.opponentPrefix && `${game.opponentPrefix} `}
+                  {npi
+                    ? game.opponent.replace(
+                        /^#(?:\d+|--)(?:\/#?(?:\d+|--))?\s+/,
+                        '',
+                      )
+                    : game.opponent}
                   {(game.exhibition || game.conference) && (
                     <span
                       title={game.exhibition ? 'Exhibition' : 'Conference game'}
@@ -130,6 +149,16 @@ export function TeamSchedule({
                     </span>
                   )}
                 </th>
+                {npi && (
+                  <td
+                    className="whitespace-nowrap px-2 py-1.5"
+                    title={`${rankLabel} for opponent; not rank at game time`}
+                  >
+                    {game.exhibition || !ranks.has(npiTeamKey(game.opponent))
+                      ? '—'
+                      : `#${ranks.get(npiTeamKey(game.opponent))}`}
+                  </td>
+                )}
                 <td className="px-2 py-1.5">
                   <span
                     className={`whitespace-nowrap ${game.result === 'W' ? 'font-extrabold text-[#00274c]' : 'font-semibold text-slate-600'}`}
@@ -161,6 +190,13 @@ export function TeamSchedule({
                       Details
                     </summary>
                     <div className="space-y-1 pb-2">
+                      {npi &&
+                        (game.opponentPrefix || /^#/.test(game.opponent)) && (
+                          <p className="m-0">
+                            Michigan Athletics listed opponent:{' '}
+                            {game.opponentPrefix} {game.opponent}
+                          </p>
+                        )}
                       <p className="m-0">
                         {game.location || 'Location unavailable'}
                       </p>

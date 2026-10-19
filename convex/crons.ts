@@ -48,4 +48,11 @@ crons.weekly(
   internal.ratings.publishCurrentWeeklyRatings,
 )
 
+crons.weekly(
+  'refresh current hockey NPI and retain season finals',
+  { dayOfWeek: 'monday', hourUTC: 13, minuteUTC: 7 },
+  internal.hockeyNpi.refresh,
+  {},
+)
+
 export default crons

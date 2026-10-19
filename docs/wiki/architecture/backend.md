@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 51 tables and 114 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 52 tables and 115 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,3 +80,5 @@ The scoreboard mutation retains at most six recent in-progress observations per 
 The season dashboard includes a compact recruiting summary for enrolled players and commitments. It reads the latest 247Sports Composite recruiting evaluation, falling back to transfer, using the `evaluations.by_playerId_kind_provider_evaluatedAt` index with `first()`; no evaluation history or private notes are added to the dashboard payload.
 
 The admin Roster spreadsheet has a Recruiting column group with editable 247Sports Composite overall rank and rating (0�1) for enrolled players and commitments. It loads the same preferred recruiting/transfer evaluation used by the public Recruit column. Saving an edited component preserves the other saved component and appends an owner-verified correction of the same evaluation kind, retaining history. Blank clears that component. Validation, owner authorization, revision checks, and batch audit receipts apply to these edits. New evaluation fields are optional in the mutation payload for older clients.
+
+`hockeyNpi.ts` owns a single replaceable current ranking table per season and immutable CHN season finals in `hockeyNpiSeasons`. Its internal Monday 13:07 UTC cron validates source season/teams, preserves valid data on failure, and uses bounded retries. See [hockey NPI](../reference/michigan-hockey-npi.md).

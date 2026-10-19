@@ -1,11 +1,17 @@
 import type { Infer } from 'convex/values'
 import type { teamGame } from '../../../convex/teamScheduleFields'
+import type { npiSchedule } from '../../../convex/hockeyNpiFields'
 import type { TeamSport, TeamValues } from '../../../convex/teamRosterFields'
 import type { SeasonHistory } from './seasonHistory'
 
 export type SeasonGame = Infer<typeof teamGame>
 export type SeasonPlayer = { _id: string; values: TeamValues }
 export type ScheduleState = {
+  npi?: {
+    isPending: boolean
+    isError: boolean
+    data?: Infer<typeof npiSchedule>
+  }
   isPending: boolean
   isError: boolean
   data?: {

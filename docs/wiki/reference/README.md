@@ -2,6 +2,7 @@
 
 - [Michigan basketball and hockey rosters](michigan-team-rosters.md) — season tables, owner editing, metrics, and isolation from football.
 - [Michigan hockey schedules](michigan-hockey-schedules.md) — game history, scores, opponent filtering, and reviewed archive imports.
+- [Michigan hockey NPI](michigan-hockey-npi.md) — weekly current rankings and retained season finals on schedules.
 - [Michigan basketball schedules](michigan-basketball-schedules.md) — season game history, scores, exhibitions, and reviewed archive imports.
 
 - [Repository map](repository-map.md) — every maintained directory and important file.

@@ -20,5 +20,13 @@ export function useTeamSchedule(
       sport === 'basketball' ? { season } : 'skip',
     ),
   )
-  return sport === 'hockey' ? hockey : basketball
+  const npi = useQuery(
+    convexQuery(
+      api.hockeyNpi.forSchedule,
+      sport === 'hockey' && season >= 2025 ? { season } : 'skip',
+    ),
+  )
+  return sport === 'hockey'
+    ? { ...hockey, npi: season >= 2025 ? npi : undefined }
+    : basketball
 }

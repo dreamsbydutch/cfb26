@@ -37,3 +37,5 @@ Extraction reads only the requested season's structured schedule, avoiding the s
 Verification passed 212 Node tests, 25 Convex tests, strict TypeScript, ESLint, 141 Markdown link checks, and the production build. The four schedule tests cover owner authorization, revision conflicts, idempotency, identity-preserving corrections, no silent deletions, sport/season isolation, score/date validation, ties, and unplayed states. Browser-based visual verification was unavailable because no browser connection was exposed in this workspace.
 
 **Release verification (2026-10-18):** `npm run check` passed 215 Node tests, 28 Convex tests, TypeScript, ESLint, maintained Markdown links, and the production build. The development backend was synchronized again before production promotion. Browser visual checks remain unavailable.
+
+**NPI:** from 2025-26, the schedule shows [current or final NPI](michigan-hockey-npi.md). Current rankings refresh weekly and replace the saved table; past seasons retain only final rankings. Original Michigan Athletics listed ranks remain under game Details.
