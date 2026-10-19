@@ -83,7 +83,9 @@ export const teamDefinitions = {
       { name: 'Goalies', positions: ['G'] },
     ],
     columns: [
-      ...common,
+      ...common.filter(
+        (column) => !['recruitRank', 'recruitRating'].includes(column.key),
+      ),
       {
         key: 'position',
         label: 'Position',
@@ -124,9 +126,13 @@ export function validateTeamValues(
   input: TeamValues,
 ): TeamValues {
   const columns: Array<TeamColumn> = teamDefinitions[sport].columns
+  const legacyRecruitKeys =
+    sport === 'hockey' ? ['recruitRank', 'recruitRating'] : []
   if (
     Object.keys(input).some(
-      (key) => !columns.some((column) => column.key === key),
+      (key) =>
+        !columns.some((column) => column.key === key) &&
+        !(legacyRecruitKeys.includes(key) && input[key] === null),
     )
   )
     throw new Error('Unknown roster column for this sport.')

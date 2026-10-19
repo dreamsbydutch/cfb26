@@ -3,11 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { seasonLabel, teamDefinitions } from '../../../convex/teamRosterFields'
+import { hockeyPlayerKey } from '../../../convex/hockeyDraftModel'
 import { metricValues } from './teamRosterModel'
 import { compareSeasonPlayers } from './teamSeasonModel'
 import { TeamSchedule } from './TeamSchedule'
 import { SeasonHome } from './SeasonHome'
 import { useTeamSchedule } from './useTeamSchedule'
+import { HockeyDraftCell } from './HockeyDraftCell'
 import type { TeamSport, TeamValues } from '../../../convex/teamRosterFields'
 import {
   EmptyState,
@@ -42,6 +44,15 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
     updateUrl('view', value)
   }
   const roster = useQuery(convexQuery(api.teamRosters.list, { sport, season }))
+  const hockeyDrafts = useQuery(
+    convexQuery(
+      api.hockeyDrafts.forSeason,
+      sport === 'hockey' && view === 'roster' ? { season } : 'skip',
+    ),
+  )
+  const draftByPlayer = new Map(
+    hockeyDrafts.data?.map((player) => [player.playerKey, player.selections]),
+  )
   const definition = teamDefinitions[sport]
   const entries =
     roster.data?.entries.filter(
@@ -192,7 +203,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                             ...(sport === 'hockey'
                               ? ['Hand', 'Line / pair']
                               : ['Role']),
-                            'Recruit',
+                            sport === 'hockey' ? 'NHL draft' : 'Recruit',
                           ].map((label) => (
                             <th
                               key={label}
@@ -255,12 +266,25 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                               <td className="px-2">{row.values.role ?? '—'}</td>
                             )}
                             <td className="px-2">
-                              {row.values.recruitRank === null
-                                ? '—'
-                                : `#${row.values.recruitRank}`}
-                              {typeof row.values.recruitRating === 'number'
-                                ? ` (${row.values.recruitRating === 1 ? '1.000' : row.values.recruitRating.toFixed(4)})`
-                                : ''}
+                              {sport === 'hockey' ? (
+                                <HockeyDraftCell
+                                  selections={draftByPlayer.get(
+                                    hockeyPlayerKey(
+                                      String(row.values.name ?? ''),
+                                    ),
+                                  )}
+                                  unavailable={hockeyDrafts.isError}
+                                />
+                              ) : (
+                                <>
+                                  {row.values.recruitRank === null
+                                    ? '—'
+                                    : `#${row.values.recruitRank}`}
+                                  {typeof row.values.recruitRating === 'number'
+                                    ? ` (${row.values.recruitRating === 1 ? '1.000' : row.values.recruitRating.toFixed(4)})`
+                                    : ''}
+                                </>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -278,6 +302,18 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
               ? 'Sorted by total minutes. Minutes, points, rebounds and assists are per game. Shooting percentages use a 0–100 scale.'
               : 'Skaters are sorted by points; goalies by minutes. Goalie save percentage and goals-against average are calculated from saved totals.'}{' '}
             A dash means unknown.
+            {sport === 'hockey' && (
+              <>
+                {' '}
+                NHL draft shows career selections, which may postdate the
+                selected season. Expand a pick for its drafting team and source.{' '}
+                {hockeyDrafts.isError
+                  ? 'Draft history could not load; reload to retry.'
+                  : hockeyDrafts.isPending
+                    ? 'Loading draft history…'
+                    : ''}
+              </>
+            )}
           </p>
         )}
       </main>

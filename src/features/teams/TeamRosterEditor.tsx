@@ -207,7 +207,7 @@ export function TeamSpreadsheet({
         Enter season totals. Leave unknown values blank.{' '}
         {sport === 'basketball'
           ? 'Shooting percentages: 0–100. Public averages are calculated per game.'
-          : 'Goalie statistics apply only to position G; public points, SV% and GAA are calculated.'}{' '}
+          : 'Goalie statistics apply only to position G; public points, SV% and GAA are calculated. Hockey uses sourced NHL draft selections instead of recruiting ranks; view them on the public roster.'}{' '}
         Tab moves across; Enter moves down; Ctrl/Cmd-S saves.
       </p>
       {notice && (

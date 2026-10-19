@@ -95,3 +95,5 @@ The admin Roster spreadsheet has a Recruiting column group with editable 247Spor
 **Current source:** Michigan basketball and hockey default to [season home pages](michigan-season-home.md): sourced historical coaches, conference finishes and championships, player contributors and leaders, postseason results, and full schedules. Direct roster/stat and schedule views remain URL-addressable. Future tournament fixtures never establish qualification.
 
 **Hockey NPI:** `hockeyNpi.forSchedule` exposes the selected season's current or final national NPI table and refresh availability. Internal `hockeyNpi.refresh` runs Mondays at 13:07 UTC, replaces current rankings, and retains one final table per completed season. See [hockey NPI](michigan-hockey-npi.md).
+
+**Hockey talent indicator:** `hockeyDrafts.forSeason` provides sourced NHL career selections for players on the selected saved roster. Hockey uses NHL draft pick/year/round instead of recruiting fields; basketball retains recruiting. See [hockey draft history](michigan-hockey-drafts.md).
