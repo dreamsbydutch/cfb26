@@ -85,11 +85,11 @@ export function TeamSchedule({
         tabIndex={0}
         className="overflow-x-auto rounded border border-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        <table className="w-full min-w-[460px] text-left text-xs tabular-nums">
+        <table className="w-full min-w-[560px] text-left text-xs tabular-nums">
           <caption className="sr-only">
             Michigan {sport} game history, {seasonLabel(season)}. Scores list
-            Michigan first. Expand game details for location, tournament, box
-            score and recap.
+            Michigan first. Location, tournament, box score and recap are shown
+            alongside each game.
           </caption>
           <thead className="bg-[#00274c] text-[10px] text-[#ffffff]">
             <tr>
@@ -98,7 +98,8 @@ export function TeamSchedule({
                 'Opponent',
                 ...(npi ? [rankLabel] : []),
                 'Result / time',
-                'Details',
+                'Location / event',
+                'Links',
               ].map((label) => (
                 <th key={label} scope="col" className="px-2 py-1.5">
                   {label}
@@ -181,54 +182,50 @@ export function TeamSchedule({
                     </span>
                   )}
                 </td>
-                <td className="px-2">
-                  <details className="text-[11px] text-slate-500">
-                    <summary
-                      aria-label={`Game details: ${game.opponent}, ${game.date}`}
-                      className="min-h-8 cursor-pointer content-center py-1.5"
-                    >
-                      Details
-                    </summary>
-                    <div className="space-y-1 pb-2">
-                      {npi &&
-                        (game.opponentPrefix || /^#/.test(game.opponent)) && (
-                          <p className="m-0">
-                            Listed opponent:{' '}
-                            {game.opponentPrefix} {game.opponent}
-                          </p>
-                        )}
-                      <p className="m-0">
-                        {game.location || 'Location unavailable'}
-                      </p>
-                      {game.tournament && (
-                        <p className="m-0">{game.tournament}</p>
+                <td className="px-2 py-1.5 text-[11px] text-slate-500">
+                  <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                    <span>{game.location || '—'}</span>
+                    {game.tournament && (
+                      <span className="font-semibold">{game.tournament}</span>
+                    )}
+                    {npi &&
+                      (game.opponentPrefix || /^#/.test(game.opponent)) && (
+                        <span>
+                          Listed opponent: {game.opponentPrefix} {game.opponent}
+                        </span>
                       )}
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[#00274c]">
-                        {game.boxScoreUrl && (
-                          <a
-                            className="inline-flex min-h-8 items-center font-semibold underline underline-offset-2"
-                            href={game.boxScoreUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={`Box score: ${game.opponent}, ${game.date}`}
-                          >
-                            Box score
-                          </a>
-                        )}
-                        {game.recapUrl && (
-                          <a
-                            className="inline-flex min-h-8 items-center font-semibold underline underline-offset-2"
-                            href={game.recapUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={`Recap: ${game.opponent}, ${game.date}`}
-                          >
-                            Recap
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </details>
+                  </div>
+                </td>
+                <td className="px-2 py-0.5 text-[11px]">
+                  <div className="flex flex-wrap gap-x-3 text-[#00274c]">
+                    {game.boxScoreUrl && (
+                      <a
+                        className="inline-flex min-h-6 items-center whitespace-nowrap font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+                        href={game.boxScoreUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Box score: ${game.opponent}, ${game.date}`}
+                      >
+                        Box score
+                      </a>
+                    )}
+                    {game.recapUrl && (
+                      <a
+                        className="inline-flex min-h-6 items-center whitespace-nowrap font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+                        href={game.recapUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Recap: ${game.opponent}, ${game.date}`}
+                      >
+                        Recap
+                      </a>
+                    )}
+                    {!game.boxScoreUrl && !game.recapUrl && (
+                      <span className="inline-flex min-h-6 items-center text-slate-500">
+                        —
+                      </span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

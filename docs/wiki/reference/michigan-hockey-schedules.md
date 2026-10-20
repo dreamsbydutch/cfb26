@@ -6,7 +6,7 @@
 
 The schedule displays calendar dates and date ranges, opponents and listed ranks, home/away/neutral designation, location, Michigan-first scores, W/L/T, time as published, tournament notes, and available box score/recap links. Exhibitions remain visible but do not count toward the displayed record. Shootout wins/losses remain in notes; an official tie stays a tie. Cancellations, postponements, no-contests, upcoming games, and finals without a published score retain their distinct states. Missing scores remain unknown. Conditional postseason placeholders are retained exactly as scheduled; they do not assert tournament qualification.
 
-**Current presentation:** dense schedule rows keep opponent and result prominent. Location, tournament, box-score and recap links expand under each game's Details control; brief schedule conventions expand below the table. Routine source links and import timestamps stay internal.
+**Current presentation:** dense schedule rows keep opponent and result prominent. Location and tournament are visible in the Location / event column, with box-score and recap links alongside in the Links column. There is no per-game Details toggle; brief schedule conventions expand below the table. Routine source links and import timestamps stay internal.
 
 The [season home page](michigan-season-home.md) also embeds the complete schedule below the season summary, player contributions, and postseason results. Existing `view=schedule` links continue to open the dedicated schedule.
 
@@ -38,4 +38,4 @@ Verification passed 212 Node tests, 25 Convex tests, strict TypeScript, ESLint, 
 
 **Release verification (2026-10-18):** `npm run check` passed 215 Node tests, 28 Convex tests, TypeScript, ESLint, maintained Markdown links, and the production build. The development backend was synchronized again before production promotion. Browser visual checks remain unavailable.
 
-**NPI:** from 2025-26, the schedule shows [current or final NPI](michigan-hockey-npi.md). Current rankings refresh weekly and replace the saved table; past seasons retain only final rankings. Original Michigan Athletics listed ranks remain under game Details.
+**NPI:** from 2025-26, the schedule shows [current or final NPI](michigan-hockey-npi.md). Current rankings refresh weekly and replace the saved table; past seasons retain only final rankings. Original Michigan Athletics listed ranks remain visible in the Location / event column.

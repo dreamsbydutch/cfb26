@@ -14,7 +14,7 @@ The same job checks the preceding season until a final table is saved. Starting 
 
 Fetches have a 20-second timeout. A failed attempt preserves the last valid table and schedules at most two retries, 15 minutes apart. Leases prevent concurrent workers, stale completions cannot overwrite a newer worker, and successful repeat runs within the same UTC week are no-ops. Validation requires the correct page season, a complete 40–100-team table, unique school identities and contiguous ranks, finite NPI values, and Michigan's CHN identity. A changed format fails closed. School matching uses canonical names and explicit aliases; CHN team IDs are never joined to unrelated Michigan Athletics IDs.
 
-Michigan Athletics' listed opponent ranks remain available under each game's Details control when NPI is shown. They are separate source facts and are never relabeled as NPI. If the latest refresh fails, the expanded ranking disclosure shows a brief delayed-update status.
+Michigan Athletics' listed opponent ranks remain available in the Location / event column when NPI is shown. They are separate source facts and are never relabeled as NPI. If the latest refresh fails, the expanded ranking disclosure shows a brief delayed-update status.
 
 ## Verification and operations
 

@@ -12,7 +12,7 @@ At widths of 1280px and above, contributors and the full schedule sit side by si
 
 Navy table headers use explicit white text so the light theme's legacy `text-white` remapping cannot reduce their contrast. This applies to contributor tables and the shared season schedule.
 
-The postseason game log and season notes expand on demand. Schedule rows prioritize date, opponent, home/away/neutral designation, result/time, and game notes. Each row's keyboard-operable Details disclosure contains location, tournament, box-score, and recap links. Brief schedule conventions remain in the schedule's notes disclosure. Routine source citations and collection timestamps are omitted from public sports pages; source records remain stored internally. Functional game links, stored facts, filters, and result states are preserved.
+The postseason game log and season notes expand on demand. Schedule rows prioritize date, opponent, home/away/neutral designation, result/time, and game notes. Location and tournament appear in a compact Location / event column; box-score and recap links are always visible in a separate Links column. Rows have no per-game Details toggle. These columns wrap when necessary, and narrow tables scroll horizontally. Brief schedule conventions remain in the schedule's notes disclosure. Routine source citations and collection timestamps are omitted from public sports pages; source records remain stored internally. Functional game links, stored facts, filters, and result states are preserved.
 
 ## Season facts and accomplishments
 
