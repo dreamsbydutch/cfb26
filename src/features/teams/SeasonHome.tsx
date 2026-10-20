@@ -281,6 +281,7 @@ export function SeasonHome({
                             {new Date(
                               `${game.date}T12:00:00Z`,
                             ).toLocaleDateString('en-US', {
+                              weekday: 'short',
                               month: 'short',
                               day: 'numeric',
                               timeZone: 'UTC',
