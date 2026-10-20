@@ -33,6 +33,8 @@ The selected owner season persists across nested admin routes. Enrollment and de
 
 **Current source:** basketball and hockey season pages share the football matrix's compact heading scale, gutters, short table rows, and navy headers. One summary band prioritizes record and postseason outcome. Contributors and schedule sit side by side from 1280px; narrow screens stack them. Leader totals are compact; schedule locations, events, and game links are visible inline without per-game disclosures. Supporting data notes use disclosures. See [season home presentation](../reference/michigan-season-home.md#compact-presentation).
 
+The shared basketball/hockey schedule sizes to its content instead of stretching across the page. Its section is capped by the available container width; narrow screens retain keyboard-accessible horizontal scrolling.
+
 **Current source:** player profiles display imported season participation separately from game-derived grades, including phase games played, snaps, cutoff, and an available offensive snap breakdown. These cumulative snapshots are not summed with individual game records. See [screenshot participation imports](../guides/screenshot-participation-imports.md).
 
 **Current source:** below 640px, Matrix tables reserve 28px for jersey numbers and 112px for player names. Names use 12px type and wrap in full; the fixed 568px table keeps the frozen identity columns from expanding into the horizontally scrolling metrics. Wider layouts retain the existing name sizing.
@@ -80,6 +82,8 @@ Hockey roster tables use a compact NHL draft column with the drafting-team logo 
 The hockey NHL draft cell can also show a dated Elite Prospects consolidated projection for the upcoming draft year. It uses the existing season draft query, labels projections explicitly, and gives completed selections priority. See [hockey draft history](../reference/michigan-hockey-drafts.md).
 
 Hockey roster tables use two independent columns on wide screens: forwards on the left, with defensemen and goalies stacked together on the right. This keeps goalies directly beneath defense without a gap dictated by the longer forwards table. Narrow screens stack forwards, defensemen, and goalies in that order; any unassigned group follows.
+
+Hockey's Hand column follows Position for skaters and goalies. Line/pair is omitted from the public tables and owner spreadsheet; the saved-field contract remains compatible with legacy assignments.
 
 Each hockey roster name also has an NHL career button. `HockeyNhlCareer.tsx` opens a native modal dialog, loading `api.hockeyNhl.forPlayer` through `convexAction` only on demand. React Query caches results for fifteen minutes. Career totals and season-by-season club rows use separate regular-season/playoff views and goalie columns, with distinct loading, retry, unverified-profile, and no-appearance states. The table scrolls within the dialog on narrow screens; native dialog behavior supports Escape, focus containment, and return to the trigger. See [NHL career statistics](../reference/michigan-hockey-drafts.md#nhl-career-statistics).
 

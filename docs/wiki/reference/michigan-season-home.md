@@ -10,6 +10,8 @@
 
 At widths of 1280px and above, contributors and the full schedule sit side by side; smaller screens stack them. Leader totals appear in one compact strip above dense player tables. Short rows, navy column headers, subtle row striping, and frozen player names keep values traceable. The full roster view uses the same compact table spacing.
 
+The shared schedule uses content-sized columns and stops growing once its contents fit, including in the dedicated Schedule & results view. Its section is capped at the available container width, with horizontal scrolling when the table is wider than that space.
+
 Navy table headers use explicit white text so the light theme's legacy `text-white` remapping cannot reduce their contrast. This applies to contributor tables and the shared season schedule.
 
 Schedule and postseason dates include the abbreviated weekday, such as `Fri, Oct 9`. Dates use the stored calendar day in UTC so viewing time zones cannot shift a game to another day.

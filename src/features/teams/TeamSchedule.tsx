@@ -51,7 +51,10 @@ export function TeamSchedule({
     .map((result) => counted.filter((game) => game.result === result).length)
     .join('–')
   return (
-    <section aria-label={`${seasonLabel(season)} ${sport} schedule`}>
+    <section
+      aria-label={`${seasonLabel(season)} ${sport} schedule`}
+      className="w-fit min-w-0 max-w-full"
+    >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#00274c]/20 pb-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <h2 className="m-0 text-sm font-extrabold text-[#00274c]">
@@ -83,9 +86,9 @@ export function TeamSchedule({
         role="region"
         aria-label={`${sport} games`}
         tabIndex={0}
-        className="overflow-x-auto rounded border border-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="max-w-full overflow-x-auto rounded border border-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        <table className="w-full min-w-[560px] text-left text-xs tabular-nums">
+        <table className="w-max min-w-[560px] text-left text-xs tabular-nums">
           <caption className="sr-only">
             Michigan {sport} game history, {seasonLabel(season)}. Scores list
             Michigan first. Location, tournament, box score and recap are shown

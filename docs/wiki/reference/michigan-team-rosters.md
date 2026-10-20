@@ -16,7 +16,7 @@ For screenshot entry, the owner's class convention advances redshirt labels one 
 
 Basketball adds position, role, cumulative minutes/points/rebounds/assists/steals/blocks/turnovers, and FG/3P/FT percentages on a 0–100 scale. The public screen groups guards, wings/forwards, and centers. MPG/PPG/RPG/APG divide saved totals by games played; zero or unknown games produce unknown averages.
 
-Hockey adds position, handedness, line/pair, goals, assists, shots, and penalty minutes. Goalies additionally have minutes, saves, goals against, wins, and shutouts. Goalie statistics require position G. Public tables separate forwards, defensemen, and goalies. Skater points equal goals plus assists; goalie SV% is saves divided by saves plus goals against (displayed as `.900`), and GAA is goals against times 60 divided by minutes. Missing inputs remain unknown. Players without a position appear in Unassigned.
+Hockey adds position, handedness, goals, assists, shots, and penalty minutes. Hand appears immediately after Position in the public tables for skaters and goalies. Line/pair assignments are retired from the public roster and owner editor; older saved assignments remain compatible with the data contract but are not displayed or editable. Goalies additionally have minutes, saves, goals against, wins, and shutouts. Goalie statistics require position G. Public tables separate forwards, defensemen, and goalies. Skater points equal goals plus assists; goalie SV% is saves divided by saves plus goals against (displayed as `.900`), and GAA is goals against times 60 divided by minutes. Missing inputs remain unknown. Players without a position appear in Unassigned.
 
 ## Persistence and isolation
 

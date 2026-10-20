@@ -214,13 +214,12 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                                 '#',
                                 'Player',
                                 'Pos',
+                                ...(sport === 'hockey' ? ['Hand'] : []),
                                 'Year',
                                 'HT / WT',
                                 'GP',
                                 ...metrics,
-                                ...(sport === 'hockey'
-                                  ? ['Hand', 'Line / pair']
-                                  : ['Role']),
+                                ...(sport === 'basketball' ? ['Role'] : []),
                                 sport === 'hockey' ? 'NHL draft' : 'Recruit',
                               ].map((label) => (
                                 <th
@@ -262,6 +261,11 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                                 <td className="px-2">
                                   {row.values.position ?? '—'}
                                 </td>
+                                {sport === 'hockey' && (
+                                  <td className="px-2">
+                                    {row.values.hand ?? '—'}
+                                  </td>
+                                )}
                                 <td className="px-2">
                                   {row.values.year ?? '—'}
                                 </td>
@@ -282,16 +286,7 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
                                     </td>
                                   ),
                                 )}
-                                {sport === 'hockey' ? (
-                                  <>
-                                    <td className="px-2">
-                                      {row.values.hand ?? '—'}
-                                    </td>
-                                    <td className="px-2">
-                                      {goalie ? '—' : (row.values.line ?? '—')}
-                                    </td>
-                                  </>
-                                ) : (
+                                {sport === 'basketball' && (
                                   <td className="px-2">
                                     {row.values.role ?? '—'}
                                   </td>

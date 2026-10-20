@@ -69,7 +69,10 @@ export function TeamSpreadsheet({
   const [search, setSearch] = useState('')
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState('')
-  const columns: Array<TeamColumn> = teamDefinitions[sport].columns
+  // Retain compatibility with saved line assignments without offering new edits.
+  const columns: Array<TeamColumn> = teamDefinitions[sport].columns.filter(
+    (column) => sport !== 'hockey' || column.key !== 'line',
+  )
   const rows =
     draft?.rows ??
     data.entries.map((entry) => ({

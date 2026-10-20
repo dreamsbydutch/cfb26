@@ -8,7 +8,7 @@ Games display dates/date ranges, opponents and listed ranks, home/away/neutral d
 
 Opponent filters group school-name variants and ignore source rank/seed labels for matching, while retaining the original game labels in the table. Shared source IDs for different tournament rounds remain separate filter choices. The same rule applies to hockey.
 
-**Current presentation:** dense schedule rows keep opponent and result prominent. Location and tournament are visible in the Location / event column, with box-score and recap links alongside in the Links column. There is no per-game Details toggle; brief schedule conventions expand below the table. Routine source links and import timestamps stay internal.
+**Current presentation:** dense schedule rows keep opponent and result prominent. The table sizes to its content rather than filling the screen; its section is capped at the available width and scrolls horizontally on narrow screens. Location and tournament are visible in the Location / event column, with box-score and recap links alongside in the Links column. There is no per-game Details toggle; brief schedule conventions expand below the table. Routine source links and import timestamps stay internal.
 
 The [season home page](michigan-season-home.md) also embeds the complete schedule below the season summary, player contributions, and postseason results. Existing `view=schedule` links continue to open the dedicated schedule.
 
