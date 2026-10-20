@@ -26,7 +26,7 @@ function DraftTeamLogo({ team }: { team: string }) {
   return url && failedUrl !== url ? (
     <img
       src={url}
-      alt=""
+      alt={team}
       title={team}
       width={24}
       height={24}
@@ -79,28 +79,19 @@ export function HockeyDraftCell({
         </span>
       )}
       {(selections ?? []).map((draft) => (
-        <details
+        <div
           key={`${draft.year}:${draft.overallPick}`}
-          className="text-[11px]"
+          className="flex min-h-8 items-center gap-1.5 text-[11px]"
+          title={draft.nhlTeam}
         >
-          <summary
-            className="min-h-8 cursor-pointer content-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c]"
-            aria-label={`${draft.year} NHL draft, pick ${draft.overallPick}, round ${draft.round}, ${draft.nhlTeam}`}
-          >
-            <span className="inline-flex items-center gap-1.5 align-middle">
-              <DraftTeamLogo team={draft.nhlTeam} />
-              <strong className="text-xs text-[#00274c]">
-                #{draft.overallPick}
-              </strong>
-              <span className="text-[10px] text-slate-500">
-                {draft.year} · R{draft.round}
-              </span>
-            </span>
-          </summary>
-          <div className="max-w-40 whitespace-normal pb-2 font-normal text-slate-500">
-            {draft.nhlTeam}
-          </div>
-        </details>
+          <DraftTeamLogo team={draft.nhlTeam} />
+          <strong className="text-xs text-[#00274c]">
+            #{draft.overallPick}
+          </strong>
+          <span className="text-[10px] text-slate-500">
+            {draft.year} · R{draft.round}
+          </span>
+        </div>
       ))}
     </>
   )
