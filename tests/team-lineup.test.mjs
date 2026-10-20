@@ -91,7 +91,7 @@ test('positions follow football order, preserve multiple starters, and normalize
     result.offense.map((position) => position.position),
     ['QB', 'HB', 'WR'],
   )
-  assert.deepEqual(ids(result.offense[2].starters), ['wide-two', 'wide-one'])
+  assert.deepEqual(ids(result.offense[2].starters), ['wide-one', 'wide-two'])
   assert.deepEqual(ids(result.unmapped), ['unknown'])
   assert.equal(lineupPosition(' rb '), 'HB')
 })

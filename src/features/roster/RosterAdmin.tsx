@@ -19,6 +19,7 @@ import type { ReactNode } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 import { RosterSpreadsheet } from '~/features/roster/RosterSpreadsheet'
+import { sortAdminFootballRoster } from '~/features/roster/useMichiganRoster'
 import { TeamRosterEditor } from '~/features/teams/TeamRosterEditor'
 import {
   DbyDMark,
@@ -182,12 +183,13 @@ function AuthenticatedAdmin({
   const session = useQuery(
     convexQuery(api.rosterAdmin.sessionStatus, { sessionToken: token }),
   )
-  const roster = useQuery(
-    convexQuery(api.rosters.getSeasonDashboard, {
+  const roster = useQuery({
+    ...convexQuery(api.rosters.getSeasonDashboard, {
       programKey: 'michigan',
       season,
     }),
-  )
+    select: sortAdminFootballRoster,
+  })
   const games = useQuery(
     convexQuery(api.games.listProgramGames, {
       fromSeason: season,

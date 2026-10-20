@@ -2,11 +2,26 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   collegeYear,
+  compareDisplayedSnaps,
   rosterEligibilityBand,
   rosterGroup,
   rosterParticipation,
   rosterClassLabel,
 } from '../src/features/michigan/rosterSheetModel.ts'
+
+test('football lists rank displayed snaps first, with zero before unknown and alphabetical ties', () => {
+  const rows = [
+    { name: 'Unknown', snaps: null, role: 'starter' },
+    { name: 'Zero', snaps: 0 },
+    { name: 'Zulu', snaps: 100 },
+    { name: 'Alpha', snaps: 100 },
+    { name: 'Leader', snaps: 300, role: 'reserve' },
+  ]
+  assert.deepEqual(
+    rows.sort(compareDisplayedSnaps).map((row) => row.name),
+    ['Leader', 'Alpha', 'Zulu', 'Zero', 'Unknown'],
+  )
+})
 
 test('official roster-only observations keep unknown games separate from confirmed zero and classes separate from eligibility', () => {
   assert.equal(

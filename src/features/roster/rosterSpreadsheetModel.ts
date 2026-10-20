@@ -3,6 +3,11 @@ import type { FunctionReturnType } from 'convex/server'
 import type { api } from '../../../convex/_generated/api'
 import type { rosterSpreadsheetValues } from '../../../convex/rosterSpreadsheetFields'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { compareAdminRosterPlayers } from '~/features/roster/adminRosterOrder'
+import {
+  rosterGroup,
+  rosterParticipation,
+} from '~/features/michigan/rosterSheetModel'
 
 export type SheetValues = Infer<typeof rosterSpreadsheetValues>
 export type SheetField = keyof SheetValues
@@ -406,6 +411,26 @@ const cell = (value: string | number | null | undefined) =>
 
 export function spreadsheetRows(data: SheetData): Array<SheetRow> {
   const rows: Array<SheetRow> = []
+  const participationOrder = new Map(
+    data.entries.map(({ season: annual }) => [
+      annual._id,
+      {
+        tier: rosterGroup({
+          enrollmentSeason: annual.eligibilityEvidence.enrollmentSeason,
+          role: annual.role,
+          season: data.season,
+        }),
+        snaps: rosterParticipation(annual).snaps,
+      },
+    ]),
+  )
+  const sortKey = (row: SheetRow) => ({
+    position: row.values.listedPosition,
+    name: row.values.displayName,
+    ...((row.playerSeasonId
+      ? participationOrder.get(row.playerSeasonId)
+      : undefined) ?? { tier: 'recruit' as const, snaps: null }),
+  })
   const enrolled = new Set(data.entries.map((entry) => entry.season.playerId))
   const identity = (
     player: NonNullable<SheetData['entries'][number]['player']>,
@@ -515,7 +540,7 @@ export function spreadsheetRows(data: SheetData): Array<SheetRow> {
       },
     })
   }
-  return rows
+  return rows.sort((a, b) => compareAdminRosterPlayers(sortKey(a), sortKey(b)))
 }
 
 export function editableColumn(row: SheetRow, column: SheetColumn) {

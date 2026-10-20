@@ -12,6 +12,7 @@ import {
   ROSTER_GROUP_DESCRIPTIONS,
   ROSTER_GROUP_LABELS,
   collegeYear,
+  compareDisplayedSnaps,
   rosterClassLabel,
   rosterEligibilityBand,
   rosterGroup,
@@ -328,7 +329,9 @@ export function RosterSheet({
       <div className="grid items-start gap-3 lg:grid-cols-3">
         {positions.map((position) => {
           const showSpecialTeams = !['K', 'P', 'LS'].includes(position)
-          const players = rows.filter((row) => row.position === position)
+          const players = rows
+            .filter((row) => row.position === position)
+            .sort(compareDisplayedSnaps)
           const recruits = players.filter(
             (row) => row.band === 'incoming',
           ).length
@@ -424,39 +427,16 @@ export function RosterSheet({
                       </th>
                     </tr>
                   </thead>
-                  {ROSTER_GROUPS.map((group) => {
-                    const members = players.filter((row) => row.group === group)
-                    if (members.length === 0) return null
-                    return (
-                      <tbody
-                        aria-label={`${position} ${ROSTER_GROUP_LABELS[group]}`}
-                        key={group}
-                      >
-                        <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
-                          <th
-                            className="px-0 py-0.5 text-left"
-                            colSpan={showSpecialTeams ? 8 : 7}
-                            scope="rowgroup"
-                          >
-                            <span
-                              className="sticky left-0 inline-block px-2 text-[10px] font-bold uppercase tracking-wide"
-                              title={ROSTER_GROUP_DESCRIPTIONS[group]}
-                            >
-                              {ROSTER_GROUP_LABELS[group]} · {members.length}
-                            </span>
-                          </th>
-                        </tr>
-                        {members.map((row) => (
-                          <SheetPlayer
-                            key={row.id}
-                            row={row}
-                            season={season}
-                            showSpecialTeams={showSpecialTeams}
-                          />
-                        ))}
-                      </tbody>
-                    )
-                  })}
+                  <tbody>
+                    {players.map((row) => (
+                      <SheetPlayer
+                        key={row.id}
+                        row={row}
+                        season={season}
+                        showSpecialTeams={showSpecialTeams}
+                      />
+                    ))}
+                  </tbody>
                 </table>
               </div>
             </section>

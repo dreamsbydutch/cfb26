@@ -131,9 +131,7 @@ export function buildLineup(
       )
     })
   const order = (a: (typeof players)[number], b: (typeof players)[number]) =>
-    (a.roomOrder ?? 999) - (b.roomOrder ?? 999) ||
-    (b.snaps ?? -1) - (a.snaps ?? -1) ||
-    a.name.localeCompare(b.name)
+    (b.snaps ?? -1) - (a.snaps ?? -1) || a.name.localeCompare(b.name)
   const isVisible = (row: (typeof players)[number]) =>
     !visibleIds || visibleIds.has(row.id)
   const visiblePlayers = players.filter(isVisible)
@@ -153,7 +151,6 @@ export function buildLineup(
     }))
   }
   const stOrder = (a: (typeof players)[number], b: (typeof players)[number]) =>
-    (b.specialTeams?.rate ?? -1) - (a.specialTeams?.rate ?? -1) ||
     (b.specialTeams?.snaps ?? -1) - (a.specialTeams?.snaps ?? -1) ||
     a.name.localeCompare(b.name)
   const specialists = players
@@ -172,7 +169,9 @@ export function buildLineup(
         const known = rows.filter(
           (row) => row.specialTeams?.rate != null && row.specialTeams.rate > 0,
         )
-        const maximum = known[0]?.specialTeams?.rate
+        const maximum = Math.max(
+          ...known.map((row) => row.specialTeams?.rate ?? -1),
+        )
         return {
           position,
           primary: known.filter(

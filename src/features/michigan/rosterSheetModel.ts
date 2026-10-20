@@ -2,6 +2,13 @@ export type RosterEligibilityBand =
   'final' | 'nfl_window' | 'underclassman' | 'incoming' | 'unknown'
 
 type ParticipationPhase = 'offense' | 'defense' | 'specialTeams'
+
+export function compareDisplayedSnaps(
+  a: { snaps: number | null; name: string },
+  b: { snaps: number | null; name: string },
+) {
+  return (b.snaps ?? -1) - (a.snaps ?? -1) || a.name.localeCompare(b.name)
+}
 type ParticipationSnapshot = {
   gamesPlayed: number
   snaps: number
