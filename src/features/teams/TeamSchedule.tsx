@@ -53,7 +53,7 @@ export function TeamSchedule({
   return (
     <section
       aria-label={`${seasonLabel(season)} ${sport} schedule`}
-      className="w-fit min-w-0 max-w-full"
+      className="mx-auto w-fit min-w-0 max-w-full"
     >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#00274c]/20 pb-1">
         <div className="flex flex-wrap items-baseline gap-x-2">

@@ -33,7 +33,7 @@ The selected owner season persists across nested admin routes. Enrollment and de
 
 **Current source:** basketball and hockey season pages share the football matrix's compact heading scale, gutters, short table rows, and navy headers. One summary band prioritizes record and postseason outcome. Contributors and schedule sit side by side from 1280px; narrow screens stack them. Leader totals are compact; schedule locations, events, and game links are visible inline without per-game disclosures. Supporting data notes use disclosures. See [season home presentation](../reference/michigan-season-home.md#compact-presentation).
 
-The shared basketball/hockey schedule sizes to its content instead of stretching across the page. Its section is capped by the available container width; narrow screens retain keyboard-accessible horizontal scrolling.
+The shared basketball/hockey schedule sizes to its content instead of stretching across the page and centers horizontally within its container. Its section is capped by the available container width; narrow screens retain keyboard-accessible horizontal scrolling.
 
 **Current source:** player profiles display imported season participation separately from game-derived grades, including phase games played, snaps, cutoff, and an available offensive snap breakdown. These cumulative snapshots are not summed with individual game records. See [screenshot participation imports](../guides/screenshot-participation-imports.md).
 
