@@ -3,11 +3,11 @@ import type { FunctionReturnType } from 'convex/server'
 import type { api } from '../../../convex/_generated/api'
 import type { rosterSpreadsheetValues } from '../../../convex/rosterSpreadsheetFields'
 import type { Id } from '../../../convex/_generated/dataModel'
-import { compareAdminRosterPlayers } from '~/features/roster/adminRosterOrder'
+import { compareAdminRosterPlayers } from './adminRosterOrder'
 import {
   rosterGroup,
   rosterParticipation,
-} from '~/features/michigan/rosterSheetModel'
+} from '../michigan/rosterSheetModel'
 
 export type SheetValues = Infer<typeof rosterSpreadsheetValues>
 export type SheetField = keyof SheetValues
