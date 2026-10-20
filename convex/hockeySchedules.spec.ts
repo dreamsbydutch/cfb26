@@ -57,6 +57,31 @@ const args = {
 }
 
 describe('Michigan hockey schedules', () => {
+  test('discards listed poll ranks and retries ranked source rows without changing saved games', async () => {
+    const t = await setup()
+    const rankedArgs = {
+      ...args,
+      games: [{ ...game, opponent: '#1/2 Denver' }],
+    }
+    await t.mutation(api.hockeySchedules.importSeason, rankedArgs)
+    const before = await t.query(api.hockeySchedules.list, { season: 2026 })
+    expect(before.games[0]).toMatchObject({
+      ...game,
+      opponent: 'Denver',
+      opponentPrefix: '',
+    })
+    expect(
+      await t.mutation(api.hockeySchedules.importSeason, {
+        ...rankedArgs,
+        expectedRevision: 1,
+        games: [{ ...game, opponent: '#3 Denver', opponentPrefix: '#4' }],
+      }),
+    ).toEqual({ revision: 1, saved: 0, unchanged: true })
+    expect(await t.query(api.hockeySchedules.list, { season: 2026 })).toEqual(
+      before,
+    )
+  })
+
   test('requires owner authorization, rejects stale imports, and leaves roster data isolated', async () => {
     const t = await setup()
     await t.mutation(api.teamRosters.save, {

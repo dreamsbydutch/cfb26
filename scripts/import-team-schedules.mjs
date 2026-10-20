@@ -6,6 +6,7 @@ import { ConvexHttpClient } from 'convex/browser'
 import { makeFunctionReference } from 'convex/server'
 import {
   validateTeamScheduleGames,
+  normalizeHockeyGame,
   teamScheduleUrl,
 } from '../convex/teamScheduleFields.ts'
 
@@ -50,6 +51,7 @@ const mutate = (name, args) =>
   client.mutation(makeFunctionReference(name), args)
 const before = []
 for (const season of input.seasons) {
+  if (sport === 'hockey') season.games = season.games.map(normalizeHockeyGame)
   validateTeamScheduleGames(sport, season.season, season.games)
   assert.equal(
     season.sourceUrl,

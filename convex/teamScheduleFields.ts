@@ -35,6 +35,14 @@ export const teamGame = v.object({
   boxScoreUrl: v.union(v.string(), v.null()),
 })
 
+export function normalizeHockeyGame(game: Infer<typeof teamGame>) {
+  return {
+    ...game,
+    opponent: game.opponent.replace(/^#(?:\d+|--)(?:\/#?(?:\d+|--))?\s+/, ''),
+    opponentPrefix: '',
+  }
+}
+
 export function teamScheduleUrl(sport: TeamSport, season: number) {
   return `https://mgoblue.com/sports/${sport === 'hockey' ? 'mens-ice-hockey' : 'mens-basketball'}/schedule/${season}-${String(season + 1).slice(-2)}`
 }

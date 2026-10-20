@@ -134,8 +134,10 @@ export function TeamSchedule({
                           ? 'vs'
                           : ''}
                   </span>
-                  {!npi && game.opponentPrefix && `${game.opponentPrefix} `}
-                  {npi
+                  {sport !== 'hockey' &&
+                    game.opponentPrefix &&
+                    `${game.opponentPrefix} `}
+                  {sport === 'hockey'
                     ? game.opponent.replace(
                         /^#(?:\d+|--)(?:\/#?(?:\d+|--))?\s+/,
                         '',
@@ -188,12 +190,6 @@ export function TeamSchedule({
                     {game.tournament && (
                       <span className="font-semibold">{game.tournament}</span>
                     )}
-                    {npi &&
-                      (game.opponentPrefix || /^#/.test(game.opponent)) && (
-                        <span>
-                          Listed opponent: {game.opponentPrefix} {game.opponent}
-                        </span>
-                      )}
                   </div>
                 </td>
                 <td className="px-2 py-0.5 text-[11px]">

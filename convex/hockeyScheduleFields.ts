@@ -7,6 +7,7 @@ import {
 import type { Infer } from 'convex/values'
 
 export const hockeyGame = teamGame
+export { normalizeHockeyGame } from './teamScheduleFields'
 export const hockeyScheduleUrl = (season: number) =>
   teamScheduleUrl('hockey', season)
 export const validateHockeySeason = validateTeamScheduleSeason

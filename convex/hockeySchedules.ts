@@ -4,6 +4,7 @@ import schema from './schema'
 import {
   hockeyGame,
   hockeyScheduleUrl,
+  normalizeHockeyGame,
   validateHockeyGames,
   validateHockeySeason,
 } from './hockeyScheduleFields'
@@ -58,6 +59,8 @@ export const importSeason = mutation({
   handler: async (ctx, args) => {
     const session = await requireOwnerSession(ctx, args.sessionToken)
     validateHockeyGames(args.season, args.games)
+    const games = args.games.map(normalizeHockeyGame)
+    validateHockeyGames(args.season, games)
     if (!/^[a-f0-9]{64}$/.test(args.sourceSha256))
       throw new Error('Source SHA-256 is required.')
     const latest = await ctx.db
@@ -73,8 +76,7 @@ export const importSeason = mutation({
       .take(81)
     if (
       existing.some(
-        (game) =>
-          !args.games.some((row) => row.sourceGameId === game.sourceGameId),
+        (game) => !games.some((row) => row.sourceGameId === game.sourceGameId),
       )
     )
       throw new Error('Import cannot remove previously recorded games.')
@@ -87,11 +89,11 @@ export const importSeason = mutation({
       )
     if (
       latest?.sourceSha256 === args.sourceSha256 &&
-      existing.length === args.games.length &&
-      args.games.every((row) => existing.some((game) => sameGame(game, row)))
+      existing.length === games.length &&
+      games.every((row) => existing.some((game) => sameGame(game, row)))
     )
       return { revision: latest.revision, saved: 0, unchanged: true }
-    for (const row of args.games) {
+    for (const row of games) {
       const current = existing.find(
         (game) => game.sourceGameId === row.sourceGameId,
       )
@@ -108,10 +110,10 @@ export const importSeason = mutation({
       revision,
       sourceSha256: args.sourceSha256,
       sourceUrl: hockeyScheduleUrl(args.season),
-      gameCount: args.games.length,
+      gameCount: games.length,
       importedAt: Date.now(),
       sessionId: session._id,
     })
-    return { revision, saved: args.games.length, unchanged: false }
+    return { revision, saved: games.length, unchanged: false }
   },
 })
