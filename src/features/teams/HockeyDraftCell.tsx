@@ -1,7 +1,46 @@
+import { useState } from 'react'
+import nhlTeamLogos from './nhlTeamLogos.json'
 import type {
   HockeyDraft,
   HockeyDraftProjection,
 } from '../../../convex/hockeyDraftModel'
+
+function teamKey(team: string) {
+  return team
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+}
+
+// NHL standings/schedule responses supply these official logo URLs, including
+// historical drafting franchises rather than their present-day replacements.
+const teamLogos = new Map(
+  Object.entries(nhlTeamLogos).map(([team, url]) => [teamKey(team), url]),
+)
+
+function DraftTeamLogo({ team }: { team: string }) {
+  const url = teamLogos.get(teamKey(team))
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+
+  return url && failedUrl !== url ? (
+    <img
+      src={url}
+      alt=""
+      title={team}
+      width={24}
+      height={24}
+      loading="lazy"
+      decoding="async"
+      className="size-6 shrink-0 object-contain"
+      onError={() => setFailedUrl(url)}
+    />
+  ) : (
+    <span className="max-w-24 whitespace-normal text-[10px] leading-tight">
+      {team}
+    </span>
+  )
+}
 
 export function HockeyDraftCell({
   selections,
@@ -45,21 +84,21 @@ export function HockeyDraftCell({
           className="text-[11px]"
         >
           <summary
-            className="min-h-8 cursor-pointer content-center"
+            className="min-h-8 cursor-pointer content-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00274c]"
             aria-label={`${draft.year} NHL draft, pick ${draft.overallPick}, round ${draft.round}, ${draft.nhlTeam}`}
           >
-            <strong className="text-xs text-[#00274c]">
-              #{draft.overallPick}
-            </strong>
-            <span className="ml-1 text-[10px] text-slate-500">
-              {draft.year} · R{draft.round}
+            <span className="inline-flex items-center gap-1.5 align-middle">
+              <DraftTeamLogo team={draft.nhlTeam} />
+              <strong className="text-xs text-[#00274c]">
+                #{draft.overallPick}
+              </strong>
+              <span className="text-[10px] text-slate-500">
+                {draft.year} · R{draft.round}
+              </span>
             </span>
           </summary>
           <div className="max-w-40 whitespace-normal pb-2 font-normal text-slate-500">
             {draft.nhlTeam}
-            {draft.priorToMichigan === true && (
-              <span className="block">Selected before Michigan</span>
-            )}
           </div>
         </details>
       ))}

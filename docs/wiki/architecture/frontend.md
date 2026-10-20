@@ -75,8 +75,12 @@ The admin Roster spreadsheet has a Recruiting column group with editable 247Spor
 
 Hockey schedules from 2025-26 also read `api.hockeyNpi.forSchedule`. A compact expandable national table and opponent column distinguish Current NPI from Final NPI; both apply to the selected season as a whole, never rank at game time. See [hockey NPI](../reference/michigan-hockey-npi.md).
 
-Hockey roster tables use a compact NHL draft column with expandable drafting-team details instead of recruiting. Its separate query leaves roster statistics available if draft history fails. The hockey owner editor omits recruiting inputs. See [hockey draft history](../reference/michigan-hockey-drafts.md).
+Hockey roster tables use a compact NHL draft column with the drafting-team logo visible beside pick/year/round and an expandable full team name instead of recruiting. The pre-Michigan flag is hidden. Logos use NHL's official SVG assets with a team-name fallback. Its separate query leaves roster statistics available if draft history fails. The hockey owner editor omits recruiting inputs. See [hockey draft history](../reference/michigan-hockey-drafts.md).
 
 The hockey NHL draft cell can also show a dated Elite Prospects consolidated projection for the upcoming draft year. It uses the existing season draft query, labels projections explicitly, and gives completed selections priority. See [hockey draft history](../reference/michigan-hockey-drafts.md).
+
+Hockey roster tables use two independent columns on wide screens: forwards on the left, with defensemen and goalies stacked together on the right. This keeps goalies directly beneath defense without a gap dictated by the longer forwards table. Narrow screens stack forwards, defensemen, and goalies in that order; any unassigned group follows.
+
+Each hockey roster name also has an NHL career button. `HockeyNhlCareer.tsx` opens a native modal dialog, loading `api.hockeyNhl.forPlayer` through `convexAction` only on demand. React Query caches results for fifteen minutes. Career totals and season-by-season club rows use separate regular-season/playoff views and goalie columns, with distinct loading, retry, unverified-profile, and no-appearance states. The table scrolls within the dialog on narrow screens; native dialog behavior supports Escape, focus containment, and return to the trigger. See [NHL career statistics](../reference/michigan-hockey-drafts.md#nhl-career-statistics).
 
 **Public sports presentation:** show the actual data with compact labels. Routine source citations, collection timestamps, and provenance explanations stay internal. NHL projections keep their projected-status/year label; NPI keeps current/final labels. Box-score and recap links remain available as useful game actions.
