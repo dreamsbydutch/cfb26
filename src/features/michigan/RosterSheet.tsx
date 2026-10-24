@@ -20,40 +20,25 @@ import {
 } from '~/features/michigan/rosterSheetModel'
 import { EmptyState } from '~/components/AppShell'
 
-const POSITION_ORDER = [
-  'QB',
-  'HB',
-  'FB',
-  'WR',
-  'SLOT',
-  'TE',
-  'OT',
-  'LT',
-  'RT',
-  'OG',
-  'LG',
-  'RG',
-  'OC',
-  'C',
-  'DL',
-  'DT',
-  'NT',
-  'DE',
-  'EDGE',
-  'LB',
-  'ILB',
-  'MLB',
-  'OLB',
-  'CB',
-  'NB',
-  'S',
-  'FS',
-  'SS',
-  'K',
-  'P',
-  'LS',
-  'ATH',
+const POSITION_COLUMNS = [
+  { label: 'Backfield', positions: ['QB', 'HB', 'FB'] },
+  {
+    label: 'Receivers and tight ends',
+    positions: ['WR', 'TE', 'SLOT', 'RHINO', 'ATH'],
+  },
+  {
+    label: 'Offensive line',
+    positions: ['OT', 'LT', 'RT', 'OG', 'LG', 'RG', 'OC', 'C'],
+  },
+  {
+    label: 'Defensive front',
+    positions: ['DE', 'EDGE', 'DL', 'DT', 'NT', 'LB', 'ILB', 'MLB', 'OLB'],
+  },
+  { label: 'Secondary', positions: ['CB', 'S', 'FS', 'SS', 'NICKEL', 'NB'] },
+  { label: 'Specialists', positions: ['K', 'P', 'LS'] },
 ]
+
+const POSITION_ORDER = POSITION_COLUMNS.flatMap((column) => column.positions)
 
 function sheetPosition(value: string) {
   const position = value.trim().toUpperCase()
@@ -326,146 +311,167 @@ export function RosterSheet({
           Clear one or more filters to see the roster.
         </EmptyState>
       )}
-      <div className="grid items-start gap-3 lg:grid-cols-3">
-        {positions.map((position) => {
-          const showSpecialTeams = !['K', 'P', 'LS'].includes(position)
-          const players = rows
-            .filter((row) => row.position === position)
-            .sort(compareDisplayedSnaps)
-          const recruits = players.filter(
-            (row) => row.band === 'incoming',
-          ).length
-          return (
-            <section
-              aria-label={`${position} position group`}
-              className={`min-w-0 overflow-hidden border border-[#00274c]/25 bg-white ${position === 'K' ? 'lg:col-start-1' : ''}`}
-              key={position}
-            >
-              <h2 className="m-0 flex items-center justify-between gap-2 bg-[#00274c] px-2 py-1 font-display text-lg font-bold leading-6 text-[#ffffff]">
-                <span>{position}</span>
-                <span className="font-sans text-[11px] font-medium text-[#ffffff]">
-                  {players.length - recruits} players
-                  {recruits > 0 ? ` · ${recruits} incoming` : ''}
-                </span>
-              </h2>
-              <div
-                aria-label={`${position} player details, scroll for additional columns`}
-                className="relative overflow-x-auto focus-visible:outline-offset-[-3px]"
-                role="region"
-                tabIndex={0}
-              >
-                <table className="w-full min-w-[360px] table-fixed border-collapse text-left text-xs tabular-nums">
-                  <caption className="sr-only">
-                    {season} {position} roster, grouped by tier with snaps
-                    descending within each tier. Row colors follow the
-                    eligibility legend. Year uses the listed class when
-                    available, otherwise college year from first enrollment.
-                    Incoming players are the {season + 1} recruiting class.
-                  </caption>
-                  <colgroup>
-                    <col className="w-7" />
-                    <col className="w-28" />
-                    <col className="w-20" />
-                    <col className="w-8" />
-                    <col className="w-10" />
-                    {showSpecialTeams && <col className="w-12" />}
-                    <col className="w-9" />
-                    <col className="w-24" />
-                  </colgroup>
-                  <thead className="bg-[#e9edf1] text-[10px] font-bold text-[#00274c]">
-                    <tr>
-                      <th
-                        className="sticky left-0 z-10 bg-[#e9edf1] px-1 py-1 text-center"
-                        scope="col"
-                      >
-                        #
-                      </th>
-                      <th
-                        className="sticky left-7 z-10 bg-[#e9edf1] px-1 py-1"
-                        scope="col"
-                      >
-                        Player
-                      </th>
-                      <th className="px-1 py-1" scope="col">
-                        <abbr
-                          className="no-underline"
-                          title="Height in feet/inches / weight in pounds"
-                        >
-                          HT / WT
-                        </abbr>
-                      </th>
-                      <th className="px-1 py-1 text-center" scope="col">
-                        <abbr
-                          className="no-underline"
-                          title="Games played in the main phase when imported; otherwise overall games played"
-                        >
-                          GP
-                        </abbr>
-                      </th>
-                      <th className="px-1 py-1 text-center" scope="col">
-                        <abbr
-                          className="no-underline"
-                          title="Main-phase snaps: offense or defense by position; special teams for specialists"
-                        >
-                          Snaps
-                        </abbr>
-                      </th>
-                      {showSpecialTeams && (
-                        <th className="px-1 py-1 text-center" scope="col">
-                          <abbr
-                            className="no-underline"
-                            title="Special-teams snaps, separate from offense or defense"
-                          >
-                            ST Snaps
-                          </abbr>
-                        </th>
-                      )}
-                      <th className="px-1 py-1 text-center" scope="col">
-                        Year
-                      </th>
-                      <th scope="col">
-                        <span className="px-1">Recruit</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  {ROSTER_GROUPS.map((group) => {
-                    const members = players.filter((row) => row.group === group)
-                    if (members.length === 0) return null
-                    return (
-                      <tbody
-                        aria-label={`${position} ${ROSTER_GROUP_LABELS[group]}`}
-                        key={group}
-                      >
-                        <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
-                          <th
-                            className="px-0 py-0.5 text-left"
-                            colSpan={showSpecialTeams ? 8 : 7}
-                            scope="rowgroup"
-                          >
-                            <span
-                              className="sticky left-0 inline-block px-2 text-[10px] font-bold uppercase tracking-wide"
-                              title={ROSTER_GROUP_DESCRIPTIONS[group]}
+      <div className="grid items-start gap-3 lg:grid-cols-6">
+        {POSITION_COLUMNS.map((column, columnIndex) => (
+          <div
+            key={column.label}
+            aria-label={`${column.label} roster column`}
+            className="flex min-w-0 flex-col gap-3"
+          >
+            {positions
+              .filter(
+                (position) =>
+                  column.positions.includes(position) ||
+                  (columnIndex === 1 &&
+                    !POSITION_COLUMNS.some((candidate) =>
+                      candidate.positions.includes(position),
+                    )),
+              )
+              .map((position) => {
+                const showSpecialTeams = !['K', 'P', 'LS'].includes(position)
+                const players = rows
+                  .filter((row) => row.position === position)
+                  .sort(compareDisplayedSnaps)
+                const recruits = players.filter(
+                  (row) => row.band === 'incoming',
+                ).length
+                return (
+                  <section
+                    aria-label={`${position} position group`}
+                    className="min-w-0 overflow-hidden border border-[#00274c]/25 bg-white"
+                    key={position}
+                  >
+                    <h2 className="m-0 flex items-center justify-between gap-2 bg-[#00274c] px-2 py-1 font-display text-lg font-bold leading-6 text-[#ffffff]">
+                      <span>{position}</span>
+                      <span className="font-sans text-[11px] font-medium text-[#ffffff]">
+                        {players.length - recruits} players
+                        {recruits > 0 ? ` · ${recruits} incoming` : ''}
+                      </span>
+                    </h2>
+                    <div
+                      aria-label={`${position} player details, scroll for additional columns`}
+                      className="relative overflow-x-auto focus-visible:outline-offset-[-3px]"
+                      role="region"
+                      tabIndex={0}
+                    >
+                      <table className="w-full min-w-[360px] table-fixed border-collapse text-left text-xs tabular-nums">
+                        <caption className="sr-only">
+                          {season} {position} roster, grouped by tier with snaps
+                          descending within each tier. Row colors follow the
+                          eligibility legend. Year uses the listed class when
+                          available, otherwise college year from first
+                          enrollment. Incoming players are the {season + 1}{' '}
+                          recruiting class.
+                        </caption>
+                        <colgroup>
+                          <col className="w-7" />
+                          <col className="w-28" />
+                          <col className="w-20" />
+                          <col className="w-8" />
+                          <col className="w-10" />
+                          {showSpecialTeams && <col className="w-12" />}
+                          <col className="w-9" />
+                          <col className="w-24" />
+                        </colgroup>
+                        <thead className="bg-[#e9edf1] text-[10px] font-bold text-[#00274c]">
+                          <tr>
+                            <th
+                              className="sticky left-0 z-10 bg-[#e9edf1] px-1 py-1 text-center"
+                              scope="col"
                             >
-                              {ROSTER_GROUP_LABELS[group]} · {members.length}
-                            </span>
-                          </th>
-                        </tr>
-                        {members.map((row) => (
-                          <SheetPlayer
-                            key={row.id}
-                            row={row}
-                            season={season}
-                            showSpecialTeams={showSpecialTeams}
-                          />
-                        ))}
-                      </tbody>
-                    )
-                  })}
-                </table>
-              </div>
-            </section>
-          )
-        })}
+                              #
+                            </th>
+                            <th
+                              className="sticky left-7 z-10 bg-[#e9edf1] px-1 py-1"
+                              scope="col"
+                            >
+                              Player
+                            </th>
+                            <th className="px-1 py-1" scope="col">
+                              <abbr
+                                className="no-underline"
+                                title="Height in feet/inches / weight in pounds"
+                              >
+                                HT / WT
+                              </abbr>
+                            </th>
+                            <th className="px-1 py-1 text-center" scope="col">
+                              <abbr
+                                className="no-underline"
+                                title="Games played in the main phase when imported; otherwise overall games played"
+                              >
+                                GP
+                              </abbr>
+                            </th>
+                            <th className="px-1 py-1 text-center" scope="col">
+                              <abbr
+                                className="no-underline"
+                                title="Main-phase snaps: offense or defense by position; special teams for specialists"
+                              >
+                                Snaps
+                              </abbr>
+                            </th>
+                            {showSpecialTeams && (
+                              <th className="px-1 py-1 text-center" scope="col">
+                                <abbr
+                                  className="no-underline"
+                                  title="Special-teams snaps, separate from offense or defense"
+                                >
+                                  ST Snaps
+                                </abbr>
+                              </th>
+                            )}
+                            <th className="px-1 py-1 text-center" scope="col">
+                              Year
+                            </th>
+                            <th scope="col">
+                              <span className="px-1">Recruit</span>
+                            </th>
+                          </tr>
+                        </thead>
+                        {ROSTER_GROUPS.map((group) => {
+                          const members = players.filter(
+                            (row) => row.group === group,
+                          )
+                          if (members.length === 0) return null
+                          return (
+                            <tbody
+                              aria-label={`${position} ${ROSTER_GROUP_LABELS[group]}`}
+                              key={group}
+                            >
+                              <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
+                                <th
+                                  className="px-0 py-0.5 text-left"
+                                  colSpan={showSpecialTeams ? 8 : 7}
+                                  scope="rowgroup"
+                                >
+                                  <span
+                                    className="sticky left-0 inline-block px-2 text-[10px] font-bold uppercase tracking-wide"
+                                    title={ROSTER_GROUP_DESCRIPTIONS[group]}
+                                  >
+                                    {ROSTER_GROUP_LABELS[group]} ·{' '}
+                                    {members.length}
+                                  </span>
+                                </th>
+                              </tr>
+                              {members.map((row) => (
+                                <SheetPlayer
+                                  key={row.id}
+                                  row={row}
+                                  season={season}
+                                  showSpecialTeams={showSpecialTeams}
+                                />
+                              ))}
+                            </tbody>
+                          )
+                        })}
+                      </table>
+                    </div>
+                  </section>
+                )
+              })}
+          </div>
+        ))}
       </div>
     </div>
   )

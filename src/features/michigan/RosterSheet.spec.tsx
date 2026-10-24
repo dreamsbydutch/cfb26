@@ -109,6 +109,80 @@ const filters = {
 }
 
 describe('canonical football position tables', () => {
+  test('keeps six fixed column assignments with optional positions and missing groups', () => {
+    const positions = [
+      'QB',
+      'RB',
+      'FB',
+      'WR',
+      'TE',
+      'SLOT',
+      'RHINO',
+      'OT',
+      'OG',
+      'OC',
+      'DE',
+      'DL',
+      'LB',
+      'CB',
+      'S',
+      'NICKEL',
+      'K',
+      'P',
+      'LS',
+      'CUSTOM',
+    ]
+    const html = renderToStaticMarkup(
+      <RosterSheet
+        entries={positions.map((position) => {
+          const player = entry(position, 'reserve', 2026, null)
+          return {
+            ...player,
+            season: { ...player.season, listedPosition: position },
+          }
+        })}
+        filters={{ ...filters, role: 'prospect' }}
+        rosterPlayerIds={[]}
+        season={2026}
+      />,
+    )
+    const columns = html.split(/aria-label="[^"]+ roster column"/).slice(1)
+    expect(columns).toHaveLength(6)
+    expect(
+      columns.map((column) =>
+        [...column.matchAll(/aria-label="([^"]+) position group"/g)].map(
+          (match) => match[1],
+        ),
+      ),
+    ).toEqual([
+      ['QB', 'HB', 'FB'],
+      ['WR', 'TE', 'SLOT', 'RHINO', 'CUSTOM'],
+      ['OT', 'OG', 'OC'],
+      ['DE', 'DL', 'LB'],
+      ['CB', 'S', 'NICKEL'],
+      ['K', 'P', 'LS'],
+    ])
+    const sparse = renderToStaticMarkup(
+      <RosterSheet
+        entries={[
+          {
+            ...entries[0],
+            season: { ...entries[0].season, listedPosition: 'LS' },
+          },
+        ]}
+        filters={{ ...filters, role: 'bench' }}
+        rosterPlayerIds={[]}
+        season={2026}
+      />,
+    )
+    expect(
+      sparse.split(/aria-label="[^"]+ roster column"/).slice(1),
+    ).toHaveLength(6)
+    expect(sparse.split('aria-label="Specialists roster column"')[1]).toContain(
+      'LS position group',
+    )
+  })
+
   test('renders counted tier sections ahead of snap order and sorts snaps within each tier', () => {
     const html = renderToStaticMarkup(
       <RosterSheet
