@@ -53,6 +53,109 @@ async function setup() {
 }
 
 describe('owner roster spreadsheet', () => {
+  test('automatically resolves imported eligibility without writing inferred evidence', async () => {
+    const { t, row } = await setup()
+    if (!row.playerId || !row.playerSeasonId) throw new Error('Missing player')
+    const playerId = row.playerId
+    const playerSeasonId = row.playerSeasonId
+    await t.run(async (ctx) => {
+      const annual = await ctx.db.get('playerSeasons', playerSeasonId)
+      if (!annual) throw new Error('Missing season')
+      await ctx.db.patch('players', playerId, {
+        entryMethod: 'legacy',
+        entrySeason: 2026,
+      })
+      await ctx.db.patch('playerSeasons', playerSeasonId, {
+        listedClass: 'FR',
+        eligibilityEvidence: {
+          ...annual.eligibilityEvidence,
+          enrollmentSeason: null,
+        },
+      })
+    })
+    const dashboard = await t.query(api.rosters.getSeasonDashboard, {
+      season: 2026,
+    })
+    if (!dashboard) throw new Error('Missing dashboard')
+    expect(dashboard.entries[0].eligibility).toMatchObject({
+      startSeason: 2026,
+      startSource: 'listed_class_estimate',
+      eligibleThroughSeason: 2030,
+    })
+    expect(spreadsheetRows(dashboard)[0].values).toMatchObject({
+      eligibilityStart: '2026 (estimate)',
+      enrollmentSeason: '',
+      derivedEligibility: '2030',
+    })
+    const profile = await t.query(api.players.getProfile, { playerId })
+    expect(profile?.seasons[0].eligibility).toMatchObject({
+      startSeason: 2026,
+      eligibleThroughSeason: 2030,
+    })
+    expect(
+      dashboard.entries[0].season.eligibilityEvidence.enrollmentSeason,
+    ).toBeNull()
+    await t.run(async (ctx) => {
+      await ctx.db.patch('players', playerId, { entryMethod: 'transfer' })
+      await ctx.db.patch('playerSeasons', playerSeasonId, { listedClass: 'SR' })
+    })
+    const transfer = await t.query(api.rosters.getSeasonDashboard, {
+      season: 2026,
+    })
+    expect(transfer?.entries[0].eligibility).toMatchObject({
+      startSeason: 2023,
+      eligibleThroughSeason: 2027,
+    })
+    await t.run((ctx) =>
+      ctx.db.patch('playerSeasons', playerSeasonId, { listedClass: 'GR' }),
+    )
+    const unknown = await t.query(api.rosters.getSeasonDashboard, {
+      season: 2026,
+    })
+    expect(unknown?.entries[0].eligibility).toMatchObject({
+      startSeason: null,
+      startSource: 'unknown',
+      eligibleThroughSeason: null,
+    })
+    await t.run((ctx) =>
+      ctx.db.patch('players', playerId, {
+        entryMethod: 'walk_on',
+        entrySeason: 2024,
+      }),
+    )
+    const walkOn = await t.query(api.rosters.getSeasonDashboard, {
+      season: 2026,
+    })
+    expect(walkOn?.entries[0].eligibility).toMatchObject({
+      startSeason: 2024,
+      startSource: 'recruiting_entry',
+      eligibleThroughSeason: 2028,
+    })
+    await t.run(async (ctx) => {
+      const annual = await ctx.db.get('playerSeasons', playerSeasonId)
+      if (!annual) throw new Error('Missing season')
+      await ctx.db.patch('playerSeasons', playerSeasonId, {
+        listedClass: 'FR',
+        eligibleThroughSeasonOverride: 2028,
+        eligibilityEvidence: {
+          ...annual.eligibilityEvidence,
+          enrollmentSeason: 2022,
+          medicalHardshipSeasons: 1,
+        },
+      })
+    })
+    const overridden = await t.query(api.rosters.getSeasonDashboard, {
+      season: 2026,
+    })
+    expect(overridden?.entries[0].eligibility).toMatchObject({
+      startSeason: 2022,
+      startSource: 'saved',
+      derivedEligibleThroughSeason: 2027,
+      eligibleThroughSeason: 2028,
+      source: 'override',
+    })
+  })
+
   test('edits recruiting values, preserves history and the untouched value, and supports clearing', async () => {
     const { t, row, edit, args } = await setup()
     if (!row.playerId) throw new Error('Missing player')

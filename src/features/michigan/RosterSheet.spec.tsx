@@ -109,7 +109,48 @@ const filters = {
 }
 
 describe('canonical football position tables', () => {
-  test('keeps six fixed column assignments with optional positions and missing groups', () => {
+  test('contributors toggle hides Bench, Prospects, and Recruits and restores them when disabled', () => {
+    const render = (contributorsOnly: boolean) =>
+      renderToStaticMarkup(
+        <RosterSheet
+          entries={entries}
+          filters={{ ...filters, contributorsOnly }}
+          rosterPlayerIds={[]}
+          season={2026}
+        />,
+      )
+    const compact = render(true)
+    expect(
+      [...compact.matchAll(/<tbody[^>]*aria-label="([^"]+)"/g)].map(
+        (match) => match[1],
+      ),
+    ).toEqual(['QB Starters', 'QB Rotation'])
+    for (const name of [
+      'Bench leader',
+      'Young prospect',
+      'Incoming quarterback',
+    ])
+      expect(compact).not.toContain(name)
+    const full = render(false)
+    for (const name of [
+      'Bench leader',
+      'Young prospect',
+      'Incoming quarterback',
+    ])
+      expect(full).toContain(name)
+    const empty = renderToStaticMarkup(
+      <RosterSheet
+        entries={[]}
+        filters={{ ...filters, contributorsOnly: true }}
+        rosterPlayerIds={[]}
+        season={2026}
+      />,
+    )
+    expect(empty).toContain('No players match')
+    expect(empty).not.toContain('Incoming quarterback')
+  })
+
+  test('keeps six unit rows with three desktop columns with optional positions and missing groups', () => {
     const positions = [
       'QB',
       'RB',
@@ -146,11 +187,12 @@ describe('canonical football position tables', () => {
         season={2026}
       />,
     )
-    const columns = html.split(/aria-label="[^"]+ roster column"/).slice(1)
-    expect(columns).toHaveLength(6)
+    const rows = html.split(/aria-label="[^"]+ roster row"/).slice(1)
+    expect(rows).toHaveLength(6)
+    for (const row of rows) expect(row).toContain('lg:grid-cols-3')
     expect(
-      columns.map((column) =>
-        [...column.matchAll(/aria-label="([^"]+) position group"/g)].map(
+      rows.map((row) =>
+        [...row.matchAll(/aria-label="([^"]+) position group"/g)].map(
           (match) => match[1],
         ),
       ),
@@ -175,10 +217,10 @@ describe('canonical football position tables', () => {
         season={2026}
       />,
     )
-    expect(
-      sparse.split(/aria-label="[^"]+ roster column"/).slice(1),
-    ).toHaveLength(6)
-    expect(sparse.split('aria-label="Specialists roster column"')[1]).toContain(
+    expect(sparse.split(/aria-label="[^"]+ roster row"/).slice(1)).toHaveLength(
+      6,
+    )
+    expect(sparse.split('aria-label="Specialists roster row"')[1]).toContain(
       'LS position group',
     )
   })

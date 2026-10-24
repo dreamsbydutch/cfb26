@@ -46,7 +46,9 @@ export function sortAdminFootballRoster(data: SeasonDashboard | null) {
           position: a.season.listedPosition,
           name: a.player?.displayName ?? '',
           tier: rosterGroup({
-            enrollmentSeason: a.season.eligibilityEvidence.enrollmentSeason,
+            enrollmentSeason:
+              a.eligibility.startSeason ??
+              a.season.eligibilityEvidence.enrollmentSeason,
             role: a.season.role,
             season: data.season,
           }),
@@ -56,7 +58,9 @@ export function sortAdminFootballRoster(data: SeasonDashboard | null) {
           position: b.season.listedPosition,
           name: b.player?.displayName ?? '',
           tier: rosterGroup({
-            enrollmentSeason: b.season.eligibilityEvidence.enrollmentSeason,
+            enrollmentSeason:
+              b.eligibility.startSeason ??
+              b.season.eligibilityEvidence.enrollmentSeason,
             role: b.season.role,
             season: data.season,
           }),

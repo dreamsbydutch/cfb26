@@ -55,30 +55,36 @@ export function MichiganFootball() {
   const [availability, setAvailability] = useState('all')
   const [experience, setExperience] = useState('all')
   const [moreOpen, setMoreOpen] = useState(false)
+  const [contributorsOnly, setContributorsOnly] = useState(false)
   const [scholarship, setScholarship] = useState('all')
   const [entryMethod, setEntryMethod] = useState('all')
   const [eligibility, setEligibility] = useState('all')
   const [quality, setQuality] = useState('all')
-  const filterCount = [
-    room,
-    role,
-    availability,
-    experience,
-    scholarship,
-    entryMethod,
-    eligibility,
-    quality,
-  ].filter((value) => value !== 'all').length
+  const filterCount =
+    [
+      room,
+      role,
+      availability,
+      experience,
+      scholarship,
+      entryMethod,
+      eligibility,
+      quality,
+    ].filter((value) => value !== 'all').length + Number(contributorsOnly)
 
   const entries = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
     return activeEntries(dashboard.data?.entries ?? []).filter((entry) => {
       const years = collegeYear(
-        entry.season.eligibilityEvidence.enrollmentSeason,
+        entry.eligibility.startSeason ??
+          entry.season.eligibilityEvidence.enrollmentSeason,
         season,
       )
       const entryQuality = entry.season.dataQuality
       return (
+        (!contributorsOnly ||
+          entry.season.role === 'starter' ||
+          entry.season.role === 'rotation') &&
         (!normalizedSearch ||
           entry.player.displayName.toLowerCase().includes(normalizedSearch) ||
           entry.season.listedPosition
@@ -88,7 +94,9 @@ export function MichiganFootball() {
         (room === 'all' || entry.season.positionRoom === room) &&
         (role === 'all' ||
           rosterGroup({
-            enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
+            enrollmentSeason:
+              entry.eligibility.startSeason ??
+              entry.season.eligibilityEvidence.enrollmentSeason,
             role: entry.season.role,
             season,
           }) === role) &&
@@ -113,6 +121,7 @@ export function MichiganFootball() {
     })
   }, [
     availability,
+    contributorsOnly,
     dashboard.data?.entries,
     eligibility,
     entryMethod,
@@ -145,7 +154,7 @@ export function MichiganFootball() {
         ) : (
           <>
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <label className="relative min-w-0 flex-1">
+              <label className="relative min-w-0 flex-1 basis-full sm:basis-0">
                 <Search
                   aria-hidden="true"
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"
@@ -159,6 +168,18 @@ export function MichiganFootball() {
                   value={search}
                 />
               </label>
+              <button
+                aria-pressed={contributorsOnly}
+                className={`${controlClass} ${contributorsOnly ? 'ring-2 ring-[#00274c]' : ''}`}
+                onClick={() => {
+                  setContributorsOnly((value) => !value)
+                  if (!contributorsOnly) setRole('all')
+                }}
+                title="Show only Starters and Rotation; hide Bench, Prospects, and Recruits."
+                type="button"
+              >
+                Contributors only
+              </button>
               <button
                 aria-controls="roster-filters"
                 aria-expanded={moreOpen}
@@ -191,6 +212,7 @@ export function MichiganFootball() {
                     setEntryMethod('all')
                     setEligibility('all')
                     setQuality('all')
+                    setContributorsOnly(false)
                   }}
                   type="button"
                 >
@@ -213,7 +235,12 @@ export function MichiganFootball() {
                   </FilterSelect>
                   <FilterSelect label="Group" onChange={setRole} value={role}>
                     <option value="all">All groups</option>
-                    {ROSTER_GROUPS.map((item) => (
+                    {ROSTER_GROUPS.filter(
+                      (item) =>
+                        !contributorsOnly ||
+                        item === 'starter' ||
+                        item === 'rotation',
+                    ).map((item) => (
                       <option key={item} value={item}>
                         {ROSTER_GROUP_LABELS[item]}
                       </option>
@@ -311,6 +338,7 @@ export function MichiganFootball() {
               entries={entries}
               filters={{
                 availability,
+                contributorsOnly,
                 eligibility,
                 entryMethod,
                 experience,
@@ -437,6 +465,14 @@ export function MichiganPlayer({ playerId }: { playerId: Id<'players'> }) {
                     selectedSeason
                       ? `${selectedSeason.gamesPlayed} / ${selectedSeason.starts}`
                       : '—'
+                  }
+                />
+                <Definition
+                  label="Eligibility start"
+                  value={
+                    selectedSeason?.eligibility.startSeason == null
+                      ? '—'
+                      : `${selectedSeason.eligibility.startSeason}${selectedSeason.eligibility.startSource === 'listed_class_estimate' ? ' (estimate)' : ''}`
                   }
                 />
                 <Definition

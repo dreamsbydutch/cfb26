@@ -20,10 +20,10 @@ import {
 } from '~/features/michigan/rosterSheetModel'
 import { EmptyState } from '~/components/AppShell'
 
-const POSITION_COLUMNS = [
-  { label: 'Backfield', positions: ['QB', 'HB', 'FB'] },
+const POSITION_ROWS = [
+  { label: 'Offensive backfield', positions: ['QB', 'HB', 'FB'] },
   {
-    label: 'Receivers and tight ends',
+    label: 'Pass catchers',
     positions: ['WR', 'TE', 'SLOT', 'RHINO', 'ATH'],
   },
   {
@@ -31,14 +31,14 @@ const POSITION_COLUMNS = [
     positions: ['OT', 'LT', 'RT', 'OG', 'LG', 'RG', 'OC', 'C'],
   },
   {
-    label: 'Defensive front',
+    label: 'Front seven',
     positions: ['DE', 'EDGE', 'DL', 'DT', 'NT', 'LB', 'ILB', 'MLB', 'OLB'],
   },
   { label: 'Secondary', positions: ['CB', 'S', 'FS', 'SS', 'NICKEL', 'NB'] },
   { label: 'Specialists', positions: ['K', 'P', 'LS'] },
 ]
 
-const POSITION_ORDER = POSITION_COLUMNS.flatMap((column) => column.positions)
+const POSITION_ORDER = POSITION_ROWS.flatMap((unit) => unit.positions)
 
 function sheetPosition(value: string) {
   const position = value.trim().toUpperCase()
@@ -102,6 +102,7 @@ type SheetRow = {
 }
 
 type Filters = {
+  contributorsOnly?: boolean
   availability: string
   eligibility: string
   entryMethod: string
@@ -125,51 +126,64 @@ export function RosterSheet({
   season: number
 }) {
   const incoming = useMichiganRoster(season + 1)
-  const rows: Array<SheetRow> = entries.map((entry) => {
-    const participation = rosterParticipation(entry.season)
-    return {
-      band: rosterEligibilityBand({
-        eligibleThroughSeason: entry.eligibility.eligibleThroughSeason,
-        enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
-        season,
-      }),
-      games: participation.games,
-      height: entry.season.heightInches,
-      id: String(entry.season._id),
-      incomingSeason: null,
-      name: entry.player.displayName,
-      number: entry.season.jerseyNumber,
-      playerId: String(entry.player._id),
-      position: sheetPosition(entry.season.listedPosition),
-      group: rosterGroup({
-        enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
-        role: entry.season.role,
-        season,
-      }),
-      snaps: participation.snaps,
-      recruiting: entry.recruiting,
-      specialTeamsSnaps:
-        entry.season.participationTotals?.specialTeams?.snaps ?? null,
-      specialTeamsNote: entry.season.participationTotals?.specialTeams
-        ? `Special teams participation through ${entry.season.participationTotals.specialTeams.throughTeamGames} team games`
-        : null,
-      participationNote: participation.description,
-      status:
-        entry.season.depthStatus === 'available'
-          ? null
-          : entry.season.depthStatus.replaceAll('_', ' '),
-      weight: entry.season.weightPounds,
-      year: collegeYear(
-        entry.season.eligibilityEvidence.enrollmentSeason,
-        season,
-      ),
-      listedClass: entry.season.listedClass,
-    }
-  })
+  const rows: Array<SheetRow> = entries
+    .filter(
+      (entry) =>
+        !filters.contributorsOnly ||
+        entry.season.role === 'starter' ||
+        entry.season.role === 'rotation',
+    )
+    .map((entry) => {
+      const participation = rosterParticipation(entry.season)
+      return {
+        band: rosterEligibilityBand({
+          eligibleThroughSeason: entry.eligibility.eligibleThroughSeason,
+          enrollmentSeason:
+            entry.eligibility.startSeason ??
+            entry.season.eligibilityEvidence.enrollmentSeason,
+          season,
+        }),
+        games: participation.games,
+        height: entry.season.heightInches,
+        id: String(entry.season._id),
+        incomingSeason: null,
+        name: entry.player.displayName,
+        number: entry.season.jerseyNumber,
+        playerId: String(entry.player._id),
+        position: sheetPosition(entry.season.listedPosition),
+        group: rosterGroup({
+          enrollmentSeason:
+            entry.eligibility.startSeason ??
+            entry.season.eligibilityEvidence.enrollmentSeason,
+          role: entry.season.role,
+          season,
+        }),
+        snaps: participation.snaps,
+        recruiting: entry.recruiting,
+        specialTeamsSnaps:
+          entry.season.participationTotals?.specialTeams?.snaps ?? null,
+        specialTeamsNote: entry.season.participationTotals?.specialTeams
+          ? `Special teams participation through ${entry.season.participationTotals.specialTeams.throughTeamGames} team games`
+          : null,
+        participationNote: participation.description,
+        status:
+          entry.season.depthStatus === 'available'
+            ? null
+            : entry.season.depthStatus.replaceAll('_', ' '),
+        weight: entry.season.weightPounds,
+        year: collegeYear(
+          entry.eligibility.startSeason ??
+            entry.season.eligibilityEvidence.enrollmentSeason,
+          season,
+        ),
+        listedClass: entry.season.listedClass,
+      }
+    })
   const enrolled = new Set(rosterPlayerIds)
   const seenRecruits = new Set<string>()
   const search = filters.search.trim().toLowerCase()
   const showRecruits =
+    !filters.contributorsOnly &&
     [
       filters.availability,
       filters.eligibility,
@@ -311,19 +325,19 @@ export function RosterSheet({
           Clear one or more filters to see the roster.
         </EmptyState>
       )}
-      <div className="grid items-start gap-3 lg:grid-cols-6">
-        {POSITION_COLUMNS.map((column, columnIndex) => (
+      <div className="flex flex-col gap-3">
+        {POSITION_ROWS.map((unit, unitIndex) => (
           <div
-            key={column.label}
-            aria-label={`${column.label} roster column`}
-            className="flex min-w-0 flex-col gap-3"
+            key={unit.label}
+            aria-label={`${unit.label} roster row`}
+            className="grid min-w-0 items-start gap-3 lg:grid-cols-3"
           >
             {positions
               .filter(
                 (position) =>
-                  column.positions.includes(position) ||
-                  (columnIndex === 1 &&
-                    !POSITION_COLUMNS.some((candidate) =>
+                  unit.positions.includes(position) ||
+                  (unitIndex === 1 &&
+                    !POSITION_ROWS.some((candidate) =>
                       candidate.positions.includes(position),
                     )),
               )

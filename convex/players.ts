@@ -209,6 +209,7 @@ export const getProfile = query({
         eligibility: resolvePlayerSeasonEligibility(
           season,
           rules.get(season.season) ?? null,
+          player,
         ),
         positionRoom: derivePositionRoom(season.listedPosition),
       })),

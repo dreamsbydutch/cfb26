@@ -29,6 +29,7 @@ const identityFields: Array<Field> = [
   'entrySeason',
   'personState',
   'derivedEligibility',
+  'eligibilityStart',
 ]
 const offenseFields: Array<Field> = [
   'offenseGames',

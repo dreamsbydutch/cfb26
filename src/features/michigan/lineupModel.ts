@@ -105,13 +105,16 @@ export function buildLineup(
         availability: entry.season.depthStatus,
         availabilityNote: entry.season.availabilityNote ?? null,
         year: collegeYear(
-          entry.season.eligibilityEvidence.enrollmentSeason,
+          entry.eligibility.startSeason ??
+            entry.season.eligibilityEvidence.enrollmentSeason,
           season,
         ),
         listedClass: entry.season.listedClass,
         band: rosterEligibilityBand({
           eligibleThroughSeason: entry.eligibility.eligibleThroughSeason,
-          enrollmentSeason: entry.season.eligibilityEvidence.enrollmentSeason,
+          enrollmentSeason:
+            entry.eligibility.startSeason ??
+            entry.season.eligibilityEvidence.enrollmentSeason,
           season,
         }),
         roomOrder: entry.season.roomOrder,

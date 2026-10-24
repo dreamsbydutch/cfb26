@@ -27,6 +27,7 @@ export const rosterSpreadsheetValues = v.object({
   starts: v.string(),
   eligibleThrough: v.string(),
   derivedEligibility: v.string(),
+  eligibilityStart: v.optional(v.string()),
   enrollmentSeason: v.string(),
   legacyRedshirtSeason: v.string(),
   competitionSeasons: v.string(),

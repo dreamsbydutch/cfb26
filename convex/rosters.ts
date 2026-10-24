@@ -110,7 +110,11 @@ export const getSeasonDashboard = query({
     )
     const entries = seasons
       .map((storedSeason) => ({
-        eligibility: resolvePlayerSeasonEligibility(storedSeason, rule),
+        eligibility: resolvePlayerSeasonEligibility(
+          storedSeason,
+          rule,
+          players.get(storedSeason.playerId),
+        ),
         player: players.get(storedSeason.playerId) ?? null,
         recruiting: recruiting.get(storedSeason.playerId) ?? null,
         season: {

@@ -1,7 +1,4 @@
-import {
-  rosterGroup,
-  rosterParticipation,
-} from '../michigan/rosterSheetModel'
+import { rosterGroup, rosterParticipation } from '../michigan/rosterSheetModel'
 import { compareAdminRosterPlayers } from './adminRosterOrder'
 import type { Infer } from 'convex/values'
 import type { FunctionReturnType } from 'convex/server'
@@ -249,6 +246,14 @@ export const sheetColumns: Array<SheetColumn> = [
     ] as Array<SheetColumn>
   }),
   {
+    field: 'eligibilityStart',
+    label: 'Recruiting year',
+    group: 'Eligibility',
+    history: true,
+    width: 145,
+    help: 'Automatic eligibility start. Class-based estimates are labelled; use the recruiting year override to correct them.',
+  },
+  {
     field: 'derivedEligibility',
     label: 'Eligible through',
     group: 'Eligibility',
@@ -264,7 +269,8 @@ export const sheetColumns: Array<SheetColumn> = [
   },
   {
     field: 'enrollmentSeason',
-    label: 'First college year',
+    label: 'Recruiting year override',
+    help: 'Leave blank for the automatic recruiting-year default. Transfers retain their original college recruiting year.',
     group: 'Eligibility',
     type: 'number',
     width: 145,
@@ -412,11 +418,13 @@ const cell = (value: string | number | null | undefined) =>
 export function spreadsheetRows(data: SheetData): Array<SheetRow> {
   const rows: Array<SheetRow> = []
   const participationOrder = new Map(
-    data.entries.map(({ season: annual }) => [
+    data.entries.map(({ season: annual, eligibility }) => [
       annual._id,
       {
         tier: rosterGroup({
-          enrollmentSeason: annual.eligibilityEvidence.enrollmentSeason,
+          enrollmentSeason:
+            eligibility.startSeason ??
+            annual.eligibilityEvidence.enrollmentSeason,
           role: annual.role,
           season: data.season,
         }),
@@ -474,6 +482,7 @@ export function spreadsheetRows(data: SheetData): Array<SheetRow> {
     values.honors = annual.honors.join(', ')
     values.eligibleThrough = cell(annual.eligibleThroughSeasonOverride)
     values.derivedEligibility = cell(entry.eligibility.eligibleThroughSeason)
+    values.eligibilityStart = `${cell(entry.eligibility.startSeason)}${entry.eligibility.startSource === 'listed_class_estimate' ? ' (estimate)' : ''}`
     values.dataQuality = annual.dataQuality
     values.seasonSourceUrls = annual.sourceLinks
       .map((source) => source.url)
@@ -548,7 +557,8 @@ export function editableColumn(row: SheetRow, column: SheetColumn) {
   if (
     column.field === 'personState' ||
     column.field === 'entrySeason' ||
-    column.field === 'derivedEligibility'
+    column.field === 'derivedEligibility' ||
+    column.field === 'eligibilityStart'
   )
     return false
   if (column.history && !isNew) return false
