@@ -75,7 +75,7 @@ Direct CFBD requests supply national programs, games, features, recruiting/talen
 
 ## Operational commands
 
-**Current source:** Michigan hockey's public roster page also provides a season-specific Schedule & results view, opponent filtering, and source links. `hockeySchedules.list/importSeason` owns isolated game history with owner authorization, per-season revisions, and idempotent official-ID updates. See [hockey schedules](michigan-hockey-schedules.md) for the game-state and import contract.
+**Current source:** Michigan hockey's public roster page also provides a season-specific Schedule & results view, opponent filtering, and source links. `hockeySchedules.list/importSeason` owns isolated game history with owner authorization, per-season revisions, and idempotent official-ID updates. Internal `hockeyResults` automation adds Eastern-time-gated score refreshes, validated hockey player-game imports, pending retries, and correction receipts. Development validated the backend contract on 2026-10-24. See [hockey schedules](michigan-hockey-schedules.md) for the game-state, overnight processing, and review contract.
 
 Michigan basketball has the same public schedule/history view through `basketballSchedules.list/importSeason`, with separate tables and basketball-specific score/tie validation. See [basketball schedules](michigan-basketball-schedules.md). Both sports share presentation and operator import logic while preserving independent data and revisions.
 

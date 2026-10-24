@@ -3,6 +3,13 @@ import { internal } from './_generated/api'
 
 const crons = cronJobs()
 
+crons.hourly(
+  'process official Michigan hockey results after 3 AM Eastern',
+  { minuteUTC: 5 },
+  internal.hockeyResults.refresh,
+  {},
+)
+
 crons.interval(
   'refresh live FBS scoreboard during game windows',
   { minutes: 5 },

@@ -8,7 +8,7 @@ Convex is the database, function runtime, real-time transport, and generated cli
 
 ## Current source model
 
-`convex/schema.ts` declares 54 tables and 118 indexes. The principal ownership seams are:
+`convex/schema.ts` declares 57 tables and 122 indexes. The principal ownership seams are:
 
 | Boundary            | Retained state                                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -66,6 +66,8 @@ The 41-table model was synchronized to both environments on 2026-09-07; see the 
 **Current source:** `teamRosters.ts` owns independent men's basketball/hockey season records, owner-authenticated transactional saves, and sport/season revisions/audit receipts. These tables do not enter football queries or its JSON export/restore contract. See [team roster persistence](../reference/michigan-team-rosters.md#persistence-and-isolation).
 
 `hockeySchedules.ts` independently owns Michigan hockey games and append-only import receipts. Reads and writes are indexed and bounded per season; owner imports validate scores/states/dates, preserve official game IDs, and reject stale revisions or silent deletions. These two tables also require a full deployment export for backup. See [hockey schedules](../reference/michigan-hockey-schedules.md).
+
+`hockeyResults.ts` adds an hourly Eastern-time-gated internal result importer with per-game leases, pending retries, and immutable correction receipts. Hockey-specific player-game rows link saved hockey schedules and season roster entries; exact roster matching and scoring/goalie reconciliation gate atomic stat replacement. It preserves annual roster totals and football data. Automated score imports advance the existing hockey schedule revision. See [overnight hockey results](../reference/michigan-hockey-schedules.md#overnight-results-automation) for source, retry, and review limits. Development `adjoining-opossum-710` validated this contract on 2026-10-24 after a full deployment export.
 
 `basketballSchedules.ts` provides the same independent game/import boundary for men's basketball. `teamScheduleFields.ts` shares validation with sport-specific score limits and tie rules; the shared operator importer verifies the other sport's schedules remain unchanged. See [basketball schedules](../reference/michigan-basketball-schedules.md).
 

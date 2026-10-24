@@ -10,6 +10,7 @@ import { hockeyGame } from './hockeyScheduleFields'
 import { basketballGame } from './basketballScheduleFields'
 import { npiTeam } from './hockeyNpiFields'
 import { hockeyDraft, hockeyDraftProjection } from './hockeyDraftFields'
+import { hockeyPlayerResult, hockeyResultSource } from './hockeyResultFields'
 
 const stintStatus = v.union(
   v.literal('active'),
@@ -1061,8 +1062,41 @@ export default defineSchema({
     sourceUrl: v.string(),
     gameCount: v.number(),
     importedAt: v.number(),
-    sessionId: v.id('ownerSessions'),
+    sessionId: v.optional(v.id('ownerSessions')),
+    automated: v.optional(v.boolean()),
   }).index('by_season', ['season']),
+
+  hockeyPlayerGames: defineTable({
+    gameId: v.id('hockeyScheduleGames'),
+    playerId: v.id('teamRosterEntries'),
+    ...hockeyPlayerResult.fields,
+    receiptId: v.id('hockeyResultReceipts'),
+  })
+    .index('by_gameId', ['gameId'])
+    .index('by_playerId_and_gameId', ['playerId', 'gameId']),
+
+  hockeyResultState: defineTable({
+    gameId: v.id('hockeyScheduleGames'),
+    leaseToken: v.number(),
+    leaseUntil: v.number(),
+    nextAttemptAt: v.number(),
+    checkedDate: v.string(),
+    status: v.union(v.literal('pending'), v.literal('complete')),
+    latestReceiptId: v.optional(v.id('hockeyResultReceipts')),
+  }).index('by_gameId', ['gameId']),
+
+  hockeyResultReceipts: defineTable({
+    gameId: v.id('hockeyScheduleGames'),
+    importedAt: v.number(),
+    sources: v.array(hockeyResultSource),
+    status: v.union(v.literal('pending'), v.literal('complete')),
+    issues: v.array(v.string()),
+    before: hockeyGame,
+    after: hockeyGame,
+    players: v.array(hockeyPlayerResult),
+    previousReceiptId: v.optional(v.id('hockeyResultReceipts')),
+    correction: v.boolean(),
+  }).index('by_gameId', ['gameId']),
 
   hockeyDraftProjections: defineTable({
     ...hockeyDraftProjection.fields,
