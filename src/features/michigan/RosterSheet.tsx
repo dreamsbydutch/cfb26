@@ -356,7 +356,8 @@ export function RosterSheet({
               >
                 <table className="w-full min-w-[360px] table-fixed border-collapse text-left text-xs tabular-nums">
                   <caption className="sr-only">
-                    {season} {position} roster. Row colors follow the
+                    {season} {position} roster, grouped by tier with snaps
+                    descending within each tier. Row colors follow the
                     eligibility legend. Year uses the listed class when
                     available, otherwise college year from first enrollment.
                     Incoming players are the {season + 1} recruiting class.
@@ -427,16 +428,39 @@ export function RosterSheet({
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {players.map((row) => (
-                      <SheetPlayer
-                        key={row.id}
-                        row={row}
-                        season={season}
-                        showSpecialTeams={showSpecialTeams}
-                      />
-                    ))}
-                  </tbody>
+                  {ROSTER_GROUPS.map((group) => {
+                    const members = players.filter((row) => row.group === group)
+                    if (members.length === 0) return null
+                    return (
+                      <tbody
+                        aria-label={`${position} ${ROSTER_GROUP_LABELS[group]}`}
+                        key={group}
+                      >
+                        <tr className="border-t-2 border-[#00274c] bg-[#e9edf1] text-[#00274c]">
+                          <th
+                            className="px-0 py-0.5 text-left"
+                            colSpan={showSpecialTeams ? 8 : 7}
+                            scope="rowgroup"
+                          >
+                            <span
+                              className="sticky left-0 inline-block px-2 text-[10px] font-bold uppercase tracking-wide"
+                              title={ROSTER_GROUP_DESCRIPTIONS[group]}
+                            >
+                              {ROSTER_GROUP_LABELS[group]} · {members.length}
+                            </span>
+                          </th>
+                        </tr>
+                        {members.map((row) => (
+                          <SheetPlayer
+                            key={row.id}
+                            row={row}
+                            season={season}
+                            showSpecialTeams={showSpecialTeams}
+                          />
+                        ))}
+                      </tbody>
+                    )
+                  })}
                 </table>
               </div>
             </section>

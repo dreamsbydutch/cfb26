@@ -8,6 +8,8 @@ The repository has strict TypeScript, TanStack/Convex ESLint rules, Prettier, pr
 
 Season participation adds focused `convex-test` integration coverage under Vitest's edge runtime: owner-session rejection, atomic import failure, revision/backup checks, replay behavior, other-phase preservation, annual edits, and rollover. `npm test` runs both the existing Node suite and the Convex specs; `npm run test:participation` runs just the screenshot validation and import integration checks. `vitest.config.ts` owns this test environment, and Convex specs use the `.spec.ts` suffix so Node's test discovery does not execute them.
 
+Frontend `.spec.tsx` files also run in Vitest. The football roster rendering regression checks the actual position table's ordered tier sections, counts, snap order within tiers, and omission of empty tiers. Its dashboard hook is mocked so this check requires no deployment or database writes.
+
 Do not describe typecheck/build output as “tests.” Name the check that actually ran.
 
 ## Commands and evidence
