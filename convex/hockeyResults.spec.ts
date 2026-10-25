@@ -208,6 +208,30 @@ describe('overnight hockey results', () => {
     expect(easternRunAt(Date.parse('2026-03-08T07:05:00Z')).hour).toBe(3)
   })
 
+  test('allows an operator retry during the day while retaining leases and future-game protection', async () => {
+    const { t, gameId, args } = await setup()
+    await t.mutation(internal.hockeyResults.finish, args)
+    vi.setSystemTime(new Date('2026-10-24T16:00:00Z'))
+    expect(
+      await t.mutation(internal.hockeyResults.claim, { gameId }),
+    ).toBeNull()
+    const lease = await t.mutation(internal.hockeyResults.claim, {
+      gameId,
+      manual: true,
+    })
+    expect(lease).not.toBeNull()
+    expect(
+      await t.mutation(internal.hockeyResults.claim, { gameId, manual: true }),
+    ).toBeNull()
+    vi.setSystemTime(new Date('2026-10-24T16:11:00Z'))
+    await t.run((ctx) =>
+      ctx.db.patch('hockeyScheduleGames', gameId, { date: '2026-10-25' }),
+    )
+    expect(
+      await t.mutation(internal.hockeyResults.claim, { gameId, manual: true }),
+    ).toBeNull()
+  })
+
   test('selects the exact season game and treats official W/L/T as final despite stale SCHEDULED metadata', () => {
     const html = page('schedule', {
       schedules: {

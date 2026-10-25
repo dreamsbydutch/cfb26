@@ -136,17 +136,24 @@ export const candidates = internalQuery({
 })
 
 export const claim = internalMutation({
-  args: { gameId: v.id('hockeyScheduleGames') },
+  args: {
+    gameId: v.id('hockeyScheduleGames'),
+    manual: v.optional(v.boolean()),
+  },
   returns: v.union(
     v.null(),
     v.object({ token: v.number(), game: schema.doc('hockeyScheduleGames') }),
   ),
-  handler: async (ctx, { gameId }) => {
+  handler: async (ctx, { gameId, manual }) => {
     const game = await ctx.db.get('hockeyScheduleGames', gameId)
     if (!game) return null
     const now = Date.now(),
       run = easternRunAt(now)
-    if (run.hour < 3 || run.hour > 6 || game.date > run.yesterday) return null
+    if (
+      (!manual && (run.hour < 3 || run.hour > 6)) ||
+      game.date > run.yesterday
+    )
+      return null
     const state = await ctx.db
       .query('hockeyResultState')
       .withIndex('by_gameId', (q) => q.eq('gameId', gameId))
@@ -154,8 +161,9 @@ export const claim = internalMutation({
     if (
       state &&
       (state.leaseUntil > now ||
-        state.nextAttemptAt > now ||
-        (state.status === 'complete' && state.checkedDate === run.today))
+        (!manual &&
+          (state.nextAttemptAt > now ||
+            (state.status === 'complete' && state.checkedDate === run.today))))
     )
       return null
     const token = (state?.leaseToken ?? 0) + 1
@@ -421,11 +429,15 @@ export const refresh = internalAction({
 })
 
 export const processGame = internalAction({
-  args: { gameId: v.id('hockeyScheduleGames') },
+  args: {
+    gameId: v.id('hockeyScheduleGames'),
+    manual: v.optional(v.boolean()),
+  },
   returns: v.null(),
-  handler: async (ctx, { gameId }) => {
+  handler: async (ctx, { gameId, manual }) => {
     const lease = await ctx.runMutation(internal.hockeyResults.claim, {
       gameId,
+      ...(manual ? { manual: true } : {}),
     })
     if (!lease) return null
     const sources: Array<Infer<typeof hockeyResultSource>> = [],
