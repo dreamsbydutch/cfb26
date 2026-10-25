@@ -32,6 +32,13 @@ function integer(value: unknown, signed = false): number {
   return result
 }
 
+function goalieWin(value: unknown): number {
+  const raw = text(value)
+  if (raw === '0') return 0
+  if (raw === '1' || /^\d+-\d+-\d+$/.test(raw)) return 1
+  throw new Error('Unsupported official goalie decision.')
+}
+
 // Nuxt/devalue serializes objects as references into an indexed value array.
 // Decode only the source subtree requested by the caller, never global widgets.
 export function officialState(
@@ -221,17 +228,17 @@ export function parseHockeyBox(
     throw new Error(
       'Box score teams or final scores disagree with the schedule.',
     )
-  const rows = array(team.players)
-    .map(object)
-    .filter(
-      (p) =>
-        !(
-          p.name === 'TEAM' &&
-          p.uniform === 'TM' &&
-          p.rosterPlayerId === null &&
-          p.playerFirstLastName === null
-        ),
-    )
+  const sourcePlayers = array(team.players).map(object)
+  const isTeam = (p: ObjectValue) =>
+    p.name === 'TEAM' &&
+    p.uniform === 'TM' &&
+    p.rosterPlayerId === null &&
+    p.playerFirstLastName === null
+  const teamGoalies = sourcePlayers
+    .filter(isTeam)
+    .flatMap((p) => (p.goalieStats ? [object(p.goalieStats)] : []))
+  const rows = sourcePlayers
+    .filter((p) => !isTeam(p))
     .map((p) => {
       const shots = object(p.shotStats),
         misc = object(p.miscStats)
@@ -257,6 +264,9 @@ export function parseHockeyBox(
               seconds: integer(g.seconds),
               saves: integer(g.saves),
               goalsAgainst: integer(g.goalsAllowed),
+              // Sidearm uses the cumulative W-L-T record to mark this game's winner.
+              wins: goalieWin(g.win),
+              shutouts: integer(g.shutouts),
             }
           : null,
       }
@@ -278,7 +288,8 @@ export function parseHockeyBox(
     ['goalsAgainst', 'goalsAllowed'],
   ] as const)
     if (
-      rows.reduce((n, row) => n + (row.goalie?.[key] ?? 0), 0) !==
+      rows.reduce((n, row) => n + (row.goalie?.[key] ?? 0), 0) +
+        teamGoalies.reduce((n, row) => n + integer(row[source]), 0) !==
       integer(goalieTotals[source])
     )
       throw new Error(`Goalie ${key} do not match official totals.`)
@@ -320,6 +331,11 @@ export function validateHockeyPlayerResults(
     integer(row.plusMinus, true)
     if (row.goalie)
       for (const value of Object.values(row.goalie)) integer(value)
+    if (
+      row.goalie &&
+      ((row.goalie.wins ?? 0) > 1 || (row.goalie.shutouts ?? 0) > 1)
+    )
+      throw new Error('Invalid single-game goalie decision.')
     if (
       (row.started && !row.played) ||
       row.goals > row.shots ||

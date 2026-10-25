@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { internal } from './_generated/api'
+import { api, internal } from './_generated/api'
 import schema from './schema'
 import {
   easternRunAt,
@@ -57,7 +57,10 @@ const players: Array<Infer<typeof hockeyPlayerResult>> = Array.from(
     penaltyMinutes: 0,
     plusMinus: 0,
     blockedShots: 0,
-    goalie: i === 5 ? { seconds: 3600, saves: 20, goalsAgainst: 2 } : null,
+    goalie:
+      i === 5
+        ? { seconds: 3600, saves: 20, goalsAgainst: 2, wins: 1, shutouts: 0 }
+        : null,
   }),
 )
 const sources = [
@@ -141,6 +144,8 @@ describe('overnight hockey results', () => {
               seconds: p.goalie.seconds,
               saves: String(p.goalie.saves),
               goalsAllowed: String(p.goalie.goalsAgainst),
+              win: p.goalie.wins ? '7-0-0' : '0',
+              shutouts: String(p.goalie.shutouts ?? 0),
             }
           : null,
       })),
@@ -162,6 +167,7 @@ describe('overnight hockey results', () => {
             uniform: 'TM',
             rosterPlayerId: null,
             playerFirstLastName: null,
+            goalieStats: { seconds: 0, saves: '0', goalsAllowed: '0' },
           },
         ],
       },
@@ -169,6 +175,14 @@ describe('overnight hockey results', () => {
     }
     const html = () => page('boxscore', { boxscore: { officialGame: box } })
     expect(parseHockeyBox(html(), final)).toEqual(players)
+    // Official team goalie totals include empty-net time; player minutes do not.
+    team.players[5].goalieStats!.seconds = 3594
+    box.homeTeam.players[6].goalieStats!.seconds = 6
+    expect(parseHockeyBox(html(), final)[5].goalie?.seconds).toBe(3594)
+    box.homeTeam.players[6].goalieStats!.seconds = 5
+    expect(() => parseHockeyBox(html(), final)).toThrow('Goalie seconds')
+    team.players[5].goalieStats!.seconds = 3600
+    box.homeTeam.players[6].goalieStats!.seconds = 0
     team.totals.goalieStats.saves = '21'
     expect(() => parseHockeyBox(html(), final)).toThrow('do not match')
     team.totals.goalieStats.saves = '20'
@@ -263,6 +277,111 @@ describe('overnight hockey results', () => {
     expect(
       await t.query(internal.hockeyResults.candidates, { now: Date.now() }),
     ).toEqual([])
+  })
+
+  test('public season totals reflect imported games without rewriting annual owner values', async () => {
+    const { t, args } = await setup()
+    await t.mutation(internal.hockeyResults.finish, args)
+    const publicRoster = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+      liveStats: true,
+    })
+    expect(publicRoster.entries[0].values).toMatchObject({
+      games: 1,
+      goals: 3,
+      assists: 0,
+      shots: 3,
+    })
+    const saved = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+    })
+    expect(saved.entries[0].values.games).toBeUndefined()
+    expect(publicRoster.entries[5].values).toMatchObject({
+      games: 1,
+      goalieMinutes: 60,
+      saves: 20,
+      goalsAgainst: 2,
+      wins: 1,
+      shutouts: 0,
+    })
+    // A correction replaces its game rather than being added to annual totals.
+    vi.setSystemTime(new Date('2026-10-25T07:05:00Z'))
+    const lease = await t.mutation(internal.hockeyResults.claim, {
+      gameId: args.gameId,
+    })
+    await t.mutation(internal.hockeyResults.finish, {
+      ...args,
+      token: lease!.token,
+      expectedGame: final,
+      game: { ...final, michiganScore: 4 },
+      players: players.map((p, i) =>
+        i === 0 ? { ...p, goals: 4, shots: 4 } : p,
+      ),
+    })
+    const corrected = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+      liveStats: true,
+    })
+    expect(corrected.entries[0].values).toMatchObject({
+      games: 1,
+      goals: 4,
+      shots: 4,
+    })
+    await t.run((ctx) =>
+      ctx.db.insert('hockeyScheduleGames', {
+        ...final,
+        season: 2026,
+        date: '2026-10-24',
+        sourceGameId: 'later',
+      }),
+    )
+    const delayed = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+      liveStats: true,
+    })
+    expect(delayed.entries[0].values).toMatchObject({ games: 1, goals: 4 })
+  })
+
+  test('keeps annual totals until every regular-season final is covered and bootstraps older games', async () => {
+    const { t, args } = await setup()
+    await t.mutation(internal.hockeyResults.finish, args)
+    const older = await t.run((ctx) =>
+      ctx.db.insert('hockeyScheduleGames', {
+        ...final,
+        season: 2026,
+        sourceGameId: '1',
+        date: '2026-10-02',
+      }),
+    )
+    const roster = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+      liveStats: true,
+    })
+    expect(roster.entries[0].values.games).toBeUndefined()
+    expect(
+      await t.query(internal.hockeyResults.candidates, { now: Date.now() }),
+    ).toEqual([older])
+    // Exhibitions do not block or contribute to season player totals.
+    await t.run((ctx) =>
+      ctx.db.patch('hockeyScheduleGames', older, { exhibition: true }),
+    )
+    const complete = await t.query(api.teamRosters.list, {
+      sport: 'hockey',
+      season: 2026,
+      liveStats: true,
+    })
+    expect(complete.entries[0].values.games).toBe(1)
+    const basketball = await t.query(api.teamRosters.list, {
+      sport: 'basketball',
+      season: 2026,
+      liveStats: true,
+    })
+    expect(basketball.entries).toEqual([])
   })
 
   test('keeps ambiguous player imports pending while applying a validated score and retries delayed pages', async () => {

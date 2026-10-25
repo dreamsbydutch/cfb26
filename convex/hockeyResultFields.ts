@@ -18,6 +18,8 @@ export const hockeyPlayerResult = v.object({
       seconds: v.number(),
       saves: v.number(),
       goalsAgainst: v.number(),
+      wins: v.optional(v.number()),
+      shutouts: v.optional(v.number()),
     }),
   ),
 })

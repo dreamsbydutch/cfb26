@@ -35,6 +35,7 @@ import type * as hockeyResultModel from "../hockeyResultModel.js";
 import type * as hockeyResults from "../hockeyResults.js";
 import type * as hockeyScheduleFields from "../hockeyScheduleFields.js";
 import type * as hockeySchedules from "../hockeySchedules.js";
+import type * as hockeySeasonStats from "../hockeySeasonStats.js";
 import type * as migrationV2 from "../migrationV2.js";
 import type * as migrations from "../migrations.js";
 import type * as nflverse from "../nflverse.js";
@@ -117,6 +118,7 @@ declare const fullApi: ApiFromModules<{
   hockeyResults: typeof hockeyResults;
   hockeyScheduleFields: typeof hockeyScheduleFields;
   hockeySchedules: typeof hockeySchedules;
+  hockeySeasonStats: typeof hockeySeasonStats;
   migrationV2: typeof migrationV2;
   migrations: typeof migrations;
   nflverse: typeof nflverse;

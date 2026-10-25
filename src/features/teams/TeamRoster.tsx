@@ -44,7 +44,9 @@ export function TeamRoster({ sport }: { sport: TeamSport }) {
     setView(value)
     updateUrl('view', value)
   }
-  const roster = useQuery(convexQuery(api.teamRosters.list, { sport, season }))
+  const roster = useQuery(
+    convexQuery(api.teamRosters.list, { sport, season, liveStats: true }),
+  )
   const hockeyDrafts = useQuery(
     convexQuery(
       api.hockeyDrafts.forSeason,

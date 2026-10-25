@@ -3,6 +3,7 @@ import { mutation, query } from './_generated/server'
 import schema from './schema'
 import { requireOwnerSession } from './rosterAdmin'
 import { teamSport, teamValues, validateTeamValues } from './teamRosterFields'
+import { hockeySeasonStats } from './hockeySeasonStats'
 
 function validateSeason(season: number) {
   if (!Number.isInteger(season) || season < 1900 || season > 2200)
@@ -10,12 +11,16 @@ function validateSeason(season: number) {
 }
 
 export const list = query({
-  args: { sport: teamSport, season: v.number() },
+  args: {
+    sport: teamSport,
+    season: v.number(),
+    liveStats: v.optional(v.boolean()),
+  },
   returns: v.object({
     revision: v.number(),
     entries: v.array(schema.doc('teamRosterEntries')),
   }),
-  handler: async (ctx, { sport, season }) => {
+  handler: async (ctx, { sport, season, liveStats }) => {
     validateSeason(season)
     const state = await ctx.db
       .query('teamRosterRevisions')
@@ -29,7 +34,13 @@ export const list = query({
         q.eq('sport', sport).eq('season', season),
       )
       .take(101)
-    return { revision: state?.revision ?? 0, entries }
+    return {
+      revision: state?.revision ?? 0,
+      entries:
+        sport === 'hockey' && liveStats
+          ? await hockeySeasonStats(ctx, season, entries)
+          : entries,
+    }
   },
 })
 

@@ -62,7 +62,13 @@ function playerFingerprint(players: Array<Infer<typeof hockeyPlayerResult>>) {
         p.plusMinus,
         p.blockedShots,
         p.goalie
-          ? [p.goalie.seconds, p.goalie.saves, p.goalie.goalsAgainst]
+          ? [
+              p.goalie.seconds,
+              p.goalie.saves,
+              p.goalie.goalsAgainst,
+              p.goalie.wins ?? null,
+              p.goalie.shutouts ?? null,
+            ]
           : null,
       ]),
   )
@@ -88,7 +94,6 @@ export const candidates = internalQuery({
         .take(81)
       for (const game of games) {
         if (
-          game.date < earliest ||
           game.date > run.yesterday ||
           ['cancelled', 'no_contest'].includes(game.status)
         )
@@ -97,11 +102,31 @@ export const candidates = internalQuery({
           .query('hockeyResultState')
           .withIndex('by_gameId', (q) => q.eq('gameId', game._id))
           .unique()
+        // Bootstrap complete current-season coverage, including games outside
+        // the normal correction window. Upgrade receipts lacking goalie decisions.
+        const receipt = state?.latestReceiptId
+          ? await ctx.db.get('hockeyResultReceipts', state.latestReceiptId)
+          : null
+        const needsCoverage =
+          season === run.season &&
+          game.status === 'final' &&
+          !game.exhibition &&
+          (!receipt ||
+            receipt.status !== 'complete' ||
+            receipt.players.some(
+              (p) =>
+                p.goalie &&
+                (p.goalie.wins === undefined ||
+                  p.goalie.shutouts === undefined),
+            ))
+        if (game.date < earliest && !needsCoverage) continue
         if (
           !state ||
           (state.leaseUntil <= now &&
             state.nextAttemptAt <= now &&
-            (state.status !== 'complete' || state.checkedDate !== run.today))
+            (needsCoverage ||
+              state.status !== 'complete' ||
+              state.checkedDate !== run.today))
         )
           result.push(game._id)
       }
