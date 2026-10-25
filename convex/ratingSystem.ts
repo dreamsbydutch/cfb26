@@ -19,9 +19,10 @@ export const POWER_FIT_POLICY = {
   efficiencyWeight: 0.2,
   marginTreatment: 'censored',
 } as const
-export const RESUME_MODEL_VERSION = 'cfb26-resume-v5'
+export const RESUME_MODEL_VERSION = 'cfb26-resume-v6'
 export const RESUME_REFERENCE_POWER = 14
 export const RESUME_DOMINANCE_WEIGHT = 0.3
+export const RESUME_OPPONENT_STRENGTH_WEIGHT = 1.15
 
 export type RatingClassification = 'fbs' | 'fcs' | 'transitioning'
 
@@ -912,6 +913,19 @@ function marginProbability(
     : clamp(1 / (1 + Math.exp(-margin / 6.5)), 0.03, 0.97)
 }
 
+/** Apply the same opponent-quality policy to wins, losses and record difficulty. */
+export function resumeReferenceWinProbability(
+  opponentStrength: number,
+  venueMargin: number,
+) {
+  return marginProbability(
+    RESUME_REFERENCE_POWER -
+      RESUME_OPPONENT_STRENGTH_WEIGHT * opponentStrength +
+      venueMargin,
+    undefined,
+  )
+}
+
 export function buildResumeRatingEdition(input: {
   games: ReadonlyArray<PowerRatingGame>
   powerEdition: PowerRatingEdition
@@ -1030,9 +1044,10 @@ export function buildResumeRatingEdition(input: {
         opponentEvidence.get(perspective.teamId)?.get(perspective.opponentId) ??
         powerByTeam.get(perspective.opponentId)
       if (!accumulator || !opponent) continue
-      const expectedMargin =
-        referencePower - opponent.power + perspective.venueMargin
-      const expectedProbability = marginProbability(expectedMargin, undefined)
+      const expectedProbability = resumeReferenceWinProbability(
+        opponent.power,
+        perspective.venueMargin,
+      )
       const probabilities = recordProbabilities.get(perspective.teamId) ?? []
       probabilities.push(expectedProbability)
       recordProbabilities.set(perspective.teamId, probabilities)

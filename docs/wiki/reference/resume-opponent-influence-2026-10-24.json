@@ -1,0 +1,1258 @@
+{
+  "scope": "Isolated opponent-strength policy replay. Program prior and own-history bonus are disabled in BOTH runs; these are not exact hosted rankings or a prediction-accuracy claim.",
+  "baselineCommit": "486722f2dc7abf8ebce876eeb78a516b03db487b",
+  "baselineModel": "cfb26-resume-v5",
+  "candidateModel": "cfb26-resume-v6",
+  "cutoffAt": 1792842457019,
+  "week": 8,
+  "games": 878,
+  "teams": 138,
+  "inputSha256": "4c2414822d0061d8b87fb3550185eb961323a1949c0e46fbf45176e8c91eb3d4",
+  "maximumRankMove": 6,
+  "meanAbsoluteRankMove": 1.3478260869565217,
+  "rows": [
+    {
+      "team": "BYU",
+      "wins": 6,
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeScore": 1.326,
+      "afterScore": 1.488,
+      "scoreChange": 0.162
+    },
+    {
+      "team": "Miami",
+      "wins": 6,
+      "beforeRank": 2,
+      "afterRank": 2,
+      "beforeScore": 0.939,
+      "afterScore": 1.018,
+      "scoreChange": 0.079
+    },
+    {
+      "team": "Texas Tech",
+      "wins": 6,
+      "beforeRank": 3,
+      "afterRank": 3,
+      "beforeScore": 0.863,
+      "afterScore": 0.954,
+      "scoreChange": 0.091
+    },
+    {
+      "team": "UCLA",
+      "wins": 6,
+      "beforeRank": 4,
+      "afterRank": 4,
+      "beforeScore": 0.784,
+      "afterScore": 0.84,
+      "scoreChange": 0.056
+    },
+    {
+      "team": "Ohio State",
+      "wins": 6,
+      "beforeRank": 5,
+      "afterRank": 5,
+      "beforeScore": 0.578,
+      "afterScore": 0.758,
+      "scoreChange": 0.18
+    },
+    {
+      "team": "Indiana",
+      "wins": 6,
+      "beforeRank": 8,
+      "afterRank": 6,
+      "beforeScore": 0.451,
+      "afterScore": 0.675,
+      "scoreChange": 0.224
+    },
+    {
+      "team": "Houston",
+      "wins": 6,
+      "beforeRank": 6,
+      "afterRank": 7,
+      "beforeScore": 0.482,
+      "afterScore": 0.652,
+      "scoreChange": 0.17
+    },
+    {
+      "team": "Kentucky",
+      "wins": 6,
+      "beforeRank": 9,
+      "afterRank": 8,
+      "beforeScore": 0.405,
+      "afterScore": 0.64,
+      "scoreChange": 0.235
+    },
+    {
+      "team": "Tennessee",
+      "wins": 6,
+      "beforeRank": 10,
+      "afterRank": 9,
+      "beforeScore": 0.344,
+      "afterScore": 0.498,
+      "scoreChange": 0.154
+    },
+    {
+      "team": "Utah",
+      "wins": 6,
+      "beforeRank": 7,
+      "afterRank": 10,
+      "beforeScore": 0.473,
+      "afterScore": 0.482,
+      "scoreChange": 0.009
+    },
+    {
+      "team": "Ole Miss",
+      "wins": 5,
+      "beforeRank": 13,
+      "afterRank": 11,
+      "beforeScore": 0.183,
+      "afterScore": 0.375,
+      "scoreChange": 0.192
+    },
+    {
+      "team": "Notre Dame",
+      "wins": 6,
+      "beforeRank": 11,
+      "afterRank": 12,
+      "beforeScore": 0.196,
+      "afterScore": 0.35,
+      "scoreChange": 0.154
+    },
+    {
+      "team": "Georgia",
+      "wins": 6,
+      "beforeRank": 12,
+      "afterRank": 13,
+      "beforeScore": 0.188,
+      "afterScore": 0.271,
+      "scoreChange": 0.083
+    },
+    {
+      "team": "Alabama",
+      "wins": 5,
+      "beforeRank": 16,
+      "afterRank": 14,
+      "beforeScore": -0.063,
+      "afterScore": 0.269,
+      "scoreChange": 0.332
+    },
+    {
+      "team": "Northwestern",
+      "wins": 5,
+      "beforeRank": 14,
+      "afterRank": 15,
+      "beforeScore": 0.036,
+      "afterScore": 0.158,
+      "scoreChange": 0.122
+    },
+    {
+      "team": "Wake Forest",
+      "wins": 6,
+      "beforeRank": 15,
+      "afterRank": 16,
+      "beforeScore": -0.047,
+      "afterScore": 0.082,
+      "scoreChange": 0.129
+    },
+    {
+      "team": "Boise State",
+      "wins": 5,
+      "beforeRank": 17,
+      "afterRank": 17,
+      "beforeScore": -0.127,
+      "afterScore": -0.047,
+      "scoreChange": 0.08
+    },
+    {
+      "team": "Iowa",
+      "wins": 5,
+      "beforeRank": 18,
+      "afterRank": 18,
+      "beforeScore": -0.233,
+      "afterScore": -0.101,
+      "scoreChange": 0.132
+    },
+    {
+      "team": "James Madison",
+      "wins": 7,
+      "beforeRank": 19,
+      "afterRank": 19,
+      "beforeScore": -0.262,
+      "afterScore": -0.227,
+      "scoreChange": 0.035
+    },
+    {
+      "team": "Arizona",
+      "wins": 5,
+      "beforeRank": 21,
+      "afterRank": 20,
+      "beforeScore": -0.329,
+      "afterScore": -0.255,
+      "scoreChange": 0.074
+    },
+    {
+      "team": "UTSA",
+      "wins": 6,
+      "beforeRank": 20,
+      "afterRank": 21,
+      "beforeScore": -0.335,
+      "afterScore": -0.256,
+      "scoreChange": 0.079
+    },
+    {
+      "team": "Mississippi State",
+      "wins": 4,
+      "beforeRank": 24,
+      "afterRank": 22,
+      "beforeScore": -0.551,
+      "afterScore": -0.28,
+      "scoreChange": 0.271
+    },
+    {
+      "team": "USC",
+      "wins": 6,
+      "beforeRank": 22,
+      "afterRank": 23,
+      "beforeScore": -0.352,
+      "afterScore": -0.278,
+      "scoreChange": 0.074
+    },
+    {
+      "team": "Oregon",
+      "wins": 4,
+      "beforeRank": 26,
+      "afterRank": 24,
+      "beforeScore": -0.613,
+      "afterScore": -0.348,
+      "scoreChange": 0.265
+    },
+    {
+      "team": "Wisconsin",
+      "wins": 4,
+      "beforeRank": 28,
+      "afterRank": 25,
+      "beforeScore": -0.654,
+      "afterScore": -0.419,
+      "scoreChange": 0.235
+    },
+    {
+      "team": "LSU",
+      "wins": 5,
+      "beforeRank": 27,
+      "afterRank": 26,
+      "beforeScore": -0.617,
+      "afterScore": -0.416,
+      "scoreChange": 0.201
+    },
+    {
+      "team": "SMU",
+      "wins": 5,
+      "beforeRank": 23,
+      "afterRank": 27,
+      "beforeScore": -0.485,
+      "afterScore": -0.425,
+      "scoreChange": 0.06
+    },
+    {
+      "team": "Auburn",
+      "wins": 4,
+      "beforeRank": 30,
+      "afterRank": 28,
+      "beforeScore": -0.709,
+      "afterScore": -0.519,
+      "scoreChange": 0.19
+    },
+    {
+      "team": "Liberty",
+      "wins": 6,
+      "beforeRank": 25,
+      "afterRank": 29,
+      "beforeScore": -0.558,
+      "afterScore": -0.531,
+      "scoreChange": 0.027
+    },
+    {
+      "team": "Florida",
+      "wins": 5,
+      "beforeRank": 34,
+      "afterRank": 30,
+      "beforeScore": -0.819,
+      "afterScore": -0.607,
+      "scoreChange": 0.212
+    },
+    {
+      "team": "Texas",
+      "wins": 4,
+      "beforeRank": 31,
+      "afterRank": 31,
+      "beforeScore": -0.791,
+      "afterScore": -0.608,
+      "scoreChange": 0.183
+    },
+    {
+      "team": "Missouri",
+      "wins": 5,
+      "beforeRank": 33,
+      "afterRank": 32,
+      "beforeScore": -0.807,
+      "afterScore": -0.619,
+      "scoreChange": 0.188
+    },
+    {
+      "team": "North Carolina",
+      "wins": 4,
+      "beforeRank": 35,
+      "afterRank": 33,
+      "beforeScore": -0.855,
+      "afterScore": -0.681,
+      "scoreChange": 0.174
+    },
+    {
+      "team": "North Dakota State",
+      "wins": 6,
+      "beforeRank": 29,
+      "afterRank": 34,
+      "beforeScore": -0.704,
+      "afterScore": -0.715,
+      "scoreChange": -0.011
+    },
+    {
+      "team": "Clemson",
+      "wins": 4,
+      "beforeRank": 36,
+      "afterRank": 35,
+      "beforeScore": -0.934,
+      "afterScore": -0.718,
+      "scoreChange": 0.216
+    },
+    {
+      "team": "New Mexico",
+      "wins": 5,
+      "beforeRank": 32,
+      "afterRank": 36,
+      "beforeScore": -0.792,
+      "afterScore": -0.787,
+      "scoreChange": 0.005
+    },
+    {
+      "team": "Nebraska",
+      "wins": 5,
+      "beforeRank": 37,
+      "afterRank": 37,
+      "beforeScore": -0.961,
+      "afterScore": -0.815,
+      "scoreChange": 0.146
+    },
+    {
+      "team": "Louisiana Tech",
+      "wins": 4,
+      "beforeRank": 38,
+      "afterRank": 38,
+      "beforeScore": -1.107,
+      "afterScore": -0.965,
+      "scoreChange": 0.142
+    },
+    {
+      "team": "Oklahoma State",
+      "wins": 4,
+      "beforeRank": 39,
+      "afterRank": 39,
+      "beforeScore": -1.145,
+      "afterScore": -1,
+      "scoreChange": 0.145
+    },
+    {
+      "team": "Oregon State",
+      "wins": 5,
+      "beforeRank": 40,
+      "afterRank": 40,
+      "beforeScore": -1.357,
+      "afterScore": -1.239,
+      "scoreChange": 0.118
+    },
+    {
+      "team": "North Texas",
+      "wins": 4,
+      "beforeRank": 41,
+      "afterRank": 41,
+      "beforeScore": -1.379,
+      "afterScore": -1.283,
+      "scoreChange": 0.096
+    },
+    {
+      "team": "Oklahoma",
+      "wins": 3,
+      "beforeRank": 44,
+      "afterRank": 42,
+      "beforeScore": -1.569,
+      "afterScore": -1.32,
+      "scoreChange": 0.249
+    },
+    {
+      "team": "South Carolina",
+      "wins": 3,
+      "beforeRank": 49,
+      "afterRank": 43,
+      "beforeScore": -1.656,
+      "afterScore": -1.433,
+      "scoreChange": 0.223
+    },
+    {
+      "team": "Michigan",
+      "wins": 4,
+      "beforeRank": 43,
+      "afterRank": 44,
+      "beforeScore": -1.498,
+      "afterScore": -1.45,
+      "scoreChange": 0.048
+    },
+    {
+      "team": "Duke",
+      "wins": 5,
+      "beforeRank": 42,
+      "afterRank": 45,
+      "beforeScore": -1.465,
+      "afterScore": -1.455,
+      "scoreChange": 0.01
+    },
+    {
+      "team": "Cincinnati",
+      "wins": 4,
+      "beforeRank": 45,
+      "afterRank": 46,
+      "beforeScore": -1.582,
+      "afterScore": -1.545,
+      "scoreChange": 0.037
+    },
+    {
+      "team": "Baylor",
+      "wins": 4,
+      "beforeRank": 46,
+      "afterRank": 47,
+      "beforeScore": -1.595,
+      "afterScore": -1.562,
+      "scoreChange": 0.033
+    },
+    {
+      "team": "Ohio",
+      "wins": 5,
+      "beforeRank": 48,
+      "afterRank": 48,
+      "beforeScore": -1.646,
+      "afterScore": -1.574,
+      "scoreChange": 0.072
+    },
+    {
+      "team": "Army",
+      "wins": 5,
+      "beforeRank": 47,
+      "afterRank": 49,
+      "beforeScore": -1.588,
+      "afterScore": -1.604,
+      "scoreChange": -0.016
+    },
+    {
+      "team": "Memphis",
+      "wins": 6,
+      "beforeRank": 51,
+      "afterRank": 50,
+      "beforeScore": -1.68,
+      "afterScore": -1.641,
+      "scoreChange": 0.039
+    },
+    {
+      "team": "Jacksonville State",
+      "wins": 5,
+      "beforeRank": 50,
+      "afterRank": 51,
+      "beforeScore": -1.669,
+      "afterScore": -1.661,
+      "scoreChange": 0.008
+    },
+    {
+      "team": "Western Michigan",
+      "wins": 5,
+      "beforeRank": 53,
+      "afterRank": 52,
+      "beforeScore": -1.716,
+      "afterScore": -1.696,
+      "scoreChange": 0.02
+    },
+    {
+      "team": "Virginia Tech",
+      "wins": 5,
+      "beforeRank": 52,
+      "afterRank": 53,
+      "beforeScore": -1.682,
+      "afterScore": -1.698,
+      "scoreChange": -0.016
+    },
+    {
+      "team": "Georgia State",
+      "wins": 4,
+      "beforeRank": 55,
+      "afterRank": 54,
+      "beforeScore": -1.755,
+      "afterScore": -1.71,
+      "scoreChange": 0.045
+    },
+    {
+      "team": "Pittsburgh",
+      "wins": 5,
+      "beforeRank": 54,
+      "afterRank": 55,
+      "beforeScore": -1.732,
+      "afterScore": -1.722,
+      "scoreChange": 0.01
+    },
+    {
+      "team": "Kansas State",
+      "wins": 4,
+      "beforeRank": 57,
+      "afterRank": 56,
+      "beforeScore": -1.768,
+      "afterScore": -1.722,
+      "scoreChange": 0.046
+    },
+    {
+      "team": "Louisiana",
+      "wins": 5,
+      "beforeRank": 56,
+      "afterRank": 57,
+      "beforeScore": -1.751,
+      "afterScore": -1.721,
+      "scoreChange": 0.03
+    },
+    {
+      "team": "South Florida",
+      "wins": 5,
+      "beforeRank": 58,
+      "afterRank": 58,
+      "beforeScore": -1.792,
+      "afterScore": -1.782,
+      "scoreChange": 0.01
+    },
+    {
+      "team": "Florida Atlantic",
+      "wins": 4,
+      "beforeRank": 59,
+      "afterRank": 59,
+      "beforeScore": -1.843,
+      "afterScore": -1.813,
+      "scoreChange": 0.03
+    },
+    {
+      "team": "Louisville",
+      "wins": 4,
+      "beforeRank": 63,
+      "afterRank": 60,
+      "beforeScore": -2.014,
+      "afterScore": -1.84,
+      "scoreChange": 0.174
+    },
+    {
+      "team": "App State",
+      "wins": 5,
+      "beforeRank": 60,
+      "afterRank": 61,
+      "beforeScore": -1.865,
+      "afterScore": -1.856,
+      "scoreChange": 0.009
+    },
+    {
+      "team": "UCF",
+      "wins": 3,
+      "beforeRank": 65,
+      "afterRank": 62,
+      "beforeScore": -2.083,
+      "afterScore": -1.944,
+      "scoreChange": 0.139
+    },
+    {
+      "team": "Toledo",
+      "wins": 5,
+      "beforeRank": 61,
+      "afterRank": 63,
+      "beforeScore": -1.937,
+      "afterScore": -1.952,
+      "scoreChange": -0.015
+    },
+    {
+      "team": "Minnesota",
+      "wins": 4,
+      "beforeRank": 62,
+      "afterRank": 64,
+      "beforeScore": -1.99,
+      "afterScore": -1.976,
+      "scoreChange": 0.014
+    },
+    {
+      "team": "Air Force",
+      "wins": 5,
+      "beforeRank": 64,
+      "afterRank": 65,
+      "beforeScore": -2.014,
+      "afterScore": -2.007,
+      "scoreChange": 0.007
+    },
+    {
+      "team": "Iowa State",
+      "wins": 3,
+      "beforeRank": 66,
+      "afterRank": 66,
+      "beforeScore": -2.224,
+      "afterScore": -2.051,
+      "scoreChange": 0.173
+    },
+    {
+      "team": "Texas A&M",
+      "wins": 4,
+      "beforeRank": 67,
+      "afterRank": 67,
+      "beforeScore": -2.284,
+      "afterScore": -2.124,
+      "scoreChange": 0.16
+    },
+    {
+      "team": "Florida State",
+      "wins": 3,
+      "beforeRank": 69,
+      "afterRank": 68,
+      "beforeScore": -2.388,
+      "afterScore": -2.199,
+      "scoreChange": 0.189
+    },
+    {
+      "team": "TCU",
+      "wins": 3,
+      "beforeRank": 68,
+      "afterRank": 69,
+      "beforeScore": -2.363,
+      "afterScore": -2.236,
+      "scoreChange": 0.127
+    },
+    {
+      "team": "Illinois",
+      "wins": 3,
+      "beforeRank": 70,
+      "afterRank": 70,
+      "beforeScore": -2.431,
+      "afterScore": -2.322,
+      "scoreChange": 0.109
+    },
+    {
+      "team": "Washington",
+      "wins": 4,
+      "beforeRank": 71,
+      "afterRank": 71,
+      "beforeScore": -2.436,
+      "afterScore": -2.356,
+      "scoreChange": 0.08
+    },
+    {
+      "team": "Stanford",
+      "wins": 4,
+      "beforeRank": 75,
+      "afterRank": 72,
+      "beforeScore": -2.648,
+      "afterScore": -2.367,
+      "scoreChange": 0.281
+    },
+    {
+      "team": "Purdue",
+      "wins": 3,
+      "beforeRank": 78,
+      "afterRank": 73,
+      "beforeScore": -2.737,
+      "afterScore": -2.447,
+      "scoreChange": 0.29
+    },
+    {
+      "team": "Texas State",
+      "wins": 3,
+      "beforeRank": 72,
+      "afterRank": 74,
+      "beforeScore": -2.519,
+      "afterScore": -2.457,
+      "scoreChange": 0.062
+    },
+    {
+      "team": "Tulane",
+      "wins": 3,
+      "beforeRank": 73,
+      "afterRank": 75,
+      "beforeScore": -2.579,
+      "afterScore": -2.522,
+      "scoreChange": 0.057
+    },
+    {
+      "team": "South Alabama",
+      "wins": 4,
+      "beforeRank": 74,
+      "afterRank": 76,
+      "beforeScore": -2.613,
+      "afterScore": -2.561,
+      "scoreChange": 0.052
+    },
+    {
+      "team": "Arizona State",
+      "wins": 3,
+      "beforeRank": 76,
+      "afterRank": 77,
+      "beforeScore": -2.682,
+      "afterScore": -2.581,
+      "scoreChange": 0.101
+    },
+    {
+      "team": "Fresno State",
+      "wins": 4,
+      "beforeRank": 77,
+      "afterRank": 78,
+      "beforeScore": -2.682,
+      "afterScore": -2.625,
+      "scoreChange": 0.057
+    },
+    {
+      "team": "Troy",
+      "wins": 3,
+      "beforeRank": 79,
+      "afterRank": 79,
+      "beforeScore": -2.756,
+      "afterScore": -2.707,
+      "scoreChange": 0.049
+    },
+    {
+      "team": "Marshall",
+      "wins": 4,
+      "beforeRank": 82,
+      "afterRank": 80,
+      "beforeScore": -2.796,
+      "afterScore": -2.73,
+      "scoreChange": 0.066
+    },
+    {
+      "team": "West Virginia",
+      "wins": 4,
+      "beforeRank": 80,
+      "afterRank": 81,
+      "beforeScore": -2.788,
+      "afterScore": -2.739,
+      "scoreChange": 0.049
+    },
+    {
+      "team": "Buffalo",
+      "wins": 4,
+      "beforeRank": 81,
+      "afterRank": 82,
+      "beforeScore": -2.803,
+      "afterScore": -2.775,
+      "scoreChange": 0.028
+    },
+    {
+      "team": "Colorado",
+      "wins": 2,
+      "beforeRank": 89,
+      "afterRank": 83,
+      "beforeScore": -3.026,
+      "afterScore": -2.776,
+      "scoreChange": 0.25
+    },
+    {
+      "team": "Boston College",
+      "wins": 3,
+      "beforeRank": 83,
+      "afterRank": 84,
+      "beforeScore": -2.829,
+      "afterScore": -2.805,
+      "scoreChange": 0.024
+    },
+    {
+      "team": "San José State",
+      "wins": 4,
+      "beforeRank": 84,
+      "afterRank": 85,
+      "beforeScore": -2.888,
+      "afterScore": -2.837,
+      "scoreChange": 0.051
+    },
+    {
+      "team": "Arkansas",
+      "wins": 3,
+      "beforeRank": 90,
+      "afterRank": 86,
+      "beforeScore": -3.104,
+      "afterScore": -2.849,
+      "scoreChange": 0.255
+    },
+    {
+      "team": "UConn",
+      "wins": 4,
+      "beforeRank": 85,
+      "afterRank": 87,
+      "beforeScore": -2.928,
+      "afterScore": -2.952,
+      "scoreChange": -0.024
+    },
+    {
+      "team": "UAB",
+      "wins": 4,
+      "beforeRank": 86,
+      "afterRank": 88,
+      "beforeScore": -3.004,
+      "afterScore": -2.986,
+      "scoreChange": 0.018
+    },
+    {
+      "team": "UNLV",
+      "wins": 4,
+      "beforeRank": 87,
+      "afterRank": 89,
+      "beforeScore": -3.019,
+      "afterScore": -3.005,
+      "scoreChange": 0.014
+    },
+    {
+      "team": "Miami (OH)",
+      "wins": 4,
+      "beforeRank": 88,
+      "afterRank": 90,
+      "beforeScore": -3.017,
+      "afterScore": -3.012,
+      "scoreChange": 0.005
+    },
+    {
+      "team": "Vanderbilt",
+      "wins": 3,
+      "beforeRank": 94,
+      "afterRank": 91,
+      "beforeScore": -3.277,
+      "afterScore": -3.083,
+      "scoreChange": 0.194
+    },
+    {
+      "team": "East Carolina",
+      "wins": 3,
+      "beforeRank": 93,
+      "afterRank": 92,
+      "beforeScore": -3.19,
+      "afterScore": -3.094,
+      "scoreChange": 0.096
+    },
+    {
+      "team": "San Diego State",
+      "wins": 3,
+      "beforeRank": 95,
+      "afterRank": 93,
+      "beforeScore": -3.295,
+      "afterScore": -3.11,
+      "scoreChange": 0.185
+    },
+    {
+      "team": "Western Kentucky",
+      "wins": 3,
+      "beforeRank": 96,
+      "afterRank": 94,
+      "beforeScore": -3.329,
+      "afterScore": -3.161,
+      "scoreChange": 0.168
+    },
+    {
+      "team": "Middle Tennessee",
+      "wins": 4,
+      "beforeRank": 91,
+      "afterRank": 95,
+      "beforeScore": -3.147,
+      "afterScore": -3.173,
+      "scoreChange": -0.026
+    },
+    {
+      "team": "Wyoming",
+      "wins": 5,
+      "beforeRank": 92,
+      "afterRank": 96,
+      "beforeScore": -3.194,
+      "afterScore": -3.178,
+      "scoreChange": 0.016
+    },
+    {
+      "team": "Penn State",
+      "wins": 3,
+      "beforeRank": 97,
+      "afterRank": 97,
+      "beforeScore": -3.399,
+      "afterScore": -3.29,
+      "scoreChange": 0.109
+    },
+    {
+      "team": "Utah State",
+      "wins": 2,
+      "beforeRank": 98,
+      "afterRank": 98,
+      "beforeScore": -3.458,
+      "afterScore": -3.312,
+      "scoreChange": 0.146
+    },
+    {
+      "team": "Central Michigan",
+      "wins": 3,
+      "beforeRank": 99,
+      "afterRank": 99,
+      "beforeScore": -3.544,
+      "afterScore": -3.416,
+      "scoreChange": 0.128
+    },
+    {
+      "team": "Michigan State",
+      "wins": 2,
+      "beforeRank": 101,
+      "afterRank": 100,
+      "beforeScore": -3.73,
+      "afterScore": -3.476,
+      "scoreChange": 0.254
+    },
+    {
+      "team": "Kansas",
+      "wins": 2,
+      "beforeRank": 100,
+      "afterRank": 101,
+      "beforeScore": -3.621,
+      "afterScore": -3.521,
+      "scoreChange": 0.1
+    },
+    {
+      "team": "Ball State",
+      "wins": 2,
+      "beforeRank": 105,
+      "afterRank": 102,
+      "beforeScore": -3.818,
+      "afterScore": -3.592,
+      "scoreChange": 0.226
+    },
+    {
+      "team": "California",
+      "wins": 3,
+      "beforeRank": 104,
+      "afterRank": 103,
+      "beforeScore": -3.797,
+      "afterScore": -3.672,
+      "scoreChange": 0.125
+    },
+    {
+      "team": "Syracuse",
+      "wins": 2,
+      "beforeRank": 102,
+      "afterRank": 104,
+      "beforeScore": -3.734,
+      "afterScore": -3.687,
+      "scoreChange": 0.047
+    },
+    {
+      "team": "Maryland",
+      "wins": 2,
+      "beforeRank": 111,
+      "afterRank": 105,
+      "beforeScore": -3.966,
+      "afterScore": -3.704,
+      "scoreChange": 0.262
+    },
+    {
+      "team": "Georgia Southern",
+      "wins": 3,
+      "beforeRank": 106,
+      "afterRank": 106,
+      "beforeScore": -3.871,
+      "afterScore": -3.782,
+      "scoreChange": 0.089
+    },
+    {
+      "team": "Rutgers",
+      "wins": 2,
+      "beforeRank": 108,
+      "afterRank": 107,
+      "beforeScore": -3.921,
+      "afterScore": -3.792,
+      "scoreChange": 0.129
+    },
+    {
+      "team": "Navy",
+      "wins": 2,
+      "beforeRank": 103,
+      "afterRank": 108,
+      "beforeScore": -3.774,
+      "afterScore": -3.789,
+      "scoreChange": -0.015
+    },
+    {
+      "team": "Tulsa",
+      "wins": 4,
+      "beforeRank": 107,
+      "afterRank": 109,
+      "beforeScore": -3.871,
+      "afterScore": -3.845,
+      "scoreChange": 0.026
+    },
+    {
+      "team": "NC State",
+      "wins": 3,
+      "beforeRank": 109,
+      "afterRank": 110,
+      "beforeScore": -3.937,
+      "afterScore": -3.871,
+      "scoreChange": 0.066
+    },
+    {
+      "team": "Arkansas State",
+      "wins": 3,
+      "beforeRank": 110,
+      "afterRank": 111,
+      "beforeScore": -3.945,
+      "afterScore": -3.906,
+      "scoreChange": 0.039
+    },
+    {
+      "team": "Virginia",
+      "wins": 4,
+      "beforeRank": 112,
+      "afterRank": 112,
+      "beforeScore": -3.985,
+      "afterScore": -3.977,
+      "scoreChange": 0.008
+    },
+    {
+      "team": "Colorado State",
+      "wins": 2,
+      "beforeRank": 114,
+      "afterRank": 113,
+      "beforeScore": -4.176,
+      "afterScore": -4.098,
+      "scoreChange": 0.078
+    },
+    {
+      "team": "Georgia Tech",
+      "wins": 2,
+      "beforeRank": 116,
+      "afterRank": 114,
+      "beforeScore": -4.198,
+      "afterScore": -4.126,
+      "scoreChange": 0.072
+    },
+    {
+      "team": "Massachusetts",
+      "wins": 4,
+      "beforeRank": 113,
+      "afterRank": 115,
+      "beforeScore": -4.122,
+      "afterScore": -4.133,
+      "scoreChange": -0.011
+    },
+    {
+      "team": "Eastern Michigan",
+      "wins": 4,
+      "beforeRank": 115,
+      "afterRank": 116,
+      "beforeScore": -4.176,
+      "afterScore": -4.165,
+      "scoreChange": 0.011
+    },
+    {
+      "team": "Nevada",
+      "wins": 2,
+      "beforeRank": 117,
+      "afterRank": 117,
+      "beforeScore": -4.213,
+      "afterScore": -4.194,
+      "scoreChange": 0.019
+    },
+    {
+      "team": "New Mexico State",
+      "wins": 3,
+      "beforeRank": 119,
+      "afterRank": 118,
+      "beforeScore": -4.334,
+      "afterScore": -4.314,
+      "scoreChange": 0.02
+    },
+    {
+      "team": "Delaware",
+      "wins": 3,
+      "beforeRank": 120,
+      "afterRank": 119,
+      "beforeScore": -4.338,
+      "afterScore": -4.315,
+      "scoreChange": 0.023
+    },
+    {
+      "team": "Florida International",
+      "wins": 3,
+      "beforeRank": 118,
+      "afterRank": 120,
+      "beforeScore": -4.311,
+      "afterScore": -4.326,
+      "scoreChange": -0.015
+    },
+    {
+      "team": "Kent State",
+      "wins": 2,
+      "beforeRank": 121,
+      "afterRank": 121,
+      "beforeScore": -4.725,
+      "afterScore": -4.614,
+      "scoreChange": 0.111
+    },
+    {
+      "team": "Bowling Green",
+      "wins": 2,
+      "beforeRank": 122,
+      "afterRank": 122,
+      "beforeScore": -4.813,
+      "afterScore": -4.729,
+      "scoreChange": 0.084
+    },
+    {
+      "team": "Temple",
+      "wins": 2,
+      "beforeRank": 123,
+      "afterRank": 123,
+      "beforeScore": -5.056,
+      "afterScore": -5.004,
+      "scoreChange": 0.052
+    },
+    {
+      "team": "Coastal Carolina",
+      "wins": 2,
+      "beforeRank": 124,
+      "afterRank": 124,
+      "beforeScore": -5.231,
+      "afterScore": -5.201,
+      "scoreChange": 0.03
+    },
+    {
+      "team": "Old Dominion",
+      "wins": 2,
+      "beforeRank": 125,
+      "afterRank": 125,
+      "beforeScore": -5.418,
+      "afterScore": -5.409,
+      "scoreChange": 0.009
+    },
+    {
+      "team": "Missouri State",
+      "wins": 2,
+      "beforeRank": 126,
+      "afterRank": 126,
+      "beforeScore": -5.45,
+      "afterScore": -5.435,
+      "scoreChange": 0.015
+    },
+    {
+      "team": "Southern Miss",
+      "wins": 1,
+      "beforeRank": 127,
+      "afterRank": 127,
+      "beforeScore": -5.459,
+      "afterScore": -5.435,
+      "scoreChange": 0.024
+    },
+    {
+      "team": "Sam Houston",
+      "wins": 1,
+      "beforeRank": 128,
+      "afterRank": 128,
+      "beforeScore": -5.755,
+      "afterScore": -5.622,
+      "scoreChange": 0.133
+    },
+    {
+      "team": "Washington State",
+      "wins": 1,
+      "beforeRank": 130,
+      "afterRank": 129,
+      "beforeScore": -5.842,
+      "afterScore": -5.737,
+      "scoreChange": 0.105
+    },
+    {
+      "team": "Rice",
+      "wins": 1,
+      "beforeRank": 129,
+      "afterRank": 130,
+      "beforeScore": -5.83,
+      "afterScore": -5.741,
+      "scoreChange": 0.089
+    },
+    {
+      "team": "Charlotte",
+      "wins": 1,
+      "beforeRank": 131,
+      "afterRank": 131,
+      "beforeScore": -5.875,
+      "afterScore": -5.789,
+      "scoreChange": 0.086
+    },
+    {
+      "team": "Kennesaw State",
+      "wins": 1,
+      "beforeRank": 132,
+      "afterRank": 132,
+      "beforeScore": -5.917,
+      "afterScore": -5.809,
+      "scoreChange": 0.108
+    },
+    {
+      "team": "Northern Illinois",
+      "wins": 0,
+      "beforeRank": 133,
+      "afterRank": 133,
+      "beforeScore": -6.231,
+      "afterScore": -6.143,
+      "scoreChange": 0.088
+    },
+    {
+      "team": "UTEP",
+      "wins": 1,
+      "beforeRank": 135,
+      "afterRank": 134,
+      "beforeScore": -6.393,
+      "afterScore": -6.299,
+      "scoreChange": 0.094
+    },
+    {
+      "team": "Akron",
+      "wins": 1,
+      "beforeRank": 134,
+      "afterRank": 135,
+      "beforeScore": -6.382,
+      "afterScore": -6.316,
+      "scoreChange": 0.066
+    },
+    {
+      "team": "Hawai'i",
+      "wins": 1,
+      "beforeRank": 136,
+      "afterRank": 136,
+      "beforeScore": -6.568,
+      "afterScore": -6.556,
+      "scoreChange": 0.012
+    },
+    {
+      "team": "UL Monroe",
+      "wins": 0,
+      "beforeRank": 137,
+      "afterRank": 137,
+      "beforeScore": -6.779,
+      "afterScore": -6.778,
+      "scoreChange": 0.001
+    },
+    {
+      "team": "Sacramento State",
+      "wins": 1,
+      "beforeRank": 138,
+      "afterRank": 138,
+      "beforeScore": -6.96,
+      "afterScore": -6.944,
+      "scoreChange": 0.016
+    }
+  ],
+  "candidateSourceSha256": "c8a1fd7e82db0a5cf75269196ef406e4d189e1d57c530b79cdf37bd368b57ae7"
+}

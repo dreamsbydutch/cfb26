@@ -832,7 +832,11 @@ function Methodology({
             Résumé measures results against a fixed playoff-contender standard.
             Opponent quality uses current-season games with limited prior-season
             Program context. A team's own history adds at most 0.15
-            win-equivalents; current-season results drive the ranking.
+            win-equivalents; current-season results drive the ranking. Opponent
+            strength has 15% extra influence: strong wins earn more, losses to
+            strong opponents cost less, and weak schedules earn less credit. A
+            loss to a weak opponent still hurts; every win remains positive,
+            with no conference-based ceiling on an unbeaten season.
           </p>
           <div className="app-accent-soft-text mt-5 rounded-2xl bg-black/20 p-4 font-mono text-sm">
             Résumé = 0.70 × results credit + 0.30 × performance credit + history
