@@ -293,11 +293,7 @@ function ConferenceTitleMarks({
             className="flex h-3 w-5 shrink-0 items-center justify-center overflow-hidden"
             key={`${title.season}:${title.conference ?? 'conference'}`}
             style={{
-              opacity: honorOpacity(
-                title.season,
-                currentSeason,
-                windowSeasons,
-              ),
+              opacity: honorOpacity(title.season, currentSeason, windowSeasons),
             }}
             title={`${title.season} ${title.conference ? `${title.conference} ` : ''}conference champion`}
           >
@@ -318,7 +314,7 @@ function ConferenceTitleMarks({
   )
 }
 
-function conferenceLogo(conference: string | undefined) {
+export function conferenceLogo(conference: string | undefined) {
   const normalizedConference = conference
     ?.trim()
     .toLowerCase()
