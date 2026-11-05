@@ -21,11 +21,12 @@ type Standing = FunctionReturnType<
 >[number]
 type Program = FunctionReturnType<typeof api.teamData.listPrograms>[number]
 const currentSeason = new Date().getFullYear()
-const record = (row: Standing) => `${row.wins}–${row.losses}`
+const record = (row: Standing) =>
+  `${row.wins}–${row.losses}${row.ties > 0 ? `–${row.ties}` : ''}`
 const conferenceRecord = (row: Standing) =>
   row.conferenceWins === undefined || row.conferenceLosses === undefined
     ? '—'
-    : `${row.conferenceWins}–${row.conferenceLosses}`
+    : `${row.conferenceWins}–${row.conferenceLosses}${row.conferenceTies ? `–${row.conferenceTies}` : ''}`
 const conferencePercentage = (row: Standing) =>
   row.conferenceWinPercentage ??
   (row.conferenceWins !== undefined &&
@@ -125,7 +126,10 @@ export function NationalSeason() {
             ))}
           </select>
           <p className="text-xs text-white/50">
-            CFBD season snapshots · Select a team to explore its season
+            {rows.at(0)?.recordSource === 'completed_games'
+              ? `Saved completed games${rows[0].throughWeek === null ? '' : ` · Through Week ${rows[0].throughWeek}`}`
+              : 'CFBD season snapshots'}{' '}
+            · Select a team to explore its season
           </p>
         </div>
         {standings.isPending || directory.isPending ? (
@@ -136,7 +140,8 @@ export function NationalSeason() {
           </ErrorState>
         ) : !rows.length ? (
           <EmptyState>
-            No FBS standings have been imported for {season}.
+            No completed-game results or standings snapshots are available for{' '}
+            {season}.
           </EmptyState>
         ) : (
           <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
