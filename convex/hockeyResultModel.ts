@@ -1,7 +1,6 @@
-import {
-  normalizeHockeyGame,
-  validateHockeyGames,
-} from './hockeyScheduleFields'
+import { normalizeHockeyGame } from './hockeyScheduleFields'
+import { validateTeamScheduleGames } from './teamScheduleFields'
+import type { TeamSport } from './teamRosterFields'
 import type { Infer } from 'convex/values'
 import type { hockeyGame } from './hockeyScheduleFields'
 import type { hockeyPlayerResult } from './hockeyResultFields'
@@ -127,13 +126,14 @@ export function parseHockeySchedule(
   html: string,
   season: number,
   id: string,
+  sport: TeamSport = 'hockey',
 ): Infer<typeof hockeyGame> {
   const schedules = object(
     object(officialState(html, 'schedule').schedule).schedules,
   )
   const schedule = object(
     schedules[
-      `schedules-mens-ice-hockey,${season}-${String(season + 1).slice(-2)}`
+      `schedules-${sport === 'hockey' ? 'mens-ice-hockey' : 'mens-basketball'},${season}-${String(season + 1).slice(-2)}`
     ],
   )
   const matches = array(schedule.games)
@@ -161,7 +161,7 @@ export function parseHockeySchedule(
           : 'scheduled'
   const link = (value: unknown) =>
     value ? officialUrl(text(object(value).url)) : null
-  const game: Infer<typeof hockeyGame> = normalizeHockeyGame({
+  const game: Infer<typeof hockeyGame> = {
     sourceGameId: id,
     date: text(raw.date).slice(0, 10),
     endDate: raw.enddate ? text(raw.enddate).slice(0, 10) : null,
@@ -188,9 +188,9 @@ export function parseHockeySchedule(
     tournament: raw.tournament ? text(object(raw.tournament).title) : '',
     recapUrl: link(result.recap),
     boxScoreUrl: link(result.boxscore),
-  })
-  validateHockeyGames(season, [game])
-  return game
+  }
+  validateTeamScheduleGames(sport, season, [game])
+  return sport === 'hockey' ? normalizeHockeyGame(game) : game
 }
 
 export function normalizedHockeyName(value: string) {

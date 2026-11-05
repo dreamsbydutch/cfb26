@@ -373,7 +373,7 @@ export const finish = internalMutation({
   },
 })
 
-async function fetchOfficial(url: string) {
+export async function fetchOfficial(url: string) {
   const response = await fetch(officialUrl(url), {
     signal: AbortSignal.timeout(20000),
     redirect: 'error',
