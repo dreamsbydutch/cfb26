@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
 import { conferenceLogo } from './RatingField'
 import { rankingControlClass } from './RankingTable'
+import { seasonTiers } from './seasonTiers'
 import type { FunctionReturnType } from 'convex/server'
 import {
   EmptyState,
@@ -66,8 +67,11 @@ export function NationalSeason() {
     directory.data?.map((program) => [String(program._id), program]),
   )
   const rows = standings.data ?? []
+  const tiers = seasonTiers(rows)
   const conferences = [
-    ...new Set(rows.map((row) => row.conference || 'Independent')),
+    ...new Set(
+      tiers.flatMap((tier) => tier.columns.map((column) => column.name)),
+    ),
   ].sort()
   const team =
     rows.find((row) => String(row.programId) === selected) ??
@@ -83,13 +87,14 @@ export function NationalSeason() {
         compare(a, b) || a.sourceProgramName.localeCompare(b.sourceProgramName),
     )
   const selectTeam = (row: Standing) => setSelected(String(row.programId))
-  const visibleConferences = conferences.filter(
-    (name) => conference === 'all' || name === conference,
-  )
-  const bands = Array.from(
-    { length: Math.ceil(visibleConferences.length / 5) },
-    (_, index) => visibleConferences.slice(index * 5, index * 5 + 5),
-  )
+  const bands = tiers
+    .map((tier) => ({
+      ...tier,
+      columns: tier.columns.filter(
+        (column) => conference === 'all' || column.name === conference,
+      ),
+    }))
+    .filter((tier) => tier.columns.length > 0)
   return (
     <PublicShell active="season" context="national">
       <PageFrame>
@@ -145,23 +150,22 @@ export function NationalSeason() {
                 alphabetical display order does not resolve official
                 tiebreakers. Missing records remain unknown.
               </p>
-              {bands.map((band) => (
-                <div key={band.join(':')} className="mb-6 overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <caption className="sr-only">
-                      FBS conference standings for {season}
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th scope="col" className="p-2">
-                          Row
-                        </th>
-                        {band
-                          .filter(
-                            (name) =>
-                              conference === 'all' || name === conference,
-                          )
-                          .map((name) => {
+              {bands.map(({ title, columns: band }) => (
+                <section key={title} className="mb-6" aria-label={title}>
+                  <h3 className="font-display mb-3 border-t border-white/10 pt-4 text-xl font-extrabold">
+                    {title}
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <caption className="sr-only">
+                        {title} standings for {season}
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="p-2">
+                            Row
+                          </th>
+                          {band.map(({ name }) => {
                             const logo = conferenceLogo(name)
                             return (
                               <th
@@ -180,55 +184,32 @@ export function NationalSeason() {
                               </th>
                             )
                           })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.from(
-                        {
-                          length: Math.max(
-                            0,
-                            ...band
-                              .filter(
-                                (name) =>
-                                  conference === 'all' || name === conference,
-                              )
-                              .map(
-                                (name) =>
-                                  rows.filter(
-                                    (row) =>
-                                      (row.conference || 'Independent') ===
-                                      name,
-                                  ).length,
-                              ),
-                          ),
-                        },
-                        (_, index) => (
-                          <tr
-                            key={index}
-                            className="border-t border-white/10 even:bg-white/[0.025]"
-                          >
-                            <th scope="row" className="p-2 text-white/40">
-                              {index + 1}
-                            </th>
-                            {band
-                              .filter(
-                                (name) =>
-                                  conference === 'all' || name === conference,
-                              )
-                              .map((name) => {
-                                const group = rows
-                                  .filter(
-                                    (row) =>
-                                      (row.conference || 'Independent') ===
-                                      name,
-                                  )
-                                  .sort(
-                                    (a, b) =>
-                                      compare(a, b) ||
-                                      a.sourceProgramName.localeCompare(
-                                        b.sourceProgramName,
-                                      ),
-                                  )
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from(
+                          {
+                            length: Math.max(
+                              0,
+                              ...band.map((column) => column.rows.length),
+                            ),
+                          },
+                          (_, index) => (
+                            <tr
+                              key={index}
+                              className="border-t border-white/10 even:bg-white/[0.025]"
+                            >
+                              <th scope="row" className="p-2 text-white/40">
+                                {index + 1}
+                              </th>
+                              {band.map(({ name, rows: teams }) => {
+                                const group = [...teams].sort(
+                                  (a, b) =>
+                                    compare(a, b) ||
+                                    a.sourceProgramName.localeCompare(
+                                      b.sourceProgramName,
+                                    ),
+                                )
                                 const row = group.at(index)
                                 return (
                                   <td key={name} className="p-1 align-top">
@@ -267,12 +248,13 @@ export function NationalSeason() {
                                   </td>
                                 )
                               })}
-                          </tr>
-                        ),
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
               ))}
             </Surface>
             <div className="grid min-w-0 gap-6">
