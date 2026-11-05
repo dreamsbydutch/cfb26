@@ -11,6 +11,7 @@ import { createCfbdClient } from './cfbdClient'
 import { resolveProgram, slug } from './programIdentity'
 import { nflRosterStatus, nflStatistics, parseCsv } from './nflverse'
 import type { Id } from './_generated/dataModel'
+import type { Infer } from 'convex/values'
 import type {
   CfbdDraftPick,
   CfbdFbsTeam,
@@ -1168,14 +1169,173 @@ export const listRecruitingBySeason = query({
       )
       .take(boundedLimit(args.limit, 200)),
 })
+const seasonStanding = v.object({
+  _id: v.string(),
+  programId: v.id('programs'),
+  sourceProgramName: v.string(),
+  conference: v.string(),
+  wins: v.number(),
+  losses: v.number(),
+  ties: v.number(),
+  winPercentage: v.number(),
+  conferenceWins: v.optional(v.number()),
+  conferenceLosses: v.optional(v.number()),
+  conferenceTies: v.optional(v.number()),
+  conferenceWinPercentage: v.optional(v.number()),
+  apCurrentRank: v.optional(v.number()),
+  recordSource: v.union(v.literal('snapshot'), v.literal('completed_games')),
+  throughWeek: v.union(v.number(), v.null()),
+})
+
 export const listStandingsBySeason = query({
   args: { limit: v.optional(v.number()), season: v.number() },
-  handler: async (ctx, args) =>
-    ctx.db
+  returns: v.array(seasonStanding),
+  handler: async (ctx, args): Promise<Array<Infer<typeof seasonStanding>>> => {
+    const limit = boundedLimit(args.limit, 200)
+    const snapshots = await ctx.db
       .query('teamSeasonStandings')
       .withIndex('by_season_and_wins', (q) => q.eq('season', args.season))
       .order('desc')
-      .take(boundedLimit(args.limit, 200)),
+      .take(limit)
+    if (snapshots.length)
+      return snapshots.map((row) => ({
+        _id: String(row._id),
+        programId: row.programId,
+        sourceProgramName: row.sourceProgramName,
+        conference: row.conference,
+        wins: row.wins,
+        losses: row.losses,
+        ties: 0,
+        winPercentage: row.winPercentage,
+        conferenceWins: row.conferenceWins,
+        conferenceLosses: row.conferenceLosses,
+        conferenceWinPercentage: row.conferenceWinPercentage,
+        apCurrentRank: row.apCurrentRank,
+        recordSource: 'snapshot',
+        throughWeek: null,
+      }))
+
+    const [games, affiliations] = await Promise.all([
+      ctx.db
+        .query('collegeGames')
+        .withIndex('by_season_and_startTime', (q) =>
+          q.eq('season', args.season),
+        )
+        .take(2501),
+      ctx.db
+        .query('programAffiliations')
+        .withIndex('by_startSeason_and_conference', (q) =>
+          q.eq('startSeason', args.season),
+        )
+        .take(501),
+    ])
+    if (games.length > 2500 || affiliations.length > 500)
+      throw new Error(
+        'Season standings evidence exceeds its bounded read; refusing partial records.',
+      )
+    const membership = new Map(
+      affiliations.map((row) => [String(row.programId), row]),
+    )
+    const rows = new Map<string, Infer<typeof seasonStanding>>()
+    for (const game of games) {
+      for (const side of ['home', 'away'] as const) {
+        const programId =
+          side === 'home' ? game.homeProgramId : game.awayProgramId
+        const affiliation = membership.get(String(programId))
+        const classification =
+          (side === 'home'
+            ? game.homeClassification
+            : game.awayClassification) ?? affiliation?.classification
+        if (
+          classification?.toLowerCase() !== 'fbs' ||
+          rows.has(String(programId))
+        )
+          continue
+        rows.set(String(programId), {
+          _id: String(programId),
+          programId,
+          sourceProgramName:
+            side === 'home' ? game.homeSourceName : game.awaySourceName,
+          conference:
+            affiliation?.conference ??
+            (side === 'home' ? game.homeConference : game.awayConference) ??
+            'Unknown conference',
+          wins: 0,
+          losses: 0,
+          ties: 0,
+          winPercentage: 0,
+          conferenceWins: 0,
+          conferenceLosses: 0,
+          conferenceTies: 0,
+          conferenceWinPercentage: 0,
+          recordSource: 'completed_games',
+          throughWeek: null,
+        })
+      }
+    }
+    let throughWeek: number | null = null
+    let completed = 0
+    for (const game of games) {
+      if (
+        !game.completed ||
+        game.canceled ||
+        game.startTime > game.sourceUpdatedAt ||
+        typeof game.homePoints !== 'number' ||
+        !Number.isFinite(game.homePoints) ||
+        typeof game.awayPoints !== 'number' ||
+        !Number.isFinite(game.awayPoints)
+      )
+        continue
+      if (
+        !rows.has(String(game.homeProgramId)) &&
+        !rows.has(String(game.awayProgramId))
+      )
+        continue
+      completed++
+      if (game.seasonType === 'regular')
+        throughWeek = Math.max(throughWeek ?? 0, game.week)
+      for (const side of ['home', 'away'] as const) {
+        const row = rows.get(
+          String(side === 'home' ? game.homeProgramId : game.awayProgramId),
+        )
+        if (!row) continue
+        const own = side === 'home' ? game.homePoints : game.awayPoints
+        const opponent = side === 'home' ? game.awayPoints : game.homePoints
+        if (own > opponent) row.wins++
+        else if (own < opponent) row.losses++
+        else row.ties++
+        if (game.conferenceGame && game.seasonType === 'regular') {
+          if (own > opponent) row.conferenceWins = (row.conferenceWins ?? 0) + 1
+          else if (own < opponent)
+            row.conferenceLosses = (row.conferenceLosses ?? 0) + 1
+          else row.conferenceTies = (row.conferenceTies ?? 0) + 1
+        }
+      }
+    }
+    if (!completed) return []
+    return [...rows.values()]
+      .map((row) => ({
+        ...row,
+        throughWeek,
+        winPercentage:
+          (row.wins + row.ties / 2) /
+          Math.max(1, row.wins + row.losses + row.ties),
+        conferenceWinPercentage:
+          ((row.conferenceWins ?? 0) + (row.conferenceTies ?? 0) / 2) /
+          Math.max(
+            1,
+            (row.conferenceWins ?? 0) +
+              (row.conferenceLosses ?? 0) +
+              (row.conferenceTies ?? 0),
+          ),
+      }))
+      .sort(
+        (a, b) =>
+          b.wins - a.wins ||
+          a.sourceProgramName.localeCompare(b.sourceProgramName),
+      )
+      .slice(0, limit)
+  },
 })
 export const listDraftByYear = query({
   args: { limit: v.optional(v.number()), year: v.number() },

@@ -4,6 +4,8 @@
 
 ## Boundary
 
+**Current source:** `teamData.listStandingsBySeason` returns a compact standings contract with record source and completed-week coverage. It retains archived season records when present; otherwise it derives FBS overall/conference records from the season's indexed `collegeGames` and saved annual affiliations. Reads are bounded to 2,500 games and 500 affiliations and fail explicitly rather than return truncated records. Game classification and season affiliations determine historical membership; current directory classification cannot hide a team. This read-only fallback neither writes archived standings nor changes rating inputs.
+
 Convex is the database, function runtime, real-time transport, and generated client contract. Authored code lives under `convex/`; `_generated/` is CLI output and must never be hand-edited.
 
 ## Current source model

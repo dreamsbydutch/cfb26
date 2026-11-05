@@ -35,6 +35,9 @@ vi.mock('@tanstack/react-query', () => ({
                 winPercentage: 2 / 3,
                 conferenceWins: 5,
                 conferenceLosses: 3,
+                recordSource: 'completed_games',
+                throughWeek: 10,
+                ties: 0,
               },
             ]
           : null,
@@ -86,4 +89,10 @@ test('retains saved standings without a current directory entry', () => {
   expect(renderToStaticMarkup(<NationalSeason />)).toContain(
     'Historical FBS team',
   )
+})
+
+test('labels current standings with their completed-game week coverage', () => {
+  const html = renderToStaticMarkup(<NationalSeason />)
+  expect(html).toContain('Through Week 10')
+  expect(html).toContain('Saved completed games')
 })
