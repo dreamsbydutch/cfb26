@@ -178,7 +178,9 @@ export function parseHockeySchedule(
           : raw.location_indicator === 'N'
             ? 'neutral'
             : 'unknown',
-    exhibition: raw.type === 'E',
+    exhibition:
+      raw.type === 'E' ||
+      (sport === 'basketball' && /\(ex\)/i.test(text(opponent.title))),
     conference: raw.conference === true,
     status,
     result: status === 'final' ? (resultCode as 'W' | 'L' | 'T') : null,
