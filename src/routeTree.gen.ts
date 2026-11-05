@@ -26,6 +26,7 @@ import { Route as NationalPlayoffRouteImport } from './routes/national.playoff'
 import { Route as NationalPowerRouteImport } from './routes/national.power'
 import { Route as NationalProgramRouteImport } from './routes/national.program'
 import { Route as NationalResumeRouteImport } from './routes/national.resume'
+import { Route as NationalSeasonRouteImport } from './routes/national.season'
 import { Route as NationalSimulatorRouteImport } from './routes/national.simulator'
 import { Route as NationalTeamsRouteImport } from './routes/national.teams'
 import { Route as AdminRosterIndexRouteImport } from './routes/admin.roster.index'
@@ -125,6 +126,11 @@ const NationalResumeRoute = NationalResumeRouteImport.update({
   path: '/national/resume',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NationalSeasonRoute = NationalSeasonRouteImport.update({
+  id: '/national/season',
+  path: '/national/season',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NationalSimulatorRoute = NationalSimulatorRouteImport.update({
   id: '/national/simulator',
   path: '/national/simulator',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/national/power': typeof NationalPowerRoute
   '/national/program': typeof NationalProgramRoute
   '/national/resume': typeof NationalResumeRoute
+  '/national/season': typeof NationalSeasonRoute
   '/national/simulator': typeof NationalSimulatorRoute
   '/national/teams': typeof NationalTeamsRouteWithChildren
   '/admin/roster/basketball': typeof AdminRosterBasketballRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/national/power': typeof NationalPowerRoute
   '/national/program': typeof NationalProgramRoute
   '/national/resume': typeof NationalResumeRoute
+  '/national/season': typeof NationalSeasonRoute
   '/national/simulator': typeof NationalSimulatorRoute
   '/national/teams': typeof NationalTeamsRouteWithChildren
   '/admin/roster/basketball': typeof AdminRosterBasketballRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/national/power': typeof NationalPowerRoute
   '/national/program': typeof NationalProgramRoute
   '/national/resume': typeof NationalResumeRoute
+  '/national/season': typeof NationalSeasonRoute
   '/national/simulator': typeof NationalSimulatorRoute
   '/national/teams': typeof NationalTeamsRouteWithChildren
   '/admin/roster/basketball': typeof AdminRosterBasketballRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/national/power'
     | '/national/program'
     | '/national/resume'
+    | '/national/season'
     | '/national/simulator'
     | '/national/teams'
     | '/admin/roster/basketball'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/national/power'
     | '/national/program'
     | '/national/resume'
+    | '/national/season'
     | '/national/simulator'
     | '/national/teams'
     | '/admin/roster/basketball'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/national/power'
     | '/national/program'
     | '/national/resume'
+    | '/national/season'
     | '/national/simulator'
     | '/national/teams'
     | '/admin/roster/basketball'
@@ -402,6 +414,7 @@ export interface RootRouteChildren {
   NationalPowerRoute: typeof NationalPowerRoute
   NationalProgramRoute: typeof NationalProgramRoute
   NationalResumeRoute: typeof NationalResumeRoute
+  NationalSeasonRoute: typeof NationalSeasonRoute
   NationalSimulatorRoute: typeof NationalSimulatorRoute
   NationalTeamsRoute: typeof NationalTeamsRouteWithChildren
   MichiganPlayersPlayerIdRoute: typeof MichiganPlayersPlayerIdRoute
@@ -526,6 +539,13 @@ declare module '@tanstack/react-router' {
       path: '/national/resume'
       fullPath: '/national/resume'
       preLoaderRoute: typeof NationalResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national/season': {
+      id: '/national/season'
+      path: '/national/season'
+      fullPath: '/national/season'
+      preLoaderRoute: typeof NationalSeasonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/national/simulator': {
@@ -689,6 +709,7 @@ const rootRouteChildren: RootRouteChildren = {
   NationalPowerRoute: NationalPowerRoute,
   NationalProgramRoute: NationalProgramRoute,
   NationalResumeRoute: NationalResumeRoute,
+  NationalSeasonRoute: NationalSeasonRoute,
   NationalSimulatorRoute: NationalSimulatorRoute,
   NationalTeamsRoute: NationalTeamsRouteWithChildren,
   MichiganPlayersPlayerIdRoute: MichiganPlayersPlayerIdRoute,

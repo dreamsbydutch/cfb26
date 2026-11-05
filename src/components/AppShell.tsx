@@ -34,6 +34,7 @@ type NavItem = {
 
 const NATIONAL_NAV: Array<NavItem> = [
   { href: '/games', icon: CalendarDays, id: 'games', label: 'Games' },
+  { href: '/national/season', icon: Trophy, id: 'season', label: 'Season' },
   { href: '/national/power', icon: BarChart3, id: 'power', label: 'Power' },
   {
     href: '/national/program',

@@ -8,6 +8,8 @@ React 19 runs through TanStack Start and file-based routing. `src/router.tsx` co
 
 ## Routes and data
 
+**Current source:** `/national/season` adds a national Season view backed by `teamData.listStandingsBySeason`, the program directory, and the selected team's `getProgramProfile` schedule. It displays saved FBS season standings in side-by-side conference columns, with team logos, overall and conference records, a conference filter, and a selectable team's schedule and detailed conference table. Membership comes from the standings snapshot for the selected season, rather than the current program directory. Ordering uses conference win percentage then overall win percentage, with alphabetical display order for ties; it does not implement official conference tiebreakers. Unknown conference records remain unknown. The season is retained in the URL. Standings snapshots and schedule results may update independently; absent weeks are not labelled byes. Missing season data produces an empty state rather than sample standings.
+
 **Current source (owner clarification, 2026-10-24):** the public football roster uses three desktop position columns across six unit rows. Each unit occupies its own full-width band; position tables sit side by side within that band. Preserve the Starters, Rotation, Bench, Prospects, and Recruits sections within every position table.
 
 | Unit row, top to bottom | Position tables, left to right                                       |
