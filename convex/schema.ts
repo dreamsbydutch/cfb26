@@ -1047,7 +1047,8 @@ export default defineSchema({
     sourceUrl: v.string(),
     gameCount: v.number(),
     importedAt: v.number(),
-    sessionId: v.id('ownerSessions'),
+    sessionId: v.optional(v.id('ownerSessions')),
+    automated: v.optional(v.boolean()),
   }).index('by_season', ['season']),
 
   hockeyScheduleGames: defineTable({
