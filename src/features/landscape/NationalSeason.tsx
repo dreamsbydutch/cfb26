@@ -149,15 +149,15 @@ export function NationalSeason() {
               <h2 className="font-display text-2xl font-extrabold">
                 College football at a glance
               </h2>
-              <p className="mb-5 mt-2 text-xs text-white/50">
+              <p className="mb-3 mt-2 text-xs text-white/50">
                 Overall record · [conference record]. Ordered by conference win
                 percentage, then overall win percentage. Equal records are tied;
                 alphabetical display order does not resolve official
                 tiebreakers. Missing records remain unknown.
               </p>
               {bands.map(({ title, columns: band }) => (
-                <section key={title} className="mb-6" aria-label={title}>
-                  <h3 className="font-display mb-3 border-t border-white/10 pt-4 text-xl font-extrabold">
+                <section key={title} className="mb-4" aria-label={title}>
+                  <h3 className="font-display mb-2 border-t border-white/10 pt-3 text-xl font-extrabold">
                     {title}
                   </h3>
                   <div className="overflow-x-auto">
@@ -176,16 +176,18 @@ export function NationalSeason() {
                               <th
                                 key={name}
                                 scope="col"
-                                className="min-w-28 bg-white/5 p-3 text-center"
+                                className="relative min-w-28 bg-white/5 px-3 py-2 text-center"
                               >
                                 {logo && (
                                   <img
                                     src={logo}
                                     alt=""
-                                    className="mx-auto mb-2 h-8 w-14 object-contain"
+                                    className="mx-auto h-7 w-14 object-contain"
                                   />
                                 )}
-                                <span>{name}</span>
+                                <span className={logo ? 'sr-only' : undefined}>
+                                  {name}
+                                </span>
                               </th>
                             )
                           })}
@@ -204,7 +206,10 @@ export function NationalSeason() {
                               key={index}
                               className="border-t border-white/10 even:bg-white/[0.025]"
                             >
-                              <th scope="row" className="p-2 text-white/40">
+                              <th
+                                scope="row"
+                                className="px-2 py-1 text-white/40"
+                              >
                                 {index + 1}
                               </th>
                               {band.map(({ name, rows: teams }) => {
@@ -217,36 +222,35 @@ export function NationalSeason() {
                                 )
                                 const row = group.at(index)
                                 return (
-                                  <td key={name} className="p-1 align-top">
+                                  <td
+                                    key={name}
+                                    className="px-1 py-0.5 align-middle"
+                                  >
                                     {row && (
                                       <button
                                         type="button"
+                                        title={row.sourceProgramName}
                                         aria-pressed={
                                           row.programId === team?.programId
                                         }
                                         onClick={() => selectTeam(row)}
-                                        className={`flex min-h-14 w-full items-center gap-2 rounded-lg p-2 text-left focus-visible:outline-2 ${row.programId === team?.programId ? 'bg-sky-500/15 ring-1 ring-sky-400/50' : 'hover:bg-white/10'}`}
+                                        className={`relative flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-1 text-left focus-visible:outline-2 sm:min-h-10 ${row.programId === team?.programId ? 'bg-sky-500/15 ring-1 ring-sky-400/50' : 'hover:bg-white/10'}`}
                                       >
                                         <TeamLogo
                                           program={programs.get(
                                             String(row.programId),
                                           )}
                                         />
-                                        <span>
-                                          <span className="block max-w-28 text-[10px] text-white/60">
+                                        <span className="leading-3 tabular-nums">
+                                          <span className="sr-only">
                                             {row.sourceProgramName}
                                           </span>
-                                          <b>{record(row)}</b>
-                                          <span className="block text-[10px] text-white/40">
+                                          <b className="block text-[11px] leading-3">
+                                            {record(row)}
+                                          </b>
+                                          <span className="mt-0.5 block text-[10px] leading-3 text-white/40">
                                             [{conferenceRecord(row)}]
                                           </span>
-                                          {index > 0 &&
-                                            compare(group[index - 1], row) ===
-                                              0 && (
-                                              <span className="text-[9px] text-white/40">
-                                                Tied
-                                              </span>
-                                            )}
                                         </span>
                                       </button>
                                     )}
