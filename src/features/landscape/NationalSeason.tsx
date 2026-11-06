@@ -98,9 +98,17 @@ export function NationalSeason() {
     .filter((tier) => tier.columns.length > 0)
   return (
     <PublicShell active="season" context="national">
-      <PageFrame>
-        <PageHero eyebrow={`${season} · National football`} title="Season" />
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+      <PageFrame className="max-sm:px-2 max-sm:py-3">
+        <div className="hidden sm:block">
+          <PageHero eyebrow={`${season} · National football`} title="Season" />
+        </div>
+        <header className="mb-3 flex items-baseline justify-between border-b border-white/10 pb-2 sm:hidden">
+          <h1 className="font-display text-2xl font-extrabold">Season</h1>
+          <p className="text-[9px] uppercase tracking-wider text-white/50">
+            {season} · National football
+          </p>
+        </header>
+        <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-6 sm:gap-3">
           <select
             aria-label="Season"
             value={season}
@@ -125,11 +133,14 @@ export function NationalSeason() {
               <option key={name}>{name}</option>
             ))}
           </select>
-          <p className="text-xs text-white/50">
+          <p className="text-[10px] leading-tight text-white/50 sm:text-xs">
             {rows.at(0)?.recordSource === 'completed_games'
               ? `Saved completed games${rows[0].throughWeek === null ? '' : ` · Through Week ${rows[0].throughWeek}`}`
-              : 'CFBD season snapshots'}{' '}
-            · Select a team to explore its season
+              : 'CFBD season snapshots'}
+            <span className="hidden sm:inline">
+              {' '}
+              · Select a team to explore its season
+            </span>
           </p>
         </div>
         {standings.isPending || directory.isPending ? (
@@ -145,19 +156,22 @@ export function NationalSeason() {
           </EmptyState>
         ) : (
           <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
-            <Surface className="min-w-0 p-4 sm:p-6">
-              <h2 className="font-display text-2xl font-extrabold">
+            <Surface className="min-w-0 p-2 sm:p-6">
+              <h2 className="font-display text-lg font-extrabold sm:text-2xl">
                 College football at a glance
               </h2>
-              <p className="mb-3 mt-2 text-xs text-white/50">
-                Overall record · [conference record]. Ordered by conference win
-                percentage, then overall win percentage. Equal records are tied;
-                alphabetical display order does not resolve official
-                tiebreakers. Missing records remain unknown.
+              <p className="relative mb-2 mt-1 text-[9px] leading-tight text-white/50 sm:mb-3 sm:mt-2 sm:text-xs">
+                Overall · [conference].{' '}
+                <span className="sr-only sm:not-sr-only">
+                  Ordered by conference win percentage, then overall win
+                  percentage. Equal records are tied; alphabetical display order
+                  does not resolve official tiebreakers. Missing records remain
+                  unknown.
+                </span>
               </p>
               {bands.map(({ title, columns: band }) => (
                 <section key={title} className="mb-4" aria-label={title}>
-                  <h3 className="font-display mb-2 border-t border-white/10 pt-3 text-xl font-extrabold">
+                  <h3 className="font-display mb-1 border-t border-white/10 pt-2 text-sm font-extrabold sm:mb-2 sm:pt-3 sm:text-xl">
                     {title}
                   </h3>
                   <div className="overflow-x-auto">
@@ -167,8 +181,11 @@ export function NationalSeason() {
                       </caption>
                       <thead>
                         <tr>
-                          <th scope="col" className="p-2">
-                            Row
+                          <th
+                            scope="col"
+                            className="relative w-4 px-0.5 py-1 sm:w-auto sm:p-2"
+                          >
+                            <span className="sr-only sm:not-sr-only">Row</span>
                           </th>
                           {band.map(({ name }) => {
                             const logo = conferenceLogo(name)
@@ -176,17 +193,33 @@ export function NationalSeason() {
                               <th
                                 key={name}
                                 scope="col"
-                                className="relative min-w-28 bg-white/5 px-3 py-2 text-center"
+                                className="relative min-w-11 bg-white/5 px-0.5 py-1 text-center sm:min-w-28 sm:px-3 sm:py-2"
+                                aria-label={name}
                               >
                                 {logo && (
                                   <img
                                     src={logo}
                                     alt=""
-                                    className="mx-auto h-7 w-14 object-contain"
+                                    className="mx-auto h-5 w-8 object-contain sm:h-7 sm:w-14"
                                   />
                                 )}
-                                <span className={logo ? 'sr-only' : undefined}>
-                                  {name}
+                                <span
+                                  className={
+                                    logo
+                                      ? 'sr-only'
+                                      : 'block text-[8px] leading-tight sm:text-xs'
+                                  }
+                                >
+                                  {name === 'Independents' ? (
+                                    <>
+                                      <span className="sm:hidden">Ind.</span>
+                                      <span className="hidden sm:inline">
+                                        {name}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    name
+                                  )}
                                 </span>
                               </th>
                             )
@@ -208,7 +241,7 @@ export function NationalSeason() {
                             >
                               <th
                                 scope="row"
-                                className="px-2 py-1 text-white/40"
+                                className="px-0.5 py-0 text-[9px] text-white/40 sm:px-2 sm:py-1 sm:text-xs"
                               >
                                 {index + 1}
                               </th>
@@ -224,7 +257,7 @@ export function NationalSeason() {
                                 return (
                                   <td
                                     key={name}
-                                    className="px-1 py-0.5 align-middle"
+                                    className="px-0.5 py-0 align-middle sm:px-1 sm:py-0.5"
                                   >
                                     {row && (
                                       <button
@@ -234,21 +267,22 @@ export function NationalSeason() {
                                           row.programId === team?.programId
                                         }
                                         onClick={() => selectTeam(row)}
-                                        className={`relative flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-1 text-left focus-visible:outline-2 sm:min-h-10 ${row.programId === team?.programId ? 'bg-sky-500/15 ring-1 ring-sky-400/50' : 'hover:bg-white/10'}`}
+                                        className={`relative flex min-h-7 w-full items-center gap-0.5 rounded px-0 py-0.5 text-left focus-visible:outline-2 sm:min-h-10 sm:gap-2 sm:rounded-lg sm:px-2 sm:py-1 ${row.programId === team?.programId ? 'bg-sky-500/15 ring-1 ring-sky-400/50' : 'hover:bg-white/10'}`}
                                       >
                                         <TeamLogo
+                                          compact
                                           program={programs.get(
                                             String(row.programId),
                                           )}
                                         />
-                                        <span className="leading-3 tabular-nums">
+                                        <span className="whitespace-nowrap leading-3 tabular-nums">
                                           <span className="sr-only">
                                             {row.sourceProgramName}
                                           </span>
-                                          <b className="block text-[11px] leading-3">
+                                          <b className="block text-[9px] leading-[10px] sm:text-[11px] sm:leading-3">
                                             {record(row)}
                                           </b>
-                                          <span className="mt-0.5 block text-[10px] leading-3 text-white/40">
+                                          <span className="block text-[8px] leading-[9px] text-white/40 sm:mt-0.5 sm:text-[10px] sm:leading-3">
                                             [{conferenceRecord(row)}]
                                           </span>
                                         </span>
@@ -332,18 +366,25 @@ export function NationalSeason() {
   )
 }
 
-function TeamLogo({ program }: { program: Program | undefined }) {
+function TeamLogo({
+  program,
+  compact = false,
+}: {
+  program: Program | undefined
+  compact?: boolean
+}) {
+  const size = compact ? 'h-4 w-4 sm:h-8 sm:w-8' : 'h-8 w-8'
   return program?.logos?.[0] ? (
     <img
       src={program.logos[0]}
       alt=""
       loading="lazy"
-      className="h-8 w-8 shrink-0 object-contain"
+      className={`${size} shrink-0 object-contain`}
     />
   ) : (
     <span
       aria-hidden="true"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/10 text-xs"
+      className={`${size} flex shrink-0 items-center justify-center rounded bg-white/10 ${compact ? 'text-[8px] sm:text-xs' : 'text-xs'}`}
     >
       {program?.abbreviation ?? 'CFB'}
     </span>
